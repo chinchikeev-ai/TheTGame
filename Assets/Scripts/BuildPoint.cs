@@ -6,17 +6,17 @@ public class BuildPoint : MonoBehaviour
     public Tower Tower { get; private set; }
 
     Renderer marker;
-    readonly Color idleColor = new Color(0.18f, 0.65f, 0.28f, 0.65f);
-    readonly Color hoverColor = new Color(0.35f, 1f, 0.5f, 0.95f);
-    readonly Color occupiedColor = new Color(0.22f, 0.22f, 0.22f, 0.55f);
+    readonly Color idleColor = new Color(0.16f, 0.55f, 0.26f, 1f);
+    readonly Color hoverColor = new Color(0.40f, 0.95f, 0.48f, 1f);
+    readonly Color occupiedColor = new Color(0.18f, 0.18f, 0.18f, 1f);
 
     public void Initialize()
     {
-        GameObject markerObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        markerObj.name = "BuildMarker";
+        GameObject markerObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        markerObj.name = "BuildCell";
         markerObj.transform.SetParent(transform);
-        markerObj.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-        markerObj.transform.localScale = new Vector3(0.9f, 0.06f, 0.9f);
+        markerObj.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+        markerObj.transform.localScale = new Vector3(MapBuilder.CellSize * 0.82f, 0.18f, MapBuilder.CellSize * 0.82f);
         marker = markerObj.GetComponent<Renderer>();
         TowerFactory.SetColor(markerObj, idleColor);
     }
@@ -27,7 +27,7 @@ public class BuildPoint : MonoBehaviour
         int cost = TowerFactory.GetCost(type);
         if (!GameManager.Instance.SpendMoney(cost)) return false;
 
-        GameObject towerObj = TowerFactory.CreateTower(transform.position + Vector3.up * 0.5f, type);
+        GameObject towerObj = TowerFactory.CreateTower(transform.position + Vector3.up * 0.28f, type);
         Tower = towerObj.GetComponent<Tower>();
         Occupied = Tower != null;
         if (Tower != null) Tower.OwnerPoint = this;
