@@ -3,6 +3,7 @@ using UnityEngine;
 public class Tower : MonoBehaviour
 {
     public TowerType Type { get; private set; }
+    public string DisplayName { get; private set; }
     public int Level { get; private set; } = 1;
     public int PurchaseCost { get; private set; }
     public BuildPoint OwnerPoint { get; set; }
@@ -18,29 +19,26 @@ public class Tower : MonoBehaviour
     public Transform muzzle;
 
     float nextFireTime;
+    float sellRatio = 0.65f;
 
-    public void Configure(TowerType type, int purchaseCost)
+    public void Configure(TowerType type, int purchaseCost = 0)
     {
         Type = type;
-        PurchaseCost = purchaseCost;
-        ApplyBaseStats();
-    }
-
-    void ApplyBaseStats()
-    {
-        switch (Type)
-        {
-            case TowerType.MachineGun:
-                range = 5.8f; damage = 16f; fireRate = 4.2f; projectileSpeed = 18f; splashRadius = 0f; slowMultiplier = 1f; slowDuration = 0f; break;
-            case TowerType.Cannon:
-                range = 6.8f; damage = 72f; fireRate = 0.75f; projectileSpeed = 10f; splashRadius = 2.2f; slowMultiplier = 1f; slowDuration = 0f; break;
-            case TowerType.Slow:
-                range = 5.3f; damage = 9f; fireRate = 1.5f; projectileSpeed = 13f; splashRadius = 0f; slowMultiplier = 0.55f; slowDuration = 1.6f; break;
-        }
+        TowerData data = BalanceCatalog.GetTower(type);
+        DisplayName = data.displayName;
+        PurchaseCost = purchaseCost > 0 ? purchaseCost : data.cost;
+        damage = data.damage;
+        range = data.range;
+        fireRate = data.attacksPerSecond;
+        projectileSpeed = data.projectileSpeed;
+        splashRadius = data.splashRadius;
+        slowMultiplier = data.slowMultiplier;
+        slowDuration = data.slowDuration;
+        sellRatio = data.sellRatio;
     }
 
     public int UpgradeCost => Level >= 3 ? 0 : Mathf.RoundToInt(PurchaseCost * (0.65f + Level * 0.35f));
-    public int SellValue => Mathf.RoundToInt((PurchaseCost + TotalUpgradeInvestment()) * 0.65f);
+    public int SellValue => Mathf.RoundToInt((PurchaseCost + TotalUpgradeInvestment()) * sellRatio);
 
     int TotalUpgradeInvestment()
     {
@@ -98,8 +96,9 @@ public class Tower : MonoBehaviour
     {
         Enemy closest = null;
         float best = range * range;
-        foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+        foreach (Enemy enemy in EnemyRegistry.All)
         {
+            if (enemy == null) continue;
             float d = (enemy.transform.position - transform.position).sqrMagnitude;
             if (d < best) { best = d; closest = enemy; }
         }
@@ -110,9 +109,8 @@ public class Tower : MonoBehaviour
     {
         Vector3 start = muzzle != null ? muzzle.position : transform.position + Vector3.up;
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayShot(Type, start);
-
         GameObject projectileObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        projectileObj.name = Type + "Projectile";
+        projectileObj.name = DisplayName + " Projectile";
         projectileObj.transform.position = start;
         projectileObj.transform.localScale = Vector3.one * (Type == TowerType.Cannon ? 0.30f : 0.18f);
         Destroy(projectileObj.GetComponent<Collider>());
