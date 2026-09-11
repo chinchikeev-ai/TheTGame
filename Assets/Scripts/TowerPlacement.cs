@@ -1,96 +1,81 @@
 using System.Linq;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 public class TowerPlacement : MonoBehaviour
 {
     public Camera gameCamera;
     public int towerCost = 100;
-    public float minTowerDistance = 2.6f;
-    public float roadClearance = 1.35f;
 
-    GameObject ghost;
-    bool currentValid;
-    Vector3 currentPosition;
+    BuildPoint hoveredPoint;
+    TowerRangeIndicator rangeIndicator;
 
     void Start()
     {
-        ghost = TowerFactory.CreateGhost();
-        ghost.SetActive(false);
+        rangeIndicator = FindFirstObjectByType<TowerRangeIndicator>();
+        if (rangeIndicator == null)
+            rangeIndicator = new GameObject("TowerRangeIndicatorController").AddComponent<TowerRangeIndicator>();
     }
 
     void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.GameEnded)
-        {
-            if (ghost != null) ghost.SetActive(false);
-            return;
-        }
-
+        if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
         if (gameCamera == null) gameCamera = Camera.main;
-        UpdatePreview();
+        if (gameCamera == null) return;
 
-        if (Input.GetMouseButtonDown(0) && currentValid)
-        {
-            if (GameManager.Instance.SpendMoney(towerCost))
-                TowerFactory.CreateTower(currentPosition);
-        }
-    }
-
-    void UpdatePreview()
-    {
-        if (gameCamera == null || ghost == null) return;
-
-        Ray ray = gameCamera.ScreenPointToRay(Input.mousePosition);
+        Vector2 pointer = ReadPointerPosition();
+        Ray ray = gameCamera.ScreenPointToRay(pointer);
         RaycastHit[] hits = Physics.RaycastAll(ray, 250f).OrderBy(h => h.distance).ToArray();
-        RaycastHit? groundHit = null;
+
+        BuildPoint newPoint = null;
+        Tower hoveredTower = null;
 
         foreach (RaycastHit hit in hits)
         {
-            if (hit.collider != null && hit.collider.gameObject.name == "Ground")
-            {
-                groundHit = hit;
-                break;
-            }
+            if (hoveredTower == null)
+                hoveredTower = hit.collider.GetComponentInParent<Tower>();
+            if (newPoint == null)
+                newPoint = hit.collider.GetComponentInParent<BuildPoint>();
+            if (hoveredTower != null || newPoint != null) break;
         }
 
-        if (!groundHit.HasValue)
+        if (hoveredPoint != newPoint)
         {
-            ghost.SetActive(false);
-            currentValid = false;
-            return;
+            if (hoveredPoint != null) hoveredPoint.SetHovered(false);
+            hoveredPoint = newPoint;
+            if (hoveredPoint != null) hoveredPoint.SetHovered(true);
         }
 
-        currentPosition = groundHit.Value.point;
-        currentPosition.y = 0.5f;
-        ghost.SetActive(true);
-        ghost.transform.position = currentPosition;
+        if (hoveredTower != null) rangeIndicator.Show(hoveredTower);
+        else rangeIndicator.Hide();
 
-        currentValid = IsValidPosition(currentPosition) && GameManager.Instance.Money >= towerCost;
-        TowerFactory.SetGhostValidity(ghost, currentValid);
+        if (ReadPrimaryClick() && hoveredPoint != null && !hoveredPoint.Occupied)
+            hoveredPoint.TryBuild(towerCost);
     }
 
-    bool IsValidPosition(Vector3 p)
+    void OnDisable()
     {
-        foreach (Tower tower in FindObjectsByType<Tower>(FindObjectsSortMode.None))
-        {
-            if (Vector3.Distance(tower.transform.position, p) < minTowerDistance)
-                return false;
-        }
+        if (hoveredPoint != null) hoveredPoint.SetHovered(false);
+        if (rangeIndicator != null) rangeIndicator.Hide();
+    }
 
-        foreach (GameObject road in GameObject.FindGameObjectsWithTag("Respawn"))
-        {
-            Collider col = road.GetComponent<Collider>();
-            if (col == null) continue;
-            Vector3 closest = col.ClosestPoint(p);
-            closest.y = p.y;
-            if (Vector3.Distance(closest, p) < roadClearance)
-                return false;
-        }
+    Vector2 ReadPointerPosition()
+    {
+#if ENABLE_INPUT_SYSTEM
+        return Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
+#else
+        return Input.mousePosition;
+#endif
+    }
 
-        GameObject baseObj = GameObject.Find("Base");
-        if (baseObj != null && Vector3.Distance(baseObj.transform.position, p) < 2.8f)
-            return false;
-
-        return true;
+    bool ReadPrimaryClick()
+    {
+#if ENABLE_INPUT_SYSTEM
+        return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+#else
+        return Input.GetMouseButtonDown(0);
+#endif
     }
 }
