@@ -43,8 +43,13 @@ public static class TowerFactory
 
         if (type == TowerType.Slow)
         {
-            GameObject ring = GameObject.CreatePrimitive(PrimitiveType.Torus);
-            Object.Destroy(ring);
+            GameObject crystal = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            crystal.name = "SlowCore";
+            crystal.transform.SetParent(head.transform);
+            crystal.transform.localPosition = new Vector3(0f, 0.6f, 0f);
+            crystal.transform.localScale = Vector3.one * 0.32f;
+            Object.Destroy(crystal.GetComponent<Collider>());
+            SetColor(crystal, new Color(0.20f, 0.85f, 1f));
         }
 
         GameObject muzzle = new GameObject("Muzzle");
