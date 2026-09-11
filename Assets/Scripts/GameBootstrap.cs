@@ -28,8 +28,20 @@ public class GameBootstrap : MonoBehaviour
         TowerPlacement placement = new GameObject("TowerPlacement").AddComponent<TowerPlacement>();
         placement.gameCamera = cam;
 
+        CreateHector();
+
         new GameObject("GameUI").AddComponent<GameUIController>();
         new GameObject("GameMenu").AddComponent<GameMenuController>();
+    }
+
+    void CreateHector()
+    {
+        GameObject hector = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        hector.name = "Hector";
+        hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
+        hector.transform.localScale = new Vector3(.75f, .75f, .75f);
+        TowerFactory.SetColor(hector, new Color(.72f,.48f,.12f));
+        hector.AddComponent<HectorController>();
     }
 
     Camera SetupLightingAndCamera()
@@ -46,7 +58,7 @@ public class GameBootstrap : MonoBehaviour
         cam.orthographicSize = 10.5f;
         cam.transform.position = new Vector3(0f, 30f, 0f);
         cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-        cam.backgroundColor = new Color(0.055f, 0.065f, 0.075f);
+        cam.backgroundColor = new Color(.055f, .065f, .075f);
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
