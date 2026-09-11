@@ -1,592 +1,794 @@
-# TheTroyGame — Gods, Cups & Artifacts System
+# TheTroyGame — Gods, Cups, 28 Artifact Cards & 7 Divine Magics
 
-## 1. Purpose
+## 1. Core Concept
 
-Between campaign maps, the player receives a mythological choice that changes the tactical rules of the next battle and, in some cases, the rest of the campaign.
+The mythological progression layer is built around **4 primary patron gods**.
 
-The system adds a light roguelite layer to the 2-hour story campaign without turning the game into a full roguelike.
+Each god owns a complete deck of **7 unique artifact cards**:
 
-Core structure:
+**4 gods × 7 cards = 28 artifact cards total.**
 
-**7 campaign maps × 4 artifact offers = 28 unique artifacts.**
+The player does not receive four unrelated artifacts tied to each map. Instead, every god has a recognizable long-term build identity and seven different gifts.
 
-The first divine choice happens immediately before / during the opening landing on the coast, so the player starts Chapter I already under the protection of a chosen god.
+In addition, the campaign contains **7 Divine Magics**. These are active battlefield powers and are separate from artifact cards.
 
-After each subsequent chapter, a new divine selection scene is shown before the next map.
+The complete divine layer therefore contains:
+
+- 4 Patron Gods;
+- 7 artifact cards per god;
+- 28 artifact cards total;
+- 7 active Divine Magics;
+- 7 divine-choice moments across the 7-map campaign.
+
+The first divine choice occurs before the opening battle at the coast / Greek landing.
 
 ---
 
-## 2. Player Flow
+# 2. The Four Patron Gods
 
-### Step 1 — The Gods Appear
+## ARES — WAR / BLOOD / HERO COMBAT
 
-Before a map, four gods appear as four large mythological cards / statues / portals.
+Ares favors direct damage, Hector, Trojan Guard, killing momentum and high-risk bonuses.
 
-Each god communicates a gameplay direction rather than revealing an exact artifact.
+Playstyle:
+- aggressive;
+- melee-heavy;
+- stronger hero;
+- kill chains;
+- powerful bonuses with drawbacks.
 
-Examples:
-- Ares — aggression, damage, melee, risk;
-- Athena — defense, tactics, range, control;
-- Apollo — accuracy, archery, healing, light;
-- Poseidon — knockback, slowing, battlefield disruption.
+## ATHENA — DEFENSE / TACTICS / CONTROL
 
-The player selects **one god as Patron of the Map**.
+Athena favors preparation, information, defensive structures, strategic repositioning and protection.
 
-### Step 2 — The Four Cups
+Playstyle:
+- defensive;
+- tactical;
+- route knowledge;
+- stronger walls;
+- better control over enemy movement.
 
-After selecting a god, the camera moves to an altar with ritual cups.
+## APOLLO — ARCHERY / LIGHT / PRECISION
 
-The player chooses **one sealed cup**.
+Apollo favors ranged towers, critical attacks, accuracy, healing and battlefield illumination.
 
-The cup does not show the exact artifact beforehand.
+Playstyle:
+- ranged DPS;
+- precision;
+- critical strikes;
+- support;
+- strong opening volleys.
 
-Possible presentation:
-- bronze cup;
-- silver cup;
-- black obsidian cup;
-- golden cup.
+## POSEIDON — FORCE / SLOW / DISRUPTION
 
-The cup is opened / broken / filled with divine light.
+Poseidon favors knockback, slowing, area control, shockwaves and manipulation of enemy formations.
 
-### Step 3 — Artifact Reveal
+Playstyle:
+- crowd control;
+- AoE;
+- lane disruption;
+- slowing;
+- anti-swarm.
 
-A short reveal animation plays.
+---
 
-The god grants a named mythological artifact.
+# 3. Divine Choice Flow
 
-The player sees:
+Before every campaign map, including Map I:
+
+## Step 1 — Choose a Patron God
+
+Four monumental god cards / statues appear:
+
+- Ares;
+- Athena;
+- Apollo;
+- Poseidon.
+
+The player chooses **one Patron God for the coming map**.
+
+The god choice is fully informed: the player knows the god's general playstyle.
+
+## Step 2 — The Seven Cups / Cards
+
+After choosing the god, the scene changes to the god's altar.
+
+That god owns **seven artifact cards**.
+
+The seven cards are represented as ritual cups, tablets, sealed cards, relic containers, or another mythological reveal device.
+
+At the beginning of a new campaign run, the exact artifact behind an unrevealed cup is hidden.
+
+The player chooses one.
+
+## Step 3 — Artifact Reveal
+
+The chosen cup opens and reveals one artifact card from that god's seven-card deck.
+
+The reveal shows:
+
 - artifact name;
-- icon / 3D model;
-- god who granted it;
-- gameplay effect;
-- duration: `THIS MAP` or `CAMPAIGN`;
+- god;
+- artwork / 3D relic;
+- effect;
+- rarity / tier if used;
+- whether it lasts for the current map or the campaign;
 - optional drawback.
 
-### Step 4 — Map Begins
+## Step 4 — Divine Magic
 
-The selected god becomes the Patron of the Map.
+At designated campaign milestones, the player also unlocks or upgrades one of the **7 Divine Magics**.
 
-The artifact modifier is applied before the first preparation phase.
+Artifact cards are passive modifiers.
+Divine Magics are active abilities used by the player during combat.
 
----
+## Step 5 — Battle
 
-## 3. Design Rule
+The map begins with:
 
-The system should not be four visible stat upgrades where the mathematically strongest choice is obvious.
-
-The player first chooses a **playstyle / god**, then accepts uncertainty through the cup reveal.
-
-Therefore the emotional sequence is:
-
-`Choose a God → Choose a Cup → Divine Reveal → Adapt Strategy`
-
-The god choice is informed.
-The exact artifact is partially hidden.
-
-This makes the ritual meaningful and gives replay value.
+- selected Patron God;
+- selected artifact card;
+- previously retained campaign artifacts;
+- currently unlocked Divine Magics.
 
 ---
 
-## 4. Patron of the Map
+# 4. Card Rules
 
-The selected god provides a small guaranteed patron bonus for that map in addition to the artifact.
+Each god has exactly seven authored cards.
 
-Recommended patron bonuses are intentionally modest, around 5–10%, because the artifact is the main reward.
+A player may select the same god on multiple maps, gradually building a specialization around that god.
 
-Examples:
+A card already collected in the current campaign run should normally be removed from that god's available pool for the rest of the run.
 
-| God | Patron Direction |
+This means choosing the same god repeatedly advances deeper into that god's seven-card build.
+
+The system supports two useful playstyles:
+
+- **Devotion build** — repeatedly choose the same god and stack synergistic cards;
+- **Pantheon build** — take cards from several gods for flexibility.
+
+This is the main replay-value mechanic.
+
+---
+
+# 5. ARES — 7 Artifact Cards
+
+## A1 — Blood Spear
+**Type:** Campaign
+
+- Hector damage +15%.
+- Trojan Guard damage +10%.
+
+Foundation card for the Ares build.
+
+## A2 — Helm of War
+**Type:** Campaign
+
+- Hector deals +25% damage to Elite and Hero enemies.
+- Hector receives +5% incoming damage.
+
+## A3 — Shield of Deimos
+**Type:** Map
+
+When Hector falls below 35% HP:
+
+- damage resistance +35%;
+- attack speed +20%;
+- duration 8 sec;
+- triggers once per wave.
+
+## A4 — Blade of Phobos
+**Type:** Campaign
+
+Every 10 consecutive kills without a leak grants temporary **Battle Fury**:
+
+- towers +10% attack speed;
+- Hector +15% damage;
+- duration 10 sec.
+
+## A5 — Chains of Enyo
+**Type:** Map
+
+Trojan Guard hold enemies longer:
+
+- Guard HP +30%;
+- block capacity +1;
+- movement speed -10%.
+
+## A6 — Banner of Ares
+**Type:** Campaign
+
+Enemies killed near Hector generate additional Command Points.
+
+Hector becomes a mobile rally point:
+
+- nearby Trojan units +10% damage;
+- nearby towers +5% attack speed.
+
+## A7 — Wrath of Ares
+**Type:** Legendary / Map
+
+After enough enemies die during the map, Wrath activates for 20 sec:
+
+- all Trojan damage +30%;
+- Hector attack speed +35%;
+- Trojan Guard cannot be knocked back;
+- gold income from kills is disabled while Wrath is active.
+
+Ares' capstone card.
+
+---
+
+# 6. ATHENA — 7 Artifact Cards
+
+## T1 — Aegis Fragment
+**Type:** Campaign
+
+- Gate / objective HP +15%.
+- Trojan Guard resistance +10%.
+
+## T2 — Owl of Pallas
+**Type:** Campaign
+
+During preparation, reveal:
+
+- enemy composition;
+- primary route;
+- presence of Heavy / Siege / Elite units.
+
+## T3 — Spear of Strategy
+**Type:** Map
+
+Once per wave, the player may mark one lane.
+
+For 12 sec:
+
+- towers targeting enemies on that lane gain +20% damage.
+
+## T4 — Athena's Bridle
+**Type:** Campaign
+
+- Chariots and fast units lose 12% movement speed.
+- Slow resistance of fast enemies is reduced.
+
+## T5 — Walls of Ilium
+**Type:** Campaign
+
+- repair cost -20%;
+- wall / gate regeneration between waves +3%;
+- defensive build positions cost 5% less.
+
+## T6 — Thread of Strategy
+**Type:** Map
+
+Allows **two free tower relocations** during the map.
+
+Relocation preserves upgrade level.
+
+## T7 — Athena's Grand Design
+**Type:** Legendary / Map
+
+At the start of every wave:
+
+- entire enemy route plan is revealed;
+- player receives a 5-second tactical planning pause;
+- first tower placed or relocated before wave start receives +25% damage for that wave.
+
+Athena's capstone card.
+
+---
+
+# 7. APOLLO — 7 Artifact Cards
+
+## P1 — Golden Arrow
+**Type:** Campaign
+
+- Archer damage +10%;
+- projectile speed +15%.
+
+## P2 — Moonless Bowstring
+**Type:** Campaign
+
+All ranged towers gain +7% range.
+
+## P3 — Laurel of Delphi
+**Type:** Map
+
+First attack from each ranged tower against a full-health enemy has:
+
+- +35% critical chance;
+- +20% critical damage.
+
+## P4 — Lyre of Radiance
+**Type:** Campaign
+
+- hero ability duration +10%;
+- nearby friendly troops regenerate slowly while out of combat.
+
+## P5 — Eye of the Sun
+**Type:** Map
+
+Every 15 sec, Apollo marks the most dangerous non-boss enemy.
+
+Marked target:
+
+- receives +20% damage;
+- becomes visible through smoke / battlefield effects.
+
+## P6 — Quiver of Seven Rays
+**Type:** Campaign
+
+Every seventh Archer Tower attack fires an additional radiant projectile at a second target.
+
+## P7 — Chariot of the Sun
+**Type:** Legendary / Map
+
+Once per wave, a line of solar fire crosses the selected route:
+
+- heavy AoE damage;
+- burns surviving enemies;
+- temporarily illuminates and exposes all enemies on that route.
+
+Apollo's capstone card.
+
+---
+
+# 8. POSEIDON — 7 Artifact Cards
+
+## S1 — Trident Shard
+**Type:** Campaign
+
+- Slow effects +10% effectiveness.
+- knockback effects +10% force.
+
+## S2 — Shell of the Deep
+**Type:** Campaign
+
+Enemies affected by Slow receive +8% damage from Ballista and Spear Throwers.
+
+## S3 — Wave-Born Stone
+**Type:** Map
+
+Every 8th heavy projectile impact creates a small shockwave that pushes Light enemies backward.
+
+## S4 — Chains of the Sea
+**Type:** Campaign
+
+Heavy enemies moving through a slow field accumulate **Drenched**.
+
+At maximum stacks:
+
+- movement speed is reduced further for 4 sec.
+
+## S5 — Tempest Conch
+**Type:** Map
+
+Once per wave, create a wind-and-water vortex on a selected route:
+
+- pulls Light enemies together;
+- slows Heavy enemies;
+- creates an AoE kill zone.
+
+## S6 — Earthshaker's Stone
+**Type:** Campaign
+
+Every time a Siege enemy is destroyed:
+
+- nearby enemies are briefly staggered;
+- nearby structures receive a temporary +10% attack-speed buff.
+
+## S7 — Wrath of the Sea
+**Type:** Legendary / Map
+
+Once during the map, summon a massive divine wave along an entire selected route:
+
+- Light enemies are pushed far backward;
+- Heavy enemies are slowed heavily;
+- Siege enemies take large structural damage;
+- bosses are not pushed but are slowed.
+
+Poseidon's capstone card.
+
+---
+
+# 9. Total Artifact Structure
+
+| God | Cards | Primary Build |
+|---|---:|---|
+| Ares | 7 | Hector / melee / aggression |
+| Athena | 7 | defense / tactics / information |
+| Apollo | 7 | ranged / precision / support |
+| Poseidon | 7 | control / slow / AoE disruption |
+| **TOTAL** | **28** | — |
+
+Each deck should have an internal progression:
+
+`Foundation → Specialization → Synergy → Advanced Mechanic → Build Modifier → Major Synergy → Legendary Capstone`
+
+Cards do not need to be drawn in this exact numerical order, but higher-tier cards can have unlock prerequisites if later balance testing requires it.
+
+---
+
+# 10. The Seven Divine Magics
+
+Divine Magics are **active player abilities**, separate from artifact cards and Hector's normal hero abilities.
+
+The player unlocks them progressively across the seven-map campaign.
+
+Recommended combat rule:
+
+- unlocked magics remain available for the rest of the run;
+- only **2 or 3 Divine Magics** may be equipped before a map;
+- each magic has charges, a long cooldown, Divine Power cost, or a combination of these;
+- magics must feel visually spectacular and tactically decisive;
+- they must not replace tower placement and economy decisions.
+
+## MAGIC I — THUNDER OF ZEUS
+
+Targeted offensive spell.
+
+Player selects a point.
+
+Effects:
+- instant lightning strike;
+- strong AoE damage;
+- Light enemies stunned;
+- Heavy enemies briefly staggered;
+- bosses slowed rather than stunned.
+
+Suggested cooldown: **90 sec**.
+
+---
+
+## MAGIC II — AEGIS OF ATHENA
+
+Targeted defensive spell.
+
+Player selects an area or defensive objective.
+
+Effects for 10 sec:
+- friendly units take -40% damage;
+- structures take -30% damage;
+- blocked enemies cannot push Trojan Guard backward.
+
+Suggested cooldown: **100 sec**.
+
+---
+
+## MAGIC III — FURY OF ARES
+
+Global offensive buff.
+
+For 12 sec:
+- Hector damage +50%;
+- Trojan Guard damage +35%;
+- all towers attack +20% faster;
+- no passive Command Point regeneration during the effect.
+
+Suggested cooldown: **120 sec**.
+
+---
+
+## MAGIC IV — RAIN OF APOLLO
+
+Player marks a long section of a route.
+
+Apollo launches a divine arrow rain.
+
+Effects:
+- repeated piercing hits for 6 sec;
+- bonus damage against Light and unarmored enemies;
+- applies Radiant Mark to survivors.
+
+Suggested cooldown: **90 sec**.
+
+---
+
+## MAGIC V — WAVE OF POSEIDON
+
+Player selects one enemy route.
+
+A giant wave travels backward along the lane.
+
+Effects:
+- pushes Light enemies backward;
+- slows Heavy enemies by 50%;
+- heavily damages Siege enemies;
+- extinguishes hostile fire zones if such a mechanic exists.
+
+Suggested cooldown: **120 sec**.
+
+---
+
+## MAGIC VI — GATES OF HADES
+
+Player opens a temporary underworld rift at a selected point.
+
+For 8 sec:
+- defeated enemies near the rift have a chance to return as temporary spectral Trojan fighters;
+- elite enemies create stronger spirits;
+- bosses cannot be converted.
+
+Suggested usage: **1 charge per map**.
+
+---
+
+## MAGIC VII — CHRONOS: MOMENT OF FATE
+
+Final / legendary magic.
+
+Time almost stops for enemies while Trojan defenders remain active.
+
+Duration: **5 sec real time**.
+
+Effects:
+- enemies move at ~10% speed;
+- projectiles and towers continue operating near normal speed;
+- player may build, upgrade, relocate and cast hero abilities;
+- boss special abilities are paused but bosses are not fully disabled.
+
+Suggested usage: **1 charge per map** after unlocking.
+
+This is the ultimate tactical emergency spell.
+
+---
+
+# 11. Magic Unlock Progression
+
+Recommended first-pass unlock structure:
+
+| Campaign Stage | Magic Unlocked |
 |---|---|
-| Zeus | lightning / emergency power |
-| Athena | defense / tactical control |
-| Ares | raw combat damage |
-| Apollo | archery / accuracy / support |
-| Artemis | range / critical strikes |
-| Poseidon | slow / knockback / disruption |
-| Hephaestus | towers / upgrades / construction |
-| Hermes | speed / economy / cooldowns |
-| Aphrodite | morale / charm / support |
-| Hera | resilience / protection |
-| Hades | death / kill rewards / sacrifice |
-| Demeter | sustain / regeneration / economy |
-| Dionysus | chaos / random bonuses |
-| Nike | momentum / wave-completion bonuses |
+| Before Map I / tutorial | Thunder of Zeus |
+| After Map I | Aegis of Athena |
+| After Map II | Fury of Ares |
+| After Map III | Rain of Apollo |
+| After Map IV | Wave of Poseidon |
+| After Map V | Gates of Hades |
+| After Map VI | Moment of Fate |
 
-Gods can reappear in later chapters, but **all 28 artifacts are unique**.
+By the final map, all seven magics are discovered, but the player equips only a limited number.
+
+This produces a second strategic decision before battle:
+
+**Which god do I follow? Which artifact do I reveal? Which magics do I equip?**
 
 ---
 
-# 5. The 28 Artifacts
+# 12. Divine Power Resource
 
-## MAP I — THE LANDING
+Recommended resource: **Favor / Divine Power**.
 
-The first selection happens before the Greek landing begins.
+Divine Power is separate from Gold and Command Points.
 
-### 01. Apollo — Golden Arrow of Apollo
-**Type:** Map
+Generated by:
 
-Effects:
-- Archer Tower damage +20%.
-- Archer projectile speed +25%.
-- First shot against a full-health enemy has +30% critical chance.
+- completing waves;
+- killing Elite enemies;
+- perfect defense / no leaks;
+- hero actions;
+- fulfilling optional objectives.
 
-Design purpose: teaches the player the value of ranged defense.
+Suggested cap: **100**.
 
-### 02. Athena — Aegis Fragment
-**Type:** Map
+Typical magic cost:
 
-Effects:
-- Gate / base HP +25%.
-- Trojan Guard damage resistance +15%.
-- The first enemy that would breach the gate is stunned for 3 sec.
+- normal magic: 35–50 Divine Power;
+- legendary magic: 70–100 or limited to one charge.
 
-Design purpose: forgiving defensive opening.
-
-### 03. Ares — Blood Spear
-**Type:** Map
-
-Effects:
-- Hector and Trojan Guard damage +25%.
-- Melee kills restore a small amount of Command Points.
-- Defensive towers receive -5% attack speed.
-
-Design purpose: aggressive hero-oriented opening with a tradeoff.
-
-### 04. Hermes — Sandals of the Messenger
-**Type:** Map
-
-Effects:
-- Hector movement speed +35%.
-- Ability cooldowns -15%.
-- Early-wave start bonus +15% gold.
-
-Design purpose: mobility and active play.
+This prevents spell spam and creates a decision between using magic now or saving it for the boss.
 
 ---
 
-## MAP II — ROAD TO TROY
+# 13. UI — God Selection
 
-### 05. Poseidon — Trident Shard
-**Type:** Map
+The sequence should feel like a mythological ritual rather than a conventional upgrade screen.
 
-Effects:
-- Every 8th heavy tower hit creates a shockwave.
-- Shockwave pushes light enemies backward.
-- Slow effects are 20% stronger.
+## Screen A — CHOOSE YOUR PATRON
 
-### 06. Artemis — Moon Bowstring
-**Type:** Campaign
+Four god cards:
 
-Effects:
-- All ranged towers gain +7% range permanently.
-- Towers attacking enemies above 80% HP gain +10% damage.
+**ARES**  
+WAR / HERO / BLOOD
 
-### 07. Nike — Laurel of Victory
-**Type:** Campaign
+**ATHENA**  
+DEFENSE / TACTICS / CONTROL
 
-Effects:
-- Completing a wave without a leak gives +8% bonus gold.
-- Bonus stacks as a campaign score modifier, not infinitely in combat.
+**APOLLO**  
+RANGE / PRECISION / LIGHT
 
-### 08. Demeter — Horn of Plenty
-**Type:** Map
+**POSEIDON**  
+SLOW / FORCE / DISRUPTION
 
-Effects:
-- Starting gold +20%.
-- Enemy kill gold -5%.
-- Sell refund +10 percentage points.
+The card can show how many of that god's seven artifacts have already been discovered in the current run:
 
-Design purpose: encourages rebuilding and experimentation.
+`ARES — 3 / 7`
 
----
+This immediately communicates devotion progression.
 
-## MAP III — THE GATES
+## Screen B — THE SEVEN CUPS
 
-### 09. Hephaestus — Hammer of the Forge
-**Type:** Campaign
+After selecting a god:
 
-Effects:
-- First upgrade of every tower is 12% cheaper.
-- Repair actions are 20% cheaper.
+- seven artifact positions are represented on an altar;
+- already collected cards are visible;
+- unavailable / undiscovered cards remain sealed;
+- player chooses one available cup.
 
-### 10. Hera — Crown of the Queen
-**Type:** Map
+Possible text:
 
-Effects:
-- Gate HP +30%.
-- Nearby towers gain +10% attack speed while the gate is above 75% HP.
+**ARES HAS HEARD YOUR CALL**
 
-### 11. Zeus — Thunderbolt Splinter
-**Type:** Map
+**CHOOSE ONE OF HIS GIFTS**
 
-Effects:
-- Unlocks one manual divine strike per wave.
-- Lightning damages and briefly stuns enemies in a small area.
-- Bosses cannot be fully stunned; they are slowed instead.
-
-### 12. Hestia — Eternal Hearth Ember
-**Type:** Campaign
-
-Effects:
-- Structures regenerate 1% of max HP between waves.
-- Fire-based Trojan defenses gain +8% burn duration.
-
----
-
-## MAP IV — HEROES OF GREECE
-
-### 13. Ares — Helm of War
-**Type:** Map
-
-Effects:
-- Hector damage +35% against Elite / Hero enemies.
-- Hector takes +10% damage from all sources.
-
-### 14. Athena — Owl of Pallas
-**Type:** Map
-
-Effects:
-- Enemy wave composition is revealed during preparation.
-- Route priority is displayed before the wave starts.
-- Tactical pause can be used once per wave for 3 sec.
-
-### 15. Aphrodite — Golden Girdle
-**Type:** Map
-
-Effects:
-- Enemy captains lose 20% of their aura effectiveness.
-- Once per wave, a group of light enemies hesitates for 4 sec.
-
-### 16. Apollo — Lyre of Radiance
-**Type:** Campaign
-
-Effects:
-- Hero ability effects last +8% longer.
-- Trojan units near Hector regenerate slowly between engagements.
-
----
-
-## MAP V — THE GREAT ASSAULT
-
-### 17. Hades — Coin of the Underworld
-**Type:** Map
-
-Effects:
-- Elite and Boss kills produce +35% gold.
-- Normal enemy kill rewards -10%.
-
-### 18. Hephaestus — Chains of the Forge
-**Type:** Map
-
-Effects:
-- Ballista and siege-defense towers deal +30% damage to Siege enemies.
-- Their attack speed is -8%.
-
-### 19. Artemis — Crescent of the Hunt
-**Type:** Map
-
-Effects:
-- Towers gain +20% damage against enemies farther than 70% of their maximum range.
-- Minimum-range enemies receive no bonus.
-
-### 20. Dionysus — Cup of Divine Madness
-**Type:** Map
-
-At the start of each wave, one random blessing is activated:
-- +20% tower attack speed;
-- +25% hero damage;
-- +20% gold rewards;
-- +25% slow effectiveness;
-- +15% tower range.
-
-One minor random drawback is also applied.
-
-Design purpose: controlled chaos and replayability.
-
----
-
-## MAP VI — THE HORSE
-
-This map is less combat-heavy, so artifacts modify scouting, information, preparation, and what carries into the final battle.
-
-### 21. Hermes — Caduceus
-**Type:** Campaign / Final-map carryover
-
-Effects:
-- Scouting actions complete faster.
-- One additional warning about an internal breach is revealed before Chapter VII.
-- Hector movement speed +10% in the finale.
-
-### 22. Athena — Thread of Strategy
-**Type:** Final-map carryover
-
-Effects:
-- Player sees two possible internal Greek spawn zones before entering Troy Burns.
-- Receives two free build relocations during the finale.
-
-### 23. Hecate — Torch of the Crossroads
-**Type:** Final-map carryover
-
-Effects:
-- Hidden / alternate routes are visible earlier.
-- The first newly opened enemy route in Chapter VII is delayed by 20 sec.
-
-### 24. Tyche — Fortune's Coin
-**Type:** Final-map carryover
-
-Before Chapter VII, flip the coin and receive one large random benefit:
-- +25% starting gold;
-- +20% gate HP;
-- +20% tower damage for first 5 min;
-- +30% Command Points;
-- one free high-tier tower.
-
-No negative result; uncertainty is the cost.
-
----
-
-## MAP VII — TROY BURNS
-
-The final divine choice happens immediately before the last survival map.
-These blessings are intentionally dramatic and do not need to remain balanced for future chapters.
-
-### 25. Zeus — Last Thunder of Olympus
-**Type:** Final Map
-
-Effects:
-- Three manual lightning strikes for the entire finale.
-- Each strike deals massive AoE damage.
-- Boss / Hero enemies receive reduced but significant damage.
-
-### 26. Hades — Pact of the Fallen
-**Type:** Final Map
-
-Effects:
-- Every 20 Trojan deaths summon a temporary Fallen Guard squad.
-- Fallen troops disappear after a short duration.
-
-Theme: the dead of Troy rise for one final defense.
-
-### 27. Nike — Wings of the Last Stand
-**Type:** Final Map
-
-Effects:
-- For every 3 minutes survived, all defenses gain +5% damage and +5% attack speed.
-- Stacks until the end of the battle.
-
-Theme: the closer Troy comes to destruction, the stronger its defenders fight.
-
-### 28. Aphrodite — Veil of Troy
-**Type:** Final Map
-
-Effects:
-- Civilians move +35% faster.
-- Enemies targeting civilians hesitate briefly on first contact.
-- Evacuation objective requires 15% fewer civilians to reach the safe point for minimum victory tier.
-
-Theme: protection of Troy's people rather than its walls.
-
----
-
-# 6. Artifact Duration Classes
-
-Three duration classes are required.
-
-### MAP
-Strong modifier that lasts only for the selected map.
-
-Use for dramatic effects that would become overpowered if stacked through the whole campaign.
-
-### CAMPAIGN
-Smaller permanent modifier retained after the map.
-
-Campaign artifacts stack and define the player's build over the 2-hour run.
-
-### FINAL CARRYOVER
-Acquired during The Horse and specifically modifies the Troy Burns finale.
-
-This keeps Chapter VI mechanically relevant even though it contains less traditional TD combat.
-
----
-
-# 7. Cup Logic
-
-The cups should create uncertainty without making the choice feel arbitrary.
-
-Recommended model:
-
-1. Player chooses one of four gods.
-2. Selected god determines the artifact family / gameplay archetype.
-3. Three or four cups appear.
-4. Each cup contains one valid variant from that god's available artifact pool.
-5. Player chooses one.
-6. Artifact is revealed.
-
-For the first production version, it is acceptable to use one authored artifact per god per chapter while preserving the cup reveal presentation.
-
-Later versions can add artifact variants or rarity without changing the UI flow.
-
----
-
-# 8. Rarity — Optional Later Layer
-
-Do not require rarity for MVP.
-
-If added later:
-
-- Bronze — common / clean stat modifier;
-- Silver — stronger tactical modifier;
-- Gold — major rule-changing modifier;
-- Divine — rare campaign-defining modifier.
-
-The visual material of the cup can hint at rarity without revealing the exact effect.
-
----
-
-# 9. UI / Presentation
-
-The god-selection sequence should feel like a reward ceremony, not a shop menu.
-
-Recommended sequence duration: **20–35 seconds** if the player makes decisions quickly.
-
-### Screen A — Choose Your Patron
-
-Four monumental god representations.
-
-Each card shows:
-- god name;
-- symbol;
-- 2–3-word gameplay identity;
-- no exact artifact stats.
+## Screen C — ARTIFACT REVEAL
 
 Example:
 
-`ATHENA — DEFENSE / TACTICS`
+**HELM OF WAR**
 
-### Screen B — The Altar
+`Hector +25% damage vs Elite / Hero`
+`Hector receives +5% damage`
 
-After choosing Athena, the other gods fade away.
-
-An altar appears with cups.
-
-Text:
-
-**ATHENA HAS HEARD YOUR PRAYER**
-
-**CHOOSE YOUR CUP**
-
-### Screen C — Reveal
-
-Cup opens in divine light.
-
-Large artifact presentation:
-
-**AEGIS FRAGMENT**
-
-`Gate HP +25%`
-`Trojan Guard resistance +15%`
-
-Badge:
-
-`THIS MAP`
+`ARES — CARD 2/7`
 
 Button:
 
 **ACCEPT THE GIFT**
 
----
+## Screen D — EQUIP DIVINE MAGIC
 
-# 10. Campaign Save Data
+Before battle:
 
-Save the following:
+Display unlocked magics and available equipment slots.
 
-```text
-DivineRunState
-  currentPatronGod
-  currentMapArtifact
-  collectedCampaignArtifacts[]
-  discoveredArtifacts[]
-  finalCarryoverArtifact
-  godSelectionHistory[]
-```
+Example:
 
-`discoveredArtifacts[]` allows an artifact codex / collection screen later.
+`DIVINE MAGIC — 2 / 3 EQUIPPED`
+
+This should be fast and optional after the player has already saved a preferred loadout.
 
 ---
 
-# 11. Artifact Codex
-
-The game should eventually have an **Artifacts of Olympus** collection page.
-
-28 slots are displayed.
-
-Before discovery:
-- silhouette;
-- `???`;
-- associated god may remain hidden.
-
-After discovery:
-- 3D object / illustration;
-- name;
-- god;
-- mythology note;
-- gameplay effect;
-- number of times selected.
-
-This gives a completion goal beyond finishing the 2-hour campaign once.
-
----
-
-# 12. Balance Principles
-
-1. No artifact should make one tower optimal for every situation.
-2. Permanent campaign bonuses should generally be weaker than map-only bonuses.
-3. Strong bonuses may have a meaningful drawback.
-4. Artifacts should change decisions, not only increase numbers.
-5. The player must be able to win without receiving a specific artifact.
-6. The final-map artifacts may intentionally be spectacular and stronger because there is no later economy to break.
-7. Repeating the campaign should produce noticeably different builds.
-
----
-
-# 13. Integration with the 7-Map Campaign
-
-Campaign flow becomes:
+# 14. Campaign Flow
 
 ```text
 INTRO
   ↓
-DIVINE CHOICE #1 — 4 gods / cups
+CHOOSE PATRON GOD
   ↓
-MAP I — THE LANDING
+CHOOSE 1 OF THAT GOD'S 7 ARTIFACT CARDS / CUPS
   ↓
-DIVINE CHOICE #2
+EQUIP DIVINE MAGIC
   ↓
-MAP II — ROAD TO TROY
+MAP I
   ↓
-DIVINE CHOICE #3
+UNLOCK NEXT MAGIC
   ↓
-MAP III — THE GATES
+CHOOSE PATRON GOD
   ↓
-DIVINE CHOICE #4
+CHOOSE ARTIFACT
   ↓
-MAP IV — HEROES OF GREECE
+MAP II
   ↓
-DIVINE CHOICE #5
-  ↓
-MAP V — THE GREAT ASSAULT
-  ↓
-DIVINE CHOICE #6
+...
   ↓
 MAP VI — THE HORSE
   ↓
-DIVINE CHOICE #7
+UNLOCK MAGIC VII — MOMENT OF FATE
+  ↓
+FINAL GOD / ARTIFACT CHOICE
+  ↓
+SELECT FINAL MAGIC LOADOUT
   ↓
 MAP VII — TROY BURNS
   ↓
 ENDING
 ```
 
-There are exactly **7 divine-choice moments** and **28 authored artifact offers** across the campaign structure.
+There are **7 artifact selections in one campaign run**, but **28 total artifact cards exist in the game**.
 
-The first one is part of the opening experience rather than an intermission, fulfilling the same system before the landing begins.
+Therefore a player cannot see every artifact in one two-hour playthrough.
+
+That is intentional and creates replay value.
+
+---
+
+# 15. Artifact Collection / Codex
+
+The meta collection screen contains four rows of seven cards:
+
+```text
+ARES      [1][2][3][4][5][6][7]
+ATHENA    [1][2][3][4][5][6][7]
+APOLLO    [1][2][3][4][5][6][7]
+POSEIDON  [1][2][3][4][5][6][7]
+```
+
+Total: **28 slots**.
+
+Undiscovered card:
+- silhouette;
+- `???`;
+- god identity remains visible because deck identity matters.
+
+Discovered card:
+- artifact illustration / 3D object;
+- name;
+- mythology note;
+- gameplay effect;
+- number of times selected;
+- best campaign result achieved with it.
+
+Below the four decks is a separate row for the seven Divine Magics.
+
+---
+
+# 16. Save Data
+
+```text
+DivineRunState
+  currentPatronGod
+  currentMapArtifact
+  collectedArtifactIds[]
+  collectedByGod
+    ares[]
+    athena[]
+    apollo[]
+    poseidon[]
+  unlockedMagicIds[]
+  equippedMagicIds[]
+  divinePower
+  godSelectionHistory[]
+
+DivineMetaProgress
+  discoveredArtifactIds[]
+  discoveredMagicIds[]
+  artifactUsageStats[]
+```
+
+---
+
+# 17. Balance Principles
+
+1. One god must represent a clear build identity.
+2. Cards inside one god's deck should synergize, not duplicate each other.
+3. Taking seven cards from one god should create a powerful thematic build, but not be mandatory.
+4. Mixed-god builds must remain viable.
+5. Campaign cards should change gameplay decisions, not only add percentages.
+6. Capstone cards may be substantially stronger, especially late in a run.
+7. Divine Magics are emergency tactical tools, not normal DPS rotation.
+8. The player must still be able to lose after obtaining strong artifacts.
+9. No single spell should erase a boss encounter.
+10. Only 7 artifact cards are obtained in a normal campaign run, so repeated runs are required to discover all 28.
+
+---
+
+# 18. Final Formula
+
+The divine progression system is:
+
+**4 GODS**
+
+×
+
+**7 ARTIFACT CARDS PER GOD**
+
+=
+
+**28 ARTIFACT CARDS**
+
++
+
+**7 ACTIVE DIVINE MAGICS**
+
++
+
+**7 MAPS / 7 DIVINE CHOICES PER RUN**
+
+This creates three layers of strategy:
+
+1. **Patron choice** — choose the build direction.
+2. **Artifact choice** — develop the run's passive build.
+3. **Magic loadout** — choose active battlefield powers.
