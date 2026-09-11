@@ -30,18 +30,19 @@ public class GameUIController : MonoBehaviour
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
         if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
 
-        statsText.text = $"GOLD  {GameManager.Instance.Money}    GATE  {GameManager.Instance.BaseHealth}";
+        statsText.text = $"GOLD  {GameManager.Instance.Money}    GATE  {GameManager.Instance.BaseHealth}    ALIVE  {EnemyRegistry.AliveCount}";
         waveText.text = $"WAVE  {GameManager.Instance.CurrentWave}/{GameManager.Instance.MaxWaves}";
 
         if (spawner != null)
         {
             string threat = spawner.NextWaveHasBoss ? "  •  MENELAUS" : spawner.NextWaveHasHeavy ? "  •  HEAVY HOPLITES" : "";
+            string target = $"  •  TARGET {Mathf.RoundToInt(spawner.TargetWaveDuration)}s";
             if (spawner.WaveActive)
-                nextWaveText.text = $"WAVE ACTIVE  •  NEXT {spawner.NextWaveEnemyCount}  •  HP x{spawner.NextWaveHpMultiplier:0.00}{threat}";
+                nextWaveText.text = $"WAVE ACTIVE  •  ALIVE {EnemyRegistry.AliveCount}{target}{threat}";
             else if (spawner.InterWaveCountdown > 0f)
-                nextWaveText.text = $"NEXT WAVE IN {Mathf.CeilToInt(spawner.InterWaveCountdown)}s  •  {spawner.NextWaveEnemyCount} enemies{threat}";
+                nextWaveText.text = $"START IN {Mathf.CeilToInt(spawner.InterWaveCountdown)}s  •  {spawner.NextWaveEnemyCount} enemies{target}{threat}";
             else
-                nextWaveText.text = $"NEXT WAVE  •  {spawner.NextWaveEnemyCount} enemies{threat}";
+                nextWaveText.text = $"READY  •  {spawner.NextWaveEnemyCount} enemies{target}{threat}";
         }
 
         Tower selected = placement != null ? placement.SelectedTower : null;
@@ -79,17 +80,17 @@ public class GameUIController : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        statsText = CreateText(canvas.transform, "Stats", new Vector2(24, -22), new Vector2(620, 48), 30, TextAnchor.UpperLeft);
+        statsText = CreateText(canvas.transform, "Stats", new Vector2(24, -22), new Vector2(760, 48), 28, TextAnchor.UpperLeft);
         waveText = CreateText(canvas.transform, "Wave", new Vector2(24, -68), new Vector2(360, 42), 24, TextAnchor.UpperLeft);
-        nextWaveText = CreateText(canvas.transform, "NextWave", new Vector2(0, -22), new Vector2(900, 48), 22, TextAnchor.UpperCenter);
+        nextWaveText = CreateText(canvas.transform, "NextWave", new Vector2(0, -22), new Vector2(1100, 48), 20, TextAnchor.UpperCenter);
         Anchor(nextWaveText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
 
         CreateBuildBar(canvas.transform);
         CreateSelectedPanel(canvas.transform);
 
-        Text help = CreateText(canvas.transform, "Help", new Vector2(-24, 24), new Vector2(640, 58), 18, TextAnchor.LowerRight);
+        Text help = CreateText(canvas.transform, "Help", new Vector2(-24, 24), new Vector2(720, 58), 18, TextAnchor.LowerRight);
         Anchor(help.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        help.text = "WASD / ARROWS — PAN   •   WHEEL — ZOOM   •   CLICK DEFENSE — SELECT";
+        help.text = "2D BALANCE GRID   •   WASD PAN   •   WHEEL ZOOM   •   GREEN CELL = BUILD";
 
         endText = CreateText(canvas.transform, "End", Vector2.zero, new Vector2(900, 180), 64, TextAnchor.MiddleCenter);
         Anchor(endText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
@@ -100,7 +101,6 @@ public class GameUIController : MonoBehaviour
     {
         GameObject panel = CreatePanel(parent, "BuildBar", new Vector2(0, 20), new Vector2(760, 105));
         Anchor(panel.GetComponent<RectTransform>(), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
-
         CreateButton(panel.transform, "ARCHER TOWER\n100 GOLD", new Vector2(-245, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.MachineGun));
         CreateButton(panel.transform, "BALLISTA\n220 GOLD", new Vector2(0, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.Cannon));
         CreateButton(panel.transform, "PRIESTS OF APOLLO\n160 GOLD", new Vector2(245, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.Slow));
@@ -112,7 +112,6 @@ public class GameUIController : MonoBehaviour
         RectTransform rt = panel.GetComponent<RectTransform>();
         Anchor(rt, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f));
         selectedPanel = rt;
-
         selectedText = CreateText(panel.transform, "SelectedInfo", new Vector2(20, -18), new Vector2(390, 105), 19, TextAnchor.UpperLeft);
         CreateButton(panel.transform, "UPGRADE", new Vector2(-105, -65), new Vector2(175, 52), () => placement?.UpgradeSelected());
         CreateButton(panel.transform, "SELL", new Vector2(105, -65), new Vector2(175, 52), () => placement?.SellSelected());
@@ -121,55 +120,27 @@ public class GameUIController : MonoBehaviour
 
     GameObject CreatePanel(Transform parent, string name, Vector2 pos, Vector2 size)
     {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        Image image = go.AddComponent<Image>();
-        image.color = new Color(0.06f, 0.08f, 0.11f, 0.88f);
-        RectTransform rt = image.rectTransform;
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        return go;
+        GameObject go = new GameObject(name); go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>(); image.color = new Color(0.06f, 0.08f, 0.11f, 0.88f);
+        RectTransform rt = image.rectTransform; rt.anchoredPosition = pos; rt.sizeDelta = size; return go;
     }
 
     void CreateButton(Transform parent, string label, Vector2 pos, Vector2 size, UnityEngine.Events.UnityAction action)
     {
-        GameObject go = new GameObject(label.Replace("\n", "_"));
-        go.transform.SetParent(parent, false);
-        Image image = go.AddComponent<Image>();
-        image.color = new Color(0.18f, 0.25f, 0.34f, 0.96f);
-        Button button = go.AddComponent<Button>();
-        button.targetGraphic = image;
-        button.onClick.AddListener(action);
-
-        RectTransform rt = image.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-
+        GameObject go = new GameObject(label.Replace("\n", "_")); go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>(); image.color = new Color(0.18f, 0.25f, 0.34f, 0.96f);
+        Button button = go.AddComponent<Button>(); button.targetGraphic = image; button.onClick.AddListener(action);
+        RectTransform rt = image.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f); rt.anchoredPosition = pos; rt.sizeDelta = size;
         Text text = CreateText(go.transform, "Label", Vector2.zero, size, 18, TextAnchor.MiddleCenter);
-        Anchor(text.rectTransform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
-        text.rectTransform.offsetMin = Vector2.zero;
-        text.rectTransform.offsetMax = Vector2.zero;
+        Anchor(text.rectTransform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f)); text.rectTransform.offsetMin = Vector2.zero; text.rectTransform.offsetMax = Vector2.zero;
     }
 
     Text CreateText(Transform parent, string name, Vector2 pos, Vector2 size, int fontSize, TextAnchor alignment)
     {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        Text t = go.AddComponent<Text>();
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        t.fontSize = fontSize;
-        t.fontStyle = FontStyle.Bold;
-        t.color = Color.white;
-        t.alignment = alignment;
-        t.text = name == "Label" ? parent.name.Replace("_", "\n") : "";
-        t.horizontalOverflow = HorizontalWrapMode.Wrap;
-        t.verticalOverflow = VerticalWrapMode.Overflow;
-        RectTransform rt = t.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        return t;
+        GameObject go = new GameObject(name); go.transform.SetParent(parent, false);
+        Text t = go.AddComponent<Text>(); t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.fontSize = fontSize; t.fontStyle = FontStyle.Bold; t.color = Color.white; t.alignment = alignment;
+        t.text = name == "Label" ? parent.name.Replace("_", "\n") : ""; t.horizontalOverflow = HorizontalWrapMode.Wrap; t.verticalOverflow = VerticalWrapMode.Overflow;
+        RectTransform rt = t.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f); rt.anchoredPosition = pos; rt.sizeDelta = size; return t;
     }
 
     void Anchor(RectTransform rt, Vector2 min, Vector2 max, Vector2 pivot)
