@@ -15,6 +15,7 @@ public class GameBootstrap : MonoBehaviour
 
         Camera cam = SetupLightingAndCamera();
         new GameObject("GameManager").AddComponent<GameManager>();
+        new GameObject("GameState").AddComponent<GameStateController>();
         new GameObject("RuntimeEffects").AddComponent<RuntimeEffects>();
         new GameObject("AncientMusic").AddComponent<AncientMusicController>();
 
