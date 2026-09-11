@@ -2,19 +2,13 @@ using UnityEngine;
 
 public static class TowerFactory
 {
-    public static int GetCost(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.Cannon: return 220;
-            case TowerType.Slow: return 160;
-            default: return 100;
-        }
-    }
+    public static int GetCost(TowerType type) => BalanceCatalog.GetTower(type).cost;
+    public static string GetDisplayName(TowerType type) => BalanceCatalog.GetTower(type).displayName;
 
     public static GameObject CreateTower(Vector3 position, TowerType type = TowerType.MachineGun, string name = null)
     {
-        GameObject root = new GameObject(name ?? type.ToString());
+        TowerData data = BalanceCatalog.GetTower(type);
+        GameObject root = new GameObject(name ?? data.displayName);
         root.transform.position = position;
 
         GameObject baseObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -36,20 +30,20 @@ public static class TowerFactory
         barrel.transform.localPosition = new Vector3(0f, 0f, type == TowerType.Cannon ? 0.8f : 0.9f);
         barrel.transform.localScale = type == TowerType.Cannon ? new Vector3(0.18f, 0.65f, 0.18f) : new Vector3(0.12f, 0.55f, 0.12f);
 
-        Color accent = type == TowerType.Cannon ? new Color(0.58f, 0.23f, 0.12f) : type == TowerType.Slow ? new Color(0.15f, 0.48f, 0.72f) : new Color(0.30f, 0.36f, 0.44f);
-        SetColor(baseObj, new Color(0.16f, 0.19f, 0.23f));
+        Color accent = type == TowerType.Cannon ? new Color(0.58f, 0.23f, 0.12f) : type == TowerType.Slow ? new Color(0.55f, 0.48f, 0.82f) : new Color(0.55f, 0.38f, 0.20f);
+        SetColor(baseObj, new Color(0.28f, 0.24f, 0.18f));
         SetColor(head, accent);
-        SetColor(barrel, type == TowerType.Slow ? new Color(0.18f, 0.72f, 0.92f) : new Color(0.10f, 0.12f, 0.14f));
+        SetColor(barrel, type == TowerType.Slow ? new Color(0.72f, 0.68f, 0.92f) : new Color(0.20f, 0.16f, 0.12f));
 
         if (type == TowerType.Slow)
         {
-            GameObject crystal = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            crystal.name = "SlowCore";
-            crystal.transform.SetParent(head.transform);
-            crystal.transform.localPosition = new Vector3(0f, 0.6f, 0f);
-            crystal.transform.localScale = Vector3.one * 0.32f;
-            Object.Destroy(crystal.GetComponent<Collider>());
-            SetColor(crystal, new Color(0.20f, 0.85f, 1f));
+            GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            orb.name = "ApolloCore";
+            orb.transform.SetParent(head.transform);
+            orb.transform.localPosition = new Vector3(0f, 0.6f, 0f);
+            orb.transform.localScale = Vector3.one * 0.32f;
+            Object.Destroy(orb.GetComponent<Collider>());
+            SetColor(orb, new Color(0.95f, 0.72f, 0.20f));
         }
 
         GameObject muzzle = new GameObject("Muzzle");
@@ -59,7 +53,7 @@ public static class TowerFactory
         Tower tower = root.AddComponent<Tower>();
         tower.head = head.transform;
         tower.muzzle = muzzle.transform;
-        tower.Configure(type, GetCost(type));
+        tower.Configure(type, data.cost);
         return root;
     }
 
