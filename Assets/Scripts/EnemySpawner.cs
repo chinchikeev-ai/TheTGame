@@ -6,14 +6,13 @@ public class EnemySpawner : MonoBehaviour
     public Transform[] spawnPoints;
     public Transform[][] paths;
     public int maxWaves = 7;
-    public float spawnInterval = 0.8f;
-    public float timeBetweenWaves = 6f;
 
     public int CurrentWave { get; private set; }
     public int NextWaveEnemyCount { get; private set; }
     public float NextWaveHpMultiplier { get; private set; } = 1f;
     public float NextWaveSpeedMultiplier { get; private set; } = 1f;
     public float InterWaveCountdown { get; private set; }
+    public float TargetWaveDuration { get; private set; }
     public bool WaveActive { get; private set; }
     public bool WaitingForManualStart { get; private set; } = true;
     public bool NextWaveHasHeavy { get; private set; }
@@ -54,18 +53,11 @@ public class EnemySpawner : MonoBehaviour
             WaitingForManualStart = true;
             GameStateController.Instance?.SetState(wave == 1 ? GameState.Preparing : GameState.BetweenWaves);
 
-            if (wave == 1)
+            InterWaveCountdown = preparedWave.preparationTime;
+            while (InterWaveCountdown > 0f && !requestStart && !GameManager.Instance.GameEnded)
             {
-                while (!requestStart && !GameManager.Instance.GameEnded) yield return null;
-            }
-            else
-            {
-                InterWaveCountdown = timeBetweenWaves;
-                while (InterWaveCountdown > 0f && !requestStart && !GameManager.Instance.GameEnded)
-                {
-                    InterWaveCountdown -= Time.deltaTime;
-                    yield return null;
-                }
+                InterWaveCountdown -= Time.deltaTime;
+                yield return null;
             }
 
             if (GameManager.Instance.GameEnded) yield break;
@@ -82,7 +74,7 @@ public class EnemySpawner : MonoBehaviour
                 bool boss = preparedWave.hasBoss && i == preparedWave.enemyCount - 1;
                 bool heavy = !boss && preparedWave.heavyEvery > 0 && i > 0 && i % preparedWave.heavyEvery == preparedWave.heavyEvery - 1;
                 SpawnEnemy(i, heavy, boss);
-                yield return new WaitForSeconds(spawnInterval);
+                yield return new WaitForSeconds(preparedWave.spawnInterval);
             }
 
             while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0)
@@ -102,6 +94,8 @@ public class EnemySpawner : MonoBehaviour
         NextWaveSpeedMultiplier = preparedWave.speedMultiplier;
         NextWaveHasHeavy = preparedWave.heavyEvery > 0;
         NextWaveHasBoss = preparedWave.hasBoss;
+        TargetWaveDuration = preparedWave.targetDuration;
+        InterWaveCountdown = preparedWave.preparationTime;
     }
 
     void SpawnEnemy(int index, bool heavy, bool boss)
