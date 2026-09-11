@@ -1,634 +1,709 @@
-# TheTroyGame — Game Design Document v0.1
+# TheTroyGame — Game Design Document v0.2
 
 ## 1. High Concept
 
 **Genre:** Story-driven Tower Defence + light tactical hero control  
 **Setting:** Trojan War  
 **Target campaign length:** ~120 minutes  
+**Campaign format:** 7 chapters / maps, 38–42 combat events total  
 **Player role:** Commander of Troy's defense  
 **Core fantasy:** Hold Troy against escalating Greek assaults, legendary heroes, siege engines, deception, and the final collapse of the city.
 
-The game is designed as a finite cinematic TD campaign rather than an endless wave mode. Every 10–22 minutes the battlefield, routes, enemy composition, objectives, and rules change.
+TheTroyGame is a finite cinematic Tower Defence campaign rather than an endless wave mode. Each chapter is a self-contained tactical story with preparation, escalation, a climax, and a transition into the next stage of the siege.
+
+The player is not expected to repeat identical wave loops for two hours. Routes, objectives, enemy composition, battlefield state, Hector's role, and defensive priorities must evolve continuously.
 
 ---
 
 ## 2. Design Pillars
 
-1. **Two-hour complete story** — beginning, escalation, climax, ending.
-2. **Constant mechanical variation** — avoid repetitive wave grinding.
-3. **Readable tactical decisions** — simple economy, clear counters, meaningful upgrades.
-4. **Hero presence** — Hector gives the player active tactical agency.
-5. **Escalation through spectacle** — larger armies, siege engines, heroes, fire, collapsing structures.
-6. **Historical-mythic tone** — recognizable Trojan War figures without requiring strict simulation.
+1. **Two-hour complete story** — clear beginning, escalation, climax, and canonical ending.
+2. **Every map is a mini-story** — preparation → escalation → crisis → climax.
+3. **Constant mechanical variation** — avoid repetitive numbered-wave grinding.
+4. **Readable tactical decisions** — simple economy, clear counters, meaningful upgrades.
+5. **Hero presence** — Hector gives the player active tactical agency beyond tower placement.
+6. **Escalation through spectacle** — larger armies, siege engines, heroes, breaches, fire, collapsing structures.
+7. **Historical-mythic tone** — recognizable Trojan War figures without strict simulation requirements.
+8. **Canonical tragedy, variable performance** — Troy falls, but the player's tactical performance meaningfully changes how the final defense unfolds and how the campaign is scored.
 
 ---
 
-## 3. Campaign Structure
+## 3. Campaign Pacing Standard
 
-| Chapter | Target Time | Target Waves | Location | Main Purpose |
+### Per-map standard
+
+Recommended target for a normal combat map:
+
+- map duration: **12–18 minutes**;
+- waves / major combat events: **5–7**;
+- normal wave duration: **60–120 seconds**;
+- preparation before first wave: **30–45 seconds**;
+- pause between waves: **15–30 seconds**;
+- boss / climax event: **150–240 seconds**.
+
+Baseline target:
+
+**~15 minutes per standard map / 6 combat events.**
+
+Typical escalation inside one map:
+
+`60 sec → 75 sec → 90 sec → 100 sec → 120 sec → 180 sec climax`
+
+Wave duration is a design target, not a fixed timer. A wave may end earlier if enemies are killed quickly, but encounter composition should be authored to land near the target duration on Strategos difficulty.
+
+### Campaign-wide standard
+
+- early maps: **10–13 min / 5 events**;
+- middle maps: **14–17 min / 6 events**;
+- major siege maps: **18–22 min / 7 events**;
+- narrative inversion map: may contain fewer traditional waves;
+- final Troy Burns map: **15–18 min**, mostly continuous survival with minimal classical pauses.
+
+Total campaign target:
+
+**38–42 explicit combat events, target 40.**
+
+Boss fights and scripted assault phases count as combat events when they replace a normal wave.
+
+---
+
+## 4. Campaign Structure
+
+| Chapter | Target time | Combat structure | Location | Main purpose |
 |---|---:|---:|---|---|
-| I. The Landing | 10–13 min | 5 | Coast | Tutorial and first defense |
-| II. Road to Troy | 13–15 min | 5–6 | Plains | Multi-route combat |
-| III. The Gates | 17–20 min | 6–7 | Troy walls | Siege gameplay |
-| IV. Heroes of Greece | 16–18 min | 6 | Outer defenses | Elite units + boss escalation |
-| V. The Great Assault | 18–22 min | 7 | Main walls | Full-system TD battle |
-| VI. The Horse | 12–15 min | 4–5 combat events | Troy / quiet phase | Narrative inversion |
-| VII. Troy Burns | 15–18 min | Survival structure | Inside city | Survival finale |
+| I. The Landing | 0–13 min | 5 events | Coast | Tutorial, basic defense, first boss |
+| II. Road to Troy | 13–28 min | 6 events | Plains | Multi-route combat and mobility |
+| III. The Gates | 28–47 min | 7 events | Troy walls | Siege engines and gate defense |
+| IV. Heroes of Greece | 47–65 min | 6 events | Outer defenses | Elite units and hero bosses |
+| V. The Great Assault | 65–86 min | 7 events | Main walls | Full-system TD siege |
+| VI. The Horse | 86–102 min | 4 events | Troy / Greek camp | Narrative inversion and decisions |
+| VII. Troy Burns | 102–120 min | 5 survival phases | Inside Troy | Continuous survival finale |
 
-Total target playtime: **115–125 minutes**.  
-Total target combat structure: **38–42 waves / major combat events**, including boss waves and scripted survival phases.
+**Total: 40 combat events / approximately 118–122 minutes.**
 
----
-
-## 4. Core Gameplay Loop
-
-1. Observe incoming routes and wave composition.
-2. Spend resources on towers, troops, and upgrades.
-3. Reposition Hector and use abilities.
-4. Counter enemy archetypes.
-5. Survive wave/event.
-6. Receive resources, unlocks, or story events.
-7. Battlefield state changes and next tactical problem begins.
+Chapter boundaries are targets. Playtest telemetry should keep total campaign median completion near two hours on Strategos difficulty.
 
 ---
 
-## 5. Resources
+## 5. Core Gameplay Loop
+
+1. Read incoming routes, enemy previews, and current objective.
+2. Spend Gold on towers, troops, repairs, and upgrades.
+3. Position or reposition Hector.
+4. Start the wave manually when ready, or allow the preparation timer to expire.
+5. Counter enemy archetypes and react to battlefield events.
+6. Survive the encounter.
+7. Receive Gold, Command Points, unlocks, and story consequences.
+8. Rebuild or reposition before the next tactical problem.
+9. Complete the chapter climax and transition to the next map/state.
+
+---
+
+## 6. Resources
 
 ### Gold
-Used for towers, upgrades, repairs, and troop deployments.
+
+Primary construction economy.
+
+Used for:
+- towers;
+- upgrades;
+- repairs;
+- Trojan Guard deployment;
+- rebuilding after route changes.
 
 Sources:
 - enemy kills;
 - wave completion;
-- bonus objective completion;
-- preserving civilians / structures;
-- boss phase rewards.
+- optional objectives;
+- preserving civilians or structures;
+- boss rewards;
+- early-wave start bonus if retained after balancing.
+
+Economy principle:
+
+The player should usually be able to correct a bad defensive layout through Sell and rebuilding, but not without cost.
 
 ### Command Points
-Secondary tactical resource used for:
+
+Secondary tactical resource.
+
+Used for:
 - Hector abilities;
 - temporary troop deployment;
 - emergency repairs;
 - battlefield commands.
 
-Command Points regenerate slowly and through combat milestones.
+Command Points regenerate slowly and through combat milestones. They should not duplicate Gold's purpose.
 
 ---
 
-## 6. Towers and Defensive Units
+## 7. Towers and Defensive Units
 
-### 6.1 Archer Tower
+### 7.1 Archer Tower
+
 **Role:** Basic DPS / anti-light infantry  
 **Strengths:** Cheap, fast, reliable  
-**Weaknesses:** Armor
+**Weaknesses:** Armor and heavy units
 
-Upgrade paths:
-- Reinforced Bow — damage
-- Eagle Eye — range
-- Fire Arrows — damage over time
-- Twin Archers — attack speed / multi-shot
+Core progression:
+- Level 1 — standard archers;
+- Level 2 — Reinforced Bow;
+- Level 3 — Eagle Eye / improved attack speed;
+- Specialization — Fire Arrows or Twin Archers.
 
-### 6.2 Ballista
-**Role:** Heavy single-target damage  
-**Strengths:** Armor, siege units, bosses  
-**Weaknesses:** Slow firing, poor swarm control
+### 7.2 Ballista
 
-Upgrade paths:
-- Heavy Bolt
-- Piercing Bolt
-- Reinforced Winch
-- Siege Breaker
+**Role:** Heavy single-target / anti-armor / anti-siege  
+**Strengths:** Heavy Hoplites, siege engines, bosses  
+**Weaknesses:** Slow firing, weak swarm control
 
-### 6.3 Spear Throwers
-**Role:** Medium-range anti-heavy infantry  
-**Strengths:** Hoplites, shield units  
-**Weaknesses:** Fast swarms
+Core progression:
+- Heavy Bolt;
+- Piercing Bolt;
+- Reinforced Winch;
+- specialization into Siege Breaker or multi-target piercing.
 
-Upgrade paths:
-- Barbed Spears
-- Heavy Javelin
-- Volley
-- Veteran Crew
+### 7.3 Priests of Apollo
 
-### 6.4 Fire Tower
-**Role:** Area denial / AoE  
-**Strengths:** Dense infantry groups  
-**Weaknesses:** Expensive, weaker vs isolated targets
-
-Upgrade paths:
-- Burning Pitch
-- Wider Burn Zone
-- Longer Burn
-- Greek Fire Prototype
-
-### 6.5 Priests of Apollo
-**Role:** Slow / debuff support  
-**Strengths:** Crowd control  
+**Role:** Crowd-control support  
+**Strengths:** Slowing and weakening dangerous groups  
 **Weaknesses:** Low direct damage
 
-Effects:
+Effects by progression:
 - movement slow;
+- increased slow duration;
 - armor reduction;
-- temporary fear / disruption at high tier.
+- high-tier fear/disruption specialization.
 
-### 6.6 Trojan Guard
-**Role:** Road blocking melee unit  
-**Strengths:** Stops enemies, creates kill zones  
-**Weaknesses:** Can die and requires redeployment
+### 7.4 Spear Throwers
 
-Upgrade paths:
-- Larger squad
-- Shield Wall
-- Veteran Guard
-- Royal Guard
+Unlocked after the vertical slice.
 
----
+**Role:** Medium-range anti-heavy infantry.
 
-## 7. Upgrade / Sell Rules
+### 7.5 Fire Tower
 
-Each defensive unit has 3 core levels plus one specialization decision.
+Unlocked in siege progression.
 
-Example:
-- Level 1: basic unit
-- Level 2: +damage / effectiveness
-- Level 3: strong specialization
-- Level 4: branch A or B
+**Role:** Area denial / damage over time.
 
-Sell returns **60–75%** of invested gold depending on difficulty and upgrade tier.
+### 7.6 Trojan Guard
 
-The player should be encouraged to rebuild strategy when routes change.
+Deployable blocking squad rather than a classic tower.
+
+**Role:** Stop enemies temporarily and create kill zones.
 
 ---
 
-## 8. Hector — Player-Controlled Hero
+## 8. Upgrade / Sell Rules
 
-Hector exists physically on the battlefield and can be moved between predefined tactical nodes or freely navigated depending on final control design.
+Production target:
+
+- Levels 1–3 are the universal upgrade ladder;
+- after Level 3, selected towers may receive one specialization choice;
+- specialization is a campaign feature, not required for the first vertical slice.
+
+Sell refund target:
+
+- standard difficulty: approximately **65%** of invested Gold;
+- Story may refund more;
+- Legendary may refund less.
+
+Route changes are intentional. Sell exists so the game can demand tactical rebuilding without permanently punishing the player for information they could not know in advance.
+
+---
+
+## 9. Hector — Player-Controlled Hero
+
+Hector exists physically on the battlefield.
+
+Initial control design:
+- selectable hero;
+- movement between tactical nodes or direct ground movement;
+- automatic basic melee attack when enemies are in range.
 
 ### Basic attack
-Melee spear attack with moderate damage.
 
-### Ability 1 — Shield Wall
-Creates a temporary defensive line.
+Spear melee attack with moderate single-target damage.
 
-Effects:
-- blocks enemies;
-- reduces incoming damage;
-- protects nearby Trojan Guard.
+### Ability 1 — War Cry
 
-### Ability 2 — War Cry
-Buffs nearby defenses.
+Recommended as the first vertical-slice ability because it directly interacts with the existing tower system.
 
-Suggested values:
-- +30% attack speed
-- +15% damage
-- duration: 10 sec
+Suggested effect:
+- nearby towers +30% attack speed;
+- nearby Trojan units +15% damage;
+- duration: ~10 sec.
+
+### Ability 2 — Shield Wall
+
+Creates a temporary blocking/defensive line.
 
 ### Ability 3 — Spear Throw
-High single-target burst damage.
 
-Effective against:
-- captains;
-- siege crew;
-- weakened bosses.
+High single-target burst damage against captains, siege crews, and bosses.
 
 ### Ultimate — For Troy!
-Duration: ~10 seconds.
 
-Effects:
-- towers attack faster;
-- Trojan troops gain damage resistance;
-- enemies are slightly slowed;
-- strong audio/visual feedback.
+~10 sec battlefield-wide power spike:
+- faster tower attacks;
+- Trojan damage resistance;
+- slight enemy slow;
+- strong audiovisual feedback.
 
 ---
 
-## 9. Enemy Roster
+## 10. Enemy Roster
 
 ### Basic
-- Greek Infantry
-- Archer
-- Spearman
-- Light Swordsman
+- Greek Infantry;
+- Archer;
+- Spearman;
+- Light Swordsman.
 
 ### Defensive / Heavy
-- Shield Bearer
-- Hoplite
-- Heavy Hoplite
-- Myrmidon
+- Shield Bearer;
+- Hoplite;
+- Heavy Hoplite;
+- Myrmidon.
 
 ### Fast
-- Scout
-- Runner
-- Chariot
+- Scout;
+- Runner;
+- Chariot.
 
 ### Siege
-- Ram Crew
-- Battering Ram
-- Siege Tower
-- Sapper
+- Ram Crew;
+- Battering Ram;
+- Siege Tower;
+- Sapper.
 
 ### Elite
-- Myrmidon Veteran
-- Greek Captain
-- Royal Guard
-- Hero Companion
+- Myrmidon Veteran;
+- Greek Captain;
+- Hero Companion.
+
+Enemy introduction rule:
+
+A new enemy archetype should first appear in a readable encounter, then be combined with other archetypes later. Do not introduce multiple unfamiliar counters simultaneously unless it is a deliberate late-game stress event.
 
 ---
 
-## 10. Bosses
+## 11. Bosses
 
-### Menelaus
-**Chapter:** I or II  
-**Mechanic:** Commander aura
+### Menelaus — Chapter I climax
 
-Effects:
+**Mechanic:** Commander Aura.
+
 - buffs nearby Greek troops;
-- periodically calls reinforcements.
-
-Counterplay: isolate and burst him.
-
-### Ajax
-**Chapter:** IV  
-**Mechanic:** Massive frontal defense
-
-Effects:
-- extreme HP;
-- frontal damage reduction;
-- shield stance.
+- periodically calls reinforcements;
+- designed as the player's first lesson that a boss changes surrounding combat, not only HP quantity.
 
 Counterplay:
-- crossfire;
-- fire damage;
-- Hector engagement.
+- isolate;
+- Ballista focus;
+- Hector burst when available.
 
-### Odysseus
-**Chapter:** VI/VII  
-**Mechanic:** Disruption and deception
+### Ajax — Chapter IV
 
-Effects:
-- changes enemy route;
-- temporarily disables a tower;
-- creates fake attack indicators;
-- opens interior access points.
+**Mechanic:** Frontal defense.
 
-### Achilles
-**Chapter:** IV/V  
-**Mechanic:** Fast elite hero
+- extreme durability;
+- frontal damage reduction;
+- shield stance;
+- vulnerable to crossfire, fire, and Hector engagement.
 
-Effects:
-- high movement speed;
-- rapidly kills blocking units;
-- temporary near-invulnerability phases;
-- requires a vulnerability trigger before burst phase.
+### Achilles — Chapter IV climax / Chapter V narrative consequence
 
-The vulnerability should be presented cinematically rather than as a literal target-the-heel gimmick.
+**Mechanic:** Fast elite hero.
 
----
+- high speed;
+- destroys blocking units quickly;
+- near-invulnerability phases;
+- vulnerability window triggered by encounter state.
 
-## 11. Chapter Breakdown
+The vulnerability should be staged cinematically rather than implemented as a literal heel-click gimmick.
 
-# Chapter I — The Landing
-**Duration:** 10–13 min
+### Odysseus — Chapter VII tactical boss
 
-Map:
-- coast;
-- two enemy routes;
-- simple build zones.
+**Mechanic:** Disruption and deception.
 
-Introduces:
-- placement;
-- upgrades;
-- sell;
-- Hector movement;
-- first ability.
-
-Enemies:
-- infantry;
-- archers;
-- light spear units.
-
-Final event:
-- Menelaus mini-boss.
-
-Target waves: **5**.
+- route changes;
+- temporary tower disable;
+- false attack indicators;
+- interior breach activation.
 
 ---
 
-# Chapter II — Road to Troy
-**Duration:** 13–15 min
+## 12. Chapter Breakdown
 
-Map:
-- wider plains;
-- 3 possible routes;
-- chokepoints.
+### Chapter I — The Landing
+
+**Target duration:** 11–13 min  
+**Combat events:** 5  
+**Location:** Trojan coast
+
+Purpose:
+- teach build points;
+- Archer Tower;
+- Upgrade / Sell;
+- Start Wave;
+- first use of Hector;
+- introduce two converging routes.
+
+Suggested structure:
+
+1. **Landing Party** — ~60 sec — basic infantry, one route emphasized.
+2. **Second Beachhead** — ~75 sec — both routes active.
+3. **Shield Line** — ~90 sec — first Heavy Hoplite introduction.
+4. **Greek Push** — ~110 sec — mixed formation and lane pressure.
+5. **Menelaus** — ~180 sec — boss + Commander Aura reinforcements.
+
+Preparation gaps: 15–25 sec after the opening tutorial setup.
+
+Chapter reward:
+- Ballista unlocked permanently.
+
+---
+
+### Chapter II — Road to Troy
+
+**Target duration:** 14–16 min  
+**Combat events:** 6  
+**Location:** Plains and road network
 
 Introduces:
-- Ballista;
-- shield enemies;
+- 3 possible approach lanes;
 - Chariots;
-- changing lane priority.
+- shield formations;
+- changing lane priority;
+- larger build area.
 
-Target waves: **5–6**.
+Suggested escalation:
 
-Final pressure event:
-- split assault on two lanes.
+1. scouts and infantry — 60 sec;
+2. fast lane pressure — 75 sec;
+3. shield formation — 90 sec;
+4. chariot attack — 100 sec;
+5. split assault — 120 sec;
+6. captain-led multi-route climax — 160–180 sec.
+
+Chapter objective:
+- stop Greek forces from reaching the road into Troy.
 
 ---
 
-# Chapter III — The Gates
-**Duration:** 17–20 min
+### Chapter III — The Gates
 
-Map:
-- Trojan walls;
-- main gate;
-- wall tower slots;
-- siege approach routes.
+**Target duration:** 18–20 min  
+**Combat events:** 7  
+**Location:** Main Trojan gate and walls
 
 Introduces:
+- gate HP as a distinct objective;
 - Battering Ram;
 - Siege Tower;
 - Spear Throwers;
-- repair mechanic.
+- repairs;
+- wall build positions.
 
-Objective layer:
-- protect the gate HP;
-- destroy siege engines before breach.
+Suggested structure:
 
-Target waves: **6–7**.
+1. infantry probe — 60 sec;
+2. first ram — 80 sec;
+3. shield escort — 90 sec;
+4. dual siege pressure — 105 sec;
+5. siege tower — 120 sec;
+6. temporary breach — 120–150 sec;
+7. emergency gate defense climax — 180–210 sec.
 
-Final event:
-- temporary breach and emergency defense.
+This is the first large siege map.
 
 ---
 
-# Chapter IV — Heroes of Greece
-**Duration:** 16–18 min
+### Chapter IV — Heroes of Greece
 
-Map:
-- outer defenses / damaged battlefield.
+**Target duration:** 17–19 min  
+**Combat events:** 6  
+**Location:** Damaged outer defenses
 
 Introduces:
 - Myrmidons;
 - elite captains;
-- Priests of Apollo;
-- stronger hero usage.
+- Priests of Apollo advanced utility;
+- stronger Hector usage.
 
-Bosses:
-- Ajax;
-- Achilles.
+Structure:
 
-Target structure:
-- 3 normal waves;
-- Ajax phase;
-- recovery;
-- Myrmidon assault;
-- Achilles boss fight.
+1. elite infantry test — ~75 sec;
+2. Myrmidon wave — ~90 sec;
+3. Ajax encounter — ~150 sec;
+4. short recovery assault — ~75 sec;
+5. combined elite push — ~110 sec;
+6. Achilles encounter — ~180–220 sec.
 
-Target combat events: **6**.
+This chapter should feel character-driven rather than like a normal sequence of anonymous waves.
 
 ---
 
-# Chapter V — The Great Assault
-**Duration:** 18–22 min
+### Chapter V — The Great Assault
 
-Map:
-- main walls at maximum pressure.
+**Target duration:** 20–22 min  
+**Combat events:** 7  
+**Location:** Main walls under maximum pressure
 
-All tower types unlocked.
+All core defensive systems are available.
 
-Enemies:
-- mixed infantry;
-- heavy units;
+Enemy mix:
+- infantry;
+- Heavy Hoplites;
+- Myrmidons;
+- Chariots;
 - siege engines;
-- captains;
-- elite formations.
+- captains.
 
-Dynamic events:
+Dynamic battlefield events:
 - wall segment disabled;
-- route temporarily opens;
-- reinforcement arrival;
-- fire hazard.
+- temporary route opens;
+- Trojan reinforcements arrive;
+- fire hazard appears;
+- one build position may be destroyed.
 
-This chapter should be the strongest traditional Tower Defence section.
+Encounter durations should escalate from ~75 sec to a final **3–4 minute** siege climax.
 
-Target waves: **7**.
+This is the strongest traditional Tower Defence chapter in the campaign.
 
 ---
 
-# Chapter VI — The Horse
-**Duration:** 12–15 min
+### Chapter VI — The Horse
 
-Purpose: pacing reset and narrative inversion.
+**Target duration:** 14–16 min  
+**Combat events:** 4, mixed with narrative/scouting  
+**Location:** Troy exterior, abandoned Greek camp, city gate
+
+Purpose:
+- reset pacing after the Great Assault;
+- create uncertainty;
+- convert player choices into modifiers for the finale.
 
 Sequence:
-1. Greek pressure suddenly decreases.
-2. Enemy camps appear abandoned.
-3. Ships appear to depart.
-4. Player receives limited scouting objectives.
-5. Trojan Horse discovered.
-6. Narrative decision sequence.
-7. Transition to night.
 
-Possible decisions:
+1. final scattered Greek retreat skirmish;
+2. scouting objective;
+3. suspicious/false alarm combat event;
+4. Trojan Horse discovery and guard allocation event.
+
+Narrative choices:
 - reinforce walls;
 - strengthen inner city;
-- inspect horse;
+- inspect the Horse;
 - allocate guards;
-- preserve resources.
+- stockpile Gold / pitch.
 
-The historical outcome remains the fall of Troy, but player decisions modify final chapter advantages and disadvantages.
+The historical outcome remains fixed: Troy ultimately falls.
 
-Target combat structure: **4–5 short combat events**, separated by narrative/scouting beats rather than normal TD pauses.
+Player decisions modify:
+- starting Gold in Chapter VII;
+- internal enemy spawn delay;
+- number of surviving build nodes;
+- civilian evacuation time;
+- initial Hector/Guard position.
+
+This chapter intentionally does **not** follow the standard six-wave structure.
 
 ---
 
-# Chapter VII — Troy Burns
-**Duration:** 15–18 min
+### Chapter VII — Troy Burns
 
-Map:
-- city interior;
-- streets;
-- palace route;
-- evacuation route;
-- Trojan Horse spawn zone;
-- dynamically opening paths.
+**Target duration:** 16–18 min  
+**Combat structure:** 5 continuous survival phases  
+**Location:** City interior
 
 Core twist:
-Enemies do not only enter from the map edge. They spawn from internal breach points.
 
-Events:
+Enemies spawn from internal breach points rather than only from map edges.
+
+Classical between-wave pauses are mostly removed. Short 5–15 sec breathing windows may occur after scripted milestones.
+
+Survival phases:
+
+1. **The Horse Opens** — internal Greek spawn begins.
+2. **Streets Lost** — new routes open, buildings burn.
+3. **Evacuation** — player must protect civilians moving through the city.
+4. **Odysseus** — tactical disruption encounter.
+5. **Troy Burns** — 3–4 minute final survival climax.
+
+Dynamic events:
 - buildings catch fire;
 - streets become blocked;
-- new passages open;
-- some defenses are destroyed;
-- civilians must be evacuated;
-- alarms / combat audio intensify.
+- alternate passages open;
+- defenses are destroyed;
+- alarms and battle ambience intensify;
+- Hector is increasingly required away from optimal tower positions.
 
-Boss:
-- Odysseus as tactical disruption encounter.
+Final objective:
 
-Final objective options:
-- Hold the palace gate;
-- Protect evacuation route;
-- Survive until evacuation completes.
+**Hold long enough for evacuation to complete.**
 
-Recommended final duration:
-- **15–18 minutes**, almost continuous survival rather than normal wave/pause cadence.
+Troy cannot be permanently saved. Success is defined by what survives and how long the player holds.
 
-Ending:
-- Troy falls;
-- result screen based on civilians saved, structures preserved, heroes defeated, gold efficiency, and final defense duration.
+Ending sequence:
+
+**TROЯ / TROY BURNS**
+
+- walls and buildings burn;
+- surviving civilians leave the city;
+- player control fades into cinematic framing;
+- final campaign results appear.
+
+Final scoring:
+- civilians saved;
+- gate integrity before breach;
+- total leaks;
+- towers lost;
+- Gold efficiency;
+- bosses defeated;
+- optional objectives;
+- final survival duration.
 
 ---
 
-## 12. Narrative Choice System
+## 13. Narrative Choice System
 
-Choices should influence mechanics without creating an impossible branching-content burden.
-
-Examples:
+Choices influence mechanics without creating an expensive branching campaign.
 
 ### Strengthen Walls
+
 Benefit:
-- +gate HP
-- cheaper repairs
+- more gate HP;
+- cheaper repairs.
 
 Cost:
-- fewer starting units inside city
+- fewer starting units inside Troy.
 
 ### Train More Guards
+
 Benefit:
-- stronger Trojan Guard
+- stronger Trojan Guard.
 
 Cost:
-- less gold for towers
+- less starting Gold for towers.
 
 ### Stockpile Pitch
+
 Benefit:
-- Fire Tower bonuses
+- Fire Tower bonuses;
+- more effective fire zones.
 
 Cost:
-- reduced economy
+- reduced general economy.
 
 ### Inspect the Horse
+
 Benefit:
-- delayed internal Greek spawn in Chapter VII
+- delays first internal Greek spawn in Chapter VII.
 
-But:
-- cannot prevent the canonical fall entirely.
+Constraint:
+- cannot prevent the canonical fall.
 
 ---
 
-## 13. Wave Philosophy and Pacing Standard
+## 14. Wave Design Philosophy
 
-Do not build the game as dozens of nearly identical numbered waves.
+A wave exists to create a tactical question, not to fill time.
 
-Each wave should have a tactical purpose:
-- introduce enemy;
-- test counter;
-- combine counters;
+Valid purposes include:
+- introduce an enemy;
+- teach a counter;
+- test a newly unlocked tower;
 - overload one lane;
-- fake pressure;
+- split pressure between lanes;
+- fake pressure on one route;
 - introduce siege;
-- introduce elite;
-- boss setup;
-- recovery;
-- climax.
+- combine siege with escorts;
+- introduce elite units;
+- create a Hector-centric emergency;
+- prepare a boss mechanic;
+- provide a short recovery event;
+- deliver the chapter climax.
 
-### Campaign pacing standard
+Campaign target:
 
-- **Normal map duration:** 12–18 minutes.
-- **Waves per normal map:** 5–7.
-- **Normal wave duration:** 60–120 seconds.
-- **Pause between waves:** 15–30 seconds.
-- **Boss wave:** 2–4 minutes.
-- **Default planning target:** ~15 minutes / 6 waves.
+**40 major combat events**, acceptable range **38–42**.
 
-Reference escalation for a six-wave map:
-
-| Stage | Target Time |
-|---|---:|
-| Preparation | 30–45 sec |
-| Wave 1 | ~60 sec |
-| Pause | ~20 sec |
-| Wave 2 | ~75 sec |
-| Pause | ~20 sec |
-| Wave 3 | ~90 sec |
-| Pause | ~20 sec |
-| Wave 4 | ~100 sec |
-| Pause | ~20 sec |
-| Wave 5 | ~110–120 sec |
-| Pause | ~25 sec |
-| Wave 6 / Boss | ~150–210 sec |
-
-A map should feel like a mini-story. Wave duration and pressure escalate rather than repeat a fixed cadence:
-
-`60 sec → 75 sec → 90 sec → 100 sec → 120 sec → 180 sec boss`
-
-Map pacing by campaign position:
-- early maps: **10–13 min / 5 waves**;
-- middle maps: **14–17 min / 6 waves**;
-- large siege maps: **18–22 min / 7 waves**;
-- final Troy Burns map: **15–18 min continuous survival**, with few or no classical pauses.
-
-Recommended total combat structure across the campaign: **38–42 waves / major combat events**, including boss waves and scripted phases.
+Do not force every event into a `Wave 1...Wave 7` presentation. Boss encounters, breaches, evacuation phases, and survival stages may use named events instead.
 
 ---
 
-## 14. Difficulty Modes
+## 15. Difficulty Modes
 
 ### Story
-- generous gold;
+
+- +Gold;
 - slower enemies;
-- forgiving leaks;
-- hero ability cooldown reduction.
+- lower enemy HP scaling;
+- more forgiving leaks;
+- faster Hector ability regeneration;
+- higher Sell refund.
 
 ### Strategos
-Default intended experience.
+
+Default intended experience and source of pacing targets.
 
 ### Legendary
-- reduced economy;
+
+- reduced Gold;
 - tougher siege engines;
-- fewer build refunds;
+- lower Sell refund;
 - stronger boss mechanics;
-- more aggressive route changes.
+- more aggressive route changes;
+- fewer preparation windows.
+
+Difficulty should change tactical pressure, not merely multiply HP excessively.
 
 ---
 
-## 15. UI
+## 16. UI
 
 ### Combat HUD
+
 Top:
-- gold;
+- Gold;
 - Command Points;
-- base/gate HP;
+- Gate/Base HP;
 - chapter objective;
-- wave status / countdown.
+- current event / wave;
+- next-wave preview and countdown.
 
 Bottom:
-- tower selection panel;
+- tower selection;
 - selected tower details;
 - Upgrade;
 - Sell;
 - Hector abilities.
 
 ### Required screens
-- Main Menu
-- Continue
-- Chapter Select / Level Select
-- Settings
-- Pause
-- Victory / Chapter Complete
-- Game Over
-- Campaign Results
+
+- Main Menu;
+- Continue;
+- Chapter Select / Level Select;
+- Settings;
+- Pause;
+- Chapter Complete;
+- Game Over;
+- Campaign Results.
+
+Boss encounters require a dedicated boss health presentation.
 
 ---
 
-## 16. Controls
+## 17. Controls
 
 Target support:
 - mouse + keyboard;
 - Unity New Input System;
-- legacy compatibility where practical.
+- Legacy Input fallback where required.
 
 Core actions:
 - select build point;
@@ -639,131 +714,167 @@ Core actions:
 - sell;
 - select Hector;
 - move Hector;
-- trigger abilities;
+- use abilities;
 - pause;
-- speed control (optional).
+- Start Wave;
+- optional speed control.
+
+Gameplay systems should consume abstract input actions rather than directly depend on one Unity input backend.
 
 ---
 
-## 17. Audio / VFX Direction
+## 18. Audio / VFX Direction
 
-Visual tone:
-- warm Mediterranean daylight early;
-- dust and smoke during siege;
-- orange-red fire palette in finale;
-- monumental stone architecture;
-- readable silhouettes over realism.
+### Visual progression
 
-Required combat effects:
+- Chapters I–II: warm Mediterranean daylight;
+- Chapters III–V: dust, smoke, siege damage;
+- Chapter VI: unsettling calm transitioning to night;
+- Chapter VII: orange-red fire, smoke, collapsing Troy.
+
+Required effects:
 - projectile trails;
 - arrow impacts;
-- ballista recoil;
+- Ballista recoil;
 - fire zones;
 - shield impacts;
 - destruction particles;
 - gate damage;
 - building fire;
-- boss intro effects.
+- boss introductions.
 
-Audio:
+### Audio
+
+Core palette:
 - bows;
-- ballista tension/release;
-- impacts;
-- crowd/army ambience;
+- Ballista tension/release;
+- shield/armor impacts;
 - horns;
+- army ambience;
 - fire;
 - gate impacts;
-- hero ability stingers.
+- Hector ability stingers.
 
-Prototype can use generated/in-engine SFX without external audio dependencies.
+Music direction:
+- antique / Greek-modal atmosphere;
+- calm menu / preparation layer;
+- battle layer during waves;
+- heavier percussion / chant treatment for boss encounters;
+- strongest dramatic treatment reserved for Troy Burns.
+
+Prototype may use generated/in-engine audio. Production can replace it with authored licensed/original music and SFX later.
 
 ---
 
-## 18. Victory / Failure
+## 19. Victory / Failure
 
-Chapter failure conditions can include:
-- base/gate HP reaches 0;
+Chapter failure conditions may include:
+- Gate/Base HP reaches 0;
 - critical objective destroyed;
-- evacuation target fails.
+- evacuation requirement fails;
+- scripted survival condition not met.
 
-Final campaign scoring:
-- civilians saved;
-- gate integrity;
-- total leaks;
-- towers lost;
-- gold efficiency;
-- bosses defeated;
-- optional objectives;
-- completion time.
+Most chapters end in tactical victory even though the overall story trends toward Troy's fall.
+
+Final campaign outcome is canonical but scoring is variable.
 
 ---
 
-## 19. MVP Scope
+## 20. Vertical Slice Scope
 
-First playable slice should include:
+The first production vertical slice proves one complete TD map before campaign expansion.
+
+Required:
 - one map;
-- two converging enemy routes;
-- 7 waves;
-- Start Wave button;
-- automatic countdown;
-- Archer / Ballista / Priest or Slow equivalent;
+- 2 converging enemy routes;
+- **7 authored waves as a stress-test map**;
+- Start Wave;
+- automatic preparation countdown;
+- Archer Tower;
+- Ballista;
+- Priests of Apollo / Slow support;
 - Upgrade / Sell;
-- normal + heavy enemy;
-- one boss;
-- Hector basic movement and one ability;
-- muzzle/projectile/impact/destruction feedback;
-- basic SFX;
+- normal + Heavy enemy;
+- Menelaus or equivalent boss;
+- Hector movement and first ability;
+- projectile / muzzle / hit / destruction feedback;
+- generated SFX;
 - menu;
 - pause;
 - victory/game over;
-- New Input System + fallback input strategy.
+- New Input System + fallback strategy.
 
-The vertical slice intentionally uses the upper end of the standard wave count (7) to validate long-map pacing. Production chapters should use the campaign-specific counts defined above.
-
-This slice proves the full combat loop before building the 120-minute campaign.
+The campaign average is approximately six events per standard map. The vertical slice deliberately uses seven to validate the upper bound used by siege chapters.
 
 ---
 
-## 20. Post-MVP Roadmap
+## 21. Production Roadmap Alignment
 
-### v0.2
-- Hector full ability set
-- additional towers
-- siege enemies
-- chapter transitions
+### Foundation / Vertical Slice
 
-### v0.3
-- Chapters I–III
-- persistent campaign state
-- narrative events
+- complete TD loop;
+- data-driven TowerData / EnemyData / WaveData;
+- EnemyRegistry;
+- GameStateController;
+- two-route map;
+- 7-wave stress test;
+- Hector first playable version.
 
-### v0.4
-- bosses
-- Chapters IV–V
-- advanced route changes
+### Chapters I–III
 
-### v0.5
-- Trojan Horse chapter
-- city survival finale
-- ending and campaign score
+- tutorialized Landing chapter;
+- Road multi-route chapter;
+- full gate/siege mechanics;
+- persistent campaign state.
 
-### v1.0
-- balance pass
-- visual polish
-- sound/music
-- accessibility
-- difficulty modes
-- save system
-- optimization
+### Chapters IV–V
+
+- Ajax;
+- Achilles;
+- Myrmidons;
+- advanced route changes;
+- all core towers;
+- full Hector kit.
+
+### Chapter VI
+
+- narrative state machine;
+- Horse choices;
+- night transition;
+- campaign modifiers.
+
+### Chapter VII
+
+- internal spawns;
+- dynamic streets;
+- fire system;
+- evacuation;
+- Odysseus;
+- Troy Burns finale.
+
+### v1.0 pass
+
+- full campaign balancing against pacing telemetry;
+- visual polish;
+- authored audio replacement where appropriate;
+- accessibility;
+- difficulty tuning;
+- save system;
+- optimization;
+- QA and build validation.
 
 ---
 
-## 21. Success Criteria
+## 22. Success Criteria
 
 The design succeeds if:
-- the player understands the combat loop in under 5 minutes;
-- no 15-minute period feels mechanically identical to the previous one;
-- bosses demand different tactical responses;
-- the final 15 minutes feel structurally different from the opening 90 minutes;
-- full campaign length remains near 2 hours without filler;
-- the player feels escalating pressure and the inevitability of Troy's fall while still having meaningful tactical agency.
+- the player understands the core TD loop within 5 minutes;
+- a normal chapter feels like a 12–18 minute mini-story, not six identical waves;
+- encounter duration escalates naturally inside each map;
+- bosses require different tactical responses;
+- Hector changes tactical decisions rather than behaving like passive decoration;
+- the campaign contains roughly 40 meaningful combat events without filler;
+- Chapter VI visibly breaks the established rhythm;
+- the final 15–18 minutes feel structurally different from the preceding campaign;
+- median Strategos campaign completion remains near 120 minutes;
+- the player feels both meaningful tactical agency and the growing inevitability of Troy's fall.
