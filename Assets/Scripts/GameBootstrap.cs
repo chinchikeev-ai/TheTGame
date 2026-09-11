@@ -42,24 +42,26 @@ public class GameBootstrap : MonoBehaviour
             c.tag = "MainCamera";
         }
 
-        cam.transform.position = new Vector3(0f, 19f, -17f);
-        cam.transform.rotation = Quaternion.Euler(50f, 0f, 0f);
-        cam.fieldOfView = 56f;
+        cam.orthographic = true;
+        cam.orthographicSize = 10.5f;
+        cam.transform.position = new Vector3(0f, 30f, 0f);
+        cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        cam.backgroundColor = new Color(0.055f, 0.065f, 0.075f);
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
-        controller.xBounds = new Vector2(-11f, 11f);
-        controller.zBounds = new Vector2(-11f, 5f);
-        controller.minHeight = 12f;
-        controller.maxHeight = 26f;
+        controller.xBounds = new Vector2(-4f, 4f);
+        controller.zBounds = new Vector2(-2.5f, 2.5f);
+        controller.minOrthoSize = 7f;
+        controller.maxOrthoSize = 13f;
 
         if (FindFirstObjectByType<Light>() == null)
         {
             GameObject l = new GameObject("Directional Light");
             Light lightComp = l.AddComponent<Light>();
             lightComp.type = LightType.Directional;
-            lightComp.intensity = 1.25f;
-            l.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
+            lightComp.intensity = 1.1f;
+            l.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
         return cam;
     }
