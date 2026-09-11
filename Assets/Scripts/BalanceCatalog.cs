@@ -22,11 +22,18 @@ public static class BalanceCatalog
     {
         WaveData d = ScriptableObject.CreateInstance<WaveData>();
         d.waveNumber = wave;
-        d.enemyCount = 5 + (wave - 1) * 2 + (wave == maxWaves ? 1 : 0);
-        d.hpMultiplier = 1f + (wave - 1) * 0.32f;
-        d.speedMultiplier = 1f + (wave - 1) * 0.045f;
+        d.enemyCount = 8 + (wave - 1) * 3 + (wave == maxWaves ? 1 : 0);
+        d.hpMultiplier = 1f + (wave - 1) * 0.26f;
+        d.speedMultiplier = 1f + (wave - 1) * 0.035f;
         d.heavyEvery = wave >= 6 ? 3 : wave >= 3 ? 4 : 0;
         d.hasBoss = wave == maxWaves;
+
+        float[] target = { 60f, 75f, 90f, 100f, 110f, 120f, 180f };
+        float[] cadence = { 4.5f, 4.2f, 3.9f, 3.6f, 3.4f, 3.2f, 4.0f };
+        int index = Mathf.Clamp(wave - 1, 0, target.Length - 1);
+        d.targetDuration = target[index];
+        d.spawnInterval = cadence[index];
+        d.preparationTime = wave == 1 ? 35f : wave >= 6 ? 25f : 20f;
         return d;
     }
 
