@@ -5,12 +5,18 @@ public class Projectile : MonoBehaviour
     Enemy target;
     float damage;
     float speed;
+    float splashRadius;
+    float slowMultiplier = 1f;
+    float slowDuration;
 
-    public void Init(Enemy newTarget, float newDamage, float newSpeed)
+    public void Init(Enemy newTarget, float newDamage, float newSpeed, float newSplashRadius = 0f, float newSlowMultiplier = 1f, float newSlowDuration = 0f)
     {
         target = newTarget;
         damage = newDamage;
         speed = newSpeed;
+        splashRadius = newSplashRadius;
+        slowMultiplier = newSlowMultiplier;
+        slowDuration = newSlowDuration;
         Destroy(gameObject, 4f);
     }
 
@@ -28,12 +34,35 @@ public class Projectile : MonoBehaviour
 
         if (direction.magnitude <= move + 0.12f)
         {
-            target.TakeDamage(damage);
+            Impact(target.transform.position);
             Destroy(gameObject);
             return;
         }
 
         transform.position += direction.normalized * move;
         transform.rotation = Quaternion.LookRotation(direction.normalized);
+    }
+
+    void Impact(Vector3 point)
+    {
+        if (splashRadius > 0.01f)
+        {
+            foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+            {
+                if (enemy != null && Vector3.Distance(enemy.transform.position, point) <= splashRadius)
+                    Apply(enemy);
+            }
+        }
+        else if (target != null)
+        {
+            Apply(target);
+        }
+    }
+
+    void Apply(Enemy enemy)
+    {
+        enemy.TakeDamage(damage);
+        if (slowMultiplier < 0.999f && slowDuration > 0f)
+            enemy.ApplySlow(slowMultiplier, slowDuration);
     }
 }
