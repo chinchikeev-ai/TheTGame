@@ -3,103 +3,124 @@ using UnityEngine;
 
 public class MapBuilder : MonoBehaviour
 {
+    public const int GridWidth = 18;
+    public const int GridHeight = 12;
+    public const float CellSize = 1.5f;
+
     public Transform[][] Paths { get; private set; }
+
+    readonly HashSet<Vector2Int> roadCells = new HashSet<Vector2Int>();
+    readonly HashSet<Vector2Int> buildCells = new HashSet<Vector2Int>();
 
     public Transform[] BuildMap()
     {
-        CreateGround();
-        CreateRoadAndDecor();
+        DefineLayout();
+        CreateGrid();
         CreateBase();
         CreateBuildPoints();
         Paths = CreatePaths();
         return Paths[0];
     }
 
-    void CreateGround()
+    void DefineLayout()
     {
-        GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        ground.name = "Ground";
-        ground.transform.localScale = new Vector3(3.2f, 1f, 2.2f);
-        TowerFactory.SetColor(ground, new Color(0.11f, 0.24f, 0.14f));
-        for (int i = 0; i < 14; i++)
+        Vector2Int[] routeA = {
+            C(0,8), C(1,8), C(2,8), C(3,8), C(4,8), C(5,8),
+            C(5,7), C(5,6), C(6,6), C(7,6), C(8,6), C(9,6),
+            C(10,6), C(11,6), C(12,6), C(13,6), C(14,6), C(15,6), C(16,6)
+        };
+        Vector2Int[] routeB = {
+            C(0,3), C(1,3), C(2,3), C(3,3), C(4,3), C(5,3),
+            C(5,4), C(5,5), C(6,5), C(7,5), C(8,5), C(9,5),
+            C(10,5), C(11,5), C(12,5), C(13,5), C(13,6), C(14,6), C(15,6), C(16,6)
+        };
+        foreach (Vector2Int p in routeA) roadCells.Add(p);
+        foreach (Vector2Int p in routeB) roadCells.Add(p);
+
+        Vector2Int[] builds = {
+            C(2,6), C(3,10), C(4,6), C(6,9), C(7,7), C(8,3),
+            C(9,8), C(10,3), C(11,7), C(12,3), C(13,8), C(14,4),
+            C(15,8), C(16,4), C(7,2), C(11,9)
+        };
+        foreach (Vector2Int p in builds) buildCells.Add(p);
+    }
+
+    void CreateGrid()
+    {
+        GameObject root = new GameObject("BalanceGrid");
+        for (int y = 0; y < GridHeight; y++)
         {
-            GameObject decor = GameObject.CreatePrimitive(i % 3 == 0 ? PrimitiveType.Cylinder : PrimitiveType.Cube);
-            decor.name = "Decor";
-            float x = -13f + (i * 2.1f) % 26f;
-            float z = i % 2 == 0 ? 7.3f : -7.2f;
-            decor.transform.position = new Vector3(x, 0.35f, z);
-            decor.transform.localScale = new Vector3(0.7f, 0.7f + (i % 3) * 0.3f, 0.7f);
-            Object.Destroy(decor.GetComponent<Collider>());
-            TowerFactory.SetColor(decor, new Color(0.16f, 0.31f, 0.19f));
+            for (int x = 0; x < GridWidth; x++)
+            {
+                Vector2Int cell = C(x,y);
+                GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                tile.name = $"Cell_{x}_{y}";
+                tile.transform.SetParent(root.transform);
+                tile.transform.position = CellToWorld(cell, -0.08f);
+                tile.transform.localScale = new Vector3(CellSize * 0.94f, 0.12f, CellSize * 0.94f);
+                Object.Destroy(tile.GetComponent<Collider>());
+
+                Color color;
+                if (roadCells.Contains(cell))
+                    color = ((x + y) & 1) == 0 ? new Color(0.48f,0.39f,0.27f) : new Color(0.43f,0.35f,0.24f);
+                else
+                    color = ((x + y) & 1) == 0 ? new Color(0.19f,0.31f,0.18f) : new Color(0.16f,0.27f,0.16f);
+                TowerFactory.SetColor(tile, color);
+            }
         }
-    }
-
-    void CreateRoadAndDecor()
-    {
-        Road(new Vector3(-9.5f,0.06f,3.2f), new Vector3(7f,0.12f,1.5f));
-        Road(new Vector3(-4.2f,0.06f,2.3f), new Vector3(5f,0.12f,1.5f), -18f);
-        Road(new Vector3(-9.5f,0.06f,-3.2f), new Vector3(7f,0.12f,1.5f));
-        Road(new Vector3(-4.2f,0.06f,-2.3f), new Vector3(5f,0.12f,1.5f), 18f);
-        Road(new Vector3(0.8f,0.06f,0f), new Vector3(6.5f,0.12f,1.7f));
-        Road(new Vector3(6.0f,0.06f,-1.2f), new Vector3(6f,0.12f,1.7f), -14f);
-        Road(new Vector3(10f,0.06f,-2f), new Vector3(3f,0.12f,1.7f));
-    }
-
-    void Road(Vector3 pos, Vector3 scale, float yRot = 0f)
-    {
-        GameObject r = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        r.name = "Road";
-        r.transform.position = pos;
-        r.transform.localScale = scale;
-        r.transform.rotation = Quaternion.Euler(0f, yRot, 0f);
-        TowerFactory.SetColor(r, new Color(0.25f, 0.27f, 0.30f));
     }
 
     void CreateBase()
     {
-        GameObject root = new GameObject("Base");
-        root.transform.position = new Vector3(11.5f, 0f, -2f);
-        GameObject core = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        core.transform.SetParent(root.transform);
-        core.transform.localPosition = new Vector3(0f, 1.2f, 0f);
-        core.transform.localScale = new Vector3(2.8f, 2.4f, 3.6f);
-        TowerFactory.SetColor(core, new Color(0.16f, 0.34f, 0.60f));
-        GameObject top = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        top.transform.SetParent(root.transform);
-        top.transform.localPosition = new Vector3(0f, 2.8f, 0f);
-        top.transform.localScale = new Vector3(1.1f, 0.35f, 1.1f);
-        TowerFactory.SetColor(top, new Color(0.10f, 0.65f, 0.95f));
-    }
-
-    Transform[][] CreatePaths()
-    {
-        Vector3[] a = { new Vector3(-13f,0.8f,3.2f), new Vector3(-7f,0.8f,3.2f), new Vector3(-3.4f,0.8f,1.5f), new Vector3(0f,0.8f,0f), new Vector3(5f,0.8f,0f), new Vector3(8f,0.8f,-1.7f), new Vector3(11.5f,0.8f,-2f) };
-        Vector3[] b = { new Vector3(-13f,0.8f,-3.2f), new Vector3(-7f,0.8f,-3.2f), new Vector3(-3.4f,0.8f,-1.5f), new Vector3(0f,0.8f,0f), new Vector3(5f,0.8f,0f), new Vector3(8f,0.8f,-1.7f), new Vector3(11.5f,0.8f,-2f) };
-        return new[] { MakePath("Path_A", a), MakePath("Path_B", b) };
-    }
-
-    Transform[] MakePath(string name, Vector3[] points)
-    {
-        GameObject root = new GameObject(name);
-        List<Transform> list = new List<Transform>();
-        foreach (Vector3 p in points)
-        {
-            GameObject w = new GameObject("Waypoint");
-            w.transform.SetParent(root.transform);
-            w.transform.position = p;
-            list.Add(w.transform);
-        }
-        return list.ToArray();
+        Vector2Int baseCell = C(17,6);
+        GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        tile.name = "TroyGate";
+        tile.transform.position = CellToWorld(baseCell, 0.15f);
+        tile.transform.localScale = new Vector3(CellSize * 0.9f, 0.35f, CellSize * 0.9f);
+        TowerFactory.SetColor(tile, new Color(0.78f,0.62f,0.25f));
     }
 
     void CreateBuildPoints()
     {
-        Vector3[] pts = { new Vector3(-10f,0f,0f), new Vector3(-7f,0f,0f), new Vector3(-4f,0f,4.8f), new Vector3(-4f,0f,-4.8f), new Vector3(-1.5f,0f,3.5f), new Vector3(-1.5f,0f,-3.5f), new Vector3(2f,0f,3.2f), new Vector3(2f,0f,-3.2f), new Vector3(5f,0f,3.0f), new Vector3(5f,0f,-3.8f), new Vector3(8f,0f,2.0f), new Vector3(8f,0f,-4.6f) };
-        foreach (Vector3 p in pts)
+        foreach (Vector2Int cell in buildCells)
         {
-            GameObject root = new GameObject("BuildPoint");
-            root.transform.position = p;
+            GameObject root = new GameObject($"Build_{cell.x}_{cell.y}");
+            root.transform.position = CellToWorld(cell, 0f);
             root.AddComponent<BuildPoint>().Initialize();
         }
+    }
+
+    Transform[][] CreatePaths()
+    {
+        Vector2Int[] a = {
+            C(0,8), C(2,8), C(5,8), C(5,6), C(9,6), C(13,6), C(16,6), C(17,6)
+        };
+        Vector2Int[] b = {
+            C(0,3), C(2,3), C(5,3), C(5,5), C(9,5), C(13,5), C(13,6), C(16,6), C(17,6)
+        };
+        return new[] { MakePath("Route_A", a), MakePath("Route_B", b) };
+    }
+
+    Transform[] MakePath(string name, Vector2Int[] cells)
+    {
+        GameObject root = new GameObject(name);
+        List<Transform> points = new List<Transform>();
+        foreach (Vector2Int cell in cells)
+        {
+            GameObject waypoint = new GameObject($"WP_{cell.x}_{cell.y}");
+            waypoint.transform.SetParent(root.transform);
+            waypoint.transform.position = CellToWorld(cell, 0.55f);
+            points.Add(waypoint.transform);
+        }
+        return points.ToArray();
+    }
+
+    static Vector2Int C(int x, int y) => new Vector2Int(x,y);
+
+    public static Vector3 CellToWorld(Vector2Int cell, float height = 0f)
+    {
+        float originX = -(GridWidth - 1) * CellSize * 0.5f;
+        float originZ = -(GridHeight - 1) * CellSize * 0.5f;
+        return new Vector3(originX + cell.x * CellSize, height, originZ + cell.y * CellSize);
     }
 }
