@@ -45,7 +45,7 @@ public class Projectile : MonoBehaviour
 
         if (splashRadius > 0.01f)
         {
-            foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+            foreach (Enemy enemy in EnemyRegistry.All)
                 if (enemy != null && Vector3.Distance(enemy.transform.position, point) <= splashRadius) Apply(enemy);
         }
         else if (target != null) Apply(target);
