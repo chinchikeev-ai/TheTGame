@@ -6,9 +6,9 @@ public class BuildPoint : MonoBehaviour
     public Tower Tower { get; private set; }
 
     Renderer marker;
-    Color idleColor = new Color(0.18f, 0.65f, 0.28f, 0.65f);
-    Color hoverColor = new Color(0.35f, 1f, 0.5f, 0.95f);
-    Color occupiedColor = new Color(0.22f, 0.22f, 0.22f, 0.55f);
+    readonly Color idleColor = new Color(0.18f, 0.65f, 0.28f, 0.65f);
+    readonly Color hoverColor = new Color(0.35f, 1f, 0.5f, 0.95f);
+    readonly Color occupiedColor = new Color(0.22f, 0.22f, 0.22f, 0.55f);
 
     public void Initialize()
     {
@@ -21,16 +21,26 @@ public class BuildPoint : MonoBehaviour
         TowerFactory.SetColor(markerObj, idleColor);
     }
 
-    public bool TryBuild(int cost)
+    public bool TryBuild(TowerType type)
     {
         if (Occupied || GameManager.Instance == null) return false;
+        int cost = TowerFactory.GetCost(type);
         if (!GameManager.Instance.SpendMoney(cost)) return false;
 
-        GameObject towerObj = TowerFactory.CreateTower(transform.position + Vector3.up * 0.5f);
+        GameObject towerObj = TowerFactory.CreateTower(transform.position + Vector3.up * 0.5f, type);
         Tower = towerObj.GetComponent<Tower>();
         Occupied = Tower != null;
+        if (Tower != null) Tower.OwnerPoint = this;
         RefreshVisual();
         return Occupied;
+    }
+
+    public void ClearTower(Tower tower)
+    {
+        if (Tower != tower) return;
+        Tower = null;
+        Occupied = false;
+        RefreshVisual();
     }
 
     public void SetHovered(bool hovered)
