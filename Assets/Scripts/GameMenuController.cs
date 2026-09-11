@@ -66,8 +66,9 @@ public class GameMenuController : MonoBehaviour
 
         mainMenu = MakeScreen("MainMenu", new Color(.02f,.03f,.05f,.97f));
         AddTitle(mainMenu.transform, "THE T GAME", new Vector2(0,180), 62);
-        AddButton(mainMenu.transform, "PLAY", new Vector2(0,40), ShowLevels);
-        AddButton(mainMenu.transform, "SETTINGS", new Vector2(0,-50), ShowSettingsFromMain);
+        AddButton(mainMenu.transform, "PLAY", new Vector2(0,55), ShowLevels);
+        AddButton(mainMenu.transform, "SETTINGS", new Vector2(0,-25), ShowSettingsFromMain);
+        AddButton(mainMenu.transform, "EXIT", new Vector2(0,-105), QuitGame);
 
         levelMenu = MakeScreen("LevelSelect", new Color(.02f,.03f,.05f,.97f));
         AddTitle(levelMenu.transform, "LEVEL SELECT", new Vector2(0,190), 50);
@@ -83,11 +84,12 @@ public class GameMenuController : MonoBehaviour
         AddButton(settingsMenu.transform, "BACK", new Vector2(0,-185), BackFromSettings);
 
         pauseMenu = MakeScreen("PauseMenu", new Color(.02f,.03f,.05f,.9f));
-        AddTitle(pauseMenu.transform, "PAUSED", new Vector2(0,190), 54);
-        AddButton(pauseMenu.transform, "RESUME", new Vector2(0,70), Resume);
-        AddButton(pauseMenu.transform, "SETTINGS", new Vector2(0,-10), ShowSettingsFromPause);
-        AddButton(pauseMenu.transform, "RESTART", new Vector2(0,-90), RestartScene);
-        AddButton(pauseMenu.transform, "MAIN MENU", new Vector2(0,-170), ShowMainMenu);
+        AddTitle(pauseMenu.transform, "PAUSED", new Vector2(0,210), 54);
+        AddButton(pauseMenu.transform, "RESUME", new Vector2(0,95), Resume);
+        AddButton(pauseMenu.transform, "SETTINGS", new Vector2(0,20), ShowSettingsFromPause);
+        AddButton(pauseMenu.transform, "RESTART", new Vector2(0,-55), RestartScene);
+        AddButton(pauseMenu.transform, "MAIN MENU", new Vector2(0,-130), ShowMainMenu);
+        AddButton(pauseMenu.transform, "EXIT", new Vector2(0,-205), QuitGame);
 
         endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.92f));
         endTitle = AddTitle(endMenu.transform, "RESULT", new Vector2(0,145), 60);
@@ -133,6 +135,16 @@ public class GameMenuController : MonoBehaviour
     void BackFromSettings(){ settingsMenu.SetActive(false); if (levelStarted && paused) pauseMenu.SetActive(true); else mainMenu.SetActive(true); }
     void ShowEnd(){ Time.timeScale = 0f; paused = true; endTitle.text = GameManager.Instance.EndMessage; endMenu.SetActive(true); }
     void RestartScene(){ Time.timeScale = 1f; Scene s = SceneManager.GetActiveScene(); if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name); }
+
+    void QuitGame()
+    {
+        Time.timeScale = 1f;
+#if UNITY_EDITOR
+        Debug.Log("EXIT requested. Application.Quit() is ignored inside the Unity Editor.");
+#else
+        Application.Quit();
+#endif
+    }
 
     GameObject MakeScreen(string name, Color color)
     {
