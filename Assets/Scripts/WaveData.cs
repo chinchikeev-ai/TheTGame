@@ -9,4 +9,9 @@ public class WaveData : ScriptableObject
     public float speedMultiplier = 1f;
     public int heavyEvery;
     public bool hasBoss;
+
+    [Header("Pacing")]
+    public float preparationTime = 20f;
+    public float spawnInterval = 3f;
+    public float targetDuration = 60f;
 }
