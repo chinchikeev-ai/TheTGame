@@ -72,14 +72,11 @@ public class EnemySpawner : MonoBehaviour
             for (int i = 0; i < preparedWave.enemyCount; i++)
             {
                 bool boss = preparedWave.hasBoss && i == preparedWave.enemyCount - 1;
-                bool heavy = !boss && preparedWave.heavyEvery > 0 && i > 0 && i % preparedWave.heavyEvery == preparedWave.heavyEvery - 1;
-                SpawnEnemy(i, heavy, boss);
+                SpawnEnemy(wave, i, boss);
                 yield return new WaitForSeconds(preparedWave.spawnInterval);
             }
 
-            while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0)
-                yield return null;
-
+            while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0) yield return null;
             WaveActive = false;
         }
 
@@ -92,19 +89,20 @@ public class EnemySpawner : MonoBehaviour
         NextWaveEnemyCount = preparedWave.enemyCount;
         NextWaveHpMultiplier = preparedWave.hpMultiplier;
         NextWaveSpeedMultiplier = preparedWave.speedMultiplier;
-        NextWaveHasHeavy = preparedWave.heavyEvery > 0;
+        NextWaveHasHeavy = wave >= 3;
         NextWaveHasBoss = preparedWave.hasBoss;
         TargetWaveDuration = preparedWave.targetDuration;
         InterWaveCountdown = preparedWave.preparationTime;
     }
 
-    void SpawnEnemy(int index, bool heavy, bool boss)
+    void SpawnEnemy(int wave, int index, bool boss)
     {
         int route = paths != null && paths.Length > 1 ? index % paths.Length : 0;
         Transform[] routePath = paths[route];
-        EnemyData data = boss ? BalanceCatalog.BossEnemy : heavy ? BalanceCatalog.HeavyEnemy : BalanceCatalog.NormalEnemy;
+        EnemyData data = BalanceCatalog.GetEnemyForWave(wave, index, preparedWave.enemyCount, boss);
 
-        GameObject enemyObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        PrimitiveType primitive = data.archetype == EnemyArchetype.BatteringRam ? PrimitiveType.Cube : PrimitiveType.Capsule;
+        GameObject enemyObj = GameObject.CreatePrimitive(primitive);
         enemyObj.name = data.displayName;
         enemyObj.transform.position = routePath[0].position;
         TowerFactory.SetColor(enemyObj, data.color);
