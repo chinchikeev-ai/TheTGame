@@ -8,7 +8,7 @@
 **Player role:** Commander of Troy's defense  
 **Core fantasy:** Hold Troy against escalating Greek assaults, legendary heroes, siege engines, deception, and the final collapse of the city.
 
-The game is designed as a finite cinematic TD campaign rather than an endless wave mode. Every 15–25 minutes the battlefield, routes, enemy composition, objectives, and rules change.
+The game is designed as a finite cinematic TD campaign rather than an endless wave mode. Every 10–22 minutes the battlefield, routes, enemy composition, objectives, and rules change.
 
 ---
 
@@ -25,17 +25,18 @@ The game is designed as a finite cinematic TD campaign rather than an endless wa
 
 ## 3. Campaign Structure
 
-| Chapter | Time | Location | Main Purpose |
-|---|---:|---|---|
-| I. The Landing | 0–15 min | Coast | Tutorial and first defense |
-| II. Road to Troy | 15–30 min | Plains | Multi-route combat |
-| III. The Gates | 30–50 min | Troy walls | Siege gameplay |
-| IV. Heroes of Greece | 50–70 min | Outer defenses | Elite units + boss escalation |
-| V. The Great Assault | 70–90 min | Main walls | Full-system TD battle |
-| VI. The Horse | 90–105 min | Troy / quiet phase | Narrative inversion |
-| VII. Troy Burns | 105–120 min | Inside city | Survival finale |
+| Chapter | Target Time | Target Waves | Location | Main Purpose |
+|---|---:|---:|---|---|
+| I. The Landing | 10–13 min | 5 | Coast | Tutorial and first defense |
+| II. Road to Troy | 13–15 min | 5–6 | Plains | Multi-route combat |
+| III. The Gates | 17–20 min | 6–7 | Troy walls | Siege gameplay |
+| IV. Heroes of Greece | 16–18 min | 6 | Outer defenses | Elite units + boss escalation |
+| V. The Great Assault | 18–22 min | 7 | Main walls | Full-system TD battle |
+| VI. The Horse | 12–15 min | 4–5 combat events | Troy / quiet phase | Narrative inversion |
+| VII. Troy Burns | 15–18 min | Survival structure | Inside city | Survival finale |
 
-Total target playtime: **115–125 minutes**.
+Total target playtime: **115–125 minutes**.  
+Total target combat structure: **38–42 waves / major combat events**, including boss waves and scripted survival phases.
 
 ---
 
@@ -287,7 +288,7 @@ The vulnerability should be presented cinematically rather than as a literal tar
 ## 11. Chapter Breakdown
 
 # Chapter I — The Landing
-**Duration:** 0–15 min
+**Duration:** 10–13 min
 
 Map:
 - coast;
@@ -309,12 +310,12 @@ Enemies:
 Final event:
 - Menelaus mini-boss.
 
-Target waves: 4–5.
+Target waves: **5**.
 
 ---
 
 # Chapter II — Road to Troy
-**Duration:** 15–30 min
+**Duration:** 13–15 min
 
 Map:
 - wider plains;
@@ -327,7 +328,7 @@ Introduces:
 - Chariots;
 - changing lane priority.
 
-Target waves: 5.
+Target waves: **5–6**.
 
 Final pressure event:
 - split assault on two lanes.
@@ -335,7 +336,7 @@ Final pressure event:
 ---
 
 # Chapter III — The Gates
-**Duration:** 30–50 min
+**Duration:** 17–20 min
 
 Map:
 - Trojan walls;
@@ -353,7 +354,7 @@ Objective layer:
 - protect the gate HP;
 - destroy siege engines before breach.
 
-Target waves: 6.
+Target waves: **6–7**.
 
 Final event:
 - temporary breach and emergency defense.
@@ -361,7 +362,7 @@ Final event:
 ---
 
 # Chapter IV — Heroes of Greece
-**Duration:** 50–70 min
+**Duration:** 16–18 min
 
 Map:
 - outer defenses / damaged battlefield.
@@ -383,10 +384,12 @@ Target structure:
 - Myrmidon assault;
 - Achilles boss fight.
 
+Target combat events: **6**.
+
 ---
 
 # Chapter V — The Great Assault
-**Duration:** 70–90 min
+**Duration:** 18–22 min
 
 Map:
 - main walls at maximum pressure.
@@ -408,12 +411,12 @@ Dynamic events:
 
 This chapter should be the strongest traditional Tower Defence section.
 
-Target waves: 6–7.
+Target waves: **7**.
 
 ---
 
 # Chapter VI — The Horse
-**Duration:** 90–105 min
+**Duration:** 12–15 min
 
 Purpose: pacing reset and narrative inversion.
 
@@ -435,10 +438,12 @@ Possible decisions:
 
 The historical outcome remains the fall of Troy, but player decisions modify final chapter advantages and disadvantages.
 
+Target combat structure: **4–5 short combat events**, separated by narrative/scouting beats rather than normal TD pauses.
+
 ---
 
 # Chapter VII — Troy Burns
-**Duration:** 105–120 min
+**Duration:** 15–18 min
 
 Map:
 - city interior;
@@ -468,7 +473,7 @@ Final objective options:
 - Survive until evacuation completes.
 
 Recommended final duration:
-- 12–15 minutes continuous survival.
+- **15–18 minutes**, almost continuous survival rather than normal wave/pause cadence.
 
 Ending:
 - Troy falls;
@@ -513,7 +518,7 @@ But:
 
 ---
 
-## 13. Wave Philosophy
+## 13. Wave Philosophy and Pacing Standard
 
 Do not build the game as dozens of nearly identical numbered waves.
 
@@ -529,7 +534,43 @@ Each wave should have a tactical purpose:
 - recovery;
 - climax.
 
-Recommended total explicit combat waves across campaign: **30–35**, plus bosses and scripted events.
+### Campaign pacing standard
+
+- **Normal map duration:** 12–18 minutes.
+- **Waves per normal map:** 5–7.
+- **Normal wave duration:** 60–120 seconds.
+- **Pause between waves:** 15–30 seconds.
+- **Boss wave:** 2–4 minutes.
+- **Default planning target:** ~15 minutes / 6 waves.
+
+Reference escalation for a six-wave map:
+
+| Stage | Target Time |
+|---|---:|
+| Preparation | 30–45 sec |
+| Wave 1 | ~60 sec |
+| Pause | ~20 sec |
+| Wave 2 | ~75 sec |
+| Pause | ~20 sec |
+| Wave 3 | ~90 sec |
+| Pause | ~20 sec |
+| Wave 4 | ~100 sec |
+| Pause | ~20 sec |
+| Wave 5 | ~110–120 sec |
+| Pause | ~25 sec |
+| Wave 6 / Boss | ~150–210 sec |
+
+A map should feel like a mini-story. Wave duration and pressure escalate rather than repeat a fixed cadence:
+
+`60 sec → 75 sec → 90 sec → 100 sec → 120 sec → 180 sec boss`
+
+Map pacing by campaign position:
+- early maps: **10–13 min / 5 waves**;
+- middle maps: **14–17 min / 6 waves**;
+- large siege maps: **18–22 min / 7 waves**;
+- final Troy Burns map: **15–18 min continuous survival**, with few or no classical pauses.
+
+Recommended total combat structure across the campaign: **38–42 waves / major combat events**, including boss waves and scripted phases.
 
 ---
 
@@ -676,6 +717,8 @@ First playable slice should include:
 - pause;
 - victory/game over;
 - New Input System + fallback input strategy.
+
+The vertical slice intentionally uses the upper end of the standard wave count (7) to validate long-map pacing. Production chapters should use the campaign-specific counts defined above.
 
 This slice proves the full combat loop before building the 120-minute campaign.
 
