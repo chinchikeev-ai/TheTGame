@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -47,12 +48,19 @@ public class TowerPlacement : MonoBehaviour
         if (gameCamera == null) return;
 
         Vector2 pointer = ReadPointerPosition();
+        bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        if (overUI)
+        {
+            if (hoveredPoint != null) { hoveredPoint.SetHovered(false); hoveredPoint = null; }
+            if (SelectedTower != null) rangeIndicator.Show(SelectedTower); else rangeIndicator.Hide();
+            return;
+        }
+
         Ray ray = gameCamera.ScreenPointToRay(pointer);
         RaycastHit[] hits = Physics.RaycastAll(ray, 250f).OrderBy(h => h.distance).ToArray();
 
         BuildPoint newPoint = null;
         Tower hoveredTower = null;
-
         foreach (RaycastHit hit in hits)
         {
             if (hoveredTower == null) hoveredTower = hit.collider.GetComponentInParent<Tower>();
