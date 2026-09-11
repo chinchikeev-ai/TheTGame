@@ -17,11 +17,31 @@ public class Enemy : MonoBehaviour
     float slowMultiplier = 1f;
     float slowUntil;
 
+    void OnEnable() => EnemyRegistry.Register(this);
+    void OnDisable() => EnemyRegistry.Unregister(this);
+
     public void Init(Transform[] path, float healthMultiplier = 1f, float speedMultiplier = 1f)
     {
         waypoints = path;
         maxHealth *= healthMultiplier;
         speed *= speedMultiplier;
+        baseSpeed = speed;
+        Health = maxHealth;
+        waypointIndex = 0;
+        healthBar = gameObject.AddComponent<EnemyHealthBar>();
+    }
+
+    public void InitFromData(Transform[] path, EnemyData data, float waveHpMultiplier, float waveSpeedMultiplier)
+    {
+        waypoints = path;
+        if (data != null)
+        {
+            reward = data.reward;
+            baseDamage = data.baseDamage;
+            transform.localScale *= data.scale;
+            maxHealth *= data.hpMultiplier * waveHpMultiplier;
+            speed *= data.speedMultiplier * waveSpeedMultiplier;
+        }
         baseSpeed = speed;
         Health = maxHealth;
         waypointIndex = 0;
@@ -53,6 +73,7 @@ public class Enemy : MonoBehaviour
     {
         if (Health <= 0f) return;
         Health -= damage;
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, baseDamage > 1);
         if (healthBar != null) healthBar.Refresh();
         if (Health <= 0f) Die();
     }
@@ -74,14 +95,14 @@ public class Enemy : MonoBehaviour
     void Die()
     {
         if (GameManager.Instance != null) GameManager.Instance.AddMoney(reward);
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, name == "Boss");
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, baseDamage >= 5);
         Destroy(gameObject);
     }
 
     void ReachBase()
     {
         if (GameManager.Instance != null) GameManager.Instance.DamageBase(baseDamage);
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, name == "Boss");
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, baseDamage >= 5);
         Destroy(gameObject);
     }
 }
