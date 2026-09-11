@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
     public float speed = 2.2f;
     public int reward = 20;
     public int baseDamage = 1;
+    public EnemyArchetype Archetype { get; private set; } = EnemyArchetype.Infantry;
 
     public float Health { get; private set; }
     public float Health01 => maxHealth <= 0f ? 0f : Mathf.Clamp01(Health / maxHealth);
@@ -16,31 +17,30 @@ public class Enemy : MonoBehaviour
     float baseSpeed;
     float slowMultiplier = 1f;
     float slowUntil;
+    float armor;
+    float arrowResistance;
+    float attackRange;
+    float attackInterval = 1.5f;
+    float nextRangedAttack;
 
     void OnEnable() => EnemyRegistry.Register(this);
     void OnDisable() => EnemyRegistry.Unregister(this);
-
-    public void Init(Transform[] path, float healthMultiplier = 1f, float speedMultiplier = 1f)
-    {
-        waypoints = path;
-        maxHealth *= healthMultiplier;
-        speed *= speedMultiplier;
-        baseSpeed = speed;
-        Health = maxHealth;
-        waypointIndex = 0;
-        healthBar = gameObject.AddComponent<EnemyHealthBar>();
-    }
 
     public void InitFromData(Transform[] path, EnemyData data, float waveHpMultiplier, float waveSpeedMultiplier)
     {
         waypoints = path;
         if (data != null)
         {
+            Archetype = data.archetype;
             reward = data.reward;
             baseDamage = data.baseDamage;
             transform.localScale *= data.scale;
             maxHealth *= data.hpMultiplier * waveHpMultiplier;
             speed *= data.speedMultiplier * waveSpeedMultiplier;
+            armor = Mathf.Clamp01(data.armor);
+            arrowResistance = Mathf.Clamp01(data.arrowResistance);
+            attackRange = Mathf.Max(0f, data.attackRange);
+            attackInterval = Mathf.Max(.25f, data.attackInterval);
         }
         baseSpeed = speed;
         Health = maxHealth;
@@ -55,24 +55,48 @@ public class Enemy : MonoBehaviour
         if (Time.time >= slowUntil) slowMultiplier = 1f;
         speed = baseSpeed * slowMultiplier;
 
+        Transform finalTarget = waypoints[waypoints.Length - 1];
+        if (Archetype == EnemyArchetype.Archer && attackRange > 0f)
+        {
+            float gateDistance = Vector3.Distance(transform.position, finalTarget.position);
+            if (gateDistance <= attackRange)
+            {
+                if (Time.time >= nextRangedAttack)
+                {
+                    nextRangedAttack = Time.time + attackInterval;
+                    GameManager.Instance.DamageBase(baseDamage);
+                    if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(finalTarget.position, false);
+                }
+                return;
+            }
+        }
+
         Transform target = waypoints[waypointIndex];
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
-        if (direction.sqrMagnitude > 0.001f)
+        if (direction.sqrMagnitude > .001f)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 10f * Time.deltaTime);
         transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, target.position) < 0.15f)
+        if (Vector3.Distance(transform.position, target.position) < .15f)
         {
             waypointIndex++;
             if (waypointIndex >= waypoints.Length) ReachBase();
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage) => ApplyDamage(damage, null);
+    public void TakeDamage(float damage, TowerType sourceType) => ApplyDamage(damage, sourceType);
+
+    void ApplyDamage(float damage, TowerType? sourceType)
     {
         if (Health <= 0f) return;
-        Health -= damage;
+        float effectiveArmor = armor;
+        if (sourceType.HasValue && sourceType.Value == TowerType.Cannon) effectiveArmor *= .45f;
+        float finalDamage = damage * (1f - effectiveArmor);
+        if (sourceType.HasValue && sourceType.Value == TowerType.MachineGun)
+            finalDamage *= 1f - arrowResistance;
+        Health -= Mathf.Max(1f, finalDamage);
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, baseDamage > 1);
         if (healthBar != null) healthBar.Refresh();
         if (Health <= 0f) Die();
@@ -80,29 +104,22 @@ public class Enemy : MonoBehaviour
 
     public void ApplySlow(float multiplier, float duration)
     {
-        multiplier = Mathf.Clamp(multiplier, 0.15f, 1f);
+        multiplier = Mathf.Clamp(multiplier, .15f, 1f);
         if (multiplier < slowMultiplier || Time.time >= slowUntil) slowMultiplier = multiplier;
         slowUntil = Mathf.Max(slowUntil, Time.time + duration);
-    }
-
-    public void ConfigureElite(float scale, int newReward, int damage)
-    {
-        transform.localScale *= scale;
-        reward = newReward;
-        baseDamage = damage;
     }
 
     void Die()
     {
         if (GameManager.Instance != null) GameManager.Instance.AddMoney(reward);
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, baseDamage >= 5);
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss);
         Destroy(gameObject);
     }
 
     void ReachBase()
     {
         if (GameManager.Instance != null) GameManager.Instance.DamageBase(baseDamage);
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, baseDamage >= 5);
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss || Archetype == EnemyArchetype.BatteringRam);
         Destroy(gameObject);
     }
 }
