@@ -30,12 +30,12 @@ public class GameUIController : MonoBehaviour
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
         if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
 
-        statsText.text = $"COINS  ${GameManager.Instance.Money}    BASE  {GameManager.Instance.BaseHealth}";
+        statsText.text = $"GOLD  {GameManager.Instance.Money}    GATE  {GameManager.Instance.BaseHealth}";
         waveText.text = $"WAVE  {GameManager.Instance.CurrentWave}/{GameManager.Instance.MaxWaves}";
 
         if (spawner != null)
         {
-            string threat = spawner.NextWaveHasBoss ? "  •  BOSS" : spawner.NextWaveHasHeavy ? "  •  HEAVY" : "";
+            string threat = spawner.NextWaveHasBoss ? "  •  MENELAUS" : spawner.NextWaveHasHeavy ? "  •  HEAVY HOPLITES" : "";
             if (spawner.WaveActive)
                 nextWaveText.text = $"WAVE ACTIVE  •  NEXT {spawner.NextWaveEnemyCount}  •  HP x{spawner.NextWaveHpMultiplier:0.00}{threat}";
             else if (spawner.InterWaveCountdown > 0f)
@@ -48,8 +48,8 @@ public class GameUIController : MonoBehaviour
         selectedPanel.gameObject.SetActive(selected != null);
         if (selected != null)
         {
-            string upgrade = selected.Level >= 3 ? "MAX LEVEL" : $"UPGRADE ${selected.UpgradeCost}";
-            selectedText.text = $"{selected.Type}  •  LVL {selected.Level}/3\nDMG {selected.damage:0}   RANGE {selected.range:0.0}   RATE {selected.fireRate:0.0}/s\n{upgrade}   •   SELL ${selected.SellValue}";
+            string upgrade = selected.Level >= 3 ? "MAX LEVEL" : $"UPGRADE {selected.UpgradeCost} GOLD";
+            selectedText.text = $"{selected.DisplayName}  •  LVL {selected.Level}/3\nDMG {selected.damage:0}   RANGE {selected.range:0.0}   RATE {selected.fireRate:0.0}/s\n{upgrade}   •   SELL {selected.SellValue} GOLD";
         }
 
         endText.gameObject.SetActive(GameManager.Instance.GameEnded);
@@ -89,7 +89,7 @@ public class GameUIController : MonoBehaviour
 
         Text help = CreateText(canvas.transform, "Help", new Vector2(-24, 24), new Vector2(640, 58), 18, TextAnchor.LowerRight);
         Anchor(help.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        help.text = "WASD / ARROWS — PAN   •   WHEEL — ZOOM   •   CLICK TOWER — SELECT";
+        help.text = "WASD / ARROWS — PAN   •   WHEEL — ZOOM   •   CLICK DEFENSE — SELECT";
 
         endText = CreateText(canvas.transform, "End", Vector2.zero, new Vector2(900, 180), 64, TextAnchor.MiddleCenter);
         Anchor(endText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
@@ -101,9 +101,9 @@ public class GameUIController : MonoBehaviour
         GameObject panel = CreatePanel(parent, "BuildBar", new Vector2(0, 20), new Vector2(760, 105));
         Anchor(panel.GetComponent<RectTransform>(), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
 
-        CreateButton(panel.transform, "MACHINE GUN\n$100", new Vector2(-245, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.MachineGun));
-        CreateButton(panel.transform, "CANNON\n$220", new Vector2(0, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.Cannon));
-        CreateButton(panel.transform, "SLOW TOWER\n$160", new Vector2(245, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.Slow));
+        CreateButton(panel.transform, "ARCHER TOWER\n100 GOLD", new Vector2(-245, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.MachineGun));
+        CreateButton(panel.transform, "BALLISTA\n220 GOLD", new Vector2(0, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.Cannon));
+        CreateButton(panel.transform, "PRIESTS OF APOLLO\n160 GOLD", new Vector2(245, 0), new Vector2(220, 72), () => placement?.SelectBuildType(TowerType.Slow));
     }
 
     void CreateSelectedPanel(Transform parent)
