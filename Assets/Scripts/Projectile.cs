@@ -22,11 +22,7 @@ public class Projectile : MonoBehaviour
 
     void Update()
     {
-        if (target == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (target == null) { Destroy(gameObject); return; }
 
         Vector3 aim = target.transform.position + Vector3.up * 0.7f;
         Vector3 direction = aim - transform.position;
@@ -45,18 +41,14 @@ public class Projectile : MonoBehaviour
 
     void Impact(Vector3 point)
     {
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(point + Vector3.up * 0.4f, splashRadius > 0.01f);
+
         if (splashRadius > 0.01f)
         {
             foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
-            {
-                if (enemy != null && Vector3.Distance(enemy.transform.position, point) <= splashRadius)
-                    Apply(enemy);
-            }
+                if (enemy != null && Vector3.Distance(enemy.transform.position, point) <= splashRadius) Apply(enemy);
         }
-        else if (target != null)
-        {
-            Apply(target);
-        }
+        else if (target != null) Apply(target);
     }
 
     void Apply(Enemy enemy)

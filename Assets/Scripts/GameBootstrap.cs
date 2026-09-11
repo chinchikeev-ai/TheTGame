@@ -15,20 +15,19 @@ public class GameBootstrap : MonoBehaviour
 
         Camera cam = SetupLightingAndCamera();
         new GameObject("GameManager").AddComponent<GameManager>();
+        new GameObject("RuntimeEffects").AddComponent<RuntimeEffects>();
 
         MapBuilder mapBuilder = new GameObject("MapBuilder").AddComponent<MapBuilder>();
-        Transform[] path = mapBuilder.BuildMap();
+        mapBuilder.BuildMap();
 
-        GameObject spawnerObj = new GameObject("EnemySpawner");
-        EnemySpawner spawner = spawnerObj.AddComponent<EnemySpawner>();
-        spawner.spawnPoint = path[0];
-        spawner.waypoints = path;
+        EnemySpawner spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
+        spawner.Initialize(mapBuilder.Paths);
 
         TowerPlacement placement = new GameObject("TowerPlacement").AddComponent<TowerPlacement>();
         placement.gameCamera = cam;
 
         new GameObject("GameUI").AddComponent<GameUIController>();
-        spawner.Begin();
+        new GameObject("GameMenu").AddComponent<GameMenuController>();
     }
 
     Camera SetupLightingAndCamera()
@@ -41,26 +40,25 @@ public class GameBootstrap : MonoBehaviour
             c.tag = "MainCamera";
         }
 
-        cam.transform.position = new Vector3(0f, 17f, -15f);
-        cam.transform.rotation = Quaternion.Euler(48f, 0f, 0f);
-        cam.fieldOfView = 55f;
+        cam.transform.position = new Vector3(0f, 19f, -17f);
+        cam.transform.rotation = Quaternion.Euler(50f, 0f, 0f);
+        cam.fieldOfView = 56f;
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
-        controller.xBounds = new Vector2(-9f, 9f);
-        controller.zBounds = new Vector2(-10f, 3f);
-        controller.minHeight = 11f;
-        controller.maxHeight = 24f;
+        controller.xBounds = new Vector2(-11f, 11f);
+        controller.zBounds = new Vector2(-11f, 5f);
+        controller.minHeight = 12f;
+        controller.maxHeight = 26f;
 
         if (FindFirstObjectByType<Light>() == null)
         {
             GameObject l = new GameObject("Directional Light");
             Light lightComp = l.AddComponent<Light>();
             lightComp.type = LightType.Directional;
-            lightComp.intensity = 1.2f;
-            l.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            lightComp.intensity = 1.25f;
+            l.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
         }
-
         return cam;
     }
 }

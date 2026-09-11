@@ -32,24 +32,20 @@ public class Enemy : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
         if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length) return;
-
         if (Time.time >= slowUntil) slowMultiplier = 1f;
         speed = baseSpeed * slowMultiplier;
 
         Transform target = waypoints[waypointIndex];
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
-
         if (direction.sqrMagnitude > 0.001f)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 10f * Time.deltaTime);
-
         transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
         if (Vector3.Distance(transform.position, target.position) < 0.15f)
         {
             waypointIndex++;
-            if (waypointIndex >= waypoints.Length)
-                ReachBase();
+            if (waypointIndex >= waypoints.Length) ReachBase();
         }
     }
 
@@ -64,8 +60,7 @@ public class Enemy : MonoBehaviour
     public void ApplySlow(float multiplier, float duration)
     {
         multiplier = Mathf.Clamp(multiplier, 0.15f, 1f);
-        if (multiplier < slowMultiplier || Time.time >= slowUntil)
-            slowMultiplier = multiplier;
+        if (multiplier < slowMultiplier || Time.time >= slowUntil) slowMultiplier = multiplier;
         slowUntil = Mathf.Max(slowUntil, Time.time + duration);
     }
 
@@ -79,12 +74,14 @@ public class Enemy : MonoBehaviour
     void Die()
     {
         if (GameManager.Instance != null) GameManager.Instance.AddMoney(reward);
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, name == "Boss");
         Destroy(gameObject);
     }
 
     void ReachBase()
     {
         if (GameManager.Instance != null) GameManager.Instance.DamageBase(baseDamage);
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, name == "Boss");
         Destroy(gameObject);
     }
 }
