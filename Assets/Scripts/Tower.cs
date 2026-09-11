@@ -19,7 +19,10 @@ public class Tower : MonoBehaviour
     public Transform muzzle;
 
     float nextFireTime;
-    float sellRatio = 0.65f;
+    float sellRatio = .65f;
+    float warCryUntil;
+    float warCryDamage = 1f;
+    float warCryRate = 1f;
 
     public void Configure(TowerType type, int purchaseCost = 0)
     {
@@ -37,13 +40,13 @@ public class Tower : MonoBehaviour
         sellRatio = data.sellRatio;
     }
 
-    public int UpgradeCost => Level >= 3 ? 0 : Mathf.RoundToInt(PurchaseCost * (0.65f + Level * 0.35f));
+    public int UpgradeCost => Level >= 3 ? 0 : Mathf.RoundToInt(PurchaseCost * (.65f + Level * .35f));
     public int SellValue => Mathf.RoundToInt((PurchaseCost + TotalUpgradeInvestment()) * sellRatio);
 
     int TotalUpgradeInvestment()
     {
         if (Level <= 1) return 0;
-        int total = Mathf.RoundToInt(PurchaseCost * 1.0f);
+        int total = Mathf.RoundToInt(PurchaseCost * 1f);
         if (Level >= 3) total += Mathf.RoundToInt(PurchaseCost * 1.35f);
         return total;
     }
@@ -58,9 +61,16 @@ public class Tower : MonoBehaviour
         damage *= 1.32f;
         fireRate *= 1.12f;
         if (splashRadius > 0f) splashRadius *= 1.08f;
-        if (slowMultiplier < 1f) slowMultiplier = Mathf.Max(0.35f, slowMultiplier - 0.08f);
+        if (slowMultiplier < 1f) slowMultiplier = Mathf.Max(.35f, slowMultiplier - .08f);
         transform.localScale *= 1.06f;
         return true;
+    }
+
+    public void ApplyWarCry(float duration, float damageMultiplier = 1.15f, float rateMultiplier = 1.30f)
+    {
+        warCryUntil = Mathf.Max(warCryUntil, Time.time + duration);
+        warCryDamage = Mathf.Max(warCryDamage, damageMultiplier);
+        warCryRate = Mathf.Max(warCryRate, rateMultiplier);
     }
 
     public void Sell()
@@ -73,13 +83,14 @@ public class Tower : MonoBehaviour
     void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
+        if (Time.time >= warCryUntil) { warCryDamage = 1f; warCryRate = 1f; }
         Enemy target = FindTarget();
         if (target == null) return;
         RotateHead(target);
         if (Time.time >= nextFireTime)
         {
             Fire(target);
-            nextFireTime = Time.time + 1f / fireRate;
+            nextFireTime = Time.time + 1f / Mathf.Max(.01f, fireRate * warCryRate);
         }
     }
 
@@ -88,8 +99,7 @@ public class Tower : MonoBehaviour
         if (head == null) return;
         Vector3 dir = target.transform.position - head.position;
         dir.y = 0f;
-        if (dir.sqrMagnitude > 0.001f)
-            head.rotation = Quaternion.Slerp(head.rotation, Quaternion.LookRotation(dir), 12f * Time.deltaTime);
+        if (dir.sqrMagnitude > .001f) head.rotation = Quaternion.Slerp(head.rotation, Quaternion.LookRotation(dir), 12f * Time.deltaTime);
     }
 
     Enemy FindTarget()
@@ -112,10 +122,10 @@ public class Tower : MonoBehaviour
         GameObject projectileObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         projectileObj.name = DisplayName + " Projectile";
         projectileObj.transform.position = start;
-        projectileObj.transform.localScale = Vector3.one * (Type == TowerType.Cannon ? 0.30f : 0.18f);
+        projectileObj.transform.localScale = Vector3.one * (Type == TowerType.Cannon ? .30f : .18f);
         Destroy(projectileObj.GetComponent<Collider>());
-        TowerFactory.SetColor(projectileObj, Type == TowerType.Slow ? new Color(0.2f,0.75f,1f) : Type == TowerType.Cannon ? new Color(1f,0.35f,0.08f) : new Color(1f,0.78f,0.14f));
+        TowerFactory.SetColor(projectileObj, Type == TowerType.Slow ? new Color(.2f,.75f,1f) : Type == TowerType.Cannon ? new Color(1f,.35f,.08f) : new Color(1f,.78f,.14f));
         Projectile projectile = projectileObj.AddComponent<Projectile>();
-        projectile.Init(target, damage, projectileSpeed, splashRadius, slowMultiplier, slowDuration);
+        projectile.Init(target, damage * warCryDamage, projectileSpeed, splashRadius, slowMultiplier, slowDuration, Type);
     }
 }
