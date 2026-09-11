@@ -6,23 +6,27 @@ public class Enemy : MonoBehaviour
     public float speed = 2.2f;
     public int reward = 20;
 
-    float health;
+    public float Health { get; private set; }
+    public float Health01 => maxHealth <= 0f ? 0f : Mathf.Clamp01(Health / maxHealth);
+
     Transform[] waypoints;
     int waypointIndex;
+    EnemyHealthBar healthBar;
 
     public void Init(Transform[] path, float healthMultiplier = 1f, float speedMultiplier = 1f)
     {
         waypoints = path;
         maxHealth *= healthMultiplier;
         speed *= speedMultiplier;
-        health = maxHealth;
+        Health = maxHealth;
         waypointIndex = 0;
+        healthBar = gameObject.AddComponent<EnemyHealthBar>();
     }
 
     void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
-        if (waypoints == null || waypoints.Length == 0) return;
+        if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length) return;
 
         Transform target = waypoints[waypointIndex];
         Vector3 direction = target.position - transform.position;
@@ -43,8 +47,10 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        health -= damage;
-        if (health <= 0f) Die();
+        if (Health <= 0f) return;
+        Health -= damage;
+        if (healthBar != null) healthBar.Refresh();
+        if (Health <= 0f) Die();
     }
 
     void Die()

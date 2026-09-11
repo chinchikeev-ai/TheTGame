@@ -22,6 +22,7 @@ public class GameBootstrap : MonoBehaviour
         ground.name = "Ground";
         ground.transform.position = Vector3.zero;
         ground.transform.localScale = new Vector3(2.2f, 1f, 1.4f);
+        TowerFactory.SetColor(ground, new Color(0.18f, 0.31f, 0.18f));
 
         CreateRoad();
         CreateBase();
@@ -35,8 +36,7 @@ public class GameBootstrap : MonoBehaviour
         TowerPlacement placement = new GameObject("TowerPlacement").AddComponent<TowerPlacement>();
         placement.gameCamera = Camera.main;
 
-        // One free starter tower.
-        CreateStarterTower(new Vector3(-2f, 0.5f, -3f));
+        TowerFactory.CreateTower(new Vector3(-2f, 0.5f, -3f), "StarterTower");
         spawner.Begin();
     }
 
@@ -84,8 +84,10 @@ public class GameBootstrap : MonoBehaviour
         {
             GameObject r = GameObject.CreatePrimitive(PrimitiveType.Cube);
             r.name = "Road";
+            r.tag = "Respawn";
             r.transform.position = centers[i];
             r.transform.localScale = scales[i];
+            TowerFactory.SetColor(r, new Color(0.28f, 0.29f, 0.31f));
         }
     }
 
@@ -115,23 +117,6 @@ public class GameBootstrap : MonoBehaviour
         b.name = "Base";
         b.transform.position = new Vector3(8.5f, 1f, -2f);
         b.transform.localScale = new Vector3(2f, 2f, 3f);
-    }
-
-    void CreateStarterTower(Vector3 position)
-    {
-        GameObject root = new GameObject("StarterTower");
-        root.transform.position = position;
-
-        GameObject baseObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        baseObj.transform.SetParent(root.transform);
-        baseObj.transform.localScale = new Vector3(0.75f, 0.35f, 0.75f);
-
-        GameObject head = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        head.transform.SetParent(root.transform);
-        head.transform.localPosition = new Vector3(0f, 0.75f, 0f);
-        head.transform.localScale = new Vector3(0.6f, 0.35f, 1.25f);
-
-        Tower tower = root.AddComponent<Tower>();
-        tower.head = head.transform;
+        TowerFactory.SetColor(b, new Color(0.22f, 0.34f, 0.56f));
     }
 }

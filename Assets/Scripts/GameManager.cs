@@ -4,7 +4,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public int Money { get; private set; } = 250;
+    public int Money { get; private set; } = 300;
     public int BaseHealth { get; private set; } = 20;
     public int CurrentWave { get; set; } = 0;
     public int MaxWaves { get; set; } = 5;
@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
     public void DamageBase(int damage)
     {
         if (GameEnded) return;
-        BaseHealth -= damage;
+        BaseHealth = Mathf.Max(0, BaseHealth - damage);
         if (BaseHealth <= 0) LoseGame();
     }
 
@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour
     {
         if (GameEnded) return;
         GameEnded = true;
-        EndMessage = "YOU WIN!";
+        EndMessage = "VICTORY";
     }
 
     void LoseGame()

@@ -1,52 +1,96 @@
+using System.Linq;
 using UnityEngine;
 
 public class TowerPlacement : MonoBehaviour
 {
     public Camera gameCamera;
-    public LayerMask groundMask = ~0;
     public int towerCost = 100;
-    public float minTowerDistance = 2.5f;
+    public float minTowerDistance = 2.6f;
+    public float roadClearance = 1.35f;
+
+    GameObject ghost;
+    bool currentValid;
+    Vector3 currentPosition;
+
+    void Start()
+    {
+        ghost = TowerFactory.CreateGhost();
+        ghost.SetActive(false);
+    }
 
     void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
-        if (!Input.GetMouseButtonDown(0)) return;
+        if (GameManager.Instance == null || GameManager.Instance.GameEnded)
+        {
+            if (ghost != null) ghost.SetActive(false);
+            return;
+        }
+
         if (gameCamera == null) gameCamera = Camera.main;
+        UpdatePreview();
+
+        if (Input.GetMouseButtonDown(0) && currentValid)
+        {
+            if (GameManager.Instance.SpendMoney(towerCost))
+                TowerFactory.CreateTower(currentPosition);
+        }
+    }
+
+    void UpdatePreview()
+    {
+        if (gameCamera == null || ghost == null) return;
 
         Ray ray = gameCamera.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, 200f, groundMask)) return;
-        if (hit.collider.gameObject.name != "Ground") return;
+        RaycastHit[] hits = Physics.RaycastAll(ray, 250f).OrderBy(h => h.distance).ToArray();
+        RaycastHit? groundHit = null;
 
-        Vector3 p = hit.point;
-        p.y = 0.5f;
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider != null && hit.collider.gameObject.name == "Ground")
+            {
+                groundHit = hit;
+                break;
+            }
+        }
 
+        if (!groundHit.HasValue)
+        {
+            ghost.SetActive(false);
+            currentValid = false;
+            return;
+        }
+
+        currentPosition = groundHit.Value.point;
+        currentPosition.y = 0.5f;
+        ghost.SetActive(true);
+        ghost.transform.position = currentPosition;
+
+        currentValid = IsValidPosition(currentPosition) && GameManager.Instance.Money >= towerCost;
+        TowerFactory.SetGhostValidity(ghost, currentValid);
+    }
+
+    bool IsValidPosition(Vector3 p)
+    {
         foreach (Tower tower in FindObjectsByType<Tower>(FindObjectsSortMode.None))
         {
             if (Vector3.Distance(tower.transform.position, p) < minTowerDistance)
-                return;
+                return false;
         }
 
-        if (!GameManager.Instance.SpendMoney(towerCost)) return;
-        CreateTower(p);
-    }
+        foreach (GameObject road in GameObject.FindGameObjectsWithTag("Respawn"))
+        {
+            Collider col = road.GetComponent<Collider>();
+            if (col == null) continue;
+            Vector3 closest = col.ClosestPoint(p);
+            closest.y = p.y;
+            if (Vector3.Distance(closest, p) < roadClearance)
+                return false;
+        }
 
-    void CreateTower(Vector3 position)
-    {
-        GameObject root = new GameObject("Tower");
-        root.transform.position = position;
+        GameObject baseObj = GameObject.Find("Base");
+        if (baseObj != null && Vector3.Distance(baseObj.transform.position, p) < 2.8f)
+            return false;
 
-        GameObject baseObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        baseObj.transform.SetParent(root.transform);
-        baseObj.transform.localPosition = Vector3.zero;
-        baseObj.transform.localScale = new Vector3(0.75f, 0.35f, 0.75f);
-
-        GameObject head = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        head.name = "Head";
-        head.transform.SetParent(root.transform);
-        head.transform.localPosition = new Vector3(0f, 0.75f, 0f);
-        head.transform.localScale = new Vector3(0.6f, 0.35f, 1.25f);
-
-        Tower tower = root.AddComponent<Tower>();
-        tower.head = head.transform;
+        return true;
     }
 }

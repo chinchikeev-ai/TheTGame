@@ -28,12 +28,12 @@ public class EnemySpawner : MonoBehaviour
             GameManager.Instance.CurrentWave = wave;
 
             int count = enemiesPerWave + (wave - 1) * 2;
-            float hpMul = 1f + (wave - 1) * 0.28f;
-            float speedMul = 1f + (wave - 1) * 0.05f;
+            float hpMul = 1f + (wave - 1) * 0.32f;
+            float speedMul = 1f + (wave - 1) * 0.045f;
 
             for (int i = 0; i < count; i++)
             {
-                SpawnEnemy(hpMul, speedMul);
+                SpawnEnemy(hpMul, speedMul, wave);
                 yield return new WaitForSeconds(spawnInterval);
             }
 
@@ -48,12 +48,13 @@ public class EnemySpawner : MonoBehaviour
             GameManager.Instance.WinGame();
     }
 
-    void SpawnEnemy(float hpMul, float speedMul)
+    void SpawnEnemy(float hpMul, float speedMul, int wave)
     {
         GameObject enemyObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         enemyObj.name = "Enemy";
         enemyObj.transform.position = spawnPoint.position;
         enemyObj.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+        TowerFactory.SetColor(enemyObj, wave >= 5 ? new Color(0.62f, 0.16f, 0.12f) : new Color(0.65f, 0.32f, 0.18f));
         Enemy enemy = enemyObj.AddComponent<Enemy>();
         enemy.Init(waypoints, hpMul, speedMul);
     }
