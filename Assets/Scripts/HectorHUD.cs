@@ -30,7 +30,7 @@ public class HectorHUD : MonoBehaviour
         RectTransform pr = panel.rectTransform;
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(0f, 0f);
         pr.anchoredPosition = new Vector2(20f, 20f);
-        pr.sizeDelta = new Vector2(520f, 90f);
+        pr.sizeDelta = new Vector2(760f, 90f);
 
         GameObject textObj = new GameObject("Text");
         textObj.transform.SetParent(panelObj.transform, false);
@@ -59,8 +59,8 @@ public class HectorHUD : MonoBehaviour
         }
 
         text.text = GameLanguage.T(
-            $"HECTOR HP {Mathf.CeilToInt(h.Health)}/{Mathf.CeilToInt(h.maxHealth)}  •  Q WAR CRY {Cd(h.WarCryCooldownRemaining)}  •  E SHIELD WALL {Cd(h.ShieldWallCooldownRemaining)}  •  R SPEAR THROW {Cd(h.SpearThrowCooldownRemaining)}",
-            $"ГЕКТОР HP {Mathf.CeilToInt(h.Health)}/{Mathf.CeilToInt(h.maxHealth)}  •  Q БОЕВОЙ КЛИЧ {Cd(h.WarCryCooldownRemaining)}  •  E СТЕНА ЩИТОВ {Cd(h.ShieldWallCooldownRemaining)}  •  R БРОСОК КОПЬЯ {Cd(h.SpearThrowCooldownRemaining)}");
+            $"HECTOR HP {Mathf.CeilToInt(h.Health)}/{Mathf.CeilToInt(h.maxHealth)}  •  Q WAR CRY {Cd(h.WarCryCooldownRemaining)}  •  E SHIELD WALL {Cd(h.ShieldWallCooldownRemaining)}  •  R SPEAR THROW {Cd(h.SpearThrowCooldownRemaining)}  •  F FOR TROY! {Cd(h.UltimateCooldownRemaining)}",
+            $"ГЕКТОР HP {Mathf.CeilToInt(h.Health)}/{Mathf.CeilToInt(h.maxHealth)}  •  Q БОЕВОЙ КЛИЧ {Cd(h.WarCryCooldownRemaining)}  •  E СТЕНА ЩИТОВ {Cd(h.ShieldWallCooldownRemaining)}  •  R БРОСОК КОПЬЯ {Cd(h.SpearThrowCooldownRemaining)}  •  F ЗА ТРОЮ! {Cd(h.UltimateCooldownRemaining)}");
     }
 
     string Cd(float value) => value <= 0.01f ? GameLanguage.T("READY", "ГОТОВО") : Mathf.CeilToInt(value) + GameLanguage.T("s", "с");
