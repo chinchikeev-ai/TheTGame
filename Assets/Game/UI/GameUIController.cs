@@ -46,10 +46,9 @@ public class GameUIController : MonoBehaviour
                 : spawner.NextWaveHasHeavy
                     ? L("  •  HEAVY HOPLITES", "  •  ТЯЖЁЛЫЕ ГОПЛИТЫ")
                     : "";
-            string target = $"  •  {L("TARGET", "ЦЕЛЬ")} {Mathf.RoundToInt(spawner.TargetWaveDuration)}{L("s", "с")}";
 
             if (spawner.WaveActive)
-                nextWaveText.text = $"{L("WAVE ACTIVE", "ВОЛНА ИДЁТ")}  •  {L("ALIVE", "ВРАГОВ")} {EnemyRegistry.AliveCount}{target}{threat}";
+                nextWaveText.text = $"{L("WAVE ACTIVE", "ВОЛНА ИДЁТ")}  •  {L("ALIVE", "ВРАГОВ")} {EnemyRegistry.AliveCount}{threat}";
             else if (spawner.InterWaveCountdown > 0f)
                 nextWaveText.text = $"{L("NEXT WAVE", "СЛЕДУЮЩАЯ ВОЛНА")}  {Mathf.CeilToInt(spawner.InterWaveCountdown)}{L("s", "с")}  •  {spawner.NextWaveEnemyCount} {L("enemies", "врагов")}{threat}";
             else
@@ -101,14 +100,16 @@ public class GameUIController : MonoBehaviour
         scaler.matchWidthOrHeight = .5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        GameObject topLeft = CreatePanel(canvas.transform, "TopLeftStatus", new Vector2(20, -18), new Vector2(610, 92));
+        // Reserved top-left status zone. Width deliberately ends before the boss bar begins.
+        GameObject topLeft = CreatePanel(canvas.transform, "TopLeftStatus", new Vector2(20, -18), new Vector2(500, 92));
         Anchor(topLeft.GetComponent<RectTransform>(), new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1));
-        statsText = CreateText(topLeft.transform, "Stats", new Vector2(18, -12), new Vector2(575, 36), 24, TextAnchor.UpperLeft);
-        waveText = CreateText(topLeft.transform, "Wave", new Vector2(18, -48), new Vector2(575, 30), 18, TextAnchor.UpperLeft);
+        statsText = CreateText(topLeft.transform, "Stats", new Vector2(16, -12), new Vector2(468, 36), 21, TextAnchor.UpperLeft);
+        waveText = CreateText(topLeft.transform, "Wave", new Vector2(16, -49), new Vector2(468, 28), 16, TextAnchor.UpperLeft);
 
-        GameObject topCenter = CreatePanel(canvas.transform, "WaveStatus", new Vector2(0, -18), new Vector2(760, 54));
+        // Reserved top-center strip. Does not overlap top-left or right-side selected panel.
+        GameObject topCenter = CreatePanel(canvas.transform, "WaveStatus", new Vector2(90, -18), new Vector2(620, 54));
         Anchor(topCenter.GetComponent<RectTransform>(), new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        nextWaveText = CreateText(topCenter.transform, "NextWave", Vector2.zero, new Vector2(730, 46), 19, TextAnchor.MiddleCenter);
+        nextWaveText = CreateText(topCenter.transform, "NextWave", Vector2.zero, new Vector2(590, 46), 17, TextAnchor.MiddleCenter);
         Anchor(nextWaveText.rectTransform, Vector2.zero, Vector2.one, new Vector2(.5f, .5f));
         nextWaveText.rectTransform.offsetMin = new Vector2(12, 4);
         nextWaveText.rectTransform.offsetMax = new Vector2(-12, -4);
@@ -116,12 +117,7 @@ public class GameUIController : MonoBehaviour
         CreateBuildBar(canvas.transform);
         CreateSelectedPanel(canvas.transform);
 
-        Text help = CreateText(canvas.transform, "Help", new Vector2(-22, 18), new Vector2(900, 30), 15, TextAnchor.LowerRight);
-        Anchor(help.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0));
-        help.text = L(
-            "HECTOR  LMB SELECT • RMB MOVE • Q WAR CRY • E SHIELD WALL • R SPEAR • F FOR TROY!",
-            "ГЕКТОР  ЛКМ ВЫБОР • ПКМ ДВИЖЕНИЕ • Q КЛИЧ • E ЩИТЫ • R КОПЬЁ • F ЗА ТРОЮ!");
-
+        // Controls are displayed in HectorHUD; no persistent bottom help text is created here.
         endText = CreateText(canvas.transform, "End", Vector2.zero, new Vector2(1100, 160), 58, TextAnchor.MiddleCenter);
         Anchor(endText.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
         endText.gameObject.SetActive(false);
@@ -129,34 +125,34 @@ public class GameUIController : MonoBehaviour
 
     void CreateBuildBar(Transform parent)
     {
-        GameObject panel = CreatePanel(parent, "BuildBar", new Vector2(0, 18), new Vector2(1280, 118));
+        GameObject panel = CreatePanel(parent, "BuildBar", new Vector2(0, 18), new Vector2(1180, 112));
         Anchor(panel.GetComponent<RectTransform>(), new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(.5f, 0));
 
-        TowerButton(panel.transform, TowerType.MachineGun, -510, L("ARCHERS", "ЛУЧНИКИ"));
-        TowerButton(panel.transform, TowerType.Cannon, -305, L("BALLISTA", "БАЛЛИСТА"));
-        TowerButton(panel.transform, TowerType.Slow, -100, L("PRIESTS", "ЖРЕЦЫ"));
-        TowerButton(panel.transform, TowerType.SpearThrower, 105, L("SPEARS", "КОПЬЯ"));
-        TowerButton(panel.transform, TowerType.FireTower, 310, L("FIRE", "ОГОНЬ"));
-        TowerButton(panel.transform, TowerType.TrojanGuard, 515, L("GUARD", "СТРАЖА"));
+        TowerButton(panel.transform, TowerType.MachineGun, -465, L("ARCHERS", "ЛУЧНИКИ"));
+        TowerButton(panel.transform, TowerType.Cannon, -279, L("BALLISTA", "БАЛЛИСТА"));
+        TowerButton(panel.transform, TowerType.Slow, -93, L("PRIESTS", "ЖРЕЦЫ"));
+        TowerButton(panel.transform, TowerType.SpearThrower, 93, L("SPEARS", "КОПЬЯ"));
+        TowerButton(panel.transform, TowerType.FireTower, 279, L("FIRE", "ОГОНЬ"));
+        TowerButton(panel.transform, TowerType.TrojanGuard, 465, L("GUARD", "СТРАЖА"));
     }
 
     void TowerButton(Transform parent, TowerType type, float x, string title)
     {
         TowerData data = BalanceCatalog.GetTower(type);
         int cost = data != null ? data.cost : 0;
-        CreateButton(parent, $"{title}\n{cost} {L("GOLD", "ЗОЛОТА")}", new Vector2(x, 0), new Vector2(186, 76), () => placement?.SelectBuildType(type));
+        CreateButton(parent, $"{title}\n{cost} {L("GOLD", "ЗОЛОТА")}", new Vector2(x, 0), new Vector2(170, 72), () => placement?.SelectBuildType(type));
     }
 
     void CreateSelectedPanel(Transform parent)
     {
-        GameObject panel = CreatePanel(parent, "SelectedTowerPanel", new Vector2(-20, -112), new Vector2(430, 250));
+        GameObject panel = CreatePanel(parent, "SelectedTowerPanel", new Vector2(-20, -118), new Vector2(410, 236));
         RectTransform rt = panel.GetComponent<RectTransform>();
         Anchor(rt, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1));
         selectedPanel = rt;
-        selectedText = CreateText(panel.transform, "SelectedInfo", new Vector2(18, -16), new Vector2(394, 132), 17, TextAnchor.UpperLeft);
-        CreateButton(panel.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-102, -78), new Vector2(180, 46), () => placement?.UpgradeSelected());
-        CreateButton(panel.transform, L("SELL", "ПРОДАТЬ"), new Vector2(102, -78), new Vector2(180, 46), () => placement?.SellSelected());
-        CreateButton(panel.transform, L("TARGET PRIORITY", "ПРИОРИТЕТ ЦЕЛИ"), new Vector2(0, -137), new Vector2(384, 44), () => placement?.CycleSelectedPriority());
+        selectedText = CreateText(panel.transform, "SelectedInfo", new Vector2(16, -14), new Vector2(378, 122), 16, TextAnchor.UpperLeft);
+        CreateButton(panel.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-96, -74), new Vector2(170, 44), () => placement?.UpgradeSelected());
+        CreateButton(panel.transform, L("SELL", "ПРОДАТЬ"), new Vector2(96, -74), new Vector2(170, 44), () => placement?.SellSelected());
+        CreateButton(panel.transform, L("TARGET PRIORITY", "ПРИОРИТЕТ ЦЕЛИ"), new Vector2(0, -130), new Vector2(360, 42), () => placement?.CycleSelectedPriority());
         selectedPanel.gameObject.SetActive(false);
     }
 
@@ -189,7 +185,7 @@ public class GameUIController : MonoBehaviour
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
         rt.anchoredPosition = pos;
         rt.sizeDelta = size;
-        Text text = CreateText(go.transform, "Label", Vector2.zero, size, 16, TextAnchor.MiddleCenter);
+        Text text = CreateText(go.transform, "Label", Vector2.zero, size, 15, TextAnchor.MiddleCenter);
         Anchor(text.rectTransform, Vector2.zero, Vector2.one, new Vector2(.5f, .5f));
         text.rectTransform.offsetMin = new Vector2(5, 4);
         text.rectTransform.offsetMax = new Vector2(-5, -4);
