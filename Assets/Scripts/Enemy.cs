@@ -12,6 +12,16 @@ public class Enemy : MonoBehaviour
     public float Health01 => maxHealth <= 0f ? 0f : Mathf.Clamp01(Health / maxHealth);
     public float Armor => armor;
     public float ArrowResistance => arrowResistance;
+    public float RouteProgress
+    {
+        get
+        {
+            if (waypoints == null || waypoints.Length == 0) return 0f;
+            float segment = Mathf.Clamp01((float)waypointIndex / waypoints.Length);
+            if (waypointIndex >= waypoints.Length) return 1f;
+            return segment;
+        }
+    }
 
     Transform[] waypoints;
     int waypointIndex;
@@ -33,6 +43,7 @@ public class Enemy : MonoBehaviour
     float commanderUntil;
     float commanderSpeedMultiplier = 1f;
     float commanderDamageMultiplier = 1f;
+    TrojanGuardSquad blockingGuard;
 
     void OnEnable() => EnemyRegistry.Register(this);
     void OnDisable() => EnemyRegistry.Unregister(this);
@@ -59,6 +70,11 @@ public class Enemy : MonoBehaviour
         healthBar = gameObject.AddComponent<EnemyHealthBar>();
     }
 
+    public void SetBlockedByGuard(TrojanGuardSquad guard)
+    {
+        if (guard != null && guard.IsAlive) blockingGuard = guard;
+    }
+
     void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
@@ -73,6 +89,23 @@ public class Enemy : MonoBehaviour
             commanderDamageMultiplier = 1f;
         }
         speed = baseSpeed * slowMultiplier * commanderSpeedMultiplier;
+
+        if (blockingGuard != null)
+        {
+            if (!blockingGuard.IsAlive || Vector3.Distance(transform.position, blockingGuard.transform.position) > blockingGuard.blockRadius * 1.35f)
+            {
+                blockingGuard = null;
+            }
+            else
+            {
+                if (Time.time >= nextAttack)
+                {
+                    nextAttack = Time.time + attackInterval;
+                    blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * commanderDamageMultiplier));
+                }
+                return;
+            }
+        }
 
         HectorController hector = HectorController.Instance;
         if (hector != null && !hector.IsDowned)
