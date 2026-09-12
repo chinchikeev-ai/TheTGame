@@ -25,6 +25,10 @@ public sealed class CampaignMapPresentation : MonoBehaviour
     {
         Transform levelSelect = canvas.transform.Find("LevelSelect");
         if (levelSelect == null) return;
+
+        Transform levelCard = levelSelect.Find("LevelCard");
+        if (levelCard != null) RecomposeLevelCard(levelCard);
+
         Transform old = levelSelect.Find("CampaignMapLayer");
         if (old != null) Destroy(old.gameObject);
 
@@ -37,27 +41,85 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         root.SetAsFirstSibling();
 
         Image shade = layer.AddComponent<Image>();
-        shade.color = new Color(.045f, .025f, .015f, .22f);
+        shade.color = new Color(.045f, .025f, .015f, .30f);
         shade.raycastTarget = false;
+
+        GameObject mapField = new GameObject("MapField");
+        mapField.transform.SetParent(layer.transform, false);
+        Image mapFieldImage = mapField.AddComponent<Image>();
+        mapFieldImage.color = new Color(.07f, .042f, .025f, .74f);
+        mapFieldImage.raycastTarget = false;
+        RectTransform field = mapFieldImage.rectTransform;
+        field.anchorMin = field.anchorMax = field.pivot = new Vector2(.34f, .5f);
+        field.anchoredPosition = new Vector2(-80f, 0f);
+        field.sizeDelta = new Vector2(1120f, 820f);
+        Outline fieldOutline = mapField.AddComponent<Outline>();
+        fieldOutline.effectColor = new Color(.58f, .31f, .12f, .38f);
+        fieldOutline.effectDistance = new Vector2(2f, -2f);
 
         Vector2[] points =
         {
-            new Vector2(-520, -160),
-            new Vector2(-360,  -40),
-            new Vector2(-180,   75),
-            new Vector2(  20,  145),
-            new Vector2( 230,  110),
-            new Vector2( 420,   10),
-            new Vector2( 540, -150)
+            new Vector2(-390, -165),
+            new Vector2(-300,  -35),
+            new Vector2(-165,   82),
+            new Vector2(   0,  160),
+            new Vector2( 165,  105),
+            new Vector2( 295,   -5),
+            new Vector2( 390, -150)
         };
 
         for (int i = 0; i < points.Length - 1; i++)
-            MakeConnector(layer.transform, points[i], points[i + 1], i + 1 < CampaignSave.UnlockedChapter);
+            MakeConnector(mapField.transform, points[i], points[i + 1], i + 1 < CampaignSave.UnlockedChapter);
 
         for (int i = 0; i < points.Length; i++)
-            MakeNode(layer.transform, i + 1, points[i]);
+            MakeNode(mapField.transform, i + 1, points[i]);
 
-        MakeLegend(layer.transform);
+        MakeLegend(mapField.transform);
+        MakeProgressHeader(mapField.transform);
+    }
+
+    void RecomposeLevelCard(Transform levelCard)
+    {
+        RectTransform card = levelCard as RectTransform;
+        if (card == null) return;
+        card.anchorMin = card.anchorMax = card.pivot = new Vector2(.82f, .5f);
+        card.anchoredPosition = new Vector2(-30f, 0f);
+        card.sizeDelta = new Vector2(610f, 760f);
+
+        Image image = levelCard.GetComponent<Image>();
+        if (image != null) image.color = new Color(.075f, .042f, .025f, .965f);
+
+        foreach (RectTransform child in levelCard.GetComponentsInChildren<RectTransform>(true))
+        {
+            if (child == card) continue;
+            string n = child.gameObject.name;
+            if (n.Contains("CHAPTER SELECT") || n.Contains("ВЫБОР ГЛАВЫ")) child.anchoredPosition = new Vector2(0, 285);
+            else if (n.Contains("Choose where") || n.Contains("Выберите этап")) child.anchoredPosition = new Vector2(0, 235);
+        }
+
+        Button[] buttons = levelCard.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            RectTransform rt = buttons[i].transform as RectTransform;
+            if (rt == null) continue;
+            Text label = buttons[i].GetComponentInChildren<Text>(true);
+            if (label == null) continue;
+            if (label.text.Contains("THE LANDING") || label.text.Contains("ВЫСАДКА"))
+            {
+                rt.anchoredPosition = new Vector2(0, 85);
+                rt.sizeDelta = new Vector2(480, 82);
+            }
+            else if (label.text.Contains("ROAD TO TROY") || label.text.Contains("ДОРОГА К ТРОЕ"))
+            {
+                rt.anchoredPosition = new Vector2(0, -20);
+                rt.sizeDelta = new Vector2(480, 76);
+            }
+            else if (label.text == "BACK" || label.text == "НАЗАД")
+            {
+                rt.anchoredPosition = new Vector2(0, -280);
+                rt.sizeDelta = new Vector2(250, 58);
+            }
+        }
     }
 
     void MakeNode(Transform parent, int chapter, Vector2 pos)
@@ -76,29 +138,27 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
         rt.anchoredPosition = pos;
-        rt.sizeDelta = new Vector2(chapter == 1 ? 122f : 96f, chapter == 1 ? 122f : 96f);
+        rt.sizeDelta = new Vector2(chapter == 1 ? 118f : 90f, chapter == 1 ? 118f : 90f);
         image.raycastTarget = false;
 
         Outline outline = go.AddComponent<Outline>();
         outline.effectColor = unlocked ? new Color(1f, .52f, .16f, .75f) : new Color(.27f, .20f, .15f, .45f);
         outline.effectDistance = new Vector2(2f, -2f);
 
-        string numeral = ToRoman(chapter);
-        MakeText(go.transform, numeral, new Vector2(0, 8), chapter == 1 ? 34 : 28,
+        MakeText(go.transform, ToRoman(chapter), new Vector2(0, 7), chapter == 1 ? 34 : 27,
             unlocked ? new Color(1f, .84f, .55f, 1f) : new Color(.52f, .46f, .40f, 1f));
 
-        string title = ChapterName(chapter);
-        Text titleText = MakeText(parent, title, pos + new Vector2(0, -78), 16,
+        Text titleText = MakeText(parent, ChapterName(chapter), pos + new Vector2(0, -70), 14,
             unlocked ? new Color(.94f, .83f, .67f, 1f) : new Color(.48f, .43f, .38f, .9f));
-        titleText.rectTransform.sizeDelta = new Vector2(180f, 45f);
+        titleText.rectTransform.sizeDelta = new Vector2(165f, 42f);
 
         string state;
         if (completed) state = progress != null && progress.bestScore > 0 ? L($"BEST {progress.bestScore:N0}", $"ЛУЧШИЙ {progress.bestScore:N0}") : L("COMPLETED", "ПРОЙДЕНО");
         else if (unlocked) state = L("AVAILABLE", "ДОСТУПНО");
         else state = L("LOCKED", "ЗАКРЫТО");
-        Text stateText = MakeText(parent, state, pos + new Vector2(0, -105), 12,
+        Text stateText = MakeText(parent, state, pos + new Vector2(0, -95), 11,
             completed ? new Color(1f, .52f, .20f, .95f) : new Color(.67f, .59f, .50f, .85f));
-        stateText.rectTransform.sizeDelta = new Vector2(170f, 28f);
+        stateText.rectTransform.sizeDelta = new Vector2(150f, 26f);
     }
 
     void MakeConnector(Transform parent, Vector2 a, Vector2 b, bool active)
@@ -119,9 +179,20 @@ public sealed class CampaignMapPresentation : MonoBehaviour
     void MakeLegend(Transform parent)
     {
         Text text = MakeText(parent,
-            L("THE WAR FOR TROY  •  7 CHAPTERS", "ВОЙНА ЗА ТРОЮ  •  7 ГЛАВ"),
-            new Vector2(0, 300), 18, new Color(1f, .73f, .34f, .92f));
-        text.rectTransform.sizeDelta = new Vector2(520f, 40f);
+            L("THE WAR FOR TROY", "ВОЙНА ЗА ТРОЮ"),
+            new Vector2(0, 315), 24, new Color(1f, .73f, .34f, .96f));
+        text.rectTransform.sizeDelta = new Vector2(520f, 44f);
+    }
+
+    void MakeProgressHeader(Transform parent)
+    {
+        int unlocked = Mathf.Clamp(CampaignSave.UnlockedChapter, 1, 7);
+        int completed = 0;
+        for (int i = 1; i <= 7; i++) if (CampaignSave.IsCompleted(i)) completed++;
+        Text text = MakeText(parent,
+            L($"CHAPTER {unlocked}/7  •  COMPLETED {completed}/7", $"ГЛАВА {unlocked}/7  •  ПРОЙДЕНО {completed}/7"),
+            new Vector2(0, 275), 14, new Color(.82f, .70f, .56f, .90f));
+        text.rectTransform.sizeDelta = new Vector2(500f, 34f);
     }
 
     Text MakeText(Transform parent, string value, Vector2 pos, int size, Color color)
