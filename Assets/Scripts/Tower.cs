@@ -26,6 +26,9 @@ public class Tower : MonoBehaviour
     float warCryRate = 1f;
     TrojanGuardSquad guardSquad;
 
+    void OnEnable() => TowerRegistry.Register(this);
+    void OnDisable() => TowerRegistry.Unregister(this);
+
     public void Configure(TowerType type, int purchaseCost = 0)
     {
         Type = type;
@@ -94,6 +97,7 @@ public class Tower : MonoBehaviour
         warCryUntil = Mathf.Max(warCryUntil, Time.time + duration);
         warCryDamage = Mathf.Max(warCryDamage, damageMultiplier);
         warCryRate = Mathf.Max(warCryRate, rateMultiplier);
+        if (guardSquad != null) guardSquad.ApplyRally(duration, damageMultiplier, rateMultiplier);
     }
 
     public void Sell()
