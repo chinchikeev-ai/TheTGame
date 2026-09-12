@@ -2,14 +2,17 @@ using UnityEngine;
 
 public static class EnemyVisualFactory
 {
-    const string ResourceRoot = "TroyCharacters/";
+    const string GreekResourceRoot = "TroyCharacters/Factions/Greek/";
+    const string LegacyResourceRoot = "TroyCharacters/";
 
     public static GameObject CreateEnemyObject(EnemyData data)
     {
         string prefabName = GetPrefabName(data != null ? data.archetype : EnemyArchetype.Infantry);
-        GameObject prefab = Resources.Load<GameObject>(ResourceRoot + prefabName);
-        GameObject instance;
+        GameObject prefab = Resources.Load<GameObject>(GreekResourceRoot + prefabName);
+        if (prefab == null)
+            prefab = Resources.Load<GameObject>(LegacyResourceRoot + prefabName);
 
+        GameObject instance;
         if (prefab != null)
         {
             instance = Object.Instantiate(prefab);
