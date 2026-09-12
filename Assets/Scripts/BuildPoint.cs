@@ -30,7 +30,11 @@ public class BuildPoint : MonoBehaviour
         GameObject towerObj = TowerFactory.CreateTower(transform.position + Vector3.up * 0.5f, type);
         Tower = towerObj.GetComponent<Tower>();
         Occupied = Tower != null;
-        if (Tower != null) Tower.OwnerPoint = this;
+        if (Tower != null)
+        {
+            Tower.OwnerPoint = this;
+            GameManager.Instance.RecordTowerBuilt();
+        }
         RefreshVisual();
         return Occupied;
     }
