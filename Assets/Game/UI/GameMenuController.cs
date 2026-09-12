@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 
 public class GameMenuController : MonoBehaviour
 {
+    const string MainMenuBackgroundResource = "Menu/Main_screen";
+
     Canvas canvas;
     EnemySpawner spawner;
     GameObject mainMenu, levelMenu, settingsMenu, pauseMenu, endMenu;
@@ -50,25 +52,26 @@ public class GameMenuController : MonoBehaviour
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = .5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        mainMenu = MakeScreen("MainMenu", new Color(.02f,.03f,.05f,.72f));
-        AddTitle(mainMenu.transform, "THE TROY GAME", new Vector2(0,180), 62);
-        AddButton(mainMenu.transform, L("PLAY", "ИГРАТЬ"), new Vector2(0,55), ShowLevels);
-        AddButton(mainMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,-25), ShowSettingsFromMain);
-        AddButton(mainMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-105), QuitGame);
+        mainMenu = MakeMainMenuScreen();
+        AddTitle(mainMenu.transform, "THE TROY GAME", new Vector2(0,365), 78, MenuTextStyle.Logo);
+        AddTitle(mainMenu.transform, "Siege Defense", new Vector2(0,275), 42, MenuTextStyle.Subtitle);
+        AddButton(mainMenu.transform, L("PLAY", "ИГРАТЬ"), new Vector2(0,-95), ShowLevels, style: MenuButtonStyle.Highlight);
+        AddButton(mainMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,-175), ShowSettingsFromMain, style: MenuButtonStyle.Stone);
+        AddButton(mainMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-255), QuitGame, style: MenuButtonStyle.Stone);
+        AddTitle(mainMenu.transform, L("PRESS START", "НАЖМИ СТАРТ"), new Vector2(0,-350), 28, MenuTextStyle.Subtitle);
 
         levelMenu = MakeScreen("LevelSelect", new Color(.02f,.03f,.05f,.72f));
-        AddTitle(levelMenu.transform, L("LEVEL SELECT", "ВЫБОР УРОВНЯ"), new Vector2(0,210), 50);
-        AddButton(levelMenu.transform, L("MAP 1 - THE LANDING", "КАРТА 1 - ВЫСАДКА"), new Vector2(0,75), StartLevel);
-        Button map2Button = AddButton(levelMenu.transform, "", new Vector2(0,-15), OnMap2Clicked);
+        AddTitle(levelMenu.transform, L("LEVEL SELECT", "ВЫБОР УРОВНЯ"), new Vector2(0,210), 50, MenuTextStyle.Logo);
+        AddButton(levelMenu.transform, L("MAP 1 - THE LANDING", "КАРТА 1 - ВЫСАДКА"), new Vector2(0,75), StartLevel, style: MenuButtonStyle.Highlight);
+        Button map2Button = AddButton(levelMenu.transform, "", new Vector2(0,-15), OnMap2Clicked, style: MenuButtonStyle.Stone);
         map2Label = map2Button.GetComponentInChildren<Text>();
-        AddButton(levelMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-145), ShowMainMenu);
+        AddButton(levelMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-145), ShowMainMenu, style: MenuButtonStyle.Stone);
         RefreshLevelSelect();
 
         settingsMenu = MakeScreen("Settings", new Color(.02f,.03f,.05f,.78f));
-        AddTitle(settingsMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,245), 50);
+        AddTitle(settingsMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,245), 50, MenuTextStyle.Logo);
         AddButton(settingsMenu.transform, L("VOLUME +", "ГРОМКОСТЬ +"), new Vector2(0,145), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume + .1f); });
         AddButton(settingsMenu.transform, L("VOLUME -", "ГРОМКОСТЬ -"), new Vector2(0,75), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume - .1f); });
         AddButton(settingsMenu.transform, L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН"), new Vector2(0,5), delegate { Screen.fullScreen = !Screen.fullScreen; });
@@ -79,7 +82,7 @@ public class GameMenuController : MonoBehaviour
         AddButton(settingsMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-215), BackFromSettings);
 
         pauseMenu = MakeScreen("PauseMenu", new Color(.02f,.03f,.05f,.78f));
-        AddTitle(pauseMenu.transform, L("PAUSED", "ПАУЗА"), new Vector2(0,210), 54);
+        AddTitle(pauseMenu.transform, L("PAUSED", "ПАУЗА"), new Vector2(0,210), 54, MenuTextStyle.Logo);
         AddButton(pauseMenu.transform, L("RESUME", "ПРОДОЛЖИТЬ"), new Vector2(0,95), Resume);
         AddButton(pauseMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,20), ShowSettingsFromPause);
         AddButton(pauseMenu.transform, L("RESTART", "ПЕРЕЗАПУСК"), new Vector2(0,-55), RestartScene);
@@ -87,21 +90,20 @@ public class GameMenuController : MonoBehaviour
         AddButton(pauseMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-205), QuitGame);
 
         endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.82f));
-        endTitle = AddTitle(endMenu.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0,300), 60);
+        endTitle = AddTitle(endMenu.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0,300), 60, MenuTextStyle.Logo);
         endSummary = AddTitle(endMenu.transform, "", new Vector2(0,70), 24);
         endSummary.rectTransform.sizeDelta = new Vector2(1000, 420);
         AddButton(endMenu.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(0,-205), RestartScene);
         AddButton(endMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-285), ReturnToMainMenu);
 
-        // Dedicated lower-middle zone: above BuildBar and horizontally clear of HectorHUD.
         GameObject wavePanel = new GameObject("WaveControls");
         wavePanel.transform.SetParent(canvas.transform, false);
         RectTransform wr = wavePanel.AddComponent<RectTransform>();
         wr.anchorMin = wr.anchorMax = wr.pivot = new Vector2(.5f,0);
-        wr.anchoredPosition = new Vector2(0,205);
-        wr.sizeDelta = new Vector2(320,82);
-        startWaveButton = AddButton(wavePanel.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0,10), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(230,50));
-        countdownText = AddTitle(wavePanel.transform, L("READY", "ГОТОВО"), new Vector2(0,-27), 16);
+        wr.anchoredPosition = new Vector2(0,150);
+        wr.sizeDelta = new Vector2(340,100);
+        startWaveButton = AddButton(wavePanel.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0,20), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(250,56));
+        countdownText = AddTitle(wavePanel.transform, L("READY", "ГОТОВО"), new Vector2(0,-28), 18);
         startWaveButton.gameObject.SetActive(false);
 
         levelMenu.SetActive(false);
@@ -177,6 +179,7 @@ public class GameMenuController : MonoBehaviour
                 case "RETRY": case "ПОВТОРИТЬ": text.text = L("RETRY", "ПОВТОРИТЬ"); break;
                 case "START WAVE": case "НАЧАТЬ ВОЛНУ": text.text = L("START WAVE", "НАЧАТЬ ВОЛНУ"); break;
                 case "READY": case "ГОТОВО": text.text = L("READY", "ГОТОВО"); break;
+                case "PRESS START": case "НАЖМИ СТАРТ": text.text = L("PRESS START", "НАЖМИ СТАРТ"); break;
             }
         }
     }
@@ -217,7 +220,8 @@ public class GameMenuController : MonoBehaviour
         RuntimeFileLogger.Event("MENU", "Returning to main menu through clean scene reset");
         Time.timeScale = 1f;
         Scene s = SceneManager.GetActiveScene();
-        if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name);
+        if (s.buildIndex >= 0) SceneManager.LoadScene(s.buildIndex);
+        else if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name);
     }
 
     void ShowLevels()
@@ -260,7 +264,8 @@ public class GameMenuController : MonoBehaviour
     {
         Time.timeScale = 1f;
         Scene s = SceneManager.GetActiveScene();
-        if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name);
+        if (s.buildIndex >= 0) SceneManager.LoadScene(s.buildIndex);
+        else if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name);
     }
 
     void QuitGame()
@@ -286,7 +291,47 @@ public class GameMenuController : MonoBehaviour
         return go;
     }
 
-    Text AddTitle(Transform parent, string text, Vector2 pos, int size)
+    GameObject MakeMainMenuScreen()
+    {
+        GameObject go = new GameObject("MainMenu");
+        go.transform.SetParent(canvas.transform,false);
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+
+        Texture2D background = Resources.Load<Texture2D>(MainMenuBackgroundResource);
+        if (background != null)
+        {
+            GameObject bg = new GameObject("Background");
+            bg.transform.SetParent(go.transform,false);
+            Image bgImage = bg.AddComponent<Image>();
+            bgImage.sprite = Sprite.Create(background, new Rect(0f, 0f, background.width, background.height), new Vector2(.5f,.5f));
+            bgImage.preserveAspect = false;
+            bgImage.type = Image.Type.Simple;
+            StretchToParent(bgImage.rectTransform);
+            AspectRatioFitter fitter = bg.AddComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fitter.aspectRatio = (float)background.width / background.height;
+        }
+
+        GameObject shade = new GameObject("ReadabilityShade");
+        shade.transform.SetParent(go.transform,false);
+        Image shadeImage = shade.AddComponent<Image>();
+        shadeImage.color = new Color(.02f,.015f,.01f,.18f);
+        StretchToParent(shadeImage.rectTransform);
+
+        return go;
+    }
+
+    void StretchToParent(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+    }
+
+    Text AddTitle(Transform parent, string text, Vector2 pos, int size, MenuTextStyle style = MenuTextStyle.Normal)
     {
         GameObject go = new GameObject(text);
         go.transform.SetParent(parent,false);
@@ -295,7 +340,9 @@ public class GameMenuController : MonoBehaviour
         t.text = text;
         t.fontSize = size;
         t.fontStyle = FontStyle.Bold;
-        t.color = Color.white;
+        t.color = style == MenuTextStyle.Logo ? new Color(1f,.62f,.18f,1f)
+            : style == MenuTextStyle.Subtitle ? new Color(1f,.86f,.58f,1f)
+            : Color.white;
         t.alignment = TextAnchor.MiddleCenter;
         RectTransform rt = t.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f);
@@ -304,20 +351,27 @@ public class GameMenuController : MonoBehaviour
         return t;
     }
 
-    Button AddButton(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction action, Vector2? customSize = null)
+    Button AddButton(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction action, Vector2? customSize = null, MenuButtonStyle style = MenuButtonStyle.Default)
     {
         GameObject go = new GameObject(label);
         go.transform.SetParent(parent,false);
         Image img = go.AddComponent<Image>();
-        img.color = new Color(.15f,.25f,.38f,.98f);
+        img.color = ButtonColor(style);
         Button b = go.AddComponent<Button>();
         b.targetGraphic = img;
+        ColorBlock colors = b.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1f,.92f,.76f,1f);
+        colors.pressedColor = new Color(.86f,.62f,.35f,1f);
+        colors.selectedColor = colors.highlightedColor;
+        b.colors = colors;
         b.onClick.AddListener(action);
         RectTransform rt = img.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f);
         rt.anchoredPosition = pos;
         rt.sizeDelta = customSize ?? new Vector2(400,64);
-        Text txt = AddTitle(go.transform,label,Vector2.zero,18);
+        Text txt = AddTitle(go.transform,label,Vector2.zero,22, MenuTextStyle.Button);
+        txt.color = style == MenuButtonStyle.Highlight ? new Color(1f,.88f,.35f,1f) : new Color(.17f,.06f,.025f,1f);
         RectTransform tr = txt.rectTransform;
         tr.anchorMin = Vector2.zero;
         tr.anchorMax = Vector2.one;
@@ -325,4 +379,17 @@ public class GameMenuController : MonoBehaviour
         tr.pivot = new Vector2(.5f,.5f);
         return b;
     }
+
+    Color ButtonColor(MenuButtonStyle style)
+    {
+        switch (style)
+        {
+            case MenuButtonStyle.Highlight: return new Color(.58f,.10f,.055f,.98f);
+            case MenuButtonStyle.Stone: return new Color(.72f,.56f,.39f,.97f);
+            default: return new Color(.15f,.25f,.38f,.98f);
+        }
+    }
+
+    enum MenuTextStyle { Normal, Logo, Subtitle, Button }
+    enum MenuButtonStyle { Default, Stone, Highlight }
 }

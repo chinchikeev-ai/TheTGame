@@ -11,12 +11,14 @@ public class AncientMusicController : MonoBehaviour
     AudioClip ambientClip;
     AudioClip battleClip;
     AudioClip bossClip;
+    AudioClip trackClip;
     EnemySpawner spawner;
     MusicState state = MusicState.Ambient;
     AudioSource activeSource;
     AudioSource fadeSource;
     float masterVolume = 0.24f;
     float fadeProgress = 1f;
+    bool useTrack;
 
     const int SampleRate = 44100;
 
@@ -30,6 +32,16 @@ public class AncientMusicController : MonoBehaviour
         activeSource = sourceA;
         fadeSource = sourceB;
 
+        trackClip = Resources.Load<AudioClip>("Music/BeyazGiyme");
+        if (trackClip != null)
+        {
+            useTrack = true;
+            activeSource.clip = trackClip;
+            activeSource.volume = masterVolume;
+            activeSource.Play();
+            return;
+        }
+
         ambientClip = BuildAmbientLoop();
         battleClip = BuildBattleLoop();
         bossClip = BuildBossLoop();
@@ -41,6 +53,8 @@ public class AncientMusicController : MonoBehaviour
 
     void Update()
     {
+        if (useTrack) return;
+
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
 
         MusicState wanted = MusicState.Ambient;

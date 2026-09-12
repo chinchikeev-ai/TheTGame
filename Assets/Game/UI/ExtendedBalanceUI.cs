@@ -4,6 +4,8 @@ using UnityEngine.EventSystems;
 
 public class ExtendedBalanceUI : MonoBehaviour
 {
+    EnemySpawner spawner;
+    TowerPlacement placement;
     Text hoverText;
     GameObject hoverPanel;
 
@@ -16,20 +18,31 @@ public class ExtendedBalanceUI : MonoBehaviour
             new GameObject("ExtendedBalanceUI").AddComponent<ExtendedBalanceUI>();
     }
 
-    void Start() => BuildUI();
+    void Start()
+    {
+        spawner = FindFirstObjectByType<EnemySpawner>();
+        placement = FindFirstObjectByType<TowerPlacement>();
+        BuildUI();
+    }
 
-    void Update() => UpdateEnemyHover();
+    void Update()
+    {
+        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
+
+        UpdateEnemyHover();
+    }
 
     void UpdateEnemyHover()
     {
-        if (hoverPanel == null) return;
-        if (Camera.main == null || (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
+        if (Camera.main == null || EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         {
             hoverPanel.SetActive(false);
             return;
         }
 
-        Ray ray = Camera.main.ScreenPointToRay(GameInput.PointerPosition);
+        Vector2 pointer = GameInput.PointerPosition;
+        Ray ray = Camera.main.ScreenPointToRay(pointer);
         if (!Physics.Raycast(ray, out RaycastHit hit, 250f))
         {
             hoverPanel.SetActive(false);
@@ -44,19 +57,15 @@ public class ExtendedBalanceUI : MonoBehaviour
         }
 
         EnemyData d = BalanceCatalog.GetEnemy(enemy.Archetype);
-        if (d == null)
-        {
-            hoverPanel.SetActive(false);
-            return;
-        }
-
-        hoverText.text =
-            $"<b>{LocalizedEnemyName(d)}</b>\n" +
-            $"HP  {enemy.Health:0}/{enemy.maxHealth:0}\n" +
-            $"{L("ARMOR", "БРОНЯ")}  {d.armor * 100f:0}%    {L("SPEED", "СКОРОСТЬ")}  {enemy.speed:0.0}\n" +
-            $"{L("RESIST", "СОПРОТИВЛЕНИЕ")}  {ResistanceText(d)}\n" +
-            $"{OffenseText(d)}\n" +
-            $"{L("REWARD", "НАГРАДА")}  {d.reward} {L("gold", "золота")}";
+        string resistance = ResistanceText(d);
+        string offense = OffenseText(d);
+        hoverText.text = $"{LocalizedEnemyName(d)}\n" +
+                         $"HP  {enemy.Health:0}/{enemy.maxHealth:0}\n" +
+                         $"{L("SPEED", "СКОРОСТЬ")}  {enemy.speed:0.00}\n" +
+                         $"{L("ARMOR", "БРОНЯ")}  {d.armor * 100f:0}%\n" +
+                         $"{L("RESIST", "СОПРОТИВЛЕНИЕ")}  {resistance}\n" +
+                         $"{L("DAMAGE", "УРОН")}  {offense}\n" +
+                         $"{L("REWARD", "НАГРАДА")}  {d.reward} {L("gold", "золота")}";
         hoverPanel.SetActive(true);
     }
 
@@ -72,12 +81,12 @@ public class ExtendedBalanceUI : MonoBehaviour
     string OffenseText(EnemyData d)
     {
         if (d.archetype == EnemyArchetype.BatteringRam)
-            return $"{L("THREAT", "УГРОЗА")}: {L("Siege damage to the gate", "Осадный урон воротам")}";
+            return $"{L("Gate", "Ворота")} {d.baseDamage}  •  {L("SIEGE", "ОСАДНЫЙ")}";
         if (d.archetype == EnemyArchetype.Archer)
-            return $"{L("THREAT", "УГРОЗА")}: {L("Ranged pressure", "Дальний бой")}";
+            return $"{L("Gate", "Ворота")} {d.baseDamage}  •  {L("RANGED", "ДАЛЬНИЙ БОЙ")}";
         if (d.archetype == EnemyArchetype.Boss)
-            return $"{L("THREAT", "УГРОЗА")}: {L("Commander aura + reinforcements", "Аура командира + подкрепления")}";
-        return $"{L("GATE DAMAGE", "УРОН ВОРОТАМ")}: {d.baseDamage}";
+            return $"{L("Gate", "Ворота")} {d.baseDamage}  •  {L("BOSS", "БОСС")}";
+        return $"{L("Gate", "Ворота")} {d.baseDamage}";
     }
 
     string LocalizedEnemyName(EnemyData d)
@@ -90,63 +99,42 @@ public class ExtendedBalanceUI : MonoBehaviour
             case EnemyArchetype.ShieldBearer: return L("Shield Bearer", "Щитоносец");
             case EnemyArchetype.Archer: return L("Greek Archer", "Греческий лучник");
             case EnemyArchetype.BatteringRam: return L("Battering Ram", "Таран");
-            case EnemyArchetype.Boss: return L("MENELAUS", "МЕНЕЛАЙ");
+            case EnemyArchetype.Boss: return "Menelaus";
             default: return d.displayName;
         }
     }
 
     void BuildUI()
     {
-        GameObject canvasObj = new GameObject("EnemyInspectionCanvas");
-        canvasObj.transform.SetParent(transform, false);
+        GameObject canvasObj = new GameObject("BalanceExtraCanvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 22;
+        canvas.sortingOrder = 20;
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.referenceResolution = new Vector2(1920,1080);
+        canvasObj.AddComponent<GraphicRaycaster>();
 
-        hoverPanel = Panel(canvas.transform, "EnemyHover", new Vector2(-20, 0), new Vector2(350, 190));
+        hoverPanel = Panel(canvas.transform, "EnemyHover", new Vector2(-24,0), new Vector2(330,205));
         RectTransform hrt = hoverPanel.GetComponent<RectTransform>();
-        Anchor(hrt, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f));
-        hoverText = Text(hoverPanel.transform, "EnemyInfo", new Vector2(16, -14), new Vector2(318, 165), 17, TextAnchor.UpperLeft);
+        Anchor(hrt, new Vector2(1,.5f), new Vector2(1,.5f), new Vector2(1,.5f));
+        hoverText = Text(hoverPanel.transform, "EnemyInfo", new Vector2(16,-14), new Vector2(298,180), 18, TextAnchor.UpperLeft);
         hoverPanel.SetActive(false);
     }
 
     GameObject Panel(Transform parent, string name, Vector2 pos, Vector2 size)
     {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        Image img = go.AddComponent<Image>();
-        img.color = new Color(.035f, .045f, .060f, .95f);
-        RectTransform rt = img.rectTransform;
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        return go;
+        GameObject go = new GameObject(name); go.transform.SetParent(parent,false);
+        Image img = go.AddComponent<Image>(); img.color = new Color(.05f,.07f,.10f,.9f);
+        RectTransform rt = img.rectTransform; rt.anchoredPosition=pos; rt.sizeDelta=size; return go;
     }
 
-    Text Text(Transform parent, string name, Vector2 pos, Vector2 size, int fontSize, TextAnchor align)
+    Text Text(Transform parent,string name,Vector2 pos,Vector2 size,int fontSize,TextAnchor align)
     {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        Text t = go.AddComponent<Text>();
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        t.fontSize = fontSize;
-        t.fontStyle = FontStyle.Bold;
-        t.color = Color.white;
-        t.alignment = align;
-        t.supportRichText = true;
-        RectTransform rt = t.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0, 1);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        return t;
+        GameObject go=new GameObject(name); go.transform.SetParent(parent,false);
+        Text t=go.AddComponent<Text>(); t.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.color=Color.white; t.alignment=align;
+        RectTransform rt=t.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(0,1); rt.anchoredPosition=pos; rt.sizeDelta=size; return t;
     }
 
-    void Anchor(RectTransform rt, Vector2 min, Vector2 max, Vector2 pivot)
-    {
-        rt.anchorMin = min;
-        rt.anchorMax = max;
-        rt.pivot = pivot;
-    }
+    void Anchor(RectTransform rt,Vector2 min,Vector2 max,Vector2 pivot){rt.anchorMin=min;rt.anchorMax=max;rt.pivot=pivot;}
 }

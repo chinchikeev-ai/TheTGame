@@ -144,13 +144,13 @@ public class GameplayAcceptanceTests
     public IEnumerator LanguageSwitch_DoesNotReloadScene()
     {
         Scene beforeScene = SceneManager.GetActiveScene();
-        int beforeHandle = beforeScene.handle;
+        ulong beforeHandle = beforeScene.handle.GetRawData();
         string beforeCode = GameLanguage.Code;
 
         GameLanguage.Toggle();
         yield return null;
 
-        Assert.AreEqual(beforeHandle, SceneManager.GetActiveScene().handle);
+        Assert.AreEqual(beforeHandle, SceneManager.GetActiveScene().handle.GetRawData());
         Assert.AreNotEqual(beforeCode, GameLanguage.Code);
     }
 
