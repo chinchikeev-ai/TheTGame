@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 public class ExtendedBalanceUI : MonoBehaviour
 {
@@ -41,7 +38,8 @@ public class ExtendedBalanceUI : MonoBehaviour
         wasWaveActive = active;
         float elapsed = active ? Mathf.Max(0f, Time.time - waveStartedAt) : 0f;
         int wave = spawner != null ? spawner.CurrentWave : 0;
-        telemetryText.text = $"{L("MAP", "КАРТА")} 1   •   {L("WAVE", "ВОЛНА")} {wave}/7   •   {L("WAVE TIME", "ВРЕМЯ ВОЛНЫ")} {FormatTime(elapsed)}";
+        int maxWaves = GameManager.Instance != null ? GameManager.Instance.MaxWaves : 5;
+        telemetryText.text = $"{L("MAP", "КАРТА")} 1   •   {L("WAVE", "ВОЛНА")} {wave}/{maxWaves}   •   {L("WAVE TIME", "ВРЕМЯ ВОЛНЫ")} {FormatTime(elapsed)}";
 
         UpdateEnemyHover();
     }
@@ -54,13 +52,7 @@ public class ExtendedBalanceUI : MonoBehaviour
             return;
         }
 
-#if ENABLE_INPUT_SYSTEM
-        if (Mouse.current == null) { hoverPanel.SetActive(false); return; }
-        Vector2 pointer = Mouse.current.position.ReadValue();
-#else
-        Vector2 pointer = Input.mousePosition;
-#endif
-        Ray ray = Camera.main.ScreenPointToRay(pointer);
+        Ray ray = Camera.main.ScreenPointToRay(GameInput.PointerPosition);
         if (!Physics.Raycast(ray, out RaycastHit hit, 250f))
         {
             hoverPanel.SetActive(false);
