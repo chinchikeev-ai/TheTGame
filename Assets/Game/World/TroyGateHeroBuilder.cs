@@ -19,9 +19,7 @@ public static class TroyGateHeroBuilder
         Part(root.transform, "Gate Doors", PrimitiveType.Cube, new Vector3(gateX - .38f, .83f, 0f), new Vector3(.20f, 1.65f, 1.65f), wood);
 
         for (int z = -1; z <= 1; z += 2)
-        {
             Part(root.transform, "Door Bronze Band", PrimitiveType.Cube, new Vector3(gateX - .50f, .83f, z * .44f), new Vector3(.05f, 1.55f, .07f), bronze);
-        }
 
         for (int y = 0; y < 4; y++)
             Part(root.transform, "Gate Crossbar", PrimitiveType.Cube, new Vector3(gateX - .51f, .30f + y * .35f, 0f), new Vector3(.05f, .07f, 1.62f), bronze * .92f);
@@ -48,7 +46,8 @@ public static class TroyGateHeroBuilder
             Part(root.transform, "Gatehouse Crenellation", PrimitiveType.Cube, new Vector3(gateX - .08f, 3.08f, i * .55f), new Vector3(.34f, .54f, .36f), sandstone * 1.05f);
         }
 
-        Part(root.transform, "Lion Emblem Back", PrimitiveType.Cylinder, new Vector3(gateX - .30f, 2.06f, 0f), new Vector3(.52f, .08f, .52f), bronze).transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        GameObject emblem = Part(root.transform, "Lion Emblem Back", PrimitiveType.Cylinder, new Vector3(gateX - .30f, 2.06f, 0f), new Vector3(.52f, .08f, .52f), bronze);
+        emblem.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         Part(root.transform, "Lion Emblem Mark", PrimitiveType.Cube, new Vector3(gateX - .40f, 2.07f, 0f), new Vector3(.08f, .48f, .14f), trojanRed);
 
         for (int side = -1; side <= 1; side += 2)
@@ -69,7 +68,7 @@ public static class TroyGateHeroBuilder
     {
         Part(parent, "Gate Banner Pole", PrimitiveType.Cylinder, position, new Vector3(.045f, .85f, .045f), new Color(.28f, .16f, .07f));
         GameObject banner = Part(parent, "Gate Banner", PrimitiveType.Cube, position + new Vector3(-.08f, .30f, 0f), new Vector3(.08f, .52f, .52f), cloth);
-        Part(banner.transform, "Banner Trim", PrimitiveType.Cube, new Vector3(-.55f, 0f, 0f), new Vector3(.08f, .14f, 1.02f), trim);
+        Part(parent, "Banner Trim", PrimitiveType.Cube, position + new Vector3(-.125f, .30f, 0f), new Vector3(.02f, .07f, .52f), trim);
         banner.AddComponent<ChapterOneAmbientMotion>().kind = ChapterOneAmbientMotion.MotionKind.Banner;
     }
 
