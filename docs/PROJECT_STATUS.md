@@ -8,31 +8,47 @@ Last reviewed: 2026-09-12
 - Chapters III-VII: planned in GDD/Roadmap
 
 ## Core
-- GameBootstrap: implemented; canonical path `Assets/Game/Core/Bootstrap/GameBootstrap.cs`
-- GameManager session facade: implemented; canonical path `Assets/Game/Core/Session/GameManager.cs`
+- GameBootstrap: implemented
+- GameManager session facade: implemented
 - GameStateController: implemented
 - EnemyRegistry: implemented
 - TowerRegistry: implemented
 - Runtime file logging: implemented
 - CampaignSave JSON + backup + migration: implemented
-- Difficulty save: implemented
-- Difficulty combat modifiers: implemented
-- EconomyController extraction: implemented
-- ScoreController extraction: implemented
+- Difficulty save/combat modifiers: implemented
+- EconomyController: extracted
+- ScoreController: extracted
 - CampaignController boundary: implemented
 - ChapterController boundary: implemented
-- GameInput facade: implemented; canonical path `Assets/Game/Core/Input/GameInput.cs`
-- Hector/TowerPlacement/Menu input routed through GameInput
+- GameInput facade: implemented
+- gameplay/UI input routed through GameInput
 
-## Architecture v2
-- `AGENTS.md`: implemented
+## Architecture
+- `AGENTS.md`: implemented and authoritative AI entrypoint
 - `docs/ARCHITECTURE.md`: implemented
-- `docs/PROJECT_STATUS.md`: implemented
+- `docs/MODULE_MAP.md`: implemented
 - architecture smoke validator: implemented
-- canonical module path validation: implemented
-- first GUID-preserving physical migration: implemented
-- moved modules: Core/Bootstrap, Core/Session, Core/Input, Campaign controllers
-- remaining physical migration: Combat, Towers, Enemies, Heroes, UI, World, Audio/VFX
+- GUID-preserving runtime migration: COMPLETE
+- legacy `Assets/Scripts`: removed
+- runtime assembly: `TheTroyGame.Runtime`
+- editor assembly: `TheTroyGame.Editor`
+- EditMode test assembly: implemented
+- PlayMode test assembly: implemented
+- direct Input outside GameInput: guarded by validator
+- scene-wide FindObjects gameplay search: guarded by validator
+- direct CampaignSave access from UI: guarded by validator
+
+## Canonical modules
+- `Assets/Game/Core`
+- `Assets/Game/Campaign`
+- `Assets/Game/Combat`
+- `Assets/Game/Towers`
+- `Assets/Game/Enemies`
+- `Assets/Game/Heroes/Hector`
+- `Assets/Game/World`
+- `Assets/Game/UI`
+- `Assets/Game/Audio`
+- `Assets/Game/VFX`
 
 ## Combat
 - DamageType / DamagePacket: implemented
@@ -83,26 +99,32 @@ Last reviewed: 2026-09-12
 - coast environment: procedural prototype implemented
 - landing presentation: procedural prototype implemented
 - production art: not implemented
-- final 11-13 minute Play Mode validation: pending
+- final 11-13 minute real Play Mode validation: pending
 
 ## UI / UX
 - menus: implemented prototype
 - level select: implemented
 - difficulty selection: implemented
 - result summary: implemented
-- build UI: functional but fragmented between panels; production pass pending
-- enemy hover details: unverified / should be audited before claiming complete
+- build UI: functional but fragmented; production pass pending
+- enemy hover details: should be verified in Unity before claiming production-ready
+
+## Automated validation
+- architecture/editor smoke validator: implemented
+- EditMode contract tests: implemented
+- PlayMode runtime graph tests: implemented
+- actual Unity execution in assistant environment: NOT AVAILABLE, therefore compile/test pass is still unverified
 
 ## Performance / production risks
 - projectile/enemy/VFX pooling: not implemented
 - 50x speed: stress mode; requires real Play Mode validation
 - runtime procedural primitives: prototype quality, not production art
-- CameraController and some non-gameplay utilities may still use direct input and should migrate later
+- runtime modules still share one assembly because gameplay dependencies are cyclic; split further only after interface/event decoupling
 
-## Next architecture work
-1. Physically migrate Combat/Towers/Enemies/Heroes/UI in GUID-preserving groups
-2. Add assembly definitions after module boundaries stabilize
-3. Add PlayMode smoke suite
-4. Add DifficultyData ScriptableObject instead of static-only difficulty tuning
-5. Add pooling before scaling later chapters
-6. Add Chapter II data/runtime only after Chapter I RC validation
+## Next product work after Unity validation
+1. Fix any compile/test failures exposed by Unity after this migration
+2. Final Chapter I 11-13 minute balance pass using runtime logs
+3. Pool projectiles/enemies/VFX before Chapter II scale
+4. Add Hector movement constraints/progression
+5. Replace static DifficultyRules with authored DifficultyData if balance iteration demands it
+6. Start Chapter II only after Chapter I RC validation
