@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour
     public int GoldSpent => economy != null ? economy.GoldSpent : 0;
     public int TowersBuilt { get; private set; }
     public int TowersSold { get; private set; }
+    public bool BossDefeated { get; private set; }
+    public bool BossBreached { get; private set; }
     public float RunTime => GameEnded ? finalRunTime : runStarted ? Mathf.Max(0f, Time.unscaledTime - runStartTime) : 0f;
     public float MagicCooldownRemaining => Mathf.Max(0f, magicReadyAt - Time.unscaledTime);
     public bool GiftAvailable => giftWave != CurrentWave;
@@ -83,6 +85,23 @@ public class GameManager : MonoBehaviour
     public void RecordTowerBuilt() => TowersBuilt++;
     public void RecordTowerSold() => TowersSold++;
 
+    public void RecordBossDefeated()
+    {
+        if (BossDefeated) return;
+        BossDefeated = true;
+        RuntimeFileLogger.Event("BOSS", $"Menelaus objective completed at wave={CurrentWave}");
+    }
+
+    public void BossReachedGate(int damage)
+    {
+        if (GameEnded) return;
+        BossBreached = true;
+        RecordLeak();
+        BaseHealth = Mathf.Max(0, BaseHealth - Mathf.Max(1, damage));
+        RuntimeFileLogger.Event("BOSS", $"Menelaus breached the Trojan gate. remainingHP={BaseHealth}/{MaxBaseHealth}");
+        LoseGame();
+    }
+
     public int RewardFor(int baseReward)
     {
         return Mathf.Max(1, Mathf.RoundToInt(baseReward * DifficultyRules.RewardMultiplier(CampaignSave.Difficulty)));
@@ -130,6 +149,13 @@ public class GameManager : MonoBehaviour
     public void WinGame()
     {
         if (GameEnded) return;
+        if (Chapter != null && Chapter.chapterNumber == 1 && !BossDefeated)
+        {
+            RuntimeFileLogger.Event("RESULT", "Chapter I victory rejected because Menelaus was not defeated");
+            LoseGame();
+            return;
+        }
+
         FinalizeRun();
         GameEnded = true;
         EndMessage = "VICTORY";
@@ -143,7 +169,7 @@ public class GameManager : MonoBehaviour
                 CampaignSave.RecordChapterResult(Chapter.chapterNumber, FinalScore, finalRunTime, BaseHealth, Chapter.unlockChapter);
         }
 
-        RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, difficulty={CampaignSave.Difficulty}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}/{MaxBaseHealth}");
+        RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, bossDefeated={BossDefeated}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, difficulty={CampaignSave.Difficulty}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}/{MaxBaseHealth}");
         GameStateController.Instance?.SetState(GameState.Victory);
     }
 
@@ -152,10 +178,9 @@ public class GameManager : MonoBehaviour
         if (GameEnded) return;
         FinalizeRun();
         GameEnded = true;
-        BaseHealth = 0;
         EndMessage = "GAME OVER";
         FinalScore = CalculateScore();
-        RuntimeFileLogger.Event("RESULT", $"DEFEAT map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, difficulty={CampaignSave.Difficulty}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}");
+        RuntimeFileLogger.Event("RESULT", $"DEFEAT map={MapNumber}, waves={CurrentWave}/{MaxWaves}, bossDefeated={BossDefeated}, bossBreached={BossBreached}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, difficulty={CampaignSave.Difficulty}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}/{MaxBaseHealth}");
         GameStateController.Instance?.SetState(GameState.Defeat);
     }
 
