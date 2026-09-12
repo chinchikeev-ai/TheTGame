@@ -78,19 +78,51 @@ public class GameplayAcceptanceTests
     }
 
     [UnityTest]
-    public IEnumerator Victory_UnlocksChapterTwo()
+    public IEnumerator Victory_RequiresMenelausDefeat_AndUnlocksChapterTwo()
     {
         Assert.NotNull(GameManager.Instance);
         Assert.IsFalse(CampaignSave.IsUnlocked(2));
 
         GameManager.Instance.BeginRun();
+        GameManager.Instance.RecordBossDefeated();
         GameManager.Instance.WinGame();
         yield return null;
 
         Assert.IsTrue(GameManager.Instance.GameEnded);
         Assert.AreEqual("VICTORY", GameManager.Instance.EndMessage);
+        Assert.IsTrue(GameManager.Instance.BossDefeated);
         Assert.IsTrue(CampaignSave.IsUnlocked(2));
         Assert.IsTrue(CampaignSave.IsCompleted(1));
+    }
+
+    [UnityTest]
+    public IEnumerator VictoryWithoutMenelausDefeat_IsRejected()
+    {
+        Assert.NotNull(GameManager.Instance);
+        GameManager.Instance.BeginRun();
+        GameManager.Instance.WinGame();
+        yield return null;
+
+        Assert.IsTrue(GameManager.Instance.GameEnded);
+        Assert.AreEqual("GAME OVER", GameManager.Instance.EndMessage);
+        Assert.IsFalse(GameManager.Instance.BossDefeated);
+        Assert.IsFalse(CampaignSave.IsUnlocked(2));
+    }
+
+    [UnityTest]
+    public IEnumerator MenelausGateBreach_IsImmediateDefeat()
+    {
+        Assert.NotNull(GameManager.Instance);
+        int hpBefore = GameManager.Instance.BaseHealth;
+        GameManager.Instance.BeginRun();
+        GameManager.Instance.BossReachedGate(2);
+        yield return null;
+
+        Assert.IsTrue(GameManager.Instance.GameEnded);
+        Assert.AreEqual("GAME OVER", GameManager.Instance.EndMessage);
+        Assert.IsTrue(GameManager.Instance.BossBreached);
+        Assert.AreEqual(hpBefore - 2, GameManager.Instance.BaseHealth);
+        Assert.IsFalse(CampaignSave.IsUnlocked(2));
     }
 
     [UnityTest]
