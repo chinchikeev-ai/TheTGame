@@ -110,19 +110,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
 
     bool HasCampaignProgress()
     {
-        CampaignSaveData save = CampaignSave.Data;
-        if (save == null) return false;
-        if (save.unlockedChapter > 1) return true;
-        if (save.finalResult != null && save.finalResult.completed) return true;
-        if (save.chapters != null && save.chapters.Count > 0)
-        {
-            foreach (ChapterProgress chapter in save.chapters)
-            {
-                if (chapter != null && (chapter.completed || chapter.bestScore > 0 || chapter.completions > 0))
-                    return true;
-            }
-        }
-        return false;
+        return CampaignController.Instance != null && CampaignController.Instance.HasProgress;
     }
 
     void RequestNewCampaign()
@@ -141,7 +129,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
 
     void StartNewCampaign()
     {
-        CampaignSave.ResetProgress();
+        CampaignController.Instance?.ResetProgress();
         RuntimeFileLogger.Event("CAMPAIGN", "New campaign started from main menu");
         MenuProgressPresentation progress = FindFirstObjectByType<MenuProgressPresentation>();
         if (progress != null) progress.RefreshAll();
