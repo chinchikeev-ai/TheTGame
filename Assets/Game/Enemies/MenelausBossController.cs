@@ -49,7 +49,12 @@ public class MenelausBossController : MonoBehaviour
 
     void OnDestroy()
     {
-        if (Application.isPlaying)
+        if (!Application.isPlaying) return;
+        if (GameManager.Instance != null && GameManager.Instance.BossDefeated)
             RuntimeFileLogger.Event("BOSS", "Menelaus defeated");
+        else if (GameManager.Instance != null && GameManager.Instance.BossBreached)
+            RuntimeFileLogger.Event("BOSS", "Menelaus breached Troy");
+        else
+            RuntimeFileLogger.Event("BOSS", "Menelaus removed before encounter resolution");
     }
 }
