@@ -16,6 +16,12 @@ public static class ArchitectureSmokeValidator
     {
         int errors = 0;
 
+        CheckScriptPath("Assets/Game/Core/Bootstrap/GameBootstrap.cs", ref errors);
+        CheckScriptPath("Assets/Game/Core/Session/GameManager.cs", ref errors);
+        CheckScriptPath("Assets/Game/Core/Input/GameInput.cs", ref errors);
+        CheckScriptPath("Assets/Game/Campaign/CampaignController.cs", ref errors);
+        CheckScriptPath("Assets/Game/Campaign/ChapterController.cs", ref errors);
+
         ChapterData chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
         if (chapter == null)
         {
@@ -88,9 +94,15 @@ public static class ArchitectureSmokeValidator
         else Debug.LogError($"[SMOKE] Architecture checks failed: {errors} error(s).");
     }
 
+    static void CheckScriptPath(string path, ref int errors)
+    {
+        if (AssetDatabase.LoadAssetAtPath<MonoScript>(path) != null) return;
+        Debug.LogError($"[SMOKE] Architecture script missing from canonical path: {path}");
+        errors++;
+    }
+
     static void RunOnEditorLoad()
     {
-        // Keep editor startup non-blocking: validate only after script compilation settles.
         if (!EditorApplication.isCompiling) Run();
     }
 }
