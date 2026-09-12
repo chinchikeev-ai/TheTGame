@@ -63,6 +63,7 @@ public class Enemy : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
         TickStatuses();
+        if (Health <= 0f) return;
         if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length) return;
 
         if (Time.time >= slowUntil) slowMultiplier = 1f;
