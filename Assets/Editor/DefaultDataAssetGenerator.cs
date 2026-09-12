@@ -10,11 +10,13 @@ public static class DefaultDataAssetGenerator
 
     static DefaultDataAssetGenerator()
     {
-        EditorApplication.delayCall += EnsureAssets;
+        // Missing assets may be created automatically for a fresh checkout.
+        // Existing authored assets are NEVER overwritten here.
+        EditorApplication.delayCall += EnsureMissingAssets;
     }
 
-    [MenuItem("TheTroyGame/Data/Create or Refresh Default Assets")]
-    public static void EnsureAssets()
+    [MenuItem("TheTroyGame/Data/Create Missing Default Assets")]
+    public static void EnsureMissingAssets()
     {
         EnsureFolder("Assets/Resources");
         EnsureFolder(Root);
@@ -22,54 +24,51 @@ public static class DefaultDataAssetGenerator
         EnsureFolder(Root + "/Enemies");
         EnsureFolder(Root + "/Waves");
 
-        foreach (TowerType type in System.Enum.GetValues(typeof(TowerType))) CreateTower(type);
-        foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype))) CreateEnemy(type);
-        for (int wave = 1; wave <= 5; wave++) CreateWave(wave);
+        foreach (TowerType type in System.Enum.GetValues(typeof(TowerType))) CreateTowerIfMissing(type);
+        foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype))) CreateEnemyIfMissing(type);
+        for (int wave = 1; wave <= 5; wave++) CreateWaveIfMissing(wave);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
 
-    static void CreateTower(TowerType type)
+    static void CreateTowerIfMissing(TowerType type)
     {
         string path = $"{Root}/Towers/{type}.asset";
+        if (AssetDatabase.LoadAssetAtPath<TowerData>(path) != null) return;
+
         TowerData source = BalanceCatalog.GetTowerRuntimeDefault(type);
-        TowerData asset = AssetDatabase.LoadAssetAtPath<TowerData>(path);
-        if (asset == null)
-        {
-            asset = ScriptableObject.CreateInstance<TowerData>();
-            AssetDatabase.CreateAsset(asset, path);
-        }
+        TowerData asset = ScriptableObject.CreateInstance<TowerData>();
         EditorUtility.CopySerialized(source, asset);
-        EditorUtility.SetDirty(asset);
+        AssetDatabase.CreateAsset(asset, path);
+        Object.DestroyImmediate(source);
+        Debug.Log($"[DATA] Created missing TowerData: {path}");
     }
 
-    static void CreateEnemy(EnemyArchetype type)
+    static void CreateEnemyIfMissing(EnemyArchetype type)
     {
         string path = $"{Root}/Enemies/{type}.asset";
+        if (AssetDatabase.LoadAssetAtPath<EnemyData>(path) != null) return;
+
         EnemyData source = BalanceCatalog.GetEnemyRuntimeDefault(type);
-        EnemyData asset = AssetDatabase.LoadAssetAtPath<EnemyData>(path);
-        if (asset == null)
-        {
-            asset = ScriptableObject.CreateInstance<EnemyData>();
-            AssetDatabase.CreateAsset(asset, path);
-        }
+        EnemyData asset = ScriptableObject.CreateInstance<EnemyData>();
         EditorUtility.CopySerialized(source, asset);
-        EditorUtility.SetDirty(asset);
+        AssetDatabase.CreateAsset(asset, path);
+        Object.DestroyImmediate(source);
+        Debug.Log($"[DATA] Created missing EnemyData: {path}");
     }
 
-    static void CreateWave(int wave)
+    static void CreateWaveIfMissing(int wave)
     {
         string path = $"{Root}/Waves/Wave_{wave:00}.asset";
+        if (AssetDatabase.LoadAssetAtPath<WaveData>(path) != null) return;
+
         WaveData source = BalanceCatalog.GetWaveRuntimeDefault(wave, 5);
-        WaveData asset = AssetDatabase.LoadAssetAtPath<WaveData>(path);
-        if (asset == null)
-        {
-            asset = ScriptableObject.CreateInstance<WaveData>();
-            AssetDatabase.CreateAsset(asset, path);
-        }
+        WaveData asset = ScriptableObject.CreateInstance<WaveData>();
         EditorUtility.CopySerialized(source, asset);
-        EditorUtility.SetDirty(asset);
+        AssetDatabase.CreateAsset(asset, path);
+        Object.DestroyImmediate(source);
+        Debug.Log($"[DATA] Created missing WaveData: {path}");
     }
 
     static void EnsureFolder(string path)
