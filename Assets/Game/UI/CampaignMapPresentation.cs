@@ -6,6 +6,7 @@ public sealed class CampaignMapPresentation : MonoBehaviour
     Canvas canvas;
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
+    CampaignController Campaign => CampaignController.Instance;
 
     void Start()
     {
@@ -68,8 +69,9 @@ public sealed class CampaignMapPresentation : MonoBehaviour
             new Vector2( 390, -150)
         };
 
+        int unlockedChapter = Campaign != null ? Campaign.UnlockedChapter : 1;
         for (int i = 0; i < points.Length - 1; i++)
-            MakeConnector(mapField.transform, points[i], points[i + 1], i + 1 < CampaignSave.UnlockedChapter);
+            MakeConnector(mapField.transform, points[i], points[i + 1], i + 1 < unlockedChapter);
 
         for (int i = 0; i < points.Length; i++)
             MakeNode(mapField.transform, i + 1, points[i]);
@@ -124,9 +126,9 @@ public sealed class CampaignMapPresentation : MonoBehaviour
 
     void MakeNode(Transform parent, int chapter, Vector2 pos)
     {
-        bool unlocked = CampaignSave.IsUnlocked(chapter);
-        bool completed = CampaignSave.IsCompleted(chapter);
-        ChapterProgress progress = CampaignSave.GetChapterProgress(chapter);
+        bool unlocked = Campaign != null && Campaign.IsChapterUnlocked(chapter);
+        ChapterProgress progress = Campaign != null ? Campaign.GetProgress(chapter) : null;
+        bool completed = progress != null && progress.completed;
 
         GameObject go = new GameObject("ChapterNode_" + chapter);
         go.transform.SetParent(parent, false);
@@ -153,7 +155,7 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         titleText.rectTransform.sizeDelta = new Vector2(165f, 42f);
 
         string state;
-        if (completed) state = progress != null && progress.bestScore > 0 ? L($"BEST {progress.bestScore:N0}", $"ЛУЧШИЙ {progress.bestScore:N0}") : L("COMPLETED", "ПРОЙДЕНО");
+        if (completed) state = progress.bestScore > 0 ? L($"BEST {progress.bestScore:N0}", $"ЛУЧШИЙ {progress.bestScore:N0}") : L("COMPLETED", "ПРОЙДЕНО");
         else if (unlocked) state = L("AVAILABLE", "ДОСТУПНО");
         else state = L("LOCKED", "ЗАКРЫТО");
         Text stateText = MakeText(parent, state, pos + new Vector2(0, -95), 11,
@@ -186,9 +188,16 @@ public sealed class CampaignMapPresentation : MonoBehaviour
 
     void MakeProgressHeader(Transform parent)
     {
-        int unlocked = Mathf.Clamp(CampaignSave.UnlockedChapter, 1, 7);
+        int unlocked = Campaign != null ? Mathf.Clamp(Campaign.UnlockedChapter, 1, 7) : 1;
         int completed = 0;
-        for (int i = 1; i <= 7; i++) if (CampaignSave.IsCompleted(i)) completed++;
+        if (Campaign != null)
+        {
+            for (int i = 1; i <= 7; i++)
+            {
+                ChapterProgress progress = Campaign.GetProgress(i);
+                if (progress != null && progress.completed) completed++;
+            }
+        }
         Text text = MakeText(parent,
             L($"CHAPTER {unlocked}/7  •  COMPLETED {completed}/7", $"ГЛАВА {unlocked}/7  •  ПРОЙДЕНО {completed}/7"),
             new Vector2(0, 275), 14, new Color(.82f, .70f, .56f, .90f));
