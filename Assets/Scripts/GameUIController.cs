@@ -65,8 +65,8 @@ public class GameUIController : MonoBehaviour
         waveText=CreateText(canvas.transform,"Wave",new Vector2(24,-68),new Vector2(850,42),22,TextAnchor.UpperLeft);
         nextWaveText=CreateText(canvas.transform,"NextWave",new Vector2(0,-22),new Vector2(1100,48),20,TextAnchor.UpperCenter); Anchor(nextWaveText.rectTransform,new Vector2(.5f,1f),new Vector2(.5f,1f),new Vector2(.5f,1f));
         CreateBuildBar(canvas.transform); CreateSelectedPanel(canvas.transform);
-        Text help=CreateText(canvas.transform,"Help",new Vector2(-24,24),new Vector2(1000,58),18,TextAnchor.LowerRight); Anchor(help.rectTransform,new Vector2(1f,0f),new Vector2(1f,0f),new Vector2(1f,0f));
-        help.text=L("2D GRID • FREE CELLS BUILDABLE • HECTOR: LMB/RMB, Q WAR CRY, E SHIELD WALL, R SPEAR THROW","2D СЕТКА • СТРОЙТЕ НА СВОБОДНЫХ КЛЕТКАХ • ГЕКТОР: ЛКМ/ПКМ, Q КЛИЧ, E ЩИТОВАЯ СТЕНА, R КОПЬЁ");
+        Text help=CreateText(canvas.transform,"Help",new Vector2(-24,24),new Vector2(1200,58),18,TextAnchor.LowerRight); Anchor(help.rectTransform,new Vector2(1f,0f),new Vector2(1f,0f),new Vector2(1f,0f));
+        help.text=L("BUILD ON MARKED GROUND • HECTOR: LMB SELECT, RMB MOVE, Q WAR CRY, E SHIELD WALL, R SPEAR THROW, F FOR TROY!","СТРОЙТЕ НА ОТМЕЧЕННЫХ ПОЗИЦИЯХ • ГЕКТОР: ЛКМ ВЫБОР, ПКМ ДВИЖЕНИЕ, Q КЛИЧ, E СТЕНА ЩИТОВ, R КОПЬЁ, F ЗА ТРОЮ!");
         endText=CreateText(canvas.transform,"End",Vector2.zero,new Vector2(900,180),64,TextAnchor.MiddleCenter); Anchor(endText.rectTransform,new Vector2(.5f,.5f),new Vector2(.5f,.5f),new Vector2(.5f,.5f)); endText.gameObject.SetActive(false);
     }
 
