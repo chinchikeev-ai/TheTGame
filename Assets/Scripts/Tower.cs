@@ -75,7 +75,11 @@ public class Tower : MonoBehaviour
 
     public void Sell()
     {
-        if (GameManager.Instance != null) GameManager.Instance.AddMoney(SellValue);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddMoney(SellValue);
+            GameManager.Instance.RecordTowerSold();
+        }
         if (OwnerPoint != null) OwnerPoint.ClearTower(this);
         Destroy(gameObject);
     }
