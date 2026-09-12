@@ -71,9 +71,11 @@ public static class CampaignSave
     const string BackupFileName = "campaign_save.backup.json";
 
     static CampaignSaveData data;
+    static string storageRootOverride;
 
-    static string SavePath => Path.Combine(Application.persistentDataPath, FileName);
-    static string BackupPath => Path.Combine(Application.persistentDataPath, BackupFileName);
+    static string StorageRoot => string.IsNullOrEmpty(storageRootOverride) ? Application.persistentDataPath : storageRootOverride;
+    static string SavePath => Path.Combine(StorageRoot, FileName);
+    static string BackupPath => Path.Combine(StorageRoot, BackupFileName);
 
     public static CampaignSaveData Data
     {
@@ -88,12 +90,28 @@ public static class CampaignSave
     public static CampaignDifficulty Difficulty => Data.difficulty;
     public static CampaignFinalResult FinalResult => Data.finalResult;
     public static string CurrentSavePath => SavePath;
+    public static string CurrentBackupPath => BackupPath;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void RuntimeLoad()
     {
         EnsureLoaded();
     }
+
+    public static void ConfigureStorageForTests(string rootPath)
+    {
+        storageRootOverride = rootPath;
+        data = null;
+        if (!string.IsNullOrEmpty(storageRootOverride)) Directory.CreateDirectory(storageRootOverride);
+    }
+
+    public static void ClearStorageOverrideForTests()
+    {
+        storageRootOverride = null;
+        data = null;
+    }
+
+    public static void ResetRuntimeCacheForTests() => data = null;
 
     public static bool IsUnlocked(int chapter) => chapter >= 1 && chapter <= UnlockedChapter;
 
@@ -115,7 +133,6 @@ public static class CampaignSave
         return progress ?? new ChapterProgress { chapter = chapter };
     }
 
-    // Compatibility API used by the current Chapter I flow.
     public static void CompleteChapter(int chapter, int score, int unlockChapter)
     {
         RecordChapterResult(chapter, score, 0f, 0, unlockChapter);
@@ -199,7 +216,6 @@ public static class CampaignSave
         return modifier != null ? modifier.value : fallback;
     }
 
-    // Chapter VI -> VII helpers. These keys are intentionally explicit so Chapter VII can consume them directly.
     public static void SaveHorseChapterChoices(bool reinforcedInnerCity, bool repairedGate, bool preparedFireDefense, int evacuationReadiness, float internalSpawnDelayBonus)
     {
         SetNarrativeChoice("chapter6.reinforced_inner_city", reinforcedInnerCity ? "1" : "0");
@@ -238,6 +254,7 @@ public static class CampaignSave
         EnsureLoaded(false);
         try
         {
+            Directory.CreateDirectory(StorageRoot);
             data.version = CurrentVersion;
             data.lastSavedUtc = DateTime.UtcNow.ToString("O");
             string json = JsonUtility.ToJson(data, true);
@@ -267,6 +284,7 @@ public static class CampaignSave
         data = CreateDefault();
         try
         {
+            Directory.CreateDirectory(StorageRoot);
             if (File.Exists(SavePath)) File.Delete(SavePath);
             if (File.Exists(BackupPath)) File.Delete(BackupPath);
         }
@@ -275,9 +293,13 @@ public static class CampaignSave
             Debug.LogWarning($"Could not delete campaign save files: {ex.Message}");
         }
 
-        PlayerPrefs.DeleteKey(LegacyUnlockedKey);
-        for (int i = 1; i <= 7; i++) PlayerPrefs.DeleteKey(LegacyScorePrefix + i);
-        PlayerPrefs.Save();
+        if (string.IsNullOrEmpty(storageRootOverride))
+        {
+            PlayerPrefs.DeleteKey(LegacyUnlockedKey);
+            for (int i = 1; i <= 7; i++) PlayerPrefs.DeleteKey(LegacyScorePrefix + i);
+            PlayerPrefs.Save();
+        }
+
         Save();
         RuntimeFileLogger.Event("SAVE", "Campaign progress reset");
     }
@@ -296,7 +318,7 @@ public static class CampaignSave
             loaded = TryLoad(BackupPath);
             if (loaded != null) RuntimeFileLogger.Event("SAVE", "Primary save invalid; loaded backup");
         }
-        if (loaded == null) loaded = MigrateLegacyOrCreateDefault();
+        if (loaded == null) loaded = string.IsNullOrEmpty(storageRootOverride) ? MigrateLegacyOrCreateDefault() : CreateDefault();
         Normalize(loaded);
         RuntimeFileLogger.Event("SAVE", $"Loaded save v{loaded.version}. unlocked={loaded.unlockedChapter}, difficulty={loaded.difficulty}, campaignScore={CampaignScore(loaded)}");
         return loaded;
@@ -309,7 +331,8 @@ public static class CampaignSave
             if (!File.Exists(path)) return null;
             string json = File.ReadAllText(path);
             if (string.IsNullOrWhiteSpace(json)) return null;
-            return JsonUtility.FromJson<CampaignSaveData>(json);
+            CampaignSaveData loaded = JsonUtility.FromJson<CampaignSaveData>(json);
+            return loaded != null && loaded.version > 0 ? loaded : null;
         }
         catch (Exception ex)
         {
