@@ -33,9 +33,9 @@ public static class ChapterOneWallLife
 
     static void AddStandard(Transform parent, Vector3 position)
     {
-        GameObject pole = Part(parent, "Royal Standard Pole", PrimitiveType.Cylinder, position, new Vector3(.04f, .9f, .04f), new Color(.30f, .17f, .07f));
+        Part(parent, "Royal Standard Pole", PrimitiveType.Cylinder, position, new Vector3(.04f, .9f, .04f), new Color(.30f, .17f, .07f));
         GameObject banner = Part(parent, "Royal Banner", PrimitiveType.Cube, position + new Vector3(-.02f, .48f, 0f), new Vector3(.06f, .48f, .48f), new Color(.55f, .06f, .04f));
-        Part(banner.transform, "Royal Gold Stripe", PrimitiveType.Cube, new Vector3(-.55f, 0f, 0f), new Vector3(.08f, .16f, 1.04f), new Color(.88f, .62f, .14f));
+        Part(parent, "Royal Gold Stripe", PrimitiveType.Cube, position + new Vector3(-.055f, .48f, 0f), new Vector3(.025f, .08f, .50f), new Color(.88f, .62f, .14f));
         banner.AddComponent<ChapterOneAmbientMotion>().kind = ChapterOneAmbientMotion.MotionKind.Banner;
     }
 
