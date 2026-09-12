@@ -36,8 +36,9 @@ Last reviewed: 2026-09-12
 - PlayMode runtime graph tests: implemented
 - PlayMode acceptance tests: first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, final-wave boss data
 - GitHub Actions architecture guard: VERIFIED GREEN
-- Unity EditMode/PlayMode CI: running; do not claim success until the jobs finish
-- Windows build runs after Unity tests succeed
+- GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
+- therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
+- once Unity activation is configured in repository Actions settings, the existing workflow continues automatically through tests and build
 
 ## Current gameplay
 - DamageType / DamagePacket and Physical/Piercing/Fire/Hero: implemented
@@ -49,6 +50,7 @@ Last reviewed: 2026-09-12
 - Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU, procedural coast/landing prototype
 
 ## Remaining production risks
+- first actual Unity compile/test pass after architecture migration
 - final real 11–13 minute Chapter I balance validation
 - projectile/enemy/VFX pooling
 - production art/environment pass
@@ -56,4 +58,4 @@ Last reviewed: 2026-09-12
 - gameplay modules still share one runtime assembly pending interface/event decoupling
 
 ## Next gate
-Do not start Chapter II implementation until the first full Unity CI/local validation is green and Chapter I RC issues exposed by it are fixed.
+Configure Unity activation for GitHub Actions or run `tools/validate-project.ps1` locally with Unity 6000.6.0f1. Fix any resulting compile/test failures before starting Chapter II implementation.
