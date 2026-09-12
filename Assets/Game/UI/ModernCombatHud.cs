@@ -11,7 +11,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     Canvas menuCanvas;
 
     Text goldText, gateText, aliveText, waveText, threatText, selectedTitle, selectedStats, selectedPriority;
-    Button upgradeButton, sellButton, priorityButton, startWaveButton;
+    Button upgradeButton, sellButton, priorityButton;
     Text buildSelectionText;
 
     readonly TowerType[] buildTypes =
@@ -39,11 +39,10 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void FindCanvases()
     {
-        foreach (Canvas candidate in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-        {
-            if (candidate.gameObject.name == "GameCanvas") legacyCanvas = candidate;
-            if (candidate.gameObject.name == "MenuCanvas") menuCanvas = candidate;
-        }
+        GameObject legacyObject = GameObject.Find("GameCanvas");
+        legacyCanvas = legacyObject != null ? legacyObject.GetComponent<Canvas>() : null;
+        GameObject menuObject = GameObject.Find("MenuCanvas");
+        menuCanvas = menuObject != null ? menuObject.GetComponent<Canvas>() : null;
         if (legacyCanvas != null) legacyCanvas.enabled = false;
     }
 
@@ -201,16 +200,13 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void HandlePcHotkeys()
     {
-#if ENABLE_INPUT_SYSTEM
-        var keyboard=UnityEngine.InputSystem.Keyboard.current;
-        if(keyboard==null||placement==null)return;
-        if(keyboard.digit1Key.wasPressedThisFrame)SelectBuild(buildTypes[0]);
-        if(keyboard.digit2Key.wasPressedThisFrame)SelectBuild(buildTypes[1]);
-        if(keyboard.digit3Key.wasPressedThisFrame)SelectBuild(buildTypes[2]);
-        if(keyboard.digit4Key.wasPressedThisFrame)SelectBuild(buildTypes[3]);
-        if(keyboard.digit5Key.wasPressedThisFrame)SelectBuild(buildTypes[4]);
-        if(keyboard.digit6Key.wasPressedThisFrame)SelectBuild(buildTypes[5]);
-#endif
+        if (placement == null) return;
+        for (int i = 0; i < buildTypes.Length; i++)
+        {
+            if (!GameInput.BuildSlotPressed(i + 1)) continue;
+            SelectBuild(buildTypes[i]);
+            break;
+        }
     }
 
     void SelectBuild(TowerType type){ placement?.SelectBuildType(type); }
