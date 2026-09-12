@@ -104,7 +104,7 @@ public class Tower : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.AddMoney(SellValue);
+            GameManager.Instance.RefundMoney(SellValue);
             GameManager.Instance.RecordTowerSold();
         }
         DestroyWithoutRefund();
