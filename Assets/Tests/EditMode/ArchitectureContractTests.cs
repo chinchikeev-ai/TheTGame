@@ -41,6 +41,19 @@ public class ArchitectureContractTests
     }
 
     [Test]
+    public void BattlefieldClamp_KeepsHeroInsideMap()
+    {
+        Vector3 clamped = MapBuilder.ClampToPlayableArea(new Vector3(999f, 1f, -999f));
+        Vector3 min = MapBuilder.CellToWorld(new Vector2Int(0, 0));
+        Vector3 max = MapBuilder.CellToWorld(new Vector2Int(MapBuilder.GridWidth - 1, MapBuilder.GridHeight - 1));
+        Assert.Greater(clamped.x, min.x);
+        Assert.Less(clamped.x, max.x);
+        Assert.Greater(clamped.z, min.z);
+        Assert.Less(clamped.z, max.z);
+        Assert.AreEqual(1f, clamped.y);
+    }
+
+    [Test]
     public void EveryTowerType_HasData()
     {
         foreach (TowerType type in Enum.GetValues(typeof(TowerType)))
