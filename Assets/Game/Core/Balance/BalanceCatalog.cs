@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,9 +32,13 @@ public static class BalanceCatalog
     public static WaveData GetWave(int wave, int maxWaves = 5)
     {
         WaveData authored = Resources.Load<WaveData>($"Data/Waves/Wave_{wave:00}");
-        return authored != null ? authored : GetWaveRuntimeDefault(wave, maxWaves);
+        if (authored == null)
+            throw new InvalidOperationException($"Missing authored WaveData: Resources/Data/Waves/Wave_{wave:00}. Run TheTroyGame/Data/Create Missing Default Assets in the Editor.");
+        return authored;
     }
 
+    // Bootstrap defaults exist ONLY to create a missing authored asset in Editor tooling.
+    // Runtime gameplay never uses these values as a fallback.
     public static TowerData GetTowerRuntimeDefault(TowerType type)
     {
         switch (type)
@@ -71,8 +76,6 @@ public static class BalanceCatalog
         d.heavyEvery = wave >= 3 ? 4 : 0;
         d.hasBoss = wave == maxWaves;
 
-        // Chapter I pacing target: total real play time 11-13 minutes at 1x.
-        // Combat targets sum to 560s; preparation windows add ~120s.
         float[] target = { 60f, 80f, 100f, 120f, 200f };
         float[] cadence = { 4.6f, 4.25f, 4.0f, 3.75f, 4.15f };
         float[] prep = { 35f, 20f, 20f, 20f, 25f };
@@ -85,19 +88,23 @@ public static class BalanceCatalog
 
     static void BuildTowers()
     {
-        foreach (TowerType type in System.Enum.GetValues(typeof(TowerType)))
+        foreach (TowerType type in Enum.GetValues(typeof(TowerType)))
         {
             TowerData authored = Resources.Load<TowerData>($"Data/Towers/{type}");
-            towers[type] = authored != null ? authored : GetTowerRuntimeDefault(type);
+            if (authored == null)
+                throw new InvalidOperationException($"Missing authored TowerData: Resources/Data/Towers/{type}.");
+            towers[type] = authored;
         }
     }
 
     static void BuildEnemies()
     {
-        foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype)))
+        foreach (EnemyArchetype type in Enum.GetValues(typeof(EnemyArchetype)))
         {
             EnemyData authored = Resources.Load<EnemyData>($"Data/Enemies/{type}");
-            enemies[type] = authored != null ? authored : GetEnemyRuntimeDefault(type);
+            if (authored == null)
+                throw new InvalidOperationException($"Missing authored EnemyData: Resources/Data/Enemies/{type}.");
+            enemies[type] = authored;
         }
     }
 
