@@ -8,7 +8,8 @@ Last reviewed: 2026-09-12
 - Chapters III-VII: planned in GDD/Roadmap
 
 ## Core
-- GameBootstrap: implemented
+- GameBootstrap: implemented; canonical path `Assets/Game/Core/Bootstrap/GameBootstrap.cs`
+- GameManager session facade: implemented; canonical path `Assets/Game/Core/Session/GameManager.cs`
 - GameStateController: implemented
 - EnemyRegistry: implemented
 - TowerRegistry: implemented
@@ -16,7 +17,22 @@ Last reviewed: 2026-09-12
 - CampaignSave JSON + backup + migration: implemented
 - Difficulty save: implemented
 - Difficulty combat modifiers: implemented
-- Input abstraction: partial; direct input still exists in runtime controllers
+- EconomyController extraction: implemented
+- ScoreController extraction: implemented
+- CampaignController boundary: implemented
+- ChapterController boundary: implemented
+- GameInput facade: implemented; canonical path `Assets/Game/Core/Input/GameInput.cs`
+- Hector/TowerPlacement/Menu input routed through GameInput
+
+## Architecture v2
+- `AGENTS.md`: implemented
+- `docs/ARCHITECTURE.md`: implemented
+- `docs/PROJECT_STATUS.md`: implemented
+- architecture smoke validator: implemented
+- canonical module path validation: implemented
+- first GUID-preserving physical migration: implemented
+- moved modules: Core/Bootstrap, Core/Session, Core/Input, Campaign controllers
+- remaining physical migration: Combat, Towers, Enemies, Heroes, UI, World, Audio/VFX
 
 ## Combat
 - DamageType / DamagePacket: implemented
@@ -81,13 +97,12 @@ Last reviewed: 2026-09-12
 - projectile/enemy/VFX pooling: not implemented
 - 50x speed: stress mode; requires real Play Mode validation
 - runtime procedural primitives: prototype quality, not production art
-- some controllers still use direct New Input System / legacy fallback instead of a unified input adapter
+- CameraController and some non-gameplay utilities may still use direct input and should migrate later
 
 ## Next architecture work
-1. EconomyController extraction
-2. ScoreController extraction
-3. ChapterController / CampaignController boundary
-4. EditMode contract smoke tests
-5. PlayMode smoke suite
-6. Incremental move from Assets/Scripts to Assets/Game modules with .meta preservation
-7. Pooling before scaling later chapters
+1. Physically migrate Combat/Towers/Enemies/Heroes/UI in GUID-preserving groups
+2. Add assembly definitions after module boundaries stabilize
+3. Add PlayMode smoke suite
+4. Add DifficultyData ScriptableObject instead of static-only difficulty tuning
+5. Add pooling before scaling later chapters
+6. Add Chapter II data/runtime only after Chapter I RC validation
