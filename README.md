@@ -3,29 +3,23 @@
 Story-driven Tower Defence about the defense and fall of Troy. Unity 6 + URP + C#.
 
 ## AI-assisted development
-Start here:
-
+Read in this order:
 1. `AGENTS.md`
-2. `docs/PROJECT_STATUS.md`
-3. `docs/ARCHITECTURE.md`
-4. `docs/MODULE_MAP.md`
-5. `docs/GDD_v0.1.md`
-6. `docs/UNITY_ROADMAP.md`
+2. `docs/AI_PIPELINE.md`
+3. `docs/PROJECT_STATUS.md`
+4. `docs/ARCHITECTURE.md`
+5. `docs/MODULE_MAP.md`
+6. `docs/DATA_CATALOG.md`
+7. `docs/RUNTIME_GRAPH.md`
+8. `docs/NAMESPACE_POLICY.md`
+9. relevant GDD / roadmap / chapter docs
 
-`AGENTS.md` contains the mandatory rules for AI agents and contributors.
+For non-trivial work use `docs/tasks/TASK_TEMPLATE.md`.
 
 ## Canonical runtime structure
-
 ```text
 Assets/Game/
 ├── Core/
-│   ├── Bootstrap/
-│   ├── Input/
-│   ├── Session/
-│   ├── State/
-│   ├── Balance/
-│   ├── Localization/
-│   └── Logging/
 ├── Campaign/
 ├── Combat/
 ├── Towers/
@@ -39,6 +33,9 @@ Assets/Game/
 
 Legacy `Assets/Scripts` must not be recreated.
 
+## Data source of truth
+Authored ScriptableObject assets under `Assets/Resources` are the runtime source of truth for tower/enemy/wave/chapter configuration. The default-data generator creates missing assets only and must never overwrite existing authored data.
+
 ## Assemblies
 - `TheTroyGame.Runtime`
 - `TheTroyGame.Editor`
@@ -46,10 +43,17 @@ Legacy `Assets/Scripts` must not be recreated.
 - `TheTroyGame.PlayModeTests`
 
 ## Validation
-In Unity:
+Fast architecture guard:
+`python tools/check-architecture.py`
 
-`TheTroyGame -> Validation -> Run Architecture Smoke Checks`
+Full Windows validation:
+`./tools/validate-project.ps1`
 
-Also run EditMode and PlayMode tests before treating gameplay changes as validated.
+Full Unix validation:
+`UNITY_EDITOR=/path/to/Unity ./tools/validate-project.sh`
 
-The current Chapter I target is 5 combat events and approximately 11-13 minutes of real playtime. See `docs/PROJECT_STATUS.md` for what is implemented versus still pending.
+Full pipeline: architecture checks -> EditMode tests -> PlayMode acceptance tests -> Windows build.
+
+CI: `.github/workflows/unity-ci.yml`. Unity CI jobs require repository Unity activation configuration in GitHub Actions settings.
+
+The current Chapter I target is five combat events and approximately 11-13 minutes of real playtime. See `docs/PROJECT_STATUS.md` for implementation status.
