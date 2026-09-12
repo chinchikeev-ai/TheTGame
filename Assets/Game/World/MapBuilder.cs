@@ -127,4 +127,13 @@ public class MapBuilder : MonoBehaviour
         float originZ = -(GridHeight - 1) * CellSize * .5f;
         return new Vector3(originX + cell.x * CellSize, height, originZ + cell.y * CellSize);
     }
+
+    public static Vector3 ClampToPlayableArea(Vector3 worldPosition, float margin = 0.65f)
+    {
+        Vector3 min = CellToWorld(new Vector2Int(0, 0));
+        Vector3 max = CellToWorld(new Vector2Int(GridWidth - 1, GridHeight - 1));
+        worldPosition.x = Mathf.Clamp(worldPosition.x, min.x + margin, max.x - margin);
+        worldPosition.z = Mathf.Clamp(worldPosition.z, min.z + margin, max.z - margin);
+        return worldPosition;
+    }
 }
