@@ -17,22 +17,36 @@ public class RuntimeEffects : MonoBehaviour
 
     public void PlayShot(TowerType type, Vector3 position)
     {
-        float freq = type == TowerType.Cannon ? 120f : type == TowerType.Slow ? 520f : 820f;
-        float dur = type == TowerType.Cannon ? 0.14f : 0.055f;
-        source.PlayOneShot(MakeTone(freq, dur, type == TowerType.Cannon ? 0.25f : 0.12f));
-        StartCoroutine(Flash(position, type == TowerType.Slow ? new Color(0.2f,0.8f,1f) : new Color(1f,0.65f,0.1f)));
+        float freq = 820f;
+        float dur = .055f;
+        float volume = .12f;
+        Color flash = new Color(1f,.68f,.18f);
+        float size = .28f;
+
+        switch(type)
+        {
+            case TowerType.Cannon: freq=120f; dur=.14f; volume=.25f; flash=new Color(1f,.42f,.08f); size=.48f; break;
+            case TowerType.Slow: freq=520f; flash=new Color(.30f,.70f,1f); size=.34f; break;
+            case TowerType.SpearThrower: freq=680f; flash=new Color(.92f,.78f,.36f); size=.24f; break;
+            case TowerType.FireTower: freq=180f; dur=.10f; volume=.18f; flash=new Color(1f,.18f,.02f); size=.52f; break;
+            case TowerType.TrojanGuard: freq=260f; dur=.08f; flash=new Color(.76f,.38f,.12f); size=.26f; break;
+        }
+
+        source.PlayOneShot(MakeTone(freq,dur,volume));
+        StartCoroutine(Flash(position,flash,size));
     }
 
     public void PlayHit(Vector3 position, bool heavy = false)
     {
         source.PlayOneShot(MakeTone(heavy ? 90f : 240f, 0.06f, 0.10f));
-        StartCoroutine(Burst(position, heavy ? 0.7f : 0.35f, new Color(1f,0.45f,0.12f)));
+        StartCoroutine(Burst(position, heavy ? .75f : .34f, heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f)));
     }
 
     public void PlayDeath(Vector3 position, bool boss = false)
     {
         source.PlayOneShot(MakeTone(boss ? 70f : 150f, boss ? 0.35f : 0.16f, boss ? 0.32f : 0.16f));
-        StartCoroutine(Burst(position, boss ? 2.0f : 0.85f, boss ? new Color(0.9f,0.1f,0.12f) : new Color(1f,0.72f,0.18f)));
+        StartCoroutine(Burst(position, boss ? 2.2f : .88f, boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f)));
+        if(boss) StartCoroutine(BossShockwave(position));
     }
 
     AudioClip MakeTone(float frequency, float duration, float volume)
@@ -51,15 +65,15 @@ public class RuntimeEffects : MonoBehaviour
         return clip;
     }
 
-    IEnumerator Flash(Vector3 position, Color color)
+    IEnumerator Flash(Vector3 position, Color color, float size)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.name = "MuzzleFlash";
         go.transform.position = position;
-        go.transform.localScale = Vector3.one * 0.28f;
+        go.transform.localScale = Vector3.one * size;
         Destroy(go.GetComponent<Collider>());
         TowerFactory.SetColor(go, color);
-        yield return new WaitForSeconds(0.045f);
+        yield return new WaitForSeconds(.05f);
         if (go != null) Destroy(go);
     }
 
@@ -68,16 +82,35 @@ public class RuntimeEffects : MonoBehaviour
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.name = "ImpactFX";
         go.transform.position = position;
-        go.transform.localScale = Vector3.one * 0.1f;
+        go.transform.localScale = Vector3.one * .1f;
         Destroy(go.GetComponent<Collider>());
         TowerFactory.SetColor(go, color);
         float t = 0f;
-        while (t < 0.18f && go != null)
+        while (t < .18f && go != null)
         {
             t += Time.deltaTime;
-            go.transform.localScale = Vector3.one * Mathf.Lerp(0.1f, size, t / 0.18f);
+            go.transform.localScale = Vector3.one * Mathf.Lerp(.1f, size, t / .18f);
             yield return null;
         }
         if (go != null) Destroy(go);
+    }
+
+    IEnumerator BossShockwave(Vector3 position)
+    {
+        GameObject ring=GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        ring.name="BossDeathShockwave";
+        ring.transform.position=position+Vector3.up*.04f;
+        ring.transform.localScale=new Vector3(.2f,.02f,.2f);
+        Destroy(ring.GetComponent<Collider>());
+        TowerFactory.SetColor(ring,new Color(.95f,.62f,.12f));
+        float t=0f;
+        while(t<.5f && ring!=null)
+        {
+            t+=Time.deltaTime;
+            float s=Mathf.Lerp(.2f,3.8f,t/.5f);
+            ring.transform.localScale=new Vector3(s,.02f,s);
+            yield return null;
+        }
+        if(ring!=null) Destroy(ring);
     }
 }
