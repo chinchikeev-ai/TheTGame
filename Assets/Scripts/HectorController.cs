@@ -1,8 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 public class HectorController : MonoBehaviour
 {
@@ -41,10 +39,7 @@ public class HectorController : MonoBehaviour
     float reviveAt;
     Renderer body;
 
-    void Awake()
-    {
-        Instance = this;
-    }
+    void Awake() => Instance = this;
 
     void OnDestroy()
     {
@@ -75,19 +70,20 @@ public class HectorController : MonoBehaviour
         AutoAttack();
 
         if (!Selected) return;
-        if (ReadWarCry()) UseWarCry();
-        if (ReadShieldWall()) UseShieldWall();
-        if (ReadSpearThrow()) UseSpearThrow();
-        if (ReadUltimate()) UseUltimate();
+        if (GameInput.Ability1Pressed()) UseWarCry();
+        if (GameInput.Ability2Pressed()) UseShieldWall();
+        if (GameInput.Ability3Pressed()) UseSpearThrow();
+        if (GameInput.UltimatePressed()) UseUltimate();
     }
 
     void HandleSelectionAndMove()
     {
         Camera cam = Camera.main;
         if (cam == null) return;
-        if (ReadPrimaryClick() && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
+
+        if (GameInput.PrimaryPressed() && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
         {
-            Ray ray = cam.ScreenPointToRay(ReadPointer());
+            Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 200f))
             {
                 HectorController h = hit.collider.GetComponentInParent<HectorController>();
@@ -95,10 +91,11 @@ public class HectorController : MonoBehaviour
                 RefreshColor();
             }
         }
-        if (Selected && ReadSecondaryClick() && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
+
+        if (Selected && GameInput.SecondaryPressed() && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
         {
             Plane plane = new Plane(Vector3.up, Vector3.zero);
-            Ray ray = cam.ScreenPointToRay(ReadPointer());
+            Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
             if (plane.Raycast(ray, out float enter))
             {
                 destination = ray.GetPoint(enter);
@@ -123,14 +120,14 @@ public class HectorController : MonoBehaviour
         if (best == null) return;
         nextAttack = Time.time + 1f / attackRate;
         best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(best.transform.position, false);
+        RuntimeEffects.Instance?.PlayHit(best.transform.position, false);
     }
 
     public void TakeDamage(float damage)
     {
         if (IsDowned || Health <= 0f) return;
         Health -= Mathf.Max(1f, damage);
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, damage >= 25f);
+        RuntimeEffects.Instance?.PlayHit(transform.position, damage >= 25f);
         if (Health <= 0f) Down();
     }
 
@@ -168,7 +165,7 @@ public class HectorController : MonoBehaviour
             buffed++;
         }
         RuntimeFileLogger.Event("HECTOR", $"War Cry used; towersBuffed={buffed}");
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, true);
+        RuntimeEffects.Instance?.PlayHit(transform.position, true);
     }
 
     public void UseShieldWall()
@@ -207,14 +204,13 @@ public class HectorController : MonoBehaviour
         target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
         target.ApplyArmorBreak(.25f, 6f);
         RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(target.transform.position, true);
+        RuntimeEffects.Instance?.PlayHit(target.transform.position, true);
     }
 
     public void UseUltimate()
     {
         if (IsDowned || Time.time < nextUltimate) return;
         nextUltimate = Time.time + ultimateCooldown;
-
         Health = Mathf.Min(maxHealth, Health + maxHealth * .35f);
 
         int towersBuffed = 0;
@@ -227,17 +223,18 @@ public class HectorController : MonoBehaviour
 
         int enemiesHit = 0;
         float radiusSq = ultimateEnemyRadius * ultimateEnemyRadius;
-        foreach (Enemy enemy in EnemyRegistry.All)
+        List<Enemy> snapshot = new List<Enemy>(EnemyRegistry.All);
+        foreach (Enemy enemy in snapshot)
         {
             if (enemy == null) continue;
             if ((enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
             enemy.ReceiveDamage(new DamagePacket(100f, DamageType.Hero));
-            enemy.ApplySlow(.70f, 4f);
+            if (enemy != null) enemy.ApplySlow(.70f, 4f);
             enemiesHit++;
         }
 
         RuntimeFileLogger.Event("HECTOR", $"For Troy ultimate used; towersBuffed={towersBuffed}, enemiesHit={enemiesHit}, hp={Health:0}/{maxHealth:0}");
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, true);
+        RuntimeEffects.Instance?.PlayHit(transform.position, true);
     }
 
     Enemy FindNearestEnemy(float radius)
@@ -265,68 +262,5 @@ public class HectorController : MonoBehaviour
         Material material = body.material;
         if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color")) material.SetColor("_Color", color);
-    }
-
-    Vector2 ReadPointer()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
-#else
-        return Input.mousePosition;
-#endif
-    }
-
-    bool ReadPrimaryClick()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
-#else
-        return Input.GetMouseButtonDown(0);
-#endif
-    }
-
-    bool ReadSecondaryClick()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
-#else
-        return Input.GetMouseButtonDown(1);
-#endif
-    }
-
-    bool ReadWarCry()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.Q);
-#endif
-    }
-
-    bool ReadShieldWall()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.E);
-#endif
-    }
-
-    bool ReadSpearThrow()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.R);
-#endif
-    }
-
-    bool ReadUltimate()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.F);
-#endif
     }
 }
