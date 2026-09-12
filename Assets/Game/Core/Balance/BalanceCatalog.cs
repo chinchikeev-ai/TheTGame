@@ -45,7 +45,7 @@ public static class BalanceCatalog
         {
             case TowerType.Cannon: return MakeTower(type, "Ballista", 220, 72f, 6.8f, .75f, 10f, 2.2f, 1f, 0f);
             case TowerType.Slow: return MakeTower(type, "Priests of Apollo", 160, 9f, 5.3f, 1.5f, 13f, 0f, .55f, 1.6f);
-            case TowerType.SpearThrower: return MakeTower(type, "Spear Throwers", 145, 30f, 5.4f, 1.7f, 16f, 0f, 1f, 0f);
+            case TowerType.SpearThrower: return MakeTower(type, "Spear Wall", 145, 30f, 2.25f, 1.7f, 0f, 0f, 1f, 0f);
             case TowerType.FireTower: return MakeTower(type, "Fire Tower", 240, 34f, 4.8f, 1.05f, 11f, 2.8f, 1f, 0f);
             case TowerType.TrojanGuard: return MakeTower(type, "Trojan Guard", 130, 42f, 2.25f, 1.25f, 15f, 0f, 1f, 0f);
             default: return MakeTower(type, "Archer Tower", 100, 16f, 5.8f, 4.2f, 18f, 0f, 1f, 0f);

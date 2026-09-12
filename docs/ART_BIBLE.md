@@ -99,7 +99,7 @@ Core silhouettes:
 - Archer Tower: light, fast, human archers, red/gold accents;
 - Ballista: large wooden/bronze machine, crew identity, heavy bolt;
 - Priests of Apollo: bright solar/gold support presence;
-- Spear Throwers: medium infantry post, javelins/spears visible;
+- Spear Wall: first close-defense infantry post, short poke radius, visible spears;
 - Fire Tower: fire pots, pitch, orange VFX, smoke;
 - Trojan Guard: shield wall/blocking soldiers;
 - Cyclops later: large mythic artillery silhouette.

@@ -174,6 +174,12 @@ public class Tower : MonoBehaviour
         Vector3 start = muzzle != null ? muzzle.position : transform.position + Vector3.up;
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayShot(Type, start);
         if (head != null && !recoiling) StartCoroutine(RecoilHead());
+        if (Type == TowerType.SpearThrower)
+        {
+            target.ReceiveDamage(new DamagePacket(damage * warCryDamage, DamageRules.ForTower(Type), Type));
+            RuntimeEffects.Instance?.PlayHeroPulse(target.transform.position, new Color(.92f,.78f,.36f), 1.1f, .18f);
+            return;
+        }
         GameObject projectileObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         projectileObj.name = DisplayName + " Projectile";
         projectileObj.transform.position = start;

@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerData
   type: 3
-  displayName: Spear Throwers
+  displayName: Spear Wall
   cost: 145
   damage: 30
-  range: 5.4
+  range: 2.25
   attacksPerSecond: 1.7
-  projectileSpeed: 16
+  projectileSpeed: 0
   splashRadius: 0
   slowMultiplier: 1
   slowDuration: 0

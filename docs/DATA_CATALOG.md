@@ -10,7 +10,7 @@ Assets:
 - `MachineGun.asset` — Archer Tower
 - `Cannon.asset` — Ballista
 - `Slow.asset` — Priests of Apollo
-- `SpearThrower.asset` — Spear Throwers
+- `SpearThrower.asset` — Spear Wall
 - `FireTower.asset` — Fire Tower
 - `TrojanGuard.asset` — Trojan Guard
 

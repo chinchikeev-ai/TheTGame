@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 public class TowerPlacement : MonoBehaviour
 {
     public Camera gameCamera;
-    public TowerType SelectedBuildType { get; private set; } = TowerType.MachineGun;
+    public TowerType SelectedBuildType { get; private set; } = TowerType.SpearThrower;
     public Tower SelectedTower { get; private set; }
 
     BuildPoint hoveredPoint;

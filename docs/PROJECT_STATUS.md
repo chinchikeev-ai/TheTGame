@@ -58,6 +58,7 @@ Last reviewed: 2026-09-13
 - Chapter I coast now has Trojan braziers, smoke columns, Greek campfires and warmer scene lighting to reinforce the Troy/fire identity
 - enemies now get lightweight presentation motion, and Menelaus has a pulsing aura ring for boss readability
 - Hector abilities and Trojan Guard melee/rally now trigger readable ground-pulse feedback
+- Spear Wall is now the default first build option; it uses a short 1.5-cell poke radius and no thrown projectile
 
 ## Remaining Chapter I RC work
 - real 1x playthrough validation against 11–13 minute target

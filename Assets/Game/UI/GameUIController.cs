@@ -111,10 +111,10 @@ public class GameUIController : MonoBehaviour
         GameObject panel=CreatePanel(parent,"TowerList",new Vector2(-34,-455),new Vector2(285,390));
         towerListPanel=panel.GetComponent<RectTransform>();
         Anchor(towerListPanel,new Vector2(1f,1f),new Vector2(1f,1f),new Vector2(1f,1f));
-        CreateTowerButton(panel.transform,L("ARCHER TOWER","БАШНЯ ЛУЧНИКОВ"),TowerType.MachineGun,new Vector2(0,145));
-        CreateTowerButton(panel.transform,L("BALLISTA","БАЛЛИСТА"),TowerType.Cannon,new Vector2(0,85));
-        CreateTowerButton(panel.transform,L("PRIESTS OF APOLLO","ЖРЕЦЫ АПОЛЛОНА"),TowerType.Slow,new Vector2(0,25));
-        CreateTowerButton(panel.transform,L("SPEAR THROWERS","МЕТАТЕЛИ КОПИЙ"),TowerType.SpearThrower,new Vector2(0,-35));
+        CreateTowerButton(panel.transform,L("SPEAR WALL","КОПЕЙЩИКИ"),TowerType.SpearThrower,new Vector2(0,145));
+        CreateTowerButton(panel.transform,L("ARCHER TOWER","БАШНЯ ЛУЧНИКОВ"),TowerType.MachineGun,new Vector2(0,85));
+        CreateTowerButton(panel.transform,L("BALLISTA","БАЛЛИСТА"),TowerType.Cannon,new Vector2(0,25));
+        CreateTowerButton(panel.transform,L("PRIESTS OF APOLLO","ЖРЕЦЫ АПОЛЛОНА"),TowerType.Slow,new Vector2(0,-35));
         CreateTowerButton(panel.transform,L("FIRE TOWER","ОГНЕННАЯ БАШНЯ"),TowerType.FireTower,new Vector2(0,-95));
         CreateTowerButton(panel.transform,L("TROJAN GUARD","ТРОЯНСКАЯ СТРАЖА"),TowerType.TrojanGuard,new Vector2(0,-155));
         panel.SetActive(false);
@@ -141,7 +141,7 @@ public class GameUIController : MonoBehaviour
         {
             case TowerType.Cannon: return L("Ballista","Баллиста");
             case TowerType.Slow: return L("Apollo Priests","Жрецы Аполлона");
-            case TowerType.SpearThrower: return L("Spear Throwers","Метатели копий");
+            case TowerType.SpearThrower: return L("Spear Wall","Копейщики");
             case TowerType.FireTower: return L("Fire Tower","Огненная башня");
             case TowerType.TrojanGuard: return L("Trojan Guard","Троянская стража");
             default: return L("Archer Tower","Башня лучников");

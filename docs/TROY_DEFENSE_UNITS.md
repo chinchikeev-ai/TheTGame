@@ -72,18 +72,21 @@ Possible progression:
 
 ---
 
-## 3.2 Trojan Spear Throwers
+## 3.2 Trojan Spear Wall
 
 **Role:** Anti-heavy / anti-chariot.
 
 Behavior:
+- first basic build option;
+- short 1.5-cell poke radius;
 - medium attack rate;
+- melee spear thrusts, not thrown javelins;
 - high armor penetration;
 - bonus damage against Heavy infantry and Chariots.
 
 Possible progression:
 
-`Javelins → Heavy Spears → Barbed Spears → Veteran Spear Crew`
+`Spear Wall → Heavy Spears → Barbed Spears → Veteran Spear Guard`
 
 Fire synergy:
 - optional heated spearhead specialization;
