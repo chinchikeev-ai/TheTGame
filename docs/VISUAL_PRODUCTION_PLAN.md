@@ -44,7 +44,7 @@ Done when:
 ## P2 — Feedback / Audio / UX
 
 - Add tower attack SFX and hit/death SFX.
-- Add better projectile trails, hit flashes, death effects, and Fire Tower burn feedback.
+- Add better projectile trails, hit flashes, death effects, and Fire Tower burn feedback. Initial typed projectile trails and tower recoil are implemented.
 - Split music/SFX volume settings.
 - Add color-independent route/threat indicators.
 - Tune UI for Russian and English labels at 16:9 and common windowed resolutions.
@@ -59,7 +59,7 @@ Done when:
 ## P3 — Commercial Polish Expansion
 
 - Replace remaining placeholder/generated primitives with production-ready assets.
-- Add simple animations for enemy movement/death and tower attack cadence.
+- Add simple animations for enemy movement/death and tower attack cadence. Initial tower attack recoil is implemented.
 - Add pooling for enemies, projectiles, and transient VFX.
 - Add first random battlefield events only after Chapter I core pacing is stable.
 - Prepare Chapter II content only after Chapter I passes final RC gates.

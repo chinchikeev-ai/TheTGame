@@ -54,12 +54,14 @@ Last reviewed: 2026-09-13
 - Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU, procedural coast/landing prototype
 - Chapter I tutorial reflects marked build points and Hector Q/E/R/F controls
 - combat tower selection now uses a single right-side `+` picker; the old duplicate bottom tower strip has been removed
+- tower projectiles now have type-colored trails and heavy/fire projectile light; towers have basic recoil feedback on attack
 
 ## Remaining Chapter I RC work
 - real 1x playthrough validation against 11–13 minute target
 - final economy/enemy-pressure tuning from runtime logs
 - UI/UX production pass for result screen, combat readability and 16:9/RU layout fit
 - environment/landing presentation polish
+- broader animation pass for enemies, Hector, Trojan Guard and death states
 - Hector movement constraints and battlefield bounds
 - verify Trojan Guard blocking under high enemy density
 - verify Menelaus encounter/reinforcement pressure on Story/Strategos/Legendary

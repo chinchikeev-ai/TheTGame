@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Tower : MonoBehaviour
@@ -24,6 +25,7 @@ public class Tower : MonoBehaviour
     float warCryUntil;
     float warCryDamage = 1f;
     float warCryRate = 1f;
+    bool recoiling;
     TrojanGuardSquad guardSquad;
 
     void OnEnable() => TowerRegistry.Register(this);
@@ -171,13 +173,35 @@ public class Tower : MonoBehaviour
     {
         Vector3 start = muzzle != null ? muzzle.position : transform.position + Vector3.up;
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayShot(Type, start);
+        if (head != null && !recoiling) StartCoroutine(RecoilHead());
         GameObject projectileObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         projectileObj.name = DisplayName + " Projectile";
         projectileObj.transform.position = start;
-        projectileObj.transform.localScale = Vector3.one * (Type == TowerType.Cannon ? .30f : .18f);
         Destroy(projectileObj.GetComponent<Collider>());
-        TowerFactory.SetColor(projectileObj, Type == TowerType.Slow ? new Color(.2f,.75f,1f) : Type == TowerType.Cannon ? new Color(1f,.35f,.08f) : new Color(1f,.78f,.14f));
         Projectile projectile = projectileObj.AddComponent<Projectile>();
         projectile.Init(target, damage * warCryDamage, projectileSpeed, splashRadius, slowMultiplier, slowDuration, Type);
+    }
+
+    IEnumerator RecoilHead()
+    {
+        recoiling = true;
+        Vector3 start = head.localPosition;
+        Vector3 back = start - Vector3.forward * (Type == TowerType.Cannon ? .18f : .10f);
+        float t = 0f;
+        while (t < .06f && head != null)
+        {
+            t += Time.deltaTime;
+            head.localPosition = Vector3.Lerp(start, back, t / .06f);
+            yield return null;
+        }
+        t = 0f;
+        while (t < .10f && head != null)
+        {
+            t += Time.deltaTime;
+            head.localPosition = Vector3.Lerp(back, start, t / .10f);
+            yield return null;
+        }
+        if (head != null) head.localPosition = start;
+        recoiling = false;
     }
 }
