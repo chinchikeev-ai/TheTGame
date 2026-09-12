@@ -2,5 +2,8 @@ public enum TowerType
 {
     MachineGun,
     Cannon,
-    Slow
+    Slow,
+    SpearThrower,
+    FireTower,
+    TrojanGuard
 }
