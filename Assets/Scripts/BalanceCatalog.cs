@@ -30,11 +30,44 @@ public static class BalanceCatalog
 
     public static WaveData GetWave(int wave, int maxWaves = 5)
     {
+        WaveData authored = Resources.Load<WaveData>($"Data/Waves/Wave_{wave:00}");
+        return authored != null ? authored : GetWaveRuntimeDefault(wave, maxWaves);
+    }
+
+    public static TowerData GetTowerRuntimeDefault(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.Cannon: return MakeTower(type, "Ballista", 220, 72f, 6.8f, .75f, 10f, 2.2f, 1f, 0f);
+            case TowerType.Slow: return MakeTower(type, "Priests of Apollo", 160, 9f, 5.3f, 1.5f, 13f, 0f, .55f, 1.6f);
+            case TowerType.SpearThrower: return MakeTower(type, "Spear Throwers", 145, 30f, 5.4f, 1.7f, 16f, 0f, 1f, 0f);
+            case TowerType.FireTower: return MakeTower(type, "Fire Tower", 240, 34f, 4.8f, 1.05f, 11f, 2.8f, 1f, 0f);
+            case TowerType.TrojanGuard: return MakeTower(type, "Trojan Guard", 130, 42f, 2.25f, 1.25f, 15f, 0f, 1f, 0f);
+            default: return MakeTower(type, "Archer Tower", 100, 16f, 5.8f, 4.2f, 18f, 0f, 1f, 0f);
+        }
+    }
+
+    public static EnemyData GetEnemyRuntimeDefault(EnemyArchetype type)
+    {
+        switch (type)
+        {
+            case EnemyArchetype.Runner: return MakeEnemy(type, "runner", "Greek Runner", .65f, 1.65f, 18, 1, .70f, 0f, 0f, 0f, new Color(.83f,.65f,.20f));
+            case EnemyArchetype.HeavyHoplite: return MakeEnemy(type, "heavy_hoplite", "Heavy Hoplite", 3.2f, .68f, 58, 2, 1.15f, .28f, .08f, 0f, new Color(.35f,.12f,.08f));
+            case EnemyArchetype.ShieldBearer: return MakeEnemy(type, "shield_bearer", "Shield Bearer", 2.1f, .82f, 42, 2, 1f, .14f, .55f, 0f, new Color(.30f,.38f,.48f));
+            case EnemyArchetype.Archer: return MakeEnemy(type, "greek_archer", "Greek Archer", .9f, .9f, 30, 1, .80f, 0f, 0f, 5.2f, new Color(.42f,.25f,.12f));
+            case EnemyArchetype.BatteringRam: return MakeEnemy(type, "battering_ram", "Battering Ram", 5.5f, .42f, 110, 7, 1.45f, .38f, .15f, 0f, new Color(.25f,.18f,.10f));
+            case EnemyArchetype.Boss: return MakeEnemy(type, "menelaus", "Menelaus", 15f, .68f, 500, 6, 1.65f, .32f, .20f, 0f, new Color(.55f,.05f,.08f));
+            default: return MakeEnemy(type, "greek_infantry", "Greek Infantry", 1f, 1f, 20, 1, .85f, 0f, 0f, 0f, new Color(.65f,.32f,.18f));
+        }
+    }
+
+    public static WaveData GetWaveRuntimeDefault(int wave, int maxWaves = 5)
+    {
         WaveData d = ScriptableObject.CreateInstance<WaveData>();
         d.waveNumber = wave;
         d.enemyCount = 8 + (wave - 1) * 4 + (wave == maxWaves ? 1 : 0);
-        d.hpMultiplier = 1f + (wave - 1) * 0.30f;
-        d.speedMultiplier = 1f + (wave - 1) * 0.04f;
+        d.hpMultiplier = 1f + (wave - 1) * .30f;
+        d.speedMultiplier = 1f + (wave - 1) * .04f;
         d.heavyEvery = wave >= 3 ? 4 : 0;
         d.hasBoss = wave == maxWaves;
         float[] target = { 60f, 75f, 90f, 110f, 180f };
@@ -48,23 +81,20 @@ public static class BalanceCatalog
 
     static void BuildTowers()
     {
-        towers[TowerType.MachineGun] = MakeTower(TowerType.MachineGun, "Archer Tower", 100, 16f, 5.8f, 4.2f, 18f, 0f, 1f, 0f);
-        towers[TowerType.Cannon] = MakeTower(TowerType.Cannon, "Ballista", 220, 72f, 6.8f, 0.75f, 10f, 2.2f, 1f, 0f);
-        towers[TowerType.Slow] = MakeTower(TowerType.Slow, "Priests of Apollo", 160, 9f, 5.3f, 1.5f, 13f, 0f, 0.55f, 1.6f);
-        towers[TowerType.SpearThrower] = MakeTower(TowerType.SpearThrower, "Spear Throwers", 145, 30f, 5.4f, 1.7f, 16f, 0f, 1f, 0f);
-        towers[TowerType.FireTower] = MakeTower(TowerType.FireTower, "Fire Tower", 240, 34f, 4.8f, 1.05f, 11f, 2.8f, 1f, 0f);
-        towers[TowerType.TrojanGuard] = MakeTower(TowerType.TrojanGuard, "Trojan Guard", 130, 42f, 2.25f, 1.25f, 15f, 0f, 1f, 0f);
+        foreach (TowerType type in System.Enum.GetValues(typeof(TowerType)))
+        {
+            TowerData authored = Resources.Load<TowerData>($"Data/Towers/{type}");
+            towers[type] = authored != null ? authored : GetTowerRuntimeDefault(type);
+        }
     }
 
     static void BuildEnemies()
     {
-        enemies[EnemyArchetype.Infantry] = MakeEnemy(EnemyArchetype.Infantry, "greek_infantry", "Greek Infantry", 1f, 1f, 20, 1, 0.85f, 0f, 0f, 0f, new Color(.65f,.32f,.18f));
-        enemies[EnemyArchetype.Runner] = MakeEnemy(EnemyArchetype.Runner, "runner", "Greek Runner", .65f, 1.65f, 18, 1, .70f, 0f, 0f, 0f, new Color(.83f,.65f,.20f));
-        enemies[EnemyArchetype.HeavyHoplite] = MakeEnemy(EnemyArchetype.HeavyHoplite, "heavy_hoplite", "Heavy Hoplite", 3.2f, .68f, 58, 2, 1.15f, .28f, .08f, 0f, new Color(.35f,.12f,.08f));
-        enemies[EnemyArchetype.ShieldBearer] = MakeEnemy(EnemyArchetype.ShieldBearer, "shield_bearer", "Shield Bearer", 2.1f, .82f, 42, 2, 1.0f, .14f, .55f, 0f, new Color(.30f,.38f,.48f));
-        enemies[EnemyArchetype.Archer] = MakeEnemy(EnemyArchetype.Archer, "greek_archer", "Greek Archer", .9f, .9f, 30, 1, .80f, 0f, 0f, 5.2f, new Color(.42f,.25f,.12f));
-        enemies[EnemyArchetype.BatteringRam] = MakeEnemy(EnemyArchetype.BatteringRam, "battering_ram", "Battering Ram", 5.5f, .42f, 110, 7, 1.45f, .38f, .15f, 0f, new Color(.25f,.18f,.10f));
-        enemies[EnemyArchetype.Boss] = MakeEnemy(EnemyArchetype.Boss, "menelaus", "Menelaus", 15f, .68f, 500, 6, 1.65f, .32f, .20f, 0f, new Color(.55f,.05f,.08f));
+        foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype)))
+        {
+            EnemyData authored = Resources.Load<EnemyData>($"Data/Enemies/{type}");
+            enemies[type] = authored != null ? authored : GetEnemyRuntimeDefault(type);
+        }
     }
 
     static TowerData MakeTower(TowerType type, string displayName, int cost, float damage, float range, float rate, float projectileSpeed, float splash, float slow, float slowDuration)
