@@ -26,6 +26,9 @@ public class HectorController : MonoBehaviour
     public float spearThrowCooldown = 12f;
     public float spearThrowRange = 10f;
     public float spearThrowDamage = 220f;
+    public float ultimateCooldown = 75f;
+    public float ultimateDuration = 12f;
+    public float ultimateEnemyRadius = 8f;
     public float downedDuration = 12f;
 
     Vector3 destination;
@@ -34,6 +37,7 @@ public class HectorController : MonoBehaviour
     float nextWarCry;
     float nextShieldWall;
     float nextSpearThrow;
+    float nextUltimate;
     float reviveAt;
     Renderer body;
 
@@ -74,6 +78,7 @@ public class HectorController : MonoBehaviour
         if (ReadWarCry()) UseWarCry();
         if (ReadShieldWall()) UseShieldWall();
         if (ReadSpearThrow()) UseSpearThrow();
+        if (ReadUltimate()) UseUltimate();
     }
 
     void HandleSelectionAndMove()
@@ -154,12 +159,15 @@ public class HectorController : MonoBehaviour
     {
         if (IsDowned || Time.time < nextWarCry) return;
         nextWarCry = Time.time + warCryCooldown;
-        foreach (Tower tower in FindObjectsByType<Tower>(FindObjectsSortMode.None))
+        int buffed = 0;
+        foreach (Tower tower in TowerRegistry.All)
         {
-            if (tower != null && Vector3.Distance(tower.transform.position, transform.position) <= warCryRadius)
-                tower.ApplyWarCry(warCryDuration, 1.15f, 1.30f);
+            if (tower == null) continue;
+            if (Vector3.Distance(tower.transform.position, transform.position) > warCryRadius) continue;
+            tower.ApplyWarCry(warCryDuration, 1.15f, 1.30f);
+            buffed++;
         }
-        RuntimeFileLogger.Event("HECTOR", "War Cry used");
+        RuntimeFileLogger.Event("HECTOR", $"War Cry used; towersBuffed={buffed}");
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, true);
     }
 
@@ -202,6 +210,36 @@ public class HectorController : MonoBehaviour
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(target.transform.position, true);
     }
 
+    public void UseUltimate()
+    {
+        if (IsDowned || Time.time < nextUltimate) return;
+        nextUltimate = Time.time + ultimateCooldown;
+
+        Health = Mathf.Min(maxHealth, Health + maxHealth * .35f);
+
+        int towersBuffed = 0;
+        foreach (Tower tower in TowerRegistry.All)
+        {
+            if (tower == null) continue;
+            tower.ApplyWarCry(ultimateDuration, 1.35f, 1.50f);
+            towersBuffed++;
+        }
+
+        int enemiesHit = 0;
+        float radiusSq = ultimateEnemyRadius * ultimateEnemyRadius;
+        foreach (Enemy enemy in EnemyRegistry.All)
+        {
+            if (enemy == null) continue;
+            if ((enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
+            enemy.ReceiveDamage(new DamagePacket(100f, DamageType.Hero));
+            enemy.ApplySlow(.70f, 4f);
+            enemiesHit++;
+        }
+
+        RuntimeFileLogger.Event("HECTOR", $"For Troy ultimate used; towersBuffed={towersBuffed}, enemiesHit={enemiesHit}, hp={Health:0}/{maxHealth:0}");
+        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, true);
+    }
+
     Enemy FindNearestEnemy(float radius)
     {
         Enemy best = null;
@@ -218,6 +256,7 @@ public class HectorController : MonoBehaviour
     public float WarCryCooldownRemaining => Mathf.Max(0f, nextWarCry - Time.time);
     public float ShieldWallCooldownRemaining => Mathf.Max(0f, nextShieldWall - Time.time);
     public float SpearThrowCooldownRemaining => Mathf.Max(0f, nextSpearThrow - Time.time);
+    public float UltimateCooldownRemaining => Mathf.Max(0f, nextUltimate - Time.time);
 
     void RefreshColor()
     {
@@ -279,6 +318,15 @@ public class HectorController : MonoBehaviour
         return Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame;
 #else
         return Input.GetKeyDown(KeyCode.R);
+#endif
+    }
+
+    bool ReadUltimate()
+    {
+#if ENABLE_INPUT_SYSTEM
+        return Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame;
+#else
+        return Input.GetKeyDown(KeyCode.F);
 #endif
     }
 }
