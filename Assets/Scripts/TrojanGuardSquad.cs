@@ -16,6 +16,9 @@ public class TrojanGuardSquad : MonoBehaviour
 
     Tower ownerTower;
     float nextAttack;
+    float rallyUntil;
+    float rallyDamage = 1f;
+    float rallyRate = 1f;
 
     void OnEnable() { if (!all.Contains(this)) all.Add(this); }
     void OnDisable() => all.Remove(this);
@@ -26,9 +29,22 @@ public class TrojanGuardSquad : MonoBehaviour
         Health = maxHealth;
     }
 
+    public void ApplyRally(float duration, float damageMultiplier, float rateMultiplier)
+    {
+        rallyUntil = Mathf.Max(rallyUntil, Time.time + duration);
+        rallyDamage = Mathf.Max(rallyDamage, damageMultiplier);
+        rallyRate = Mathf.Max(rallyRate, rateMultiplier);
+    }
+
     void Update()
     {
         if (!IsAlive || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
+        if (Time.time >= rallyUntil)
+        {
+            rallyDamage = 1f;
+            rallyRate = 1f;
+        }
+
         Enemy attackTarget = null;
         float best = float.MaxValue;
         int blocked = 0;
@@ -54,8 +70,8 @@ public class TrojanGuardSquad : MonoBehaviour
 
         if (attackTarget != null && Time.time >= nextAttack)
         {
-            nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate);
-            attackTarget.ReceiveDamage(new DamagePacket(damage, DamageType.Physical, TowerType.TrojanGuard));
+            nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate * rallyRate);
+            attackTarget.ReceiveDamage(new DamagePacket(damage * rallyDamage, DamageType.Physical, TowerType.TrojanGuard));
         }
     }
 
