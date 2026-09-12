@@ -31,25 +31,29 @@ public class LandingPresentation : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
+            float eased = t * t * (3f - 2f * t);
             for (int i = 0; i < boats.Length; i++)
             {
                 if (boats[i] == null) continue;
                 Vector3 start = new Vector3(-18.5f - i * .8f, .12f, z[i]);
                 Vector3 end = new Vector3(-14.7f, .10f, z[i] * .88f);
-                boats[i].transform.position = Vector3.Lerp(start, end, t);
+                Vector3 pos = Vector3.Lerp(start, end, eased);
+                pos.y += Mathf.Sin((elapsed + i) * 2.1f) * .035f;
+                boats[i].transform.position = pos;
             }
             yield return null;
         }
 
         for (int i = 0; i < 10; i++)
         {
-            GameObject soldier = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            soldier.name = "Landing Greek Silhouette";
+            EnemyArchetype archetype = i % 5 == 0 ? EnemyArchetype.ShieldBearer : i % 3 == 0 ? EnemyArchetype.Archer : EnemyArchetype.Infantry;
+            GameObject soldier = RuntimeWarriorVisualFactory.CreateEnemyFallback(archetype, new Color(.42f,.52f,.68f));
+            soldier.name = "Landing Greek Warrior";
             soldier.transform.SetParent(root.transform);
-            soldier.transform.position = new Vector3(-13.5f + (i % 3) * .35f, .42f, -5.5f + i * 1.2f);
-            soldier.transform.localScale = new Vector3(.30f, .42f, .30f);
-            Object.Destroy(soldier.GetComponent<Collider>());
-            TowerFactory.SetColor(soldier, new Color(.34f, .22f, .14f));
+            soldier.transform.position = new Vector3(-13.5f + (i % 3) * .42f, 0f, -5.5f + i * 1.2f);
+            soldier.transform.localScale *= .72f;
+            soldier.transform.rotation = Quaternion.Euler(0f, 82f + (i % 3) * 5f, 0f);
+            EnemyMotionAnimator.Attach(soldier, archetype);
         }
 
         RuntimeFileLogger.Event("CHAPTER", "Chapter I landing presentation completed");
@@ -120,6 +124,28 @@ public class LandingPresentation : MonoBehaviour
         hull.transform.localScale = new Vector3(2.1f, .30f, .72f);
         Object.Destroy(hull.GetComponent<Collider>());
         TowerFactory.SetColor(hull, new Color(.28f, .17f, .09f));
+
+        GameObject prow = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        prow.transform.SetParent(root.transform, false);
+        prow.transform.localPosition = new Vector3(1.2f,.20f,0f);
+        prow.transform.localScale = new Vector3(.55f,.35f,.54f);
+        prow.transform.localRotation = Quaternion.Euler(0f,0f,-20f);
+        Object.Destroy(prow.GetComponent<Collider>());
+        TowerFactory.SetColor(prow,new Color(.38f,.22f,.10f));
+
+        GameObject mast = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        mast.transform.SetParent(root.transform,false);
+        mast.transform.localPosition = new Vector3(-.1f,1.05f,0f);
+        mast.transform.localScale = new Vector3(.04f,.95f,.04f);
+        Object.Destroy(mast.GetComponent<Collider>());
+        TowerFactory.SetColor(mast,new Color(.34f,.21f,.10f));
+
+        GameObject sail = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        sail.transform.SetParent(root.transform,false);
+        sail.transform.localPosition = new Vector3(-.1f,1.15f,0f);
+        sail.transform.localScale = new Vector3(.05f,.78f,.82f);
+        Object.Destroy(sail.GetComponent<Collider>());
+        TowerFactory.SetColor(sail,new Color(.68f,.58f,.42f));
 
         GameObject shieldLine = GameObject.CreatePrimitive(PrimitiveType.Cube);
         shieldLine.transform.SetParent(root.transform, false);

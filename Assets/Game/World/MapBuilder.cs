@@ -37,27 +37,58 @@ public class MapBuilder : MonoBehaviour
     void CreateGrid()
     {
         GameObject root=new GameObject("Chapter01_Roads");
-        foreach(Vector2Int cell in roadCells)
+        Vector2Int[] routeA={C(0,8),C(5,8),C(5,6),C(13,6),C(16,6)};
+        Vector2Int[] routeB={C(0,3),C(5,3),C(5,5),C(13,5),C(13,6),C(16,6)};
+        CreateRoadRibbon(root.transform,routeA,"Upper Track");
+        CreateRoadRibbon(root.transform,routeB,"Lower Track");
+    }
+
+    void CreateRoadRibbon(Transform parent,Vector2Int[] cells,string name)
+    {
+        GameObject routeRoot=new GameObject(name);
+        routeRoot.transform.SetParent(parent,false);
+        for(int i=0;i<cells.Length-1;i++)
         {
-            Vector3 p=CellToWorld(cell,-.045f);
-            bool alt=((cell.x+cell.y)&1)==0;
+            Vector3 a=CellToWorld(cells[i],-.045f);
+            Vector3 b=CellToWorld(cells[i+1],-.045f);
+            CreateRoadSegment(routeRoot.transform,a,b,CellSize*1.12f,new Color(.37f,.30f,.21f),"Packed Earth");
+            CreateRoadSegment(routeRoot.transform,a+Vector3.up*.025f,b+Vector3.up*.025f,CellSize*.68f,new Color(.49f,.40f,.28f),"Worn Center");
 
-            GameObject bed=GameObject.CreatePrimitive(PrimitiveType.Cube);
-            bed.name=$"RoadBed_{cell.x}_{cell.y}";
-            bed.transform.SetParent(root.transform);
-            bed.transform.position=p;
-            bed.transform.localScale=new Vector3(CellSize*.96f,.055f,CellSize*.96f);
-            Object.Destroy(bed.GetComponent<Collider>());
-            TowerFactory.SetColor(bed,alt?new Color(.38f,.31f,.22f):new Color(.34f,.28f,.20f));
-
-            GameObject worn=GameObject.CreatePrimitive(PrimitiveType.Cube);
-            worn.name=$"RoadWear_{cell.x}_{cell.y}";
-            worn.transform.SetParent(root.transform);
-            worn.transform.position=p+new Vector3(0f,.035f,0f);
-            worn.transform.localScale=new Vector3(CellSize*.68f,.018f,CellSize*.78f);
-            Object.Destroy(worn.GetComponent<Collider>());
-            TowerFactory.SetColor(worn,alt?new Color(.50f,.42f,.30f):new Color(.46f,.38f,.27f));
+            if(i%2==0)
+            {
+                Vector3 mid=(a+b)*.5f;
+                Vector3 dir=(b-a).normalized;
+                Vector3 side=new Vector3(-dir.z,0f,dir.x);
+                AddRoadStone(routeRoot.transform,mid+side*CellSize*.56f,i*37f);
+                AddRoadStone(routeRoot.transform,mid-side*CellSize*.56f,i*41f+13f);
+            }
         }
+    }
+
+    void CreateRoadSegment(Transform parent,Vector3 a,Vector3 b,float width,Color color,string name)
+    {
+        Vector3 delta=b-a;
+        float length=delta.magnitude;
+        GameObject segment=GameObject.CreatePrimitive(PrimitiveType.Cube);
+        segment.name=name;
+        segment.transform.SetParent(parent,false);
+        segment.transform.position=(a+b)*.5f;
+        segment.transform.localScale=new Vector3(width,.055f,length+width*.35f);
+        if(delta.sqrMagnitude>.001f) segment.transform.rotation=Quaternion.LookRotation(delta.normalized,Vector3.up);
+        Object.Destroy(segment.GetComponent<Collider>());
+        TowerFactory.SetColor(segment,color);
+    }
+
+    void AddRoadStone(Transform parent,Vector3 p,float yaw)
+    {
+        GameObject stone=GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        stone.name="Roadside Stone";
+        stone.transform.SetParent(parent,false);
+        stone.transform.position=p+Vector3.up*.03f;
+        stone.transform.localScale=new Vector3(.26f,.10f,.20f);
+        stone.transform.rotation=Quaternion.Euler(0f,yaw,0f);
+        Object.Destroy(stone.GetComponent<Collider>());
+        TowerFactory.SetColor(stone,new Color(.33f,.31f,.27f));
     }
 
     void CreateBase()
@@ -80,6 +111,29 @@ public class MapBuilder : MonoBehaviour
         door.transform.localScale=new Vector3(CellSize*.36f,1.45f,CellSize*.95f);
         TowerFactory.SetColor(door,new Color(.30f,.16f,.08f));
 
+        for(int i=-2;i<=2;i++)
+        {
+            GameObject bar=GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bar.name="Gate Bronze Bar";
+            bar.transform.SetParent(root.transform);
+            bar.transform.position=p+new Vector3(-CellSize*.20f,.15f,i*CellSize*.18f);
+            bar.transform.localScale=new Vector3(.06f,1.52f,.055f);
+            Object.Destroy(bar.GetComponent<Collider>());
+            TowerFactory.SetColor(bar,new Color(.62f,.43f,.17f));
+        }
+
+        for(int i=-1;i<=1;i+=2)
+        {
+            GameObject brace=GameObject.CreatePrimitive(PrimitiveType.Cube);
+            brace.name="Gate Cross Brace";
+            brace.transform.SetParent(root.transform);
+            brace.transform.position=p+new Vector3(-CellSize*.205f,.20f,0f);
+            brace.transform.localScale=new Vector3(.07f,.13f,CellSize*1.02f);
+            brace.transform.rotation=Quaternion.Euler(i*28f,0f,0f);
+            Object.Destroy(brace.GetComponent<Collider>());
+            TowerFactory.SetColor(brace,new Color(.44f,.26f,.10f));
+        }
+
         for(int i=-1;i<=1;i+=2)
         {
             GameObject tower=GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -97,6 +151,18 @@ public class MapBuilder : MonoBehaviour
             cap.transform.localScale=new Vector3(.96f,.12f,.96f);
             Object.Destroy(cap.GetComponent<Collider>());
             TowerFactory.SetColor(cap,new Color(.76f,.62f,.37f));
+
+            for(int c=0;c<6;c++)
+            {
+                float angle=c*Mathf.PI*2f/6f;
+                GameObject merlon=GameObject.CreatePrimitive(PrimitiveType.Cube);
+                merlon.name="Battlement";
+                merlon.transform.SetParent(root.transform);
+                merlon.transform.position=tower.transform.position+new Vector3(Mathf.Cos(angle)*.72f,1.72f,Mathf.Sin(angle)*.72f);
+                merlon.transform.localScale=new Vector3(.20f,.32f,.20f);
+                Object.Destroy(merlon.GetComponent<Collider>());
+                TowerFactory.SetColor(merlon,new Color(.70f,.56f,.33f));
+            }
         }
     }
 
