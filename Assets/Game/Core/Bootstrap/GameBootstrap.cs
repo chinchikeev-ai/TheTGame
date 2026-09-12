@@ -46,6 +46,8 @@ public class GameBootstrap : MonoBehaviour
         new GameObject("GameMenu").AddComponent<GameMenuController>();
         new GameObject("GameMenuUX").AddComponent<GameMenuUxEnhancer>();
         new GameObject("GameMenuProgress").AddComponent<MenuProgressPresentation>();
+        new GameObject("CampaignMapPresentation").AddComponent<CampaignMapPresentation>();
+        new GameObject("MainMenuAmbientPresentation").AddComponent<MainMenuAmbientPresentation>();
         new GameObject("ResultScreenPresentation").AddComponent<ResultScreenPresentation>();
 
         RuntimeFileLogger.Event("BOOT", $"Runtime graph ready. unlockedChapter={campaign.UnlockedChapter}, activeChapter={(chapters.ActiveChapter != null ? chapters.ActiveChapter.chapterId : "none")}");
