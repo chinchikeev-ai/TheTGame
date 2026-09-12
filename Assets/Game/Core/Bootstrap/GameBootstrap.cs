@@ -26,6 +26,7 @@ public class GameBootstrap : MonoBehaviour
 
         MapBuilder mapBuilder = new GameObject("MapBuilder").AddComponent<MapBuilder>();
         mapBuilder.BuildMap();
+        ChapterOneVisualEnhancer.Enhance();
 
         EnemySpawner spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
         spawner.Initialize(mapBuilder.Paths);
@@ -68,11 +69,11 @@ public class GameBootstrap : MonoBehaviour
         }
 
         cam.orthographic = true;
-        cam.orthographicSize = 10.5f;
-        cam.transform.position = new Vector3(0f, 30f, 0f);
-        cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        cam.orthographicSize = 10.2f;
+        cam.transform.position = new Vector3(-1.2f, 27.5f, -5.2f);
+        cam.transform.rotation = Quaternion.Euler(74f, 0f, 0f);
         cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(.38f,.36f,.31f);
+        cam.backgroundColor = new Color(.22f,.31f,.34f);
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
@@ -86,9 +87,9 @@ public class GameBootstrap : MonoBehaviour
             GameObject l = new GameObject("Directional Light");
             Light lightComp = l.AddComponent<Light>();
             lightComp.type = LightType.Directional;
-            lightComp.intensity = 1.28f;
-            lightComp.color = new Color(1f,.82f,.56f);
-            l.transform.rotation = Quaternion.Euler(56f, -34f, 0f);
+            lightComp.intensity = 1.35f;
+            lightComp.color = new Color(1f,.84f,.60f);
+            l.transform.rotation = Quaternion.Euler(52f, -38f, 0f);
         }
         return cam;
     }
