@@ -36,7 +36,6 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
     void EnsureEventSystem()
     {
         if (FindFirstObjectByType<EventSystem>() != null) return;
-
         GameObject eventSystemObject = new GameObject("EventSystem");
         eventSystemObject.AddComponent<EventSystem>();
         InputSystemUIInputModule inputModule = eventSystemObject.AddComponent<InputSystemUIInputModule>();
@@ -61,7 +60,6 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
         {
             if (button.GetComponent<MenuButtonFeedback>() == null)
                 button.gameObject.AddComponent<MenuButtonFeedback>();
-
             Navigation navigation = button.navigation;
             navigation.mode = Navigation.Mode.Automatic;
             button.navigation = navigation;
@@ -87,40 +85,22 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
             newCampaignButton.onClick.AddListener(RequestNewCampaign);
         }
 
-        ReplaceWithConfirmation(
-            FindButton("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"),
+        ReplaceWithConfirmation(FindButton("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"),
             L("RESTART CHAPTER?", "ПЕРЕЗАПУСТИТЬ ГЛАВУ?"),
-            L("Current battle progress will be lost.", "Текущий прогресс битвы будет потерян."),
-            "RestartScene");
+            L("Current battle progress will be lost.", "Текущий прогресс битвы будет потерян."), "RestartScene");
 
-        ReplaceWithConfirmation(
-            FindButton("MAIN MENU", "ГЛАВНОЕ МЕНЮ"),
+        ReplaceWithConfirmation(FindButton("MAIN MENU", "ГЛАВНОЕ МЕНЮ"),
             L("RETURN TO MAIN MENU?", "ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ?"),
-            L("The current battle will end. Campaign progress already saved will remain.", "Текущая битва завершится. Уже сохранённый прогресс кампании останется."),
-            "ReturnToMainMenu");
+            L("The current battle will end. Campaign progress already saved will remain.", "Текущая битва завершится. Уже сохранённый прогресс кампании останется."), "ReturnToMainMenu");
 
-        ReplaceWithConfirmation(
-            FindButton("EXIT", "ВЫХОД"),
+        ReplaceWithConfirmation(FindButton("EXIT", "ВЫХОД"),
             L("EXIT GAME?", "ВЫЙТИ ИЗ ИГРЫ?"),
-            L("Unsaved battle progress will be lost.", "Несохранённый прогресс битвы будет потерян."),
-            "QuitGame");
+            L("Unsaved battle progress will be lost.", "Несохранённый прогресс битвы будет потерян."), "QuitGame");
     }
 
     bool HasCampaignProgress()
     {
-        CampaignSaveData save = CampaignSave.Data;
-        if (save == null) return false;
-        if (save.unlockedChapter > 1) return true;
-        if (save.finalResult != null && save.finalResult.completed) return true;
-        if (save.chapters != null && save.chapters.Count > 0)
-        {
-            foreach (ChapterProgress chapter in save.chapters)
-            {
-                if (chapter != null && (chapter.completed || chapter.bestScore > 0 || chapter.completions > 0))
-                    return true;
-            }
-        }
-        return false;
+        return CampaignController.Instance != null && CampaignController.Instance.HasProgress;
     }
 
     void RequestNewCampaign()
@@ -130,16 +110,14 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
             StartNewCampaign();
             return;
         }
-
-        ShowConfirmation(
-            L("START A NEW CAMPAIGN?", "НАЧАТЬ НОВУЮ КАМПАНИЮ?"),
+        ShowConfirmation(L("START A NEW CAMPAIGN?", "НАЧАТЬ НОВУЮ КАМПАНИЮ?"),
             L("Existing campaign progress will be erased. Settings will be kept.", "Текущий прогресс кампании будет удалён. Настройки игры сохранятся."),
             StartNewCampaign);
     }
 
     void StartNewCampaign()
     {
-        CampaignSave.ResetProgress();
+        CampaignController.Instance?.ResetProgress();
         RuntimeFileLogger.Event("CAMPAIGN", "New campaign started from main menu");
         menu.SendMessage("ShowLevels", SendMessageOptions.DontRequireReceiver);
     }
@@ -159,8 +137,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
             Text text = button.GetComponentInChildren<Text>(true);
             if (text == null) continue;
             foreach (string label in labels)
-                if (string.Equals(text.text, label, StringComparison.OrdinalIgnoreCase))
-                    return button;
+                if (string.Equals(text.text, label, StringComparison.OrdinalIgnoreCase)) return button;
         }
         return null;
     }
@@ -189,10 +166,8 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
 
         modalTitle = MakeText(card.transform, "Title", new Vector2(0, 115), new Vector2(610, 70), 34, new Color(1f, .66f, .24f, 1f), FontStyle.Bold);
         modalBody = MakeText(card.transform, "Body", new Vector2(0, 25), new Vector2(570, 100), 20, new Color(.94f, .86f, .75f, 1f), FontStyle.Normal);
-
         confirmButton = MakeModalButton(card.transform, L("CONFIRM", "ПОДТВЕРДИТЬ"), new Vector2(-155, -115), true, ConfirmPending);
         cancelButton = MakeModalButton(card.transform, L("CANCEL", "ОТМЕНА"), new Vector2(155, -115), false, CancelPending);
-
         modal.AddComponent<MenuScreenTransition>();
         modal.SetActive(false);
     }
@@ -228,13 +203,11 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
         rect.anchoredPosition = position;
         rect.sizeDelta = new Vector2(260f, 62f);
-
         Text text = MakeText(go.transform, "Label", Vector2.zero, new Vector2(250f, 58f), 20,
             primary ? new Color(1f, .9f, .55f, 1f) : new Color(.95f, .82f, .68f, 1f), FontStyle.Bold);
         text.rectTransform.anchorMin = Vector2.zero;
         text.rectTransform.anchorMax = Vector2.one;
         text.rectTransform.offsetMin = text.rectTransform.offsetMax = Vector2.zero;
-
         go.AddComponent<MenuButtonFeedback>();
         Navigation navigation = button.navigation;
         navigation.mode = Navigation.Mode.Automatic;
@@ -249,8 +222,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
         modalBody.text = body;
         confirmButton.GetComponentInChildren<Text>().text = L("CONFIRM", "ПОДТВЕРДИТЬ");
         cancelButton.GetComponentInChildren<Text>().text = L("CANCEL", "ОТМЕНА");
-        MenuScreenTransition transition = modal.GetComponent<MenuScreenTransition>();
-        transition.Show();
+        modal.GetComponent<MenuScreenTransition>().Show();
         EventSystem.current?.SetSelectedGameObject(cancelButton.gameObject);
     }
 
