@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public int Money { get; private set; }
+    public int Money => economy != null ? economy.Money : 0;
     public int BaseHealth { get; private set; }
     public int MaxBaseHealth { get; private set; }
     public int CurrentWave { get; set; } = 0;
@@ -17,8 +17,8 @@ public class GameManager : MonoBehaviour
 
     public int Kills { get; private set; }
     public int Leaks { get; private set; }
-    public int GoldEarned { get; private set; }
-    public int GoldSpent { get; private set; }
+    public int GoldEarned => economy != null ? economy.GoldEarned : 0;
+    public int GoldSpent => economy != null ? economy.GoldSpent : 0;
     public int TowersBuilt { get; private set; }
     public int TowersSold { get; private set; }
     public float RunTime => GameEnded ? finalRunTime : runStarted ? Mathf.Max(0f, Time.unscaledTime - runStartTime) : 0f;
@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     public bool GiftAvailable => giftWave != CurrentWave;
     public int FinalScore { get; private set; }
 
+    EconomyController economy;
     float runStartTime;
     float finalRunTime;
     float magicReadyAt;
@@ -42,7 +43,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
 
         CampaignDifficulty difficulty = CampaignSave.Difficulty;
-        Money = DifficultyRules.StartingGold(difficulty);
+        economy = new EconomyController(DifficultyRules.StartingGold(difficulty));
         MaxBaseHealth = DifficultyRules.StartingGateHealth(difficulty);
         BaseHealth = MaxBaseHealth;
 
@@ -65,17 +66,18 @@ public class GameManager : MonoBehaviour
 
     public void AddMoney(int amount)
     {
-        if (amount <= 0) return;
-        Money += amount;
-        GoldEarned += amount;
+        economy?.AddIncome(amount);
+    }
+
+    public void RefundMoney(int amount)
+    {
+        economy?.AddRefund(amount);
     }
 
     public bool SpendMoney(int amount)
     {
-        if (GameEnded || Money < amount) return false;
-        Money -= amount;
-        GoldSpent += amount;
-        return true;
+        if (GameEnded || economy == null) return false;
+        return economy.TrySpend(amount);
     }
 
     public void RecordKill() => Kills++;
@@ -163,17 +165,18 @@ public class GameManager : MonoBehaviour
 
     int CalculateScore()
     {
-        int score = Kills * 100;
-        score += BaseHealth * 250;
-        score += Mathf.Max(0, 3000 - Leaks * 350);
-        score += Mathf.Max(0, GoldEarned - GoldSpent / 2);
-        if (Chapter != null && RunTime > 0f)
+        ChapterScoreInput input = new ChapterScoreInput
         {
-            float target = Chapter.targetDurationMinutes * 60f;
-            score += Mathf.RoundToInt(Mathf.Clamp(target / RunTime, .5f, 1.5f) * 2000f);
-        }
-        score = Mathf.RoundToInt(score * DifficultyRules.ScoreMultiplier(CampaignSave.Difficulty));
-        return Mathf.Max(0, score);
+            kills = Kills,
+            leaks = Leaks,
+            gateHealth = BaseHealth,
+            goldEarned = GoldEarned,
+            goldSpent = GoldSpent,
+            runTimeSeconds = RunTime,
+            targetDurationSeconds = Chapter != null ? Chapter.targetDurationMinutes * 60f : 0f,
+            difficulty = CampaignSave.Difficulty
+        };
+        return ScoreController.Calculate(input);
     }
 
     void FinalizeRun()
