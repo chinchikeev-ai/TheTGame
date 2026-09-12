@@ -93,7 +93,14 @@ public class Enemy : MonoBehaviour
         if (Health <= 0f) return;
         float effectiveArmor = armor;
         if (sourceType.HasValue && sourceType.Value == TowerType.Cannon) effectiveArmor *= .45f;
-        float finalDamage = damage * (1f - effectiveArmor);
+
+        float bonus = 1f;
+        if (sourceType.HasValue && sourceType.Value == TowerType.SpearThrower &&
+            (Archetype == EnemyArchetype.HeavyHoplite || Archetype == EnemyArchetype.ShieldBearer || Archetype == EnemyArchetype.BatteringRam)) bonus = 1.5f;
+        if (sourceType.HasValue && sourceType.Value == TowerType.TrojanGuard &&
+            (Archetype == EnemyArchetype.Infantry || Archetype == EnemyArchetype.Runner)) bonus = 1.25f;
+
+        float finalDamage = damage * bonus * (1f - effectiveArmor);
         if (sourceType.HasValue && sourceType.Value == TowerType.MachineGun)
             finalDamage *= 1f - arrowResistance;
         Health -= Mathf.Max(1f, finalDamage);
