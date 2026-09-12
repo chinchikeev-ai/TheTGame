@@ -8,6 +8,7 @@ public class CombatControlsUI : MonoBehaviour
 
     Canvas canvas;
     GameObject root;
+    GameObject extraTowers;
     Text speedLabel;
     Text magicLabel;
     Text giftLabel;
@@ -31,9 +32,12 @@ public class CombatControlsUI : MonoBehaviour
     void Update()
     {
         if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
-        bool active = GameManager.Instance != null && GameManager.Instance.CurrentWave > 0 && !GameManager.Instance.GameEnded;
+        bool active = GameManager.Instance != null && !GameManager.Instance.GameEnded && Time.timeScale > 0f;
         if (root != null) root.SetActive(active);
+        if (extraTowers != null) extraTowers.SetActive(active);
         if (!active) return;
+
+        if (Mathf.Abs(Time.timeScale - CurrentSpeed) > .01f) Time.timeScale = CurrentSpeed;
 
         speedLabel.text = GameLanguage.T($"SPEED {CurrentSpeed:0}x", $"СКОРОСТЬ {CurrentSpeed:0}x");
         float cd = GameManager.Instance.MagicCooldownRemaining;
@@ -68,16 +72,16 @@ public class CombatControlsUI : MonoBehaviour
         magicLabel = AddButton(root.transform, new Vector2(0, -72), () => GameManager.Instance?.UseMagic());
         giftLabel = AddButton(root.transform, new Vector2(0, -144), () => GameManager.Instance?.UseGift());
 
-        GameObject extra = new GameObject("ExtraTowers");
-        extra.transform.SetParent(canvas.transform, false);
-        RectTransform er = extra.AddComponent<RectTransform>();
+        extraTowers = new GameObject("ExtraTowers");
+        extraTowers.transform.SetParent(canvas.transform, false);
+        RectTransform er = extraTowers.AddComponent<RectTransform>();
         er.anchorMin = er.anchorMax = er.pivot = new Vector2(.5f, 0f);
         er.anchoredPosition = new Vector2(0f, 130f);
         er.sizeDelta = new Vector2(760f, 72f);
 
-        AddTowerButton(extra.transform, GameLanguage.T("SPEAR\n145", "КОПЬЯ\n145"), -245f, TowerType.SpearThrower);
-        AddTowerButton(extra.transform, GameLanguage.T("FIRE\n240", "ОГОНЬ\n240"), 0f, TowerType.FireTower);
-        AddTowerButton(extra.transform, GameLanguage.T("GUARD\n130", "СТРАЖА\n130"), 245f, TowerType.TrojanGuard);
+        AddTowerButton(extraTowers.transform, GameLanguage.T("SPEAR\n145", "КОПЬЯ\n145"), -245f, TowerType.SpearThrower);
+        AddTowerButton(extraTowers.transform, GameLanguage.T("FIRE\n240", "ОГОНЬ\n240"), 0f, TowerType.FireTower);
+        AddTowerButton(extraTowers.transform, GameLanguage.T("GUARD\n130", "СТРАЖА\n130"), 245f, TowerType.TrojanGuard);
     }
 
     Text AddButton(Transform parent, Vector2 pos, UnityEngine.Events.UnityAction action)
@@ -93,8 +97,7 @@ public class CombatControlsUI : MonoBehaviour
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
         rt.anchoredPosition = pos;
         rt.sizeDelta = new Vector2(330f, 58f);
-        Text text = AddText(go.transform, 18);
-        return text;
+        return AddText(go.transform, 18);
     }
 
     void AddTowerButton(Transform parent, string label, float x, TowerType type)
@@ -137,8 +140,5 @@ public class CombatControlsUI : MonoBehaviour
         Time.timeScale = CurrentSpeed;
     }
 
-    public static void ResumeConfiguredSpeed()
-    {
-        Time.timeScale = CurrentSpeed;
-    }
+    public static void ResumeConfiguredSpeed() => Time.timeScale = CurrentSpeed;
 }
