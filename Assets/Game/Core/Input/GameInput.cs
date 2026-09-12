@@ -73,6 +73,34 @@ public static class GameInput
 #endif
     }
 
+    public static bool BuildSlotPressed(int slot)
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Keyboard.current == null) return false;
+        switch (slot)
+        {
+            case 1: return Keyboard.current.digit1Key.wasPressedThisFrame;
+            case 2: return Keyboard.current.digit2Key.wasPressedThisFrame;
+            case 3: return Keyboard.current.digit3Key.wasPressedThisFrame;
+            case 4: return Keyboard.current.digit4Key.wasPressedThisFrame;
+            case 5: return Keyboard.current.digit5Key.wasPressedThisFrame;
+            case 6: return Keyboard.current.digit6Key.wasPressedThisFrame;
+            default: return false;
+        }
+#else
+        switch (slot)
+        {
+            case 1: return Input.GetKeyDown(KeyCode.Alpha1);
+            case 2: return Input.GetKeyDown(KeyCode.Alpha2);
+            case 3: return Input.GetKeyDown(KeyCode.Alpha3);
+            case 4: return Input.GetKeyDown(KeyCode.Alpha4);
+            case 5: return Input.GetKeyDown(KeyCode.Alpha5);
+            case 6: return Input.GetKeyDown(KeyCode.Alpha6);
+            default: return false;
+        }
+#endif
+    }
+
     public static bool Ability1Pressed() => KeyPressed(KeyCode.Q);
     public static bool Ability2Pressed() => KeyPressed(KeyCode.E);
     public static bool Ability3Pressed() => KeyPressed(KeyCode.R);
