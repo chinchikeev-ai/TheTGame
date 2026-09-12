@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0905f4801e326224ba4b6f686564bfd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  id: menelaus
+  displayName: Menelaus
+  archetype: 6
+  hpMultiplier: 15
+  speedMultiplier: 0.68
+  reward: 500
+  baseDamage: 6
+  scale: 1.65
+  armor: 0.32
+  arrowResistance: 0.2
+  attackRange: 0
+  attackInterval: 2.2
+  color: {r: 0.55, g: 0.05, b: 0.08, a: 1}

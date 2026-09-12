@@ -55,3 +55,32 @@ NEXT VERSION (recommended)
 - Multiple enemy classes and a boss.
 - Proper Canvas UI instead of OnGUI.
 - SFX, VFX, hit effects and simple environment art.
+
+GIT RULES
+---------
+For solo development, keep Git simple:
+
+1. Work in the main branch while the project is small.
+2. Before starting work:
+   git status
+   git pull
+3. After a finished change:
+   git status
+   git add .
+   git commit -m "short description of the change"
+   git push
+4. Make small commits after finished steps: menu, enemies, towers, UI, sound, balance.
+5. Commit Unity .meta files. They are part of the project.
+6. Do not commit Unity generated folders: Library, Temp, Obj, Logs, UserSettings, Build, Builds.
+7. If something breaks, inspect first:
+   git status
+   git diff
+8. Avoid git reset --hard unless you are completely sure you want to delete local changes.
+9. Before a big experiment, save a working point:
+   git add .
+   git commit -m "working state before experiment"
+10. Good commit messages are simple:
+    add main menu
+    fix enemy health bar material
+    add wave system
+    improve tower balance

@@ -64,19 +64,19 @@ public class GameMenuController : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        mainMenu = MakeScreen("MainMenu", new Color(.02f,.03f,.05f,.97f));
+        mainMenu = MakeScreen("MainMenu", new Color(.02f,.03f,.05f,.72f));
         AddTitle(mainMenu.transform, "THE TROY GAME", new Vector2(0,180), 62);
         AddButton(mainMenu.transform, L("PLAY", "ИГРАТЬ"), new Vector2(0,55), ShowLevels);
         AddButton(mainMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,-25), ShowSettingsFromMain);
         AddButton(mainMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-105), QuitGame);
 
-        levelMenu = MakeScreen("LevelSelect", new Color(.02f,.03f,.05f,.97f));
+        levelMenu = MakeScreen("LevelSelect", new Color(.02f,.03f,.05f,.72f));
         AddTitle(levelMenu.transform, L("LEVEL SELECT", "ВЫБОР УРОВНЯ"), new Vector2(0,190), 50);
         AddButton(levelMenu.transform, L("MAP 1 - THE LANDING", "КАРТА 1 - ВЫСАДКА"), new Vector2(0,55), StartLevel);
         AddButton(levelMenu.transform, L("MAP 2 - LOCKED", "КАРТА 2 - ЗАКРЫТА"), new Vector2(0,-35), delegate { });
         AddButton(levelMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-155), ShowMainMenu);
 
-        settingsMenu = MakeScreen("Settings", new Color(.02f,.03f,.05f,.97f));
+        settingsMenu = MakeScreen("Settings", new Color(.02f,.03f,.05f,.78f));
         AddTitle(settingsMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,215), 50);
         AddButton(settingsMenu.transform, L("VOLUME +", "ГРОМКОСТЬ +"), new Vector2(0,105), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume + .1f); });
         AddButton(settingsMenu.transform, L("VOLUME -", "ГРОМКОСТЬ -"), new Vector2(0,30), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume - .1f); });
@@ -84,7 +84,7 @@ public class GameMenuController : MonoBehaviour
         AddButton(settingsMenu.transform, GameLanguage.Russian ? "LANGUAGE: РУССКИЙ" : "LANGUAGE: ENGLISH", new Vector2(0,-120), ToggleLanguage);
         AddButton(settingsMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-195), BackFromSettings);
 
-        pauseMenu = MakeScreen("PauseMenu", new Color(.02f,.03f,.05f,.9f));
+        pauseMenu = MakeScreen("PauseMenu", new Color(.02f,.03f,.05f,.78f));
         AddTitle(pauseMenu.transform, L("PAUSED", "ПАУЗА"), new Vector2(0,210), 54);
         AddButton(pauseMenu.transform, L("RESUME", "ПРОДОЛЖИТЬ"), new Vector2(0,95), Resume);
         AddButton(pauseMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,20), ShowSettingsFromPause);
@@ -92,7 +92,7 @@ public class GameMenuController : MonoBehaviour
         AddButton(pauseMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-130), ShowMainMenu);
         AddButton(pauseMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-205), QuitGame);
 
-        endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.95f));
+        endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.82f));
         endTitle = AddTitle(endMenu.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0,300), 60);
         endSummary = AddTitle(endMenu.transform, "", new Vector2(0,70), 24);
         endSummary.rectTransform.sizeDelta = new Vector2(900, 360);

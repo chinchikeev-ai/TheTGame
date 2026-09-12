@@ -55,9 +55,9 @@ public class EnemyHealthBar : MonoBehaviour
     {
         Renderer r = obj.GetComponent<Renderer>();
         if (r == null) return;
-        Material m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        if (m.shader == null) m = new Material(Shader.Find("Standard"));
-        m.color = color;
-        r.material = m;
+
+        Material material = r.material;
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
     }
 }

@@ -2,6 +2,9 @@ using UnityEngine;
 
 public static class TowerFactory
 {
+    const string RuntimeMaterialResource = "RuntimeColorMaterial";
+    static Material runtimeMaterialTemplate;
+
     public static int GetCost(TowerType type) => BalanceCatalog.GetTower(type).cost;
     public static string GetDisplayName(TowerType type) => BalanceCatalog.GetTower(type).displayName;
 
@@ -62,11 +65,21 @@ public static class TowerFactory
         Renderer renderer = obj.GetComponent<Renderer>();
         if (renderer == null) return;
 
-        // Keep the primitive's material/shader so the player build cannot lose a
-        // dynamically found shader during stripping. Cloning through .material is
-        // enough for per-object color without Shader.Find().
-        Material material = renderer.material;
+        Material material = new Material(GetRuntimeMaterialTemplate());
         if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color")) material.SetColor("_Color", color);
+        renderer.material = material;
+    }
+
+    static Material GetRuntimeMaterialTemplate()
+    {
+        if (runtimeMaterialTemplate != null) return runtimeMaterialTemplate;
+
+        runtimeMaterialTemplate = Resources.Load<Material>(RuntimeMaterialResource);
+        if (runtimeMaterialTemplate != null) return runtimeMaterialTemplate;
+
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+        runtimeMaterialTemplate = new Material(shader);
+        return runtimeMaterialTemplate;
     }
 }

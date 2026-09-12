@@ -59,6 +59,7 @@ public class GameBootstrap : MonoBehaviour
         cam.orthographicSize = 10.5f;
         cam.transform.position = new Vector3(0f, 30f, 0f);
         cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = new Color(.32f,.43f,.48f);
 
         CameraController controller = cam.GetComponent<CameraController>();

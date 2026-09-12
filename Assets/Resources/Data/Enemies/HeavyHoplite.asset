@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0905f4801e326224ba4b6f686564bfd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  id: heavy_hoplite
+  displayName: Heavy Hoplite
+  archetype: 2
+  hpMultiplier: 3.2
+  speedMultiplier: 0.68
+  reward: 58
+  baseDamage: 2
+  scale: 1.15
+  armor: 0.28
+  arrowResistance: 0.08
+  attackRange: 0
+  attackInterval: 2.2
+  color: {r: 0.35, g: 0.12, b: 0.08, a: 1}
