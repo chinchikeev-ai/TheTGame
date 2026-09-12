@@ -1,0 +1,3 @@
+[submodule "Assets/ThirdParty/KayKitAdventurers"]
+	path = Assets/ThirdParty/KayKitAdventurers
+	url = https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0.git
