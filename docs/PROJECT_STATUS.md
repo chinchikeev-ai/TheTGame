@@ -4,127 +4,56 @@ Last reviewed: 2026-09-12
 
 ## Campaign
 - Chapter I: functional vertical slice, late RC stage
-- Chapter II: unlocked by Chapter I save, content not implemented
+- Chapter II: unlock plumbing exists; content not implemented
 - Chapters III-VII: planned in GDD/Roadmap
 
-## Core
-- GameBootstrap: implemented
-- GameManager session facade: implemented
-- GameStateController: implemented
-- EnemyRegistry: implemented
-- TowerRegistry: implemented
-- Runtime file logging: implemented
-- CampaignSave JSON + backup + migration: implemented
-- Difficulty save/combat modifiers: implemented
-- EconomyController: extracted
-- ScoreController: extracted
-- CampaignController boundary: implemented
-- ChapterController boundary: implemented
-- GameInput facade: implemented
-- gameplay/UI input routed through GameInput
-
-## Architecture
-- `AGENTS.md`: implemented and authoritative AI entrypoint
-- `docs/ARCHITECTURE.md`: implemented
-- `docs/MODULE_MAP.md`: implemented
-- architecture smoke validator: implemented
-- GUID-preserving runtime migration: COMPLETE
+## AI development readiness
+- `AGENTS.md`: authoritative AI entrypoint
+- `docs/AI_PIPELINE.md`: validation contract
+- `docs/ARCHITECTURE.md`: ownership/dependency rules
+- `docs/MODULE_MAP.md`: task-to-module routing
+- `docs/DATA_CATALOG.md`: authored-data ownership
+- `docs/RUNTIME_GRAPH.md`: runtime composition/lifecycle
+- `docs/NAMESPACE_POLICY.md`: global-namespace policy until dedicated migration
+- `docs/tasks/TASK_TEMPLATE.md`: non-trivial task contract
 - legacy `Assets/Scripts`: removed
-- runtime assembly: `TheTroyGame.Runtime`
-- editor assembly: `TheTroyGame.Editor`
-- EditMode test assembly: implemented
-- PlayMode test assembly: implemented
-- direct Input outside GameInput: guarded by validator
-- scene-wide FindObjects gameplay search: guarded by validator
-- direct CampaignSave access from UI: guarded by validator
+- GUID-preserving modular migration: complete
+- fast architecture guard: `tools/check-architecture.py`
+- local full validation: `tools/validate-project.ps1` / `tools/validate-project.sh`
+- GitHub Actions pipeline: `.github/workflows/unity-ci.yml`
 
-## Canonical modules
-- `Assets/Game/Core`
-- `Assets/Game/Campaign`
-- `Assets/Game/Combat`
-- `Assets/Game/Towers`
-- `Assets/Game/Enemies`
-- `Assets/Game/Heroes/Hector`
-- `Assets/Game/World`
-- `Assets/Game/UI`
-- `Assets/Game/Audio`
-- `Assets/Game/VFX`
-
-## Combat
-- DamageType / DamagePacket: implemented
-- Physical / Piercing / Fire / Hero: implemented
-- Slow: implemented
-- Burn: implemented
-- ArmorBreak: implemented
-- Stun: not implemented
-- Fear: not implemented
-- Target priority: implemented
-
-## Towers / defense
-- Archer Tower: implemented
-- Ballista: implemented
-- Priests of Apollo: implemented
-- Spear Throwers: implemented
-- Fire Tower: implemented
-- Trojan Guard blocking squad: implemented
-- 3 core upgrade levels: implemented
-- specialization branches: not implemented
-
-## Hector
-- selection/movement: implemented
-- HP/damage/downed/revive: implemented
-- basic attack: implemented
-- Q War Cry: implemented
-- E Shield Wall: implemented
-- R Spear Throw: implemented
-- F For Troy! ultimate: implemented
-- cooldown HUD: implemented
-- movement constraints: partial/not production-ready
-- progression/upgrades: not implemented
-
-## Menelaus
-- boss controller: implemented
-- boss HP bar: implemented
-- Commander Aura: implemented
-- reinforcements: implemented
-- final-wave integration: implemented
-
-## Chapter I
-- 5 combat events: implemented
-- tutorial/objective UI: implemented
-- scoring: implemented
-- save completion: implemented
-- unlock Chapter II: implemented
-- EN/RU language toggle without scene reload: implemented
-- coast environment: procedural prototype implemented
-- landing presentation: procedural prototype implemented
-- production art: not implemented
-- final 11-13 minute real Play Mode validation: pending
-
-## UI / UX
-- menus: implemented prototype
-- level select: implemented
-- difficulty selection: implemented
-- result summary: implemented
-- build UI: functional but fragmented; production pass pending
-- enemy hover details: should be verified in Unity before claiming production-ready
+## Data authoring
+- TowerData / EnemyData / WaveData / ChapterData assets are runtime sources of truth
+- default-data generator is non-destructive and creates missing assets only
+- missing authored runtime balance data fails fast instead of silently falling back
+- DifficultyRules remains code-authored; migrate to DifficultyData only if tuning complexity requires it
 
 ## Automated validation
-- architecture/editor smoke validator: implemented
-- EditMode contract tests: implemented
+- Unity architecture smoke validator: implemented
+- command-line architecture validation: implemented
+- EditMode architecture/data tests: implemented
+- isolated CampaignSave round-trip/reset/backup/Chapter VI→VII tests: implemented
 - PlayMode runtime graph tests: implemented
-- actual Unity execution in assistant environment: NOT AVAILABLE, therefore compile/test pass is still unverified
+- PlayMode acceptance tests: first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, final-wave boss data
+- GitHub Actions architecture guard: VERIFIED GREEN
+- Unity EditMode/PlayMode CI: running; do not claim success until the jobs finish
+- Windows build runs after Unity tests succeed
 
-## Performance / production risks
-- projectile/enemy/VFX pooling: not implemented
-- 50x speed: stress mode; requires real Play Mode validation
-- runtime procedural primitives: prototype quality, not production art
-- runtime modules still share one assembly because gameplay dependencies are cyclic; split further only after interface/event decoupling
+## Current gameplay
+- DamageType / DamagePacket and Physical/Piercing/Fire/Hero: implemented
+- Slow / Burn / ArmorBreak: implemented; Stun / Fear pending
+- six Chapter I defense types: implemented
+- 3 core tower upgrade levels: implemented; specialization branches pending
+- Hector Q/E/R/F, HP/downed/revive/HUD: implemented; movement constraints/progression incomplete
+- Menelaus boss/aura/reinforcements/final-wave integration: implemented
+- Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU, procedural coast/landing prototype
 
-## Next product work after Unity validation
-1. Fix any compile/test failures exposed by Unity after this migration
-2. Final Chapter I 11-13 minute balance pass using runtime logs
-3. Pool projectiles/enemies/VFX before Chapter II scale
-4. Add Hector movement constraints/progression
-5. Replace static DifficultyRules with authored DifficultyData if balance iteration demands it
-6. Start Chapter II only after Chapter I RC validation
+## Remaining production risks
+- final real 11–13 minute Chapter I balance validation
+- projectile/enemy/VFX pooling
+- production art/environment pass
+- Hector movement constraints/progression
+- gameplay modules still share one runtime assembly pending interface/event decoupling
+
+## Next gate
+Do not start Chapter II implementation until the first full Unity CI/local validation is green and Chapter I RC issues exposed by it are fixed.
