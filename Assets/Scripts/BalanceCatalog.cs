@@ -21,29 +21,28 @@ public static class BalanceCatalog
     public static EnemyData GetEnemyForWave(int wave, int index, int count, bool boss)
     {
         if (boss) return GetEnemy(EnemyArchetype.Boss);
-        if (wave >= 6 && index % 7 == 5) return GetEnemy(EnemyArchetype.BatteringRam);
         if (wave >= 4 && index % 5 == 3) return GetEnemy(EnemyArchetype.ShieldBearer);
-        if (wave >= 3 && index % 6 == 2) return GetEnemy(EnemyArchetype.Archer);
+        if (wave >= 4 && index % 6 == 2) return GetEnemy(EnemyArchetype.Archer);
         if (wave >= 3 && index % 4 == 3) return GetEnemy(EnemyArchetype.HeavyHoplite);
         if (wave >= 2 && index % 4 == 1) return GetEnemy(EnemyArchetype.Runner);
         return GetEnemy(EnemyArchetype.Infantry);
     }
 
-    public static WaveData GetWave(int wave, int maxWaves = 7)
+    public static WaveData GetWave(int wave, int maxWaves = 5)
     {
         WaveData d = ScriptableObject.CreateInstance<WaveData>();
         d.waveNumber = wave;
-        d.enemyCount = 8 + (wave - 1) * 3 + (wave == maxWaves ? 1 : 0);
-        d.hpMultiplier = 1f + (wave - 1) * 0.26f;
-        d.speedMultiplier = 1f + (wave - 1) * 0.035f;
-        d.heavyEvery = wave >= 6 ? 3 : wave >= 3 ? 4 : 0;
+        d.enemyCount = 8 + (wave - 1) * 4 + (wave == maxWaves ? 1 : 0);
+        d.hpMultiplier = 1f + (wave - 1) * 0.30f;
+        d.speedMultiplier = 1f + (wave - 1) * 0.04f;
+        d.heavyEvery = wave >= 3 ? 4 : 0;
         d.hasBoss = wave == maxWaves;
-        float[] target = { 60f, 75f, 90f, 100f, 110f, 120f, 180f };
-        float[] cadence = { 4.5f, 4.2f, 3.9f, 3.6f, 3.4f, 3.2f, 4.0f };
+        float[] target = { 60f, 75f, 90f, 110f, 180f };
+        float[] cadence = { 4.5f, 4.2f, 3.9f, 3.6f, 4.0f };
         int i = Mathf.Clamp(wave - 1, 0, target.Length - 1);
         d.targetDuration = target[i];
         d.spawnInterval = cadence[i];
-        d.preparationTime = wave == 1 ? 35f : wave >= 6 ? 25f : 20f;
+        d.preparationTime = wave == 1 ? 35f : 20f;
         return d;
     }
 
