@@ -28,7 +28,7 @@ Done when:
 ## P1 — Chapter I Presentation Pass
 
 - Recompose Chapter I camera view around coast, Trojan gate, and Greek landing routes.
-- Add stronger Trojan fire identity: banners, braziers, smoke, warm light.
+- Add stronger Trojan fire identity: banners, braziers, smoke, warm light. Initial braziers, smoke columns, campfires and warmer lighting are implemented.
 - Improve build point readability and selected/hover states.
 - Give core Tower-Units clearer silhouettes.
 - Improve Menelaus boss aura and intro/readability.

@@ -20,6 +20,7 @@ public static class CoastEnvironmentBuilder
         CreateGreekLanding(root.transform);
         CreateDunesAndRocks(root.transform);
         CreateTroyBackdrop(root.transform);
+        CreateFireIdentity(root.transform);
     }
 
     static void CreateGround(Transform parent)
@@ -113,11 +114,64 @@ public static class CoastEnvironmentBuilder
         CreateTrojanStandard(parent,new Vector3(gateX+.70f,2.65f,-2.2f));
     }
 
+    static void CreateFireIdentity(Transform parent)
+    {
+        float gateX = MapBuilder.CellToWorld(new Vector2Int(17,6)).x;
+        CreateBrazier(parent, new Vector3(gateX + .30f, .15f, 3.95f), 1.15f);
+        CreateBrazier(parent, new Vector3(gateX + .30f, .15f, -3.95f), 1.15f);
+        CreateBrazier(parent, new Vector3(gateX - 1.10f, .08f, 1.25f), .82f);
+        CreateBrazier(parent, new Vector3(gateX - 1.10f, .08f, -1.25f), .82f);
+
+        CreateSmokeColumn(parent, new Vector3(gateX + .45f, 2.95f, 4.05f), 1.05f);
+        CreateSmokeColumn(parent, new Vector3(gateX + .45f, 2.95f, -4.05f), .95f);
+
+        CreateCampfire(parent, new Vector3(-10.7f, .08f, 6.9f));
+        CreateCampfire(parent, new Vector3(-9.8f, .08f, -5.4f));
+    }
+
     static void CreateTrojanStandard(Transform parent,Vector3 position)
     {
         Primitive(parent,"Trojan Standard",PrimitiveType.Cylinder,position,new Vector3(.045f,.9f,.045f),Wood);
         Primitive(parent,"Trojan Banner",PrimitiveType.Cube,position+new Vector3(0f,.45f,0f),new Vector3(.08f,.55f,.42f),new Color(.52f,.08f,.06f));
         Primitive(parent,"Banner Gold",PrimitiveType.Cube,position+new Vector3(-.05f,.45f,0f),new Vector3(.02f,.08f,.44f),new Color(.88f,.63f,.14f));
+    }
+
+    static void CreateBrazier(Transform parent, Vector3 position, float scale)
+    {
+        GameObject root = new GameObject("Trojan Fire Brazier");
+        root.transform.SetParent(parent, false);
+        root.transform.localPosition = position;
+
+        Primitive(root.transform,"Bronze Bowl",PrimitiveType.Cylinder,new Vector3(0f,.32f,0f),new Vector3(.32f*scale,.12f*scale,.32f*scale),new Color(.48f,.31f,.12f));
+        Primitive(root.transform,"Coal Bed",PrimitiveType.Cylinder,new Vector3(0f,.43f,0f),new Vector3(.25f*scale,.035f*scale,.25f*scale),new Color(.09f,.045f,.025f));
+        Primitive(root.transform,"Flame Core",PrimitiveType.Sphere,new Vector3(0f,.66f,0f),new Vector3(.22f*scale,.38f*scale,.22f*scale),new Color(1f,.24f,.025f));
+        Primitive(root.transform,"Flame Gold",PrimitiveType.Sphere,new Vector3(.03f,.75f,-.03f),new Vector3(.13f*scale,.27f*scale,.13f*scale),new Color(1f,.70f,.12f));
+
+        Light light = root.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = new Color(1f,.48f,.14f);
+        light.range = 4.8f * scale;
+        light.intensity = 1.7f * scale;
+    }
+
+    static void CreateCampfire(Transform parent, Vector3 position)
+    {
+        GameObject root = new GameObject("Greek Campfire");
+        root.transform.SetParent(parent, false);
+        root.transform.localPosition = position;
+        Primitive(root.transform,"Firewood A",PrimitiveType.Cylinder,new Vector3(0f,.18f,0f),new Vector3(.045f,.42f,.045f),Wood,Quaternion.Euler(80f,22f,0f));
+        Primitive(root.transform,"Firewood B",PrimitiveType.Cylinder,new Vector3(0f,.18f,0f),new Vector3(.045f,.42f,.045f),Wood,Quaternion.Euler(80f,-28f,0f));
+        Primitive(root.transform,"Camp Flame",PrimitiveType.Sphere,new Vector3(0f,.40f,0f),new Vector3(.16f,.26f,.16f),new Color(1f,.36f,.06f));
+    }
+
+    static void CreateSmokeColumn(Transform parent, Vector3 position, float scale)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            Vector3 offset = new Vector3(i * .10f, i * .34f, (i % 2 == 0 ? .08f : -.06f));
+            GameObject puff = Primitive(parent,"Trojan Smoke",PrimitiveType.Sphere,position + offset,new Vector3((.34f + i * .09f) * scale,(.22f + i * .08f) * scale,(.34f + i * .09f) * scale),new Color(.18f,.16f,.14f));
+            puff.transform.rotation = Quaternion.Euler(0f, i * 37f, 0f);
+        }
     }
 
     static GameObject Primitive(Transform parent,string name,PrimitiveType type,Vector3 position,Vector3 scale,Color color,Quaternion? rotation=null)
