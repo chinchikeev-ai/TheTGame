@@ -4,74 +4,105 @@ using UnityEngine;
 public sealed class MenuScreenTransition : MonoBehaviour
 {
     CanvasGroup group;
+    RectTransform rect;
     Coroutine routine;
     bool initialized;
+    Vector2 basePosition;
+    Vector3 baseScale;
 
     void Awake()
     {
-        EnsureGroup();
+        EnsureComponents();
+        basePosition = rect != null ? rect.anchoredPosition : Vector2.zero;
+        baseScale = rect != null ? rect.localScale : Vector3.one;
         initialized = true;
     }
 
     void OnEnable()
     {
-        EnsureGroup();
+        EnsureComponents();
         if (!initialized)
         {
             initialized = true;
             return;
         }
 
-        if (routine != null) StopCoroutine(routine);
-        group.alpha = 0f;
-        group.blocksRaycasts = true;
-        group.interactable = true;
-        routine = StartCoroutine(FadeTo(1f, 0.16f, false));
+        BeginShow(0.18f);
     }
 
-    void EnsureGroup()
+    void EnsureComponents()
     {
-        if (group != null) return;
-        group = GetComponent<CanvasGroup>();
-        if (group == null) group = gameObject.AddComponent<CanvasGroup>();
+        if (group == null)
+        {
+            group = GetComponent<CanvasGroup>();
+            if (group == null) group = gameObject.AddComponent<CanvasGroup>();
+        }
+        if (rect == null) rect = transform as RectTransform;
     }
 
-    public void Show(float duration = 0.16f)
+    public void Show(float duration = 0.18f)
     {
-        EnsureGroup();
-        if (routine != null) StopCoroutine(routine);
+        EnsureComponents();
         gameObject.SetActive(true);
-        group.alpha = 0f;
-        group.blocksRaycasts = true;
-        group.interactable = true;
-        routine = StartCoroutine(FadeTo(1f, duration, false));
+        BeginShow(duration);
     }
 
-    public void Hide(float duration = 0.12f)
+    public void Hide(float duration = 0.13f)
     {
-        EnsureGroup();
+        EnsureComponents();
         if (!gameObject.activeSelf) return;
         if (routine != null) StopCoroutine(routine);
-        routine = StartCoroutine(FadeTo(0f, duration, true));
+        routine = StartCoroutine(Animate(false, duration, true));
     }
 
-    IEnumerator FadeTo(float target, float duration, bool disableAfter)
+    void BeginShow(float duration)
     {
-        float start = group.alpha;
+        if (routine != null) StopCoroutine(routine);
+        group.alpha = 0f;
+        group.blocksRaycasts = true;
+        group.interactable = true;
+        if (rect != null)
+        {
+            rect.anchoredPosition = basePosition + new Vector2(0f, -18f);
+            rect.localScale = baseScale * .985f;
+        }
+        routine = StartCoroutine(Animate(true, duration, false));
+    }
+
+    IEnumerator Animate(bool showing, float duration, bool disableAfter)
+    {
+        float startAlpha = group.alpha;
+        float targetAlpha = showing ? 1f : 0f;
+        Vector2 startPosition = rect != null ? rect.anchoredPosition : Vector2.zero;
+        Vector2 targetPosition = showing ? basePosition : basePosition + new Vector2(0f, 10f);
+        Vector3 startScale = rect != null ? rect.localScale : Vector3.one;
+        Vector3 targetScale = showing ? baseScale : baseScale * .992f;
         float elapsed = 0f;
-        group.blocksRaycasts = !disableAfter;
-        group.interactable = !disableAfter;
+
+        group.blocksRaycasts = showing;
+        group.interactable = showing;
 
         while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
             float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
-            t = t * t * (3f - 2f * t);
-            group.alpha = Mathf.Lerp(start, target, t);
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            group.alpha = Mathf.Lerp(startAlpha, targetAlpha, eased);
+            if (rect != null)
+            {
+                rect.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, eased);
+                rect.localScale = Vector3.Lerp(startScale, targetScale, eased);
+            }
             yield return null;
         }
 
-        group.alpha = target;
+        group.alpha = targetAlpha;
+        if (rect != null)
+        {
+            rect.anchoredPosition = showing ? basePosition : targetPosition;
+            rect.localScale = showing ? baseScale : targetScale;
+        }
+
         if (disableAfter) gameObject.SetActive(false);
         routine = null;
     }
