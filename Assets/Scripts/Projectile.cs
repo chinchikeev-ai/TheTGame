@@ -51,7 +51,15 @@ public class Projectile : MonoBehaviour
 
     void Apply(Enemy enemy)
     {
-        enemy.TakeDamage(damage, sourceType);
-        if (slowMultiplier < .999f && slowDuration > 0f) enemy.ApplySlow(slowMultiplier, slowDuration);
+        enemy.ReceiveDamage(new DamagePacket(damage, DamageRules.ForTower(sourceType), sourceType));
+
+        if (slowMultiplier < .999f && slowDuration > 0f)
+            enemy.ApplySlow(slowMultiplier, slowDuration);
+
+        if (sourceType == TowerType.FireTower)
+            enemy.ApplyBurn(Mathf.Max(6f, damage * .35f), 4f);
+
+        if (sourceType == TowerType.Slow)
+            enemy.ApplyArmorBreak(.18f, 4f);
     }
 }
