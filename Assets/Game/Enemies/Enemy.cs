@@ -226,6 +226,7 @@ public class Enemy : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
+            if (Archetype == EnemyArchetype.Boss) GameManager.Instance.RecordBossDefeated();
             GameManager.Instance.RecordKill();
             GameManager.Instance.AddMoney(GameManager.Instance.RewardFor(reward));
         }
@@ -237,8 +238,16 @@ public class Enemy : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.RecordLeak();
-            GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier)));
+            int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
+            if (Archetype == EnemyArchetype.Boss)
+            {
+                GameManager.Instance.BossReachedGate(damage);
+            }
+            else
+            {
+                GameManager.Instance.RecordLeak();
+                GameManager.Instance.DamageBase(damage);
+            }
         }
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss || Archetype == EnemyArchetype.BatteringRam);
         Destroy(gameObject);
