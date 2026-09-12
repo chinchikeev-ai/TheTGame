@@ -115,7 +115,37 @@ public class GameMenuController : MonoBehaviour
     void ToggleLanguage()
     {
         GameLanguage.Toggle();
-        RestartScene();
+        RuntimeFileLogger.Event("LANGUAGE", $"Changed language to {GameLanguage.Code}");
+        RefreshMenuLanguage();
+    }
+
+    void RefreshMenuLanguage()
+    {
+        foreach (Text text in canvas.GetComponentsInChildren<Text>(true))
+        {
+            switch (text.text)
+            {
+                case "PLAY": case "ИГРАТЬ": text.text = L("PLAY", "ИГРАТЬ"); break;
+                case "SETTINGS": case "НАСТРОЙКИ": text.text = L("SETTINGS", "НАСТРОЙКИ"); break;
+                case "EXIT": case "ВЫХОД": text.text = L("EXIT", "ВЫХОД"); break;
+                case "LEVEL SELECT": case "ВЫБОР УРОВНЯ": text.text = L("LEVEL SELECT", "ВЫБОР УРОВНЯ"); break;
+                case "MAP 1 - THE LANDING": case "КАРТА 1 - ВЫСАДКА": text.text = L("MAP 1 - THE LANDING", "КАРТА 1 - ВЫСАДКА"); break;
+                case "MAP 2 - LOCKED": case "КАРТА 2 - ЗАКРЫТА": text.text = L("MAP 2 - LOCKED", "КАРТА 2 - ЗАКРЫТА"); break;
+                case "BACK": case "НАЗАД": text.text = L("BACK", "НАЗАД"); break;
+                case "VOLUME +": case "ГРОМКОСТЬ +": text.text = L("VOLUME +", "ГРОМКОСТЬ +"); break;
+                case "VOLUME -": case "ГРОМКОСТЬ -": text.text = L("VOLUME -", "ГРОМКОСТЬ -"); break;
+                case "FULLSCREEN": case "ПОЛНЫЙ ЭКРАН": text.text = L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН"); break;
+                case "LANGUAGE: ENGLISH": case "LANGUAGE: РУССКИЙ": text.text = GameLanguage.Russian ? "LANGUAGE: РУССКИЙ" : "LANGUAGE: ENGLISH"; break;
+                case "PAUSED": case "ПАУЗА": text.text = L("PAUSED", "ПАУЗА"); break;
+                case "RESUME": case "ПРОДОЛЖИТЬ": text.text = L("RESUME", "ПРОДОЛЖИТЬ"); break;
+                case "RESTART": case "ПЕРЕЗАПУСК": text.text = L("RESTART", "ПЕРЕЗАПУСК"); break;
+                case "MAIN MENU": case "ГЛАВНОЕ МЕНЮ": text.text = L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"); break;
+                case "RESULT": case "РЕЗУЛЬТАТ": text.text = L("RESULT", "РЕЗУЛЬТАТ"); break;
+                case "RETRY": case "ПОВТОРИТЬ": text.text = L("RETRY", "ПОВТОРИТЬ"); break;
+                case "START WAVE": case "НАЧАТЬ ВОЛНУ": text.text = L("START WAVE", "НАЧАТЬ ВОЛНУ"); break;
+                case "READY": case "ГОТОВО": text.text = L("READY", "ГОТОВО"); break;
+            }
+        }
     }
 
     void StartLevel()
