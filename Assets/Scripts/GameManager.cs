@@ -37,6 +37,7 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+        RuntimeFileLogger.Event("GAME", $"GameManager ready. Map={MapNumber}, startGold={Money}, gateHP={BaseHealth}, maxWaves={MaxWaves}");
     }
 
     public void BeginRun()
@@ -44,6 +45,7 @@ public class GameManager : MonoBehaviour
         if (runStarted) return;
         runStarted = true;
         runStartTime = Time.unscaledTime;
+        RuntimeFileLogger.Event("RUN", $"Map {MapNumber} started. maxWaves={MaxWaves}, gold={Money}, gateHP={BaseHealth}");
     }
 
     public void AddMoney(int amount)
@@ -70,6 +72,7 @@ public class GameManager : MonoBehaviour
     {
         if (GameEnded) return;
         BaseHealth = Mathf.Max(0, BaseHealth - damage);
+        RuntimeFileLogger.Event("GATE", $"Damage={damage}, remainingHP={BaseHealth}");
         if (BaseHealth <= 0) LoseGame();
     }
 
@@ -84,6 +87,7 @@ public class GameManager : MonoBehaviour
         if (GameEnded || Time.unscaledTime < magicReadyAt || EnemyRegistry.AliveCount == 0) return false;
         magicReadyAt = Time.unscaledTime + 30f;
         List<Enemy> enemies = new List<Enemy>(EnemyRegistry.All);
+        RuntimeFileLogger.Event("MAGIC", $"Used on wave={CurrentWave}, targets={enemies.Count}");
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null) continue;
@@ -99,6 +103,7 @@ public class GameManager : MonoBehaviour
         giftWave = CurrentWave;
         AddMoney(100);
         HealBase(2);
+        RuntimeFileLogger.Event("GIFT", $"Used on wave={CurrentWave}, gold={Money}, gateHP={BaseHealth}");
         return true;
     }
 
@@ -108,6 +113,7 @@ public class GameManager : MonoBehaviour
         FinalizeRun();
         GameEnded = true;
         EndMessage = "VICTORY";
+        RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, time={finalRunTime:0.0}s, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}");
         GameStateController.Instance?.SetState(GameState.Victory);
     }
 
@@ -118,6 +124,7 @@ public class GameManager : MonoBehaviour
         GameEnded = true;
         BaseHealth = 0;
         EndMessage = "GAME OVER";
+        RuntimeFileLogger.Event("RESULT", $"DEFEAT map={MapNumber}, waves={CurrentWave}/{MaxWaves}, time={finalRunTime:0.0}s, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}");
         GameStateController.Instance?.SetState(GameState.Defeat);
     }
 
