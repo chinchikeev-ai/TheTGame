@@ -1,6 +1,6 @@
 # TheTroyGame Project Status
 
-Last reviewed: 2026-09-12
+Last reviewed: 2026-09-13
 
 ## Campaign
 - Chapter I: functional vertical slice, late RC stage
@@ -39,6 +39,7 @@ Last reviewed: 2026-09-12
 - GitHub Actions architecture guard: VERIFIED GREEN
 - GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
 - therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
+- local Windows build after UI polish: VERIFIED GREEN with 0 errors
 
 ## Current gameplay
 - DamageType / DamagePacket and Physical/Piercing/Fire/Hero: implemented
@@ -52,11 +53,12 @@ Last reviewed: 2026-09-12
 - Menelaus defeat/breach are tracked separately in runtime telemetry
 - Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU, procedural coast/landing prototype
 - Chapter I tutorial reflects marked build points and Hector Q/E/R/F controls
+- combat tower selection now uses a single right-side `+` picker; the old duplicate bottom tower strip has been removed
 
 ## Remaining Chapter I RC work
 - real 1x playthrough validation against 11–13 minute target
 - final economy/enemy-pressure tuning from runtime logs
-- UI/UX production pass for build bar, result screen and combat readability
+- UI/UX production pass for result screen, combat readability and 16:9/RU layout fit
 - environment/landing presentation polish
 - Hector movement constraints and battlefield bounds
 - verify Trojan Guard blocking under high enemy density

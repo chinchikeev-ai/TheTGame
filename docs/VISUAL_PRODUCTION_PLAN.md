@@ -1,6 +1,6 @@
 # TheTroyGame — Visual Production Plan
 
-Last reviewed: 2026-09-12
+Last reviewed: 2026-09-13
 
 Goal: turn Chapter I / The Landing into the polished vertical slice before expanding later chapters.
 
@@ -10,6 +10,7 @@ Goal: turn Chapter I / The Landing into the polished vertical slice before expan
 - Fix compiled-build restart and return-to-menu through scene `buildIndex`.
 - Remove duplicate combat HUD information.
 - Replace permanent bottom build bar with right-side `+` tower picker.
+- Keep tower selection in one place only; combat speed/magic/gift controls must not recreate tower purchase buttons.
 - Commit all required `.meta` files for current tracked assets.
 - Keep `ProjectSettings/McpUnitySettings.json` ignored.
 - Verify MCP connection, Unity console, and PlayMode status after changes.
