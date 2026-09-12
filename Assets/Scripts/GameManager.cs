@@ -42,12 +42,17 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
 
-        CampaignDifficulty difficulty = CampaignSave.Difficulty;
+        CampaignDifficulty difficulty = CampaignController.Instance != null
+            ? CampaignController.Instance.Difficulty
+            : CampaignSave.Difficulty;
         economy = new EconomyController(DifficultyRules.StartingGold(difficulty));
         MaxBaseHealth = DifficultyRules.StartingGateHealth(difficulty);
         BaseHealth = MaxBaseHealth;
 
-        Chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+        Chapter = ChapterController.Instance != null
+            ? ChapterController.Instance.ActiveChapter
+            : Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+
         if (Chapter != null)
         {
             MapNumber = Chapter.chapterNumber;
@@ -64,15 +69,8 @@ public class GameManager : MonoBehaviour
         RuntimeFileLogger.Event("RUN", $"Map {MapNumber} started. maxWaves={MaxWaves}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, difficulty={CampaignSave.Difficulty}");
     }
 
-    public void AddMoney(int amount)
-    {
-        economy?.AddIncome(amount);
-    }
-
-    public void RefundMoney(int amount)
-    {
-        economy?.AddRefund(amount);
-    }
+    public void AddMoney(int amount) => economy?.AddIncome(amount);
+    public void RefundMoney(int amount) => economy?.AddRefund(amount);
 
     public bool SpendMoney(int amount)
     {
@@ -136,8 +134,15 @@ public class GameManager : MonoBehaviour
         GameEnded = true;
         EndMessage = "VICTORY";
         FinalScore = CalculateScore();
+
         if (Chapter != null)
-            CampaignSave.RecordChapterResult(Chapter.chapterNumber, FinalScore, finalRunTime, BaseHealth, Chapter.unlockChapter);
+        {
+            if (CampaignController.Instance != null)
+                CampaignController.Instance.CompleteChapter(Chapter, FinalScore, finalRunTime, BaseHealth);
+            else
+                CampaignSave.RecordChapterResult(Chapter.chapterNumber, FinalScore, finalRunTime, BaseHealth, Chapter.unlockChapter);
+        }
+
         RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, difficulty={CampaignSave.Difficulty}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}/{MaxBaseHealth}");
         GameStateController.Instance?.SetState(GameState.Victory);
     }
