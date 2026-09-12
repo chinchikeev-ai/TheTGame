@@ -32,7 +32,7 @@ Done when:
 - Improve build point readability and selected/hover states.
 - Give core Tower-Units clearer silhouettes.
 - Improve Menelaus boss aura and intro/readability. Initial boss aura ring is implemented.
-- Improve Hector visual/cooldown feedback.
+- Improve Hector visual/cooldown feedback. Initial ground-pulse feedback for Q/E/R/F abilities is implemented.
 - Polish main menu, level select, pause, and result screen into one visual language.
 
 Done when:
@@ -59,7 +59,7 @@ Done when:
 ## P3 — Commercial Polish Expansion
 
 - Replace remaining placeholder/generated primitives with production-ready assets.
-- Add simple animations for enemy movement/death and tower attack cadence. Initial enemy motion, Menelaus aura and tower attack recoil are implemented.
+- Add simple animations for enemy movement/death and tower attack cadence. Initial enemy motion, Menelaus aura, Trojan Guard attack feedback and tower attack recoil are implemented.
 - Add pooling for enemies, projectiles, and transient VFX.
 - Add first random battlefield events only after Chapter I core pacing is stable.
 - Prepare Chapter II content only after Chapter I passes final RC gates.

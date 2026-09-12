@@ -170,7 +170,7 @@ public class HectorController : MonoBehaviour
             buffed++;
         }
         RuntimeFileLogger.Event("HECTOR", $"War Cry used; towersBuffed={buffed}");
-        RuntimeEffects.Instance?.PlayHit(transform.position, true);
+        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.52f,.08f), warCryRadius * 1.35f, .55f);
     }
 
     public void UseShieldWall()
@@ -197,6 +197,7 @@ public class HectorController : MonoBehaviour
 
         Destroy(root, zone.duration + .1f);
         RuntimeFileLogger.Event("HECTOR", "Shield Wall used");
+        RuntimeEffects.Instance?.PlayHeroPulse(center, new Color(.95f,.72f,.18f), 3.8f, .48f);
     }
 
     public void UseSpearThrow()
@@ -209,7 +210,7 @@ public class HectorController : MonoBehaviour
         target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
         target.ApplyArmorBreak(.25f, 6f);
         RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
-        RuntimeEffects.Instance?.PlayHit(target.transform.position, true);
+        RuntimeEffects.Instance?.PlayHeroPulse(target.transform.position, new Color(1f,.78f,.20f), 2.2f, .32f);
     }
 
     public void UseUltimate()
@@ -239,7 +240,7 @@ public class HectorController : MonoBehaviour
         }
 
         RuntimeFileLogger.Event("HECTOR", $"For Troy ultimate used; towersBuffed={towersBuffed}, enemiesHit={enemiesHit}, hp={Health:0}/{maxHealth:0}");
-        RuntimeEffects.Instance?.PlayHit(transform.position, true);
+        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.18f,.04f), ultimateEnemyRadius * 1.15f, .72f);
     }
 
     Enemy FindNearestEnemy(float radius)

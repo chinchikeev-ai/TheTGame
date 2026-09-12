@@ -34,6 +34,7 @@ public class TrojanGuardSquad : MonoBehaviour
         rallyUntil = Mathf.Max(rallyUntil, Time.time + duration);
         rallyDamage = Mathf.Max(rallyDamage, damageMultiplier);
         rallyRate = Mathf.Max(rallyRate, rateMultiplier);
+        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.55f,.10f), blockRadius * 2.2f, .30f);
     }
 
     void Update()
@@ -72,6 +73,7 @@ public class TrojanGuardSquad : MonoBehaviour
         {
             nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate * rallyRate);
             attackTarget.ReceiveDamage(new DamagePacket(damage * rallyDamage, DamageType.Physical, TowerType.TrojanGuard));
+            RuntimeEffects.Instance?.PlayShot(TowerType.TrojanGuard, transform.position + Vector3.up * .8f);
         }
     }
 

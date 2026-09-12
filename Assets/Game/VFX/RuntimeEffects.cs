@@ -49,6 +49,12 @@ public class RuntimeEffects : MonoBehaviour
         if(boss) StartCoroutine(BossShockwave(position));
     }
 
+    public void PlayHeroPulse(Vector3 position, Color color, float radius = 2.8f, float duration = .42f)
+    {
+        source.PlayOneShot(MakeTone(330f, .12f, .16f));
+        StartCoroutine(GroundPulse(position, color, radius, duration));
+    }
+
     AudioClip MakeTone(float frequency, float duration, float volume)
     {
         int rate = 44100;
@@ -112,5 +118,27 @@ public class RuntimeEffects : MonoBehaviour
             yield return null;
         }
         if(ring!=null) Destroy(ring);
+    }
+
+    IEnumerator GroundPulse(Vector3 position, Color color, float radius, float duration)
+    {
+        GameObject ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        ring.name = "GroundPulse";
+        ring.transform.position = position + Vector3.up * .045f;
+        ring.transform.localScale = new Vector3(.22f,.018f,.22f);
+        Destroy(ring.GetComponent<Collider>());
+        TowerFactory.SetColor(ring,color);
+
+        float t = 0f;
+        while (t < duration && ring != null)
+        {
+            t += Time.deltaTime;
+            float u = Mathf.Clamp01(t / duration);
+            float s = Mathf.Lerp(.22f, radius, u);
+            ring.transform.localScale = new Vector3(s,.018f,s);
+            ring.transform.Rotate(0f, 120f * Time.deltaTime, 0f, Space.Self);
+            yield return null;
+        }
+        if (ring != null) Destroy(ring);
     }
 }
