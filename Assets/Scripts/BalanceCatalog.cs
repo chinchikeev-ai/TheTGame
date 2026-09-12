@@ -70,12 +70,16 @@ public static class BalanceCatalog
         d.speedMultiplier = 1f + (wave - 1) * .04f;
         d.heavyEvery = wave >= 3 ? 4 : 0;
         d.hasBoss = wave == maxWaves;
-        float[] target = { 60f, 75f, 90f, 110f, 180f };
-        float[] cadence = { 4.5f, 4.2f, 3.9f, 3.6f, 4.0f };
+
+        // Chapter I pacing target: total real play time 11-13 minutes at 1x.
+        // Combat targets sum to 560s; preparation windows add ~120s.
+        float[] target = { 60f, 80f, 100f, 120f, 200f };
+        float[] cadence = { 4.6f, 4.25f, 4.0f, 3.75f, 4.15f };
+        float[] prep = { 35f, 20f, 20f, 20f, 25f };
         int i = Mathf.Clamp(wave - 1, 0, target.Length - 1);
         d.targetDuration = target[i];
         d.spawnInterval = cadence[i];
-        d.preparationTime = wave == 1 ? 35f : 20f;
+        d.preparationTime = prep[i];
         return d;
     }
 
