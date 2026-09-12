@@ -1,0 +1,90 @@
+using UnityEngine;
+
+public static class TowerArtDirector
+{
+    public static void Enhance(GameObject root, TowerType type)
+    {
+        if (root == null || root.transform.Find("ArtEnhancement") != null) return;
+        GameObject art = new GameObject("ArtEnhancement");
+        art.transform.SetParent(root.transform,false);
+
+        Color wood = new Color(.27f,.15f,.07f);
+        Color lightWood = new Color(.43f,.28f,.13f);
+        Color bronze = new Color(.68f,.46f,.18f);
+        Color red = new Color(.56f,.08f,.055f);
+        Color stone = new Color(.48f,.40f,.28f);
+
+        switch (type)
+        {
+            case TowerType.MachineGun:
+                AddPost(art.transform,new Vector3(-.42f,.62f,-.30f),wood);
+                AddPost(art.transform,new Vector3(.42f,.62f,-.30f),wood);
+                AddPost(art.transform,new Vector3(-.42f,.62f,.30f),wood);
+                AddPost(art.transform,new Vector3(.42f,.62f,.30f),wood);
+                Part(art.transform,"Wooden Platform",PrimitiveType.Cube,new Vector3(0f,.95f,0f),new Vector3(1.05f,.12f,.90f),lightWood);
+                Part(art.transform,"Red Canopy",PrimitiveType.Cylinder,new Vector3(0f,1.38f,0f),new Vector3(.72f,.16f,.72f),red).transform.rotation=Quaternion.Euler(0f,30f,0f);
+                break;
+            case TowerType.Cannon:
+                Part(art.transform,"Ballista Deck",PrimitiveType.Cube,new Vector3(0f,.55f,0f),new Vector3(1.15f,.14f,1.0f),wood);
+                for(int s=-1;s<=1;s+=2)
+                    Part(art.transform,"Ballista Support",PrimitiveType.Cube,new Vector3(s*.48f,.40f,0f),new Vector3(.12f,.62f,.14f),lightWood);
+                Part(art.transform,"Counterweight",PrimitiveType.Cube,new Vector3(0f,.30f,-.36f),new Vector3(.38f,.38f,.38f),stone);
+                break;
+            case TowerType.Slow:
+                for(int i=0;i<4;i++)
+                {
+                    float a=i*Mathf.PI*.5f;
+                    Part(art.transform,"Shrine Column",PrimitiveType.Cylinder,new Vector3(Mathf.Cos(a)*.46f,.58f,Mathf.Sin(a)*.46f),new Vector3(.09f,.55f,.09f),new Color(.80f,.71f,.52f));
+                }
+                Part(art.transform,"Shrine Roof",PrimitiveType.Cylinder,new Vector3(0f,1.18f,0f),new Vector3(.72f,.11f,.72f),bronze).transform.rotation=Quaternion.Euler(0f,30f,0f);
+                break;
+            case TowerType.SpearThrower:
+                Part(art.transform,"Spear Rack",PrimitiveType.Cube,new Vector3(-.52f,.55f,-.05f),new Vector3(.18f,.80f,.42f),wood);
+                for(int i=0;i<3;i++)
+                {
+                    GameObject spear=Part(art.transform,"Rack Spear",PrimitiveType.Cylinder,new Vector3(-.52f,.72f,-.22f+i*.22f),new Vector3(.025f,.66f,.025f),bronze);
+                    spear.transform.rotation=Quaternion.Euler(0f,0f,-8f);
+                }
+                break;
+            case TowerType.FireTower:
+                Part(art.transform,"Fire Stone Base",PrimitiveType.Cylinder,new Vector3(0f,.30f,0f),new Vector3(.70f,.25f,.70f),stone);
+                for(int i=0;i<4;i++)
+                {
+                    float a=i*Mathf.PI*.5f;
+                    GameObject flame=Part(art.transform,"Fire Accent",PrimitiveType.Sphere,new Vector3(Mathf.Cos(a)*.42f,.82f,Mathf.Sin(a)*.42f),new Vector3(.12f,.22f,.12f),new Color(1f,.32f,.04f));
+                    flame.AddComponent<ChapterOneAmbientMotion>().kind=ChapterOneAmbientMotion.MotionKind.Flame;
+                }
+                break;
+            case TowerType.TrojanGuard:
+                Part(art.transform,"Guard Platform",PrimitiveType.Cube,new Vector3(0f,.20f,0f),new Vector3(1.15f,.20f,1.0f),stone);
+                AddStandard(art.transform,new Vector3(-.54f,1.05f,-.18f),red,bronze);
+                AddStandard(art.transform,new Vector3(.54f,1.05f,-.18f),red,bronze);
+                break;
+        }
+    }
+
+    static void AddPost(Transform parent,Vector3 p,Color c)
+    {
+        Part(parent,"Support Post",PrimitiveType.Cylinder,p,new Vector3(.08f,.62f,.08f),c);
+    }
+
+    static void AddStandard(Transform parent,Vector3 p,Color cloth,Color trim)
+    {
+        Part(parent,"Standard Pole",PrimitiveType.Cylinder,p,new Vector3(.025f,.78f,.025f),new Color(.28f,.17f,.08f));
+        GameObject banner=Part(parent,"Trojan Banner",PrimitiveType.Cube,p+new Vector3(.12f,.42f,0f),new Vector3(.24f,.38f,.04f),cloth);
+        banner.AddComponent<ChapterOneAmbientMotion>().kind=ChapterOneAmbientMotion.MotionKind.Banner;
+        Part(parent,"Banner Trim",PrimitiveType.Cube,p+new Vector3(.12f,.68f,0f),new Vector3(.26f,.04f,.05f),trim);
+    }
+
+    static GameObject Part(Transform parent,string name,PrimitiveType type,Vector3 localPos,Vector3 localScale,Color color)
+    {
+        GameObject go=GameObject.CreatePrimitive(type);
+        go.name=name;
+        go.transform.SetParent(parent,false);
+        go.transform.localPosition=localPos;
+        go.transform.localScale=localScale;
+        Object.Destroy(go.GetComponent<Collider>());
+        TowerFactory.SetColor(go,color);
+        return go;
+    }
+}
