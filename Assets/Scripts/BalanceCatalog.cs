@@ -52,6 +52,9 @@ public static class BalanceCatalog
         towers[TowerType.MachineGun] = MakeTower(TowerType.MachineGun, "Archer Tower", 100, 16f, 5.8f, 4.2f, 18f, 0f, 1f, 0f);
         towers[TowerType.Cannon] = MakeTower(TowerType.Cannon, "Ballista", 220, 72f, 6.8f, 0.75f, 10f, 2.2f, 1f, 0f);
         towers[TowerType.Slow] = MakeTower(TowerType.Slow, "Priests of Apollo", 160, 9f, 5.3f, 1.5f, 13f, 0f, 0.55f, 1.6f);
+        towers[TowerType.SpearThrower] = MakeTower(TowerType.SpearThrower, "Spear Throwers", 145, 30f, 5.4f, 1.7f, 16f, 0f, 1f, 0f);
+        towers[TowerType.FireTower] = MakeTower(TowerType.FireTower, "Fire Tower", 240, 34f, 4.8f, 1.05f, 11f, 2.8f, 1f, 0f);
+        towers[TowerType.TrojanGuard] = MakeTower(TowerType.TrojanGuard, "Trojan Guard", 130, 42f, 2.25f, 1.25f, 15f, 0f, 1f, 0f);
     }
 
     static void BuildEnemies()
