@@ -97,6 +97,7 @@ public class Tower : MonoBehaviour
         warCryUntil = Mathf.Max(warCryUntil, Time.time + duration);
         warCryDamage = Mathf.Max(warCryDamage, damageMultiplier);
         warCryRate = Mathf.Max(warCryRate, rateMultiplier);
+        if (guardSquad != null) guardSquad.ApplyRally(duration, damageMultiplier, rateMultiplier);
     }
 
     public void Sell()
