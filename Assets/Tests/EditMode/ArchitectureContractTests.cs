@@ -15,6 +15,32 @@ public class ArchitectureContractTests
     }
 
     [Test]
+    public void ChapterOne_AutoStartPacing_IsElevenToThirteenMinutes()
+    {
+        float totalSeconds = 0f;
+        for (int wave = 1; wave <= 5; wave++)
+        {
+            WaveData data = BalanceCatalog.GetWave(wave, 5);
+            Assert.NotNull(data, $"Wave {wave}");
+            totalSeconds += data.preparationTime + data.targetDuration;
+        }
+
+        Assert.GreaterOrEqual(totalSeconds, 11f * 60f, $"Chapter I auto-start target is too short: {totalSeconds:0}s");
+        Assert.LessOrEqual(totalSeconds, 13f * 60f, $"Chapter I auto-start target is too long: {totalSeconds:0}s");
+    }
+
+    [Test]
+    public void ChapterOne_FinalWave_IsMenelausBossWave()
+    {
+        WaveData finalWave = BalanceCatalog.GetWave(5, 5);
+        EnemyData boss = BalanceCatalog.GetEnemy(EnemyArchetype.Boss);
+        Assert.NotNull(finalWave);
+        Assert.IsTrue(finalWave.hasBoss);
+        Assert.NotNull(boss);
+        Assert.AreEqual("menelaus", boss.id);
+    }
+
+    [Test]
     public void EveryTowerType_HasData()
     {
         foreach (TowerType type in Enum.GetValues(typeof(TowerType)))
