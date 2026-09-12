@@ -61,6 +61,8 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
         {
             if (button.GetComponent<MenuButtonFeedback>() == null)
                 button.gameObject.AddComponent<MenuButtonFeedback>();
+            if (button.GetComponent<MenuUiAudioFeedback>() == null)
+                button.gameObject.AddComponent<MenuUiAudioFeedback>();
 
             Navigation navigation = button.navigation;
             navigation.mode = Navigation.Mode.Automatic;
@@ -141,6 +143,8 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
     {
         CampaignSave.ResetProgress();
         RuntimeFileLogger.Event("CAMPAIGN", "New campaign started from main menu");
+        MenuProgressPresentation progress = FindFirstObjectByType<MenuProgressPresentation>();
+        if (progress != null) progress.RefreshAll();
         menu.SendMessage("ShowLevels", SendMessageOptions.DontRequireReceiver);
     }
 
@@ -236,6 +240,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
         text.rectTransform.offsetMin = text.rectTransform.offsetMax = Vector2.zero;
 
         go.AddComponent<MenuButtonFeedback>();
+        go.AddComponent<MenuUiAudioFeedback>();
         Navigation navigation = button.navigation;
         navigation.mode = Navigation.Mode.Automatic;
         button.navigation = navigation;
