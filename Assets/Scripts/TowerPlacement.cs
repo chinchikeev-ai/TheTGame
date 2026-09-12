@@ -41,6 +41,12 @@ public class TowerPlacement : MonoBehaviour
         tower.Sell();
     }
 
+    public void CycleSelectedPriority()
+    {
+        if (SelectedTower != null && SelectedTower.Type != TowerType.TrojanGuard)
+            SelectedTower.CyclePriority();
+    }
+
     void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
