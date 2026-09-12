@@ -14,7 +14,6 @@ public static class CoastEnvironmentBuilder
     {
         if (GameObject.Find("Chapter01_CoastEnvironment") != null) return;
         GameObject root = new GameObject("Chapter01_CoastEnvironment");
-
         CreateGround(root.transform);
         CreateSea(root.transform);
         CreateShoreline(root.transform);
@@ -80,7 +79,6 @@ public static class CoastEnvironmentBuilder
         CreateShip(parent, new Vector3(-19.0f, .10f, 5.8f), -8f);
         CreateShip(parent, new Vector3(-20.4f, .10f, .5f), 5f);
         CreateShip(parent, new Vector3(-18.5f, .10f, -5.8f), -4f);
-
         CreateTent(parent, new Vector3(-11.7f, .30f, 6.4f));
         CreateTent(parent, new Vector3(-10.9f, .30f, -6.0f));
         CreateTent(parent, new Vector3(-9.6f, .30f, 8.0f));
@@ -158,10 +156,13 @@ public static class CoastEnvironmentBuilder
 
     static void CreateTroyBackdrop(Transform parent)
     {
+        float gateX = MapBuilder.CellToWorld(new Vector2Int(17, 6)).x;
+        float wallX = gateX + 1.35f;
+
         GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         wall.name = "Troy Outer Wall";
         wall.transform.SetParent(parent);
-        wall.transform.position = new Vector3(15.3f, 1.0f, 0f);
+        wall.transform.position = new Vector3(wallX, 1.0f, 0f);
         wall.transform.localScale = new Vector3(.9f, 2.2f, 18f);
         Object.Destroy(wall.GetComponent<Collider>());
         TowerFactory.SetColor(wall, new Color(.58f,.47f,.29f));
@@ -171,10 +172,32 @@ public static class CoastEnvironmentBuilder
             GameObject tower = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             tower.name = "Troy Wall Tower";
             tower.transform.SetParent(parent);
-            tower.transform.position = new Vector3(15.25f, 1.25f, i * 2.0f);
+            tower.transform.position = new Vector3(wallX - .05f, 1.25f, i * 2.0f);
             tower.transform.localScale = new Vector3(.95f, 1.25f, .95f);
             Object.Destroy(tower.GetComponent<Collider>());
             TowerFactory.SetColor(tower, new Color(.64f,.52f,.31f));
         }
+
+        CreateTrojanStandard(parent, new Vector3(gateX + .70f, 2.65f, 2.2f));
+        CreateTrojanStandard(parent, new Vector3(gateX + .70f, 2.65f, -2.2f));
+    }
+
+    static void CreateTrojanStandard(Transform parent, Vector3 position)
+    {
+        GameObject pole = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        pole.name = "Trojan Standard";
+        pole.transform.SetParent(parent);
+        pole.transform.position = position;
+        pole.transform.localScale = new Vector3(.045f, .9f, .045f);
+        Object.Destroy(pole.GetComponent<Collider>());
+        TowerFactory.SetColor(pole, Wood);
+
+        GameObject banner = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        banner.name = "Trojan Banner";
+        banner.transform.SetParent(parent);
+        banner.transform.position = position + new Vector3(0f, .45f, 0f);
+        banner.transform.localScale = new Vector3(.08f, .55f, .42f);
+        Object.Destroy(banner.GetComponent<Collider>());
+        TowerFactory.SetColor(banner, new Color(.52f, .08f, .06f));
     }
 }
