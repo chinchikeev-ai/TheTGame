@@ -123,7 +123,7 @@ public class GameManager : MonoBehaviour
         EndMessage = "VICTORY";
         FinalScore = CalculateScore();
         if (Chapter != null) CampaignSave.CompleteChapter(Chapter.chapterNumber, FinalScore, Chapter.unlockChapter);
-        RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}");
+        RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}");
         GameStateController.Instance?.SetState(GameState.Victory);
     }
 
@@ -135,8 +135,17 @@ public class GameManager : MonoBehaviour
         BaseHealth = 0;
         EndMessage = "GAME OVER";
         FinalScore = CalculateScore();
-        RuntimeFileLogger.Event("RESULT", $"DEFEAT map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}");
+        RuntimeFileLogger.Event("RESULT", $"DEFEAT map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}");
         GameStateController.Instance?.SetState(GameState.Defeat);
+    }
+
+    public string PacingVerdict()
+    {
+        if (RunTime <= 0f) return "NO_DATA";
+        float minutes = RunTime / 60f;
+        if (minutes < 11f) return "TOO_FAST";
+        if (minutes > 13f) return "TOO_SLOW";
+        return "TARGET_11_13_MIN";
     }
 
     int CalculateScore()
