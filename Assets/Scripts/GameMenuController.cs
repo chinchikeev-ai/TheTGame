@@ -1,10 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 public class GameMenuController : MonoBehaviour
 {
@@ -17,6 +13,8 @@ public class GameMenuController : MonoBehaviour
     bool paused;
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
+    CampaignDifficulty CurrentDifficulty => CampaignController.Instance != null ? CampaignController.Instance.Difficulty : CampaignDifficulty.Story;
+    bool IsChapterUnlocked(int chapter) => CampaignController.Instance != null && CampaignController.Instance.IsChapterUnlocked(chapter);
 
     void Start()
     {
@@ -28,7 +26,7 @@ public class GameMenuController : MonoBehaviour
     void Update()
     {
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
-        if (levelStarted && GameManager.Instance != null && !GameManager.Instance.GameEnded && ReadEscape()) TogglePause();
+        if (levelStarted && GameManager.Instance != null && !GameManager.Instance.GameEnded && GameInput.PausePressed()) TogglePause();
 
         if (spawner != null && startWaveButton != null)
         {
@@ -41,15 +39,6 @@ public class GameMenuController : MonoBehaviour
         }
 
         if (levelStarted && GameManager.Instance != null && GameManager.Instance.GameEnded && !endMenu.activeSelf) ShowEnd();
-    }
-
-    bool ReadEscape()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.Escape);
-#endif
     }
 
     void BuildUI()
@@ -135,7 +124,8 @@ public class GameMenuController : MonoBehaviour
             RuntimeFileLogger.Event("DIFFICULTY", "Difficulty change ignored during active run");
             return;
         }
-        CampaignDifficulty difficulty = CampaignSave.CycleDifficulty();
+        if (CampaignController.Instance == null) return;
+        CampaignDifficulty difficulty = CampaignController.Instance.CycleDifficulty();
         RuntimeFileLogger.Event("DIFFICULTY", $"Selected {difficulty}");
         RefreshDifficultyLabel();
         RestartScene();
@@ -144,22 +134,20 @@ public class GameMenuController : MonoBehaviour
     void RefreshDifficultyLabel()
     {
         if (difficultyLabel == null) return;
-        string value = DifficultyRules.Label(CampaignSave.Difficulty);
-        difficultyLabel.text = L("DIFFICULTY", "СЛОЖНОСТЬ") + ": " + value;
+        difficultyLabel.text = L("DIFFICULTY", "СЛОЖНОСТЬ") + ": " + DifficultyRules.Label(CurrentDifficulty);
     }
 
     void RefreshLevelSelect()
     {
         if (map2Label == null) return;
-        bool unlocked = CampaignSave.IsUnlocked(2);
-        map2Label.text = unlocked
+        map2Label.text = IsChapterUnlocked(2)
             ? L("MAP 2 - ROAD TO TROY • UNLOCKED", "КАРТА 2 - ДОРОГА К ТРОЕ • ОТКРЫТА")
             : L("MAP 2 - LOCKED", "КАРТА 2 - ЗАКРЫТА");
     }
 
     void OnMap2Clicked()
     {
-        if (!CampaignSave.IsUnlocked(2)) return;
+        if (!IsChapterUnlocked(2)) return;
         RuntimeFileLogger.Event("CAMPAIGN", "Chapter II selected but content is not implemented yet");
     }
 
@@ -254,9 +242,9 @@ public class GameMenuController : MonoBehaviour
         int totalSeconds = Mathf.RoundToInt(gm.RunTime);
         int min = totalSeconds / 60;
         int sec = totalSeconds % 60;
-        string unlock = victory && CampaignSave.IsUnlocked(2) ? "\n" + L("CHAPTER II UNLOCKED", "ГЛАВА II ОТКРЫТА") : "";
+        string unlock = victory && IsChapterUnlocked(2) ? "\n" + L("CHAPTER II UNLOCKED", "ГЛАВА II ОТКРЫТА") : "";
         endSummary.text =
-            $"{L("MAP", "КАРТА")} {gm.MapNumber}    {L("DIFFICULTY", "СЛОЖНОСТЬ")}: {DifficultyRules.Label(CampaignSave.Difficulty)}\n" +
+            $"{L("MAP", "КАРТА")} {gm.MapNumber}    {L("DIFFICULTY", "СЛОЖНОСТЬ")}: {DifficultyRules.Label(CurrentDifficulty)}\n" +
             $"{L("WAVES", "ВОЛНЫ")}: {gm.CurrentWave}/{gm.MaxWaves}    {L("TIME", "ВРЕМЯ")}: {min:00}:{sec:00}\n" +
             $"{L("SCORE", "СЧЁТ")}: {gm.FinalScore}\n" +
             $"{L("KILLS", "УБИТО")}: {gm.Kills}    {L("LEAKS", "ПРОПУЩЕНО")}: {gm.Leaks}\n" +
