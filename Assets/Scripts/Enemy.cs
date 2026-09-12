@@ -34,7 +34,6 @@ public class Enemy : MonoBehaviour
     float attackRange;
     float attackInterval = 1.5f;
     float nextAttack;
-
     float burnUntil;
     float burnDps;
     float nextBurnTick;
@@ -93,9 +92,7 @@ public class Enemy : MonoBehaviour
         if (blockingGuard != null)
         {
             if (!blockingGuard.IsAlive || Vector3.Distance(transform.position, blockingGuard.transform.position) > blockingGuard.blockRadius * 1.35f)
-            {
                 blockingGuard = null;
-            }
             else
             {
                 if (Time.time >= nextAttack)
@@ -161,10 +158,7 @@ public class Enemy : MonoBehaviour
             nextBurnTick = Time.time + 1f;
             ReceiveDamage(new DamagePacket(burnDps, DamageType.Fire));
         }
-        else if (Time.time >= burnUntil)
-        {
-            burnDps = 0f;
-        }
+        else if (Time.time >= burnUntil) burnDps = 0f;
     }
 
     public void TakeDamage(float damage) => ReceiveDamage(new DamagePacket(damage, DamageType.Physical));
@@ -173,10 +167,8 @@ public class Enemy : MonoBehaviour
     public void ReceiveDamage(DamagePacket packet)
     {
         if (Health <= 0f) return;
-
         float currentArmor = armor;
-        if (Time.time < armorBreakUntil)
-            currentArmor = Mathf.Max(0f, currentArmor - armorBreakAmount);
+        if (Time.time < armorBreakUntil) currentArmor = Mathf.Max(0f, currentArmor - armorBreakAmount);
 
         float armorFactor;
         switch (packet.type)
@@ -189,11 +181,9 @@ public class Enemy : MonoBehaviour
 
         float bonus = 1f;
         if (packet.towerSource.HasValue && packet.towerSource.Value == TowerType.SpearThrower &&
-            (Archetype == EnemyArchetype.HeavyHoplite || Archetype == EnemyArchetype.ShieldBearer || Archetype == EnemyArchetype.BatteringRam))
-            bonus = 1.5f;
+            (Archetype == EnemyArchetype.HeavyHoplite || Archetype == EnemyArchetype.ShieldBearer || Archetype == EnemyArchetype.BatteringRam)) bonus = 1.5f;
         if (packet.towerSource.HasValue && packet.towerSource.Value == TowerType.TrojanGuard &&
-            (Archetype == EnemyArchetype.Infantry || Archetype == EnemyArchetype.Runner))
-            bonus = 1.25f;
+            (Archetype == EnemyArchetype.Infantry || Archetype == EnemyArchetype.Runner)) bonus = 1.25f;
 
         float finalDamage = packet.amount * bonus * (1f - Mathf.Clamp01(armorFactor));
         if (packet.towerSource.HasValue && packet.towerSource.Value == TowerType.MachineGun)
@@ -237,7 +227,7 @@ public class Enemy : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RecordKill();
-            GameManager.Instance.AddMoney(reward);
+            GameManager.Instance.AddMoney(GameManager.Instance.RewardFor(reward));
         }
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss);
         Destroy(gameObject);
