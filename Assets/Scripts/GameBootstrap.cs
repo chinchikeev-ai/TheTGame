@@ -14,6 +14,11 @@ public class GameBootstrap : MonoBehaviour
         if (FindFirstObjectByType<GameManager>() != null) return;
 
         Camera cam = SetupLightingAndCamera();
+
+        CampaignController campaign = new GameObject("CampaignController").AddComponent<CampaignController>();
+        ChapterController chapters = new GameObject("ChapterController").AddComponent<ChapterController>();
+        chapters.LoadChapter(1);
+
         new GameObject("GameManager").AddComponent<GameManager>();
         new GameObject("GameState").AddComponent<GameStateController>();
         new GameObject("RuntimeEffects").AddComponent<RuntimeEffects>();
@@ -33,6 +38,8 @@ public class GameBootstrap : MonoBehaviour
 
         new GameObject("GameUI").AddComponent<GameUIController>();
         new GameObject("GameMenu").AddComponent<GameMenuController>();
+
+        RuntimeFileLogger.Event("BOOT", $"Runtime graph ready. unlockedChapter={campaign.UnlockedChapter}, activeChapter={(chapters.ActiveChapter != null ? chapters.ActiveChapter.chapterId : "none")}");
     }
 
     void CreateHector()
