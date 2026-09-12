@@ -31,6 +31,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     int fpsIndex;
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
+    CampaignDifficulty CurrentDifficulty => CampaignController.Instance != null ? CampaignController.Instance.Difficulty : CampaignDifficulty.Story;
 
     IEnumerator Start()
     {
@@ -145,18 +146,19 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     {
         SetHeader(L("GAMEPLAY", "ИГРА"), L("Campaign preferences and language.", "Параметры кампании и язык."));
         MakeSelectorRow(L("LANGUAGE", "ЯЗЫК"), 170, () => GameLanguage.Russian ? "Русский" : "English", ToggleLanguage);
-        MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), 50, () => DifficultyRules.Label(CampaignSave.Difficulty), CycleDifficulty);
+        MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), 50, () => DifficultyRules.Label(CurrentDifficulty), CycleDifficulty);
         AddHint(L("Difficulty changes campaign combat rules. Language change rebuilds the menu.", "Сложность меняет правила боя. Смена языка перестраивает меню."), new Vector2(0,-100));
     }
 
     void BuildControls()
     {
-        SetHeader(L("CONTROLS", "УПРАВЛЕНИЕ"), L("Current control scheme. Runtime rebinding is not implemented yet.", "Текущая схема управления. Переназначение клавиш пока не реализовано."));
+        SetHeader(L("CONTROLS", "УПРАВЛЕНИЕ"), L("PC keyboard and mouse controls.", "Управление на ПК: клавиатура и мышь."));
         MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 190);
-        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("MOUSE / CONFIRM", "МЫШЬ / ПОДТВЕРДИТЬ"), 95);
-        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), 0);
-        MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC / START", -95);
-        AddHint(L("Controller UI navigation is enabled. Full remapping should be implemented as a separate input-system pass.", "Навигация интерфейса с геймпада включена. Полное переназначение нужно реализовать отдельным этапом Input System."), new Vector2(0,-220));
+        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 95);
+        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), 0);
+        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -95);
+        MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC", -190);
+        AddHint(L("Tower hotkeys: 1–6. Hector abilities: Q / E / R / F. Console controls are deferred.", "Горячие клавиши обороны: 1–6. Способности Гектора: Q / E / R / F. Управление для приставок отложено."), new Vector2(0,-270));
     }
 
     void SetHeader(string title, string description)
@@ -198,7 +200,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void CycleResolution() { resolutionIndex=(resolutionIndex+1)%Resolutions.Length; Vector2 r=Resolutions[resolutionIndex]; GameUserSettings.SetResolution((int)r.x,(int)r.y); ShowTab(Tab.Video); }
     void CycleFps() { fpsIndex=(fpsIndex+1)%FpsOptions.Length; GameUserSettings.FpsLimit=FpsOptions[fpsIndex]; ShowTab(Tab.Video); }
     void CycleQuality() { if(QualitySettings.names.Length==0)return; QualitySettings.SetQualityLevel((QualitySettings.GetQualityLevel()+1)%QualitySettings.names.Length,true); ShowTab(Tab.Video); }
-    void CycleDifficulty() { if(CampaignController.Instance!=null) CampaignController.Instance.CycleDifficulty(); else CampaignSave.CycleDifficulty(); ShowTab(Tab.Gameplay); }
+    void CycleDifficulty() { if(CampaignController.Instance!=null) CampaignController.Instance.CycleDifficulty(); ShowTab(Tab.Gameplay); }
     void ToggleLanguage() { if(menu!=null) menu.SendMessage("ToggleLanguage",SendMessageOptions.DontRequireReceiver); built=false; StartCoroutine(RebindAfterLanguage()); }
     IEnumerator RebindAfterLanguage(){ yield return null; yield return null; Bind(); }
     string ResolutionLabel(){ Vector2 r=Resolutions[Mathf.Clamp(resolutionIndex,0,Resolutions.Length-1)]; return $"{(int)r.x} × {(int)r.y}"; }
