@@ -33,7 +33,8 @@ public class GameUIController : MonoBehaviour
         if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
 
         statsText.text = $"{L("GOLD", "ЗОЛОТО")}  {GameManager.Instance.Money}    {L("GATE", "ВОРОТА")}  {GameManager.Instance.BaseHealth}    {L("ALIVE", "ВРАГОВ")}  {EnemyRegistry.AliveCount}";
-        waveText.text = $"{L("WAVE", "ВОЛНА")}  {GameManager.Instance.CurrentWave}/{GameManager.Instance.MaxWaves}";
+        int waveSeconds = spawner != null ? Mathf.RoundToInt(spawner.CurrentWaveElapsed) : 0;
+        waveText.text = $"{L("MAP", "КАРТА")} {GameManager.Instance.MapNumber}   •   {L("WAVE", "ВОЛНА")} {GameManager.Instance.CurrentWave}/{GameManager.Instance.MaxWaves}   •   {L("TIME", "ВРЕМЯ")} {waveSeconds / 60:00}:{waveSeconds % 60:00}";
 
         if (spawner != null)
         {
@@ -84,7 +85,7 @@ public class GameUIController : MonoBehaviour
         canvasObj.AddComponent<GraphicRaycaster>();
 
         statsText = CreateText(canvas.transform, "Stats", new Vector2(24, -22), new Vector2(760, 48), 28, TextAnchor.UpperLeft);
-        waveText = CreateText(canvas.transform, "Wave", new Vector2(24, -68), new Vector2(360, 42), 24, TextAnchor.UpperLeft);
+        waveText = CreateText(canvas.transform, "Wave", new Vector2(24, -68), new Vector2(850, 42), 22, TextAnchor.UpperLeft);
         nextWaveText = CreateText(canvas.transform, "NextWave", new Vector2(0, -22), new Vector2(1100, 48), 20, TextAnchor.UpperCenter);
         Anchor(nextWaveText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
 
