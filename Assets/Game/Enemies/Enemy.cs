@@ -42,6 +42,7 @@ public class Enemy : MonoBehaviour
     float commanderUntil;
     float commanderSpeedMultiplier = 1f;
     float commanderDamageMultiplier = 1f;
+    bool attackingGate;
     TrojanGuardSquad blockingGuard;
 
     void OnEnable() => EnemyRegistry.Register(this);
@@ -79,6 +80,11 @@ public class Enemy : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
         TickStatuses();
         if (Health <= 0f) return;
+        if (attackingGate)
+        {
+            AttackGateOverTime();
+            return;
+        }
         if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length) return;
 
         if (Time.time >= slowUntil) slowMultiplier = 1f;
@@ -241,7 +247,11 @@ public class Enemy : MonoBehaviour
             int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
             if (Archetype == EnemyArchetype.Boss)
             {
+                attackingGate = true;
+                waypointIndex = waypoints != null ? waypoints.Length : waypointIndex;
                 GameManager.Instance.BossReachedGate(damage);
+                RuntimeEffects.Instance?.PlayHit(transform.position, true);
+                return;
             }
             else
             {
@@ -251,5 +261,15 @@ public class Enemy : MonoBehaviour
         }
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss || Archetype == EnemyArchetype.BatteringRam);
         Destroy(gameObject);
+    }
+
+    void AttackGateOverTime()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
+        if (Time.time < nextAttack) return;
+        nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
+        int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
+        GameManager.Instance.BossReachedGate(damage);
+        RuntimeEffects.Instance?.PlayHit(transform.position, true);
     }
 }

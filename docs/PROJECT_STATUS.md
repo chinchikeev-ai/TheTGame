@@ -49,7 +49,7 @@ Last reviewed: 2026-09-13
 - Hector Q/E/R/F, HP/downed/revive/HUD: implemented; movement constraints/progression incomplete
 - Menelaus boss/aura/reinforcements/final-wave integration: implemented
 - Chapter I victory now requires Menelaus to be defeated
-- Menelaus reaching the Trojan gate is an immediate chapter defeat even when gate HP remains
+- Menelaus reaching the Trojan gate now starts gradual gate damage; Chapter I defeat happens only when gate HP reaches 0
 - Menelaus defeat/breach are tracked separately in runtime telemetry
 - Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU, procedural coast/landing prototype
 - Chapter I tutorial reflects marked build points and Hector Q/E/R/F controls
@@ -59,6 +59,9 @@ Last reviewed: 2026-09-13
 - enemies now get lightweight presentation motion, and Menelaus has a pulsing aura ring for boss readability
 - Hector abilities and Trojan Guard melee/rally now trigger readable ground-pulse feedback
 - Spear Wall is now the default first build option; it uses a short 1.5-cell poke radius and no thrown projectile
+- combat speed control now uses bounded `-` / `+` controls instead of cycling into extreme speeds
+- settings difficulty changes no longer reload the scene from the main menu
+- Chapter II selection now gives explicit in-production feedback after Chapter I unlocks it
 
 ## Remaining Chapter I RC work
 - real 1x playthrough validation against 11–13 minute target

@@ -12,6 +12,7 @@ Goal: turn Chapter I / The Landing into the polished vertical slice before expan
 - Replace permanent bottom build bar with right-side `+` tower picker.
 - Keep tower selection in one place only; combat speed/magic/gift controls must not recreate tower purchase buttons.
 - Keep Spear Wall first in the tower picker as the basic close-defense unit; it should poke at short range, not throw.
+- Keep game speed controls readable and bounded with explicit `-` / `+` buttons.
 - Commit all required `.meta` files for current tracked assets.
 - Keep `ProjectSettings/McpUnitySettings.json` ignored.
 - Verify MCP connection, Unity console, and PlayMode status after changes.

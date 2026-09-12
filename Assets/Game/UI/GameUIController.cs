@@ -101,16 +101,16 @@ public class GameUIController : MonoBehaviour
 
     void CreateBuildPicker(Transform parent)
     {
-        Button plusButton = CreateButton(parent,"+",new Vector2(-34,-250),new Vector2(64,64),ToggleTowerList,26);
-        Anchor(plusButton.GetComponent<RectTransform>(),new Vector2(1f,1f),new Vector2(1f,1f),new Vector2(1f,1f));
+        Button plusButton = CreateButton(parent,"+",new Vector2(-34,138),new Vector2(64,64),ToggleTowerList,26);
+        Anchor(plusButton.GetComponent<RectTransform>(),new Vector2(1f,0f),new Vector2(1f,0f),new Vector2(1f,0f));
 
-        selectedBuildText = CreateText(parent,"SelectedBuild",new Vector2(-112,-326),new Vector2(220,56),16,TextAnchor.UpperRight);
-        Anchor(selectedBuildText.rectTransform,new Vector2(1f,1f),new Vector2(1f,1f),new Vector2(1f,1f));
+        selectedBuildText = CreateText(parent,"SelectedBuild",new Vector2(-112,214),new Vector2(220,56),16,TextAnchor.LowerRight);
+        Anchor(selectedBuildText.rectTransform,new Vector2(1f,0f),new Vector2(1f,0f),new Vector2(1f,0f));
         selectedBuildText.color = new Color(1f,.84f,.48f,1f);
 
-        GameObject panel=CreatePanel(parent,"TowerList",new Vector2(-34,-455),new Vector2(285,390));
+        GameObject panel=CreatePanel(parent,"TowerList",new Vector2(-34,380),new Vector2(285,390));
         towerListPanel=panel.GetComponent<RectTransform>();
-        Anchor(towerListPanel,new Vector2(1f,1f),new Vector2(1f,1f),new Vector2(1f,1f));
+        Anchor(towerListPanel,new Vector2(1f,0f),new Vector2(1f,0f),new Vector2(1f,0f));
         CreateTowerButton(panel.transform,L("SPEAR WALL","КОПЕЙЩИКИ"),TowerType.SpearThrower,new Vector2(0,145));
         CreateTowerButton(panel.transform,L("ARCHER TOWER","БАШНЯ ЛУЧНИКОВ"),TowerType.MachineGun,new Vector2(0,85));
         CreateTowerButton(panel.transform,L("BALLISTA","БАЛЛИСТА"),TowerType.Cannon,new Vector2(0,25));

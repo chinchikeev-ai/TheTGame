@@ -110,7 +110,7 @@ public class GameplayAcceptanceTests
     }
 
     [UnityTest]
-    public IEnumerator MenelausGateBreach_IsImmediateDefeat()
+    public IEnumerator MenelausGateBreach_DamagesGateUntilZero()
     {
         Assert.NotNull(GameManager.Instance);
         int hpBefore = GameManager.Instance.BaseHealth;
@@ -118,10 +118,17 @@ public class GameplayAcceptanceTests
         GameManager.Instance.BossReachedGate(2);
         yield return null;
 
+        Assert.IsFalse(GameManager.Instance.GameEnded);
+        Assert.IsFalse(GameManager.Instance.BossBreached);
+        Assert.AreEqual(hpBefore - 2, GameManager.Instance.BaseHealth);
+
+        GameManager.Instance.BossReachedGate(GameManager.Instance.MaxBaseHealth + 1000);
+        yield return null;
+
         Assert.IsTrue(GameManager.Instance.GameEnded);
         Assert.AreEqual("GAME OVER", GameManager.Instance.EndMessage);
         Assert.IsTrue(GameManager.Instance.BossBreached);
-        Assert.AreEqual(hpBefore - 2, GameManager.Instance.BaseHealth);
+        Assert.AreEqual(0, GameManager.Instance.BaseHealth);
         Assert.IsFalse(CampaignSave.IsUnlocked(2));
     }
 

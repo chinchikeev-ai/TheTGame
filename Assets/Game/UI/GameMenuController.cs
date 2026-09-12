@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -5,14 +6,16 @@ using UnityEngine.SceneManagement;
 public class GameMenuController : MonoBehaviour
 {
     const string MainMenuBackgroundResource = "Menu/Main_screen";
+    static bool openLevelSelectAfterReload;
 
     Canvas canvas;
     EnemySpawner spawner;
     GameObject mainMenu, levelMenu, settingsMenu, pauseMenu, endMenu;
     Button startWaveButton;
-    Text countdownText, endTitle, endSummary, map2Label, difficultyLabel;
+    Text countdownText, endTitle, endSummary, map2Label, map2Info, difficultyLabel;
     bool levelStarted;
     bool paused;
+    bool reloading;
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
     CampaignDifficulty CurrentDifficulty => CampaignController.Instance != null ? CampaignController.Instance.Difficulty : CampaignDifficulty.Story;
@@ -22,7 +25,15 @@ public class GameMenuController : MonoBehaviour
     {
         spawner = FindFirstObjectByType<EnemySpawner>();
         BuildUI();
-        ShowMainMenu();
+        if (openLevelSelectAfterReload)
+        {
+            openLevelSelectAfterReload = false;
+            ShowLevels();
+        }
+        else
+        {
+            ShowMainMenu();
+        }
     }
 
     void Update()
@@ -67,6 +78,8 @@ public class GameMenuController : MonoBehaviour
         AddButton(levelMenu.transform, L("MAP 1 - THE LANDING", "КАРТА 1 - ВЫСАДКА"), new Vector2(0,75), StartLevel, style: MenuButtonStyle.Highlight);
         Button map2Button = AddButton(levelMenu.transform, "", new Vector2(0,-15), OnMap2Clicked, style: MenuButtonStyle.Stone);
         map2Label = map2Button.GetComponentInChildren<Text>();
+        map2Info = AddTitle(levelMenu.transform, "", new Vector2(0,-82), 18, MenuTextStyle.Subtitle);
+        map2Info.rectTransform.sizeDelta = new Vector2(900,50);
         AddButton(levelMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-145), ShowMainMenu, style: MenuButtonStyle.Stone);
         RefreshLevelSelect();
 
@@ -94,7 +107,7 @@ public class GameMenuController : MonoBehaviour
         endSummary = AddTitle(endMenu.transform, "", new Vector2(0,70), 24);
         endSummary.rectTransform.sizeDelta = new Vector2(1000, 420);
         AddButton(endMenu.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(0,-205), RestartScene);
-        AddButton(endMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-285), ReturnToMainMenu);
+        AddButton(endMenu.transform, L("LEVEL SELECT", "ВЫБОР УРОВНЯ"), new Vector2(0,-285), ReturnToMainMenu);
 
         GameObject wavePanel = new GameObject("WaveControls");
         wavePanel.transform.SetParent(canvas.transform, false);
@@ -132,7 +145,6 @@ public class GameMenuController : MonoBehaviour
         CampaignDifficulty difficulty = CampaignController.Instance.CycleDifficulty();
         RuntimeFileLogger.Event("DIFFICULTY", $"Selected {difficulty}");
         RefreshDifficultyLabel();
-        RestartScene();
     }
 
     void RefreshDifficultyLabel()
@@ -145,13 +157,19 @@ public class GameMenuController : MonoBehaviour
     {
         if (map2Label == null) return;
         map2Label.text = IsChapterUnlocked(2)
-            ? L("MAP 2 - ROAD TO TROY • UNLOCKED", "КАРТА 2 - ДОРОГА К ТРОЕ • ОТКРЫТА")
+            ? L("MAP 2 - ROAD TO TROY • IN PRODUCTION", "КАРТА 2 - ДОРОГА К ТРОЕ • В РАЗРАБОТКЕ")
             : L("MAP 2 - LOCKED", "КАРТА 2 - ЗАКРЫТА");
+        if (map2Info != null) map2Info.text = "";
     }
 
     void OnMap2Clicked()
     {
-        if (!IsChapterUnlocked(2)) return;
+        if (map2Info != null)
+        {
+            map2Info.text = IsChapterUnlocked(2)
+                ? L("Chapter II is unlocked, but this build is focused on polishing Chapter I.", "Глава II открыта, но эта сборка пока доводит Главу I.")
+                : L("Complete Map 1 to unlock the next chapter.", "Пройдите карту 1, чтобы открыть следующую главу.");
+        }
         RuntimeFileLogger.Event("CAMPAIGN", "Chapter II selected but content is not implemented yet");
     }
 
@@ -214,14 +232,13 @@ public class GameMenuController : MonoBehaviour
     {
         if (!levelStarted)
         {
-            ShowMainMenu();
+            ShowLevels();
             return;
         }
         RuntimeFileLogger.Event("MENU", "Returning to main menu through clean scene reset");
-        Time.timeScale = 1f;
-        Scene s = SceneManager.GetActiveScene();
-        if (s.buildIndex >= 0) SceneManager.LoadScene(s.buildIndex);
-        else if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name);
+        if (GameManager.Instance != null && GameManager.Instance.GameEnded)
+            openLevelSelectAfterReload = true;
+        RestartScene();
     }
 
     void ShowLevels()
@@ -249,6 +266,8 @@ public class GameMenuController : MonoBehaviour
         int min = totalSeconds / 60;
         int sec = totalSeconds % 60;
         string unlock = victory && IsChapterUnlocked(2) ? "\n" + L("CHAPTER II UNLOCKED", "ГЛАВА II ОТКРЫТА") : "";
+        if (victory && IsChapterUnlocked(2))
+            unlock += "\n" + L("Chapter II is in production. Return to Level Select.", "Глава II в разработке. Вернитесь к выбору уровня.");
         endSummary.text =
             $"{L("MAP", "КАРТА")} {gm.MapNumber}    {L("DIFFICULTY", "СЛОЖНОСТЬ")}: {DifficultyRules.Label(CurrentDifficulty)}\n" +
             $"{L("WAVES", "ВОЛНЫ")}: {gm.CurrentWave}/{gm.MaxWaves}    {L("TIME", "ВРЕМЯ")}: {min:00}:{sec:00}\n" +
@@ -262,10 +281,29 @@ public class GameMenuController : MonoBehaviour
 
     void RestartScene()
     {
-        Time.timeScale = 1f;
+        if (reloading) return;
+        StartCoroutine(ReloadSceneRoutine());
+    }
+
+    IEnumerator ReloadSceneRoutine()
+    {
+        reloading = true;
         Scene s = SceneManager.GetActiveScene();
-        if (s.buildIndex >= 0) SceneManager.LoadScene(s.buildIndex);
-        else if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name);
+        RuntimeFileLogger.Event("MENU", $"Reloading scene buildIndex={s.buildIndex}, name={s.name}");
+        Time.timeScale = 1f;
+        foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
+            button.interactable = false;
+
+        AsyncOperation op = s.buildIndex >= 0
+            ? SceneManager.LoadSceneAsync(s.buildIndex)
+            : SceneManager.LoadSceneAsync(s.name);
+        if (op == null)
+        {
+            RuntimeFileLogger.Event("MENU", "Scene reload failed to start");
+            reloading = false;
+            yield break;
+        }
+        while (!op.isDone) yield return null;
     }
 
     void QuitGame()

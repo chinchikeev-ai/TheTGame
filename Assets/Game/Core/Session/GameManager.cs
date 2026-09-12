@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
     float magicReadyAt;
     int giftWave = -1;
     bool runStarted;
+    bool bossAtGateRecorded;
 
     void Awake()
     {
@@ -95,11 +96,21 @@ public class GameManager : MonoBehaviour
     public void BossReachedGate(int damage)
     {
         if (GameEnded) return;
-        BossBreached = true;
-        RecordLeak();
+        if (!bossAtGateRecorded)
+        {
+            bossAtGateRecorded = true;
+            RecordLeak();
+            RuntimeFileLogger.Event("BOSS", "Menelaus reached the Trojan gate and started breaking it down");
+        }
+
         BaseHealth = Mathf.Max(0, BaseHealth - Mathf.Max(1, damage));
-        RuntimeFileLogger.Event("BOSS", $"Menelaus breached the Trojan gate. remainingHP={BaseHealth}/{MaxBaseHealth}");
-        LoseGame();
+        RuntimeFileLogger.Event("BOSS", $"Menelaus damaged the Trojan gate. remainingHP={BaseHealth}/{MaxBaseHealth}");
+        if (BaseHealth <= 0)
+        {
+            BossBreached = true;
+            RuntimeFileLogger.Event("BOSS", "Menelaus destroyed the Trojan gate");
+            LoseGame();
+        }
     }
 
     public int RewardFor(int baseReward)

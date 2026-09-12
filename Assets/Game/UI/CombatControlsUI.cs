@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class CombatControlsUI : MonoBehaviour
 {
-    static readonly float[] Speeds = { 1f, 2f, 5f, 10f, 20f, 50f };
+    static readonly float[] Speeds = { 1f, 2f, 3f, 5f };
     static int speedIndex;
 
     Canvas canvas;
@@ -63,7 +63,9 @@ public class CombatControlsUI : MonoBehaviour
         rr.anchoredPosition = new Vector2(-20f, -20f);
         rr.sizeDelta = new Vector2(360f, 250f);
 
-        speedLabel = AddButton(root.transform, new Vector2(0, 0), CycleSpeed);
+        AddSmallButton(root.transform, "-", new Vector2(-248, 0), DecreaseSpeed);
+        speedLabel = AddButton(root.transform, new Vector2(0, 0), IncreaseSpeed);
+        AddSmallButton(root.transform, "+", new Vector2(0, 0), IncreaseSpeed);
         magicLabel = AddButton(root.transform, new Vector2(0, -72), () => GameManager.Instance?.UseMagic());
         giftLabel = AddButton(root.transform, new Vector2(0, -144), () => GameManager.Instance?.UseGift());
     }
@@ -101,9 +103,32 @@ public class CombatControlsUI : MonoBehaviour
         return t;
     }
 
-    void CycleSpeed()
+    void AddSmallButton(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction action)
     {
-        speedIndex = (speedIndex + 1) % Speeds.Length;
+        GameObject go = new GameObject("Speed" + label);
+        go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>();
+        image.color = new Color(.22f, .14f, .10f, .96f);
+        Button button = go.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(action);
+        RectTransform rt = image.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = new Vector2(58f, 58f);
+        Text text = AddText(go.transform, 24);
+        text.text = label;
+    }
+
+    void IncreaseSpeed()
+    {
+        speedIndex = Mathf.Min(speedIndex + 1, Speeds.Length - 1);
+        Time.timeScale = CurrentSpeed;
+    }
+
+    void DecreaseSpeed()
+    {
+        speedIndex = Mathf.Max(speedIndex - 1, 0);
         Time.timeScale = CurrentSpeed;
     }
 
