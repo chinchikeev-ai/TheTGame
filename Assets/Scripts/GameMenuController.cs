@@ -16,6 +16,8 @@ public class GameMenuController : MonoBehaviour
     bool levelStarted;
     bool paused;
 
+    string L(string en, string ru) => GameLanguage.T(en, ru);
+
     void Start()
     {
         spawner = FindFirstObjectByType<EnemySpawner>();
@@ -33,9 +35,9 @@ public class GameMenuController : MonoBehaviour
         {
             startWaveButton.gameObject.SetActive(levelStarted && !paused && !spawner.WaveActive && GameManager.Instance != null && !GameManager.Instance.GameEnded);
             if (spawner.InterWaveCountdown > 0f)
-                countdownText.text = "AUTO START  " + Mathf.CeilToInt(spawner.InterWaveCountdown) + "s";
+                countdownText.text = L("AUTO START  ", "АВТОСТАРТ  ") + Mathf.CeilToInt(spawner.InterWaveCountdown) + L("s", "с");
             else if (!spawner.WaveActive)
-                countdownText.text = "READY";
+                countdownText.text = L("READY", "ГОТОВО");
             else
                 countdownText.text = "";
         }
@@ -65,36 +67,37 @@ public class GameMenuController : MonoBehaviour
         canvasObj.AddComponent<GraphicRaycaster>();
 
         mainMenu = MakeScreen("MainMenu", new Color(.02f,.03f,.05f,.97f));
-        AddTitle(mainMenu.transform, "THE T GAME", new Vector2(0,180), 62);
-        AddButton(mainMenu.transform, "PLAY", new Vector2(0,55), ShowLevels);
-        AddButton(mainMenu.transform, "SETTINGS", new Vector2(0,-25), ShowSettingsFromMain);
-        AddButton(mainMenu.transform, "EXIT", new Vector2(0,-105), QuitGame);
+        AddTitle(mainMenu.transform, "THE TROY GAME", new Vector2(0,180), 62);
+        AddButton(mainMenu.transform, L("PLAY", "ИГРАТЬ"), new Vector2(0,55), ShowLevels);
+        AddButton(mainMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,-25), ShowSettingsFromMain);
+        AddButton(mainMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-105), QuitGame);
 
         levelMenu = MakeScreen("LevelSelect", new Color(.02f,.03f,.05f,.97f));
-        AddTitle(levelMenu.transform, "LEVEL SELECT", new Vector2(0,190), 50);
-        AddButton(levelMenu.transform, "LEVEL 1 - TWIN ROUTE", new Vector2(0,55), StartLevel);
-        AddButton(levelMenu.transform, "LEVEL 2 - LOCKED", new Vector2(0,-35), delegate { });
-        AddButton(levelMenu.transform, "BACK", new Vector2(0,-155), ShowMainMenu);
+        AddTitle(levelMenu.transform, L("LEVEL SELECT", "ВЫБОР УРОВНЯ"), new Vector2(0,190), 50);
+        AddButton(levelMenu.transform, L("LEVEL 1 - TWIN ROUTE", "УРОВЕНЬ 1 - ДВА ПУТИ"), new Vector2(0,55), StartLevel);
+        AddButton(levelMenu.transform, L("LEVEL 2 - LOCKED", "УРОВЕНЬ 2 - ЗАКРЫТ"), new Vector2(0,-35), delegate { });
+        AddButton(levelMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-155), ShowMainMenu);
 
         settingsMenu = MakeScreen("Settings", new Color(.02f,.03f,.05f,.97f));
-        AddTitle(settingsMenu.transform, "SETTINGS", new Vector2(0,190), 50);
-        AddButton(settingsMenu.transform, "VOLUME +", new Vector2(0,55), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume + .1f); });
-        AddButton(settingsMenu.transform, "VOLUME -", new Vector2(0,-25), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume - .1f); });
-        AddButton(settingsMenu.transform, "FULLSCREEN", new Vector2(0,-105), delegate { Screen.fullScreen = !Screen.fullScreen; });
-        AddButton(settingsMenu.transform, "BACK", new Vector2(0,-185), BackFromSettings);
+        AddTitle(settingsMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,215), 50);
+        AddButton(settingsMenu.transform, L("VOLUME +", "ГРОМКОСТЬ +"), new Vector2(0,105), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume + .1f); });
+        AddButton(settingsMenu.transform, L("VOLUME -", "ГРОМКОСТЬ -"), new Vector2(0,30), delegate { AudioListener.volume = Mathf.Clamp01(AudioListener.volume - .1f); });
+        AddButton(settingsMenu.transform, L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН"), new Vector2(0,-45), delegate { Screen.fullScreen = !Screen.fullScreen; });
+        AddButton(settingsMenu.transform, GameLanguage.Russian ? "LANGUAGE: РУССКИЙ" : "LANGUAGE: ENGLISH", new Vector2(0,-120), ToggleLanguage);
+        AddButton(settingsMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-195), BackFromSettings);
 
         pauseMenu = MakeScreen("PauseMenu", new Color(.02f,.03f,.05f,.9f));
-        AddTitle(pauseMenu.transform, "PAUSED", new Vector2(0,210), 54);
-        AddButton(pauseMenu.transform, "RESUME", new Vector2(0,95), Resume);
-        AddButton(pauseMenu.transform, "SETTINGS", new Vector2(0,20), ShowSettingsFromPause);
-        AddButton(pauseMenu.transform, "RESTART", new Vector2(0,-55), RestartScene);
-        AddButton(pauseMenu.transform, "MAIN MENU", new Vector2(0,-130), ShowMainMenu);
-        AddButton(pauseMenu.transform, "EXIT", new Vector2(0,-205), QuitGame);
+        AddTitle(pauseMenu.transform, L("PAUSED", "ПАУЗА"), new Vector2(0,210), 54);
+        AddButton(pauseMenu.transform, L("RESUME", "ПРОДОЛЖИТЬ"), new Vector2(0,95), Resume);
+        AddButton(pauseMenu.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0,20), ShowSettingsFromPause);
+        AddButton(pauseMenu.transform, L("RESTART", "ПЕРЕЗАПУСК"), new Vector2(0,-55), RestartScene);
+        AddButton(pauseMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-130), ShowMainMenu);
+        AddButton(pauseMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-205), QuitGame);
 
         endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.92f));
-        endTitle = AddTitle(endMenu.transform, "RESULT", new Vector2(0,145), 60);
-        AddButton(endMenu.transform, "RETRY", new Vector2(0,-20), RestartScene);
-        AddButton(endMenu.transform, "MAIN MENU", new Vector2(0,-105), ShowMainMenu);
+        endTitle = AddTitle(endMenu.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0,145), 60);
+        AddButton(endMenu.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(0,-20), RestartScene);
+        AddButton(endMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-105), ShowMainMenu);
 
         GameObject wavePanel = new GameObject("WaveControls");
         wavePanel.transform.SetParent(canvas.transform, false);
@@ -102,11 +105,17 @@ public class GameMenuController : MonoBehaviour
         wr.anchorMin = wr.anchorMax = wr.pivot = new Vector2(.5f,0);
         wr.anchoredPosition = new Vector2(0,150);
         wr.sizeDelta = new Vector2(340,100);
-        startWaveButton = AddButton(wavePanel.transform, "START WAVE", new Vector2(0,20), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(250,56));
-        countdownText = AddTitle(wavePanel.transform, "READY", new Vector2(0,-28), 18);
+        startWaveButton = AddButton(wavePanel.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0,20), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(250,56));
+        countdownText = AddTitle(wavePanel.transform, L("READY", "ГОТОВО"), new Vector2(0,-28), 18);
         startWaveButton.gameObject.SetActive(false);
 
         levelMenu.SetActive(false); settingsMenu.SetActive(false); pauseMenu.SetActive(false); endMenu.SetActive(false);
+    }
+
+    void ToggleLanguage()
+    {
+        GameLanguage.Toggle();
+        RestartScene();
     }
 
     void StartLevel()
@@ -133,7 +142,14 @@ public class GameMenuController : MonoBehaviour
     void ShowSettingsFromMain(){ mainMenu.SetActive(false); settingsMenu.SetActive(true); }
     void ShowSettingsFromPause(){ pauseMenu.SetActive(false); settingsMenu.SetActive(true); }
     void BackFromSettings(){ settingsMenu.SetActive(false); if (levelStarted && paused) pauseMenu.SetActive(true); else mainMenu.SetActive(true); }
-    void ShowEnd(){ Time.timeScale = 0f; paused = true; endTitle.text = GameManager.Instance.EndMessage; endMenu.SetActive(true); }
+    void ShowEnd()
+    {
+        Time.timeScale = 0f;
+        paused = true;
+        bool victory = GameManager.Instance.EndMessage == "VICTORY";
+        endTitle.text = victory ? L("VICTORY", "ПОБЕДА") : L("GAME OVER", "ПОРАЖЕНИЕ");
+        endMenu.SetActive(true);
+    }
     void RestartScene(){ Time.timeScale = 1f; Scene s = SceneManager.GetActiveScene(); if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name); }
 
     void QuitGame()
@@ -158,7 +174,7 @@ public class GameMenuController : MonoBehaviour
     {
         GameObject go = new GameObject(text); go.transform.SetParent(parent,false);
         Text t = go.AddComponent<Text>(); t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.text = text; t.fontSize = size; t.fontStyle = FontStyle.Bold; t.color = Color.white; t.alignment = TextAnchor.MiddleCenter;
-        RectTransform rt = t.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f); rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(900,80);
+        RectTransform rt = t.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f); rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(1000,80);
         return t;
     }
 
@@ -167,7 +183,7 @@ public class GameMenuController : MonoBehaviour
         GameObject go = new GameObject(label); go.transform.SetParent(parent,false);
         Image img = go.AddComponent<Image>(); img.color = new Color(.15f,.25f,.38f,.98f);
         Button b = go.AddComponent<Button>(); b.targetGraphic = img; b.onClick.AddListener(action);
-        RectTransform rt = img.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f); rt.anchoredPosition = pos; rt.sizeDelta = customSize ?? new Vector2(340,64);
+        RectTransform rt = img.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f); rt.anchoredPosition = pos; rt.sizeDelta = customSize ?? new Vector2(400,64);
         Text txt = AddTitle(go.transform,label,Vector2.zero,18); RectTransform tr = txt.rectTransform; tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = tr.offsetMax = Vector2.zero; tr.pivot = new Vector2(.5f,.5f);
         return b;
     }
