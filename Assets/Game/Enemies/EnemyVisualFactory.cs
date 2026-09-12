@@ -28,6 +28,7 @@ public static class EnemyVisualFactory
 
         instance.name = data != null ? data.displayName : "Enemy";
         AddArchetypeReadability(instance.transform, archetype);
+        EnemyMotionAnimator.Attach(instance, archetype);
         return instance;
     }
 
