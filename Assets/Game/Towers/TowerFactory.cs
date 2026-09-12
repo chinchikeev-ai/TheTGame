@@ -52,7 +52,8 @@ public static class TowerFactory
                 SetColor(head,new Color(.42f,.18f,.10f));
                 SetColor(barrel,new Color(.32f,.12f,.07f));
                 Primitive(head.transform,"Brazier",PrimitiveType.Cylinder,new Vector3(0f,.48f,0f),new Vector3(.36f,.12f,.36f),new Color(.25f,.20f,.16f));
-                Primitive(head.transform,"FlameCore",PrimitiveType.Sphere,new Vector3(0f,.74f,0f),new Vector3(.30f,.42f,.30f),new Color(1f,.32f,.04f));
+                GameObject flame = Primitive(head.transform,"FlameCore",PrimitiveType.Sphere,new Vector3(0f,.74f,0f),new Vector3(.30f,.42f,.30f),new Color(1f,.32f,.04f));
+                flame.AddComponent<ChapterOneAmbientMotion>().kind = ChapterOneAmbientMotion.MotionKind.Flame;
                 break;
             case TowerType.TrojanGuard:
                 SetColor(head,new Color(.52f,.18f,.14f));
@@ -62,6 +63,8 @@ public static class TowerFactory
                 Primitive(head.transform,"Crest",PrimitiveType.Cube,new Vector3(0f,.48f,0f),new Vector3(.15f,.30f,.48f),new Color(.68f,.08f,.06f));
                 break;
         }
+
+        TowerArtDirector.Enhance(root, type);
 
         GameObject muzzle = new GameObject("Muzzle");
         muzzle.transform.SetParent(head.transform);
