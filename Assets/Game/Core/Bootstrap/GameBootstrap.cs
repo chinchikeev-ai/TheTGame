@@ -44,11 +44,16 @@ public class GameBootstrap : MonoBehaviour
 
     void CreateHector()
     {
-        GameObject hector = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        GameObject hector = HeroVisualFactory.Create(TroyHeroId.Hector);
         hector.name = "Hector";
         hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
-        hector.transform.localScale = new Vector3(.75f, .75f, .75f);
-        TowerFactory.SetColor(hector, new Color(.72f,.48f,.12f));
+        if (hector.GetComponentInChildren<Collider>() == null)
+        {
+            CapsuleCollider collider = hector.AddComponent<CapsuleCollider>();
+            collider.center = new Vector3(0f, .9f, 0f);
+            collider.height = 1.8f;
+            collider.radius = .35f;
+        }
         hector.AddComponent<HectorController>();
     }
 
