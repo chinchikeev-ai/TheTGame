@@ -110,8 +110,16 @@ public class EnemySpawner : MonoBehaviour
     void SpawnEnemy(int wave, int index, bool boss)
     {
         int route = paths != null && paths.Length > 1 ? index % paths.Length : 0;
-        Transform[] routePath = paths[route];
         EnemyData data = BalanceCatalog.GetEnemyForWave(wave, index, preparedWave.enemyCount, boss);
+        SpawnConfiguredEnemy(data, route, preparedWave.hpMultiplier, preparedWave.speedMultiplier, boss);
+    }
+
+    void SpawnConfiguredEnemy(EnemyData data, int route, float hpMultiplier, float speedMultiplier, bool boss)
+    {
+        if (paths == null || paths.Length == 0) return;
+        route = Mathf.Clamp(route, 0, paths.Length - 1);
+        Transform[] routePath = paths[route];
+        if (routePath == null || routePath.Length == 0) return;
 
         PrimitiveType primitive = data.archetype == EnemyArchetype.BatteringRam ? PrimitiveType.Cube : PrimitiveType.Capsule;
         GameObject enemyObj = GameObject.CreatePrimitive(primitive);
@@ -120,6 +128,27 @@ public class EnemySpawner : MonoBehaviour
         TowerFactory.SetColor(enemyObj, data.color);
 
         Enemy enemy = enemyObj.AddComponent<Enemy>();
-        enemy.InitFromData(routePath, data, preparedWave.hpMultiplier, preparedWave.speedMultiplier);
+        enemy.InitFromData(routePath, data, hpMultiplier, speedMultiplier);
+        if (boss)
+            enemyObj.AddComponent<MenelausBossController>();
+    }
+
+    public void SpawnMenelausReinforcements(int count)
+    {
+        if (!WaveActive || GameManager.Instance == null || GameManager.Instance.GameEnded || count <= 0) return;
+        StartCoroutine(SpawnReinforcementBurst(count));
+    }
+
+    IEnumerator SpawnReinforcementBurst(int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (GameManager.Instance == null || GameManager.Instance.GameEnded) yield break;
+            int route = paths != null && paths.Length > 1 ? i % paths.Length : 0;
+            EnemyArchetype archetype = i % 3 == 2 ? EnemyArchetype.ShieldBearer : EnemyArchetype.Infantry;
+            EnemyData data = BalanceCatalog.GetEnemy(archetype);
+            SpawnConfiguredEnemy(data, route, Mathf.Max(1f, NextWaveHpMultiplier * .85f), Mathf.Max(1f, NextWaveSpeedMultiplier), false);
+            yield return new WaitForSeconds(.65f);
+        }
     }
 }
