@@ -64,7 +64,7 @@ public static class BalanceCatalog
         enemies[EnemyArchetype.ShieldBearer] = MakeEnemy(EnemyArchetype.ShieldBearer, "shield_bearer", "Shield Bearer", 2.1f, .82f, 42, 2, 1.0f, .14f, .55f, 0f, new Color(.30f,.38f,.48f));
         enemies[EnemyArchetype.Archer] = MakeEnemy(EnemyArchetype.Archer, "greek_archer", "Greek Archer", .9f, .9f, 30, 1, .80f, 0f, 0f, 5.2f, new Color(.42f,.25f,.12f));
         enemies[EnemyArchetype.BatteringRam] = MakeEnemy(EnemyArchetype.BatteringRam, "battering_ram", "Battering Ram", 5.5f, .42f, 110, 7, 1.45f, .38f, .15f, 0f, new Color(.25f,.18f,.10f));
-        enemies[EnemyArchetype.Boss] = MakeEnemy(EnemyArchetype.Boss, "menelaus", "Menelaus", 7f, .72f, 350, 5, 1.55f, .22f, .12f, 0f, new Color(.55f,.05f,.08f));
+        enemies[EnemyArchetype.Boss] = MakeEnemy(EnemyArchetype.Boss, "menelaus", "Menelaus", 15f, .68f, 500, 6, 1.65f, .32f, .20f, 0f, new Color(.55f,.05f,.08f));
     }
 
     static TowerData MakeTower(TowerType type, string displayName, int cost, float damage, float range, float rate, float projectileSpeed, float splash, float slow, float slowDuration)
