@@ -28,6 +28,7 @@ public class HectorController : MonoBehaviour
     public float ultimateDuration = 12f;
     public float ultimateEnemyRadius = 8f;
     public float downedDuration = 12f;
+    public float battlefieldMargin = 0.65f;
 
     Vector3 destination;
     Vector3 spawnPosition;
@@ -48,6 +49,7 @@ public class HectorController : MonoBehaviour
 
     void Start()
     {
+        transform.position = MapBuilder.ClampToPlayableArea(transform.position, battlefieldMargin);
         destination = transform.position;
         spawnPosition = transform.position;
         Health = maxHealth;
@@ -100,17 +102,20 @@ public class HectorController : MonoBehaviour
             {
                 destination = ray.GetPoint(enter);
                 destination.y = transform.position.y;
+                destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
             }
         }
     }
 
     void Move()
     {
+        destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
         Vector3 delta = destination - transform.position;
         delta.y = 0f;
         if (delta.sqrMagnitude > .01f)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(delta), 10f * Time.deltaTime);
         transform.position = Vector3.MoveTowards(transform.position, destination, moveSpeed * Time.deltaTime);
+        transform.position = MapBuilder.ClampToPlayableArea(transform.position, battlefieldMargin);
     }
 
     void AutoAttack()
@@ -146,8 +151,8 @@ public class HectorController : MonoBehaviour
     {
         IsDowned = false;
         Health = maxHealth * .50f;
-        transform.position = spawnPosition;
-        destination = spawnPosition;
+        transform.position = MapBuilder.ClampToPlayableArea(spawnPosition, battlefieldMargin);
+        destination = transform.position;
         RefreshColor();
         RuntimeFileLogger.Event("HECTOR", $"Revived hp={Health:0}/{maxHealth:0}");
     }
