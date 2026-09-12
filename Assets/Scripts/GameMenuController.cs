@@ -12,7 +12,7 @@ public class GameMenuController : MonoBehaviour
     EnemySpawner spawner;
     GameObject mainMenu, levelMenu, settingsMenu, pauseMenu, endMenu;
     Button startWaveButton;
-    Text countdownText, endTitle;
+    Text countdownText, endTitle, endSummary;
     bool levelStarted;
     bool paused;
 
@@ -28,8 +28,7 @@ public class GameMenuController : MonoBehaviour
     void Update()
     {
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
-        if (levelStarted && GameManager.Instance != null && !GameManager.Instance.GameEnded && ReadEscape())
-            TogglePause();
+        if (levelStarted && GameManager.Instance != null && !GameManager.Instance.GameEnded && ReadEscape()) TogglePause();
 
         if (spawner != null && startWaveButton != null)
         {
@@ -42,8 +41,7 @@ public class GameMenuController : MonoBehaviour
                 countdownText.text = "";
         }
 
-        if (levelStarted && GameManager.Instance != null && GameManager.Instance.GameEnded && !endMenu.activeSelf)
-            ShowEnd();
+        if (levelStarted && GameManager.Instance != null && GameManager.Instance.GameEnded && !endMenu.activeSelf) ShowEnd();
     }
 
     bool ReadEscape()
@@ -74,8 +72,8 @@ public class GameMenuController : MonoBehaviour
 
         levelMenu = MakeScreen("LevelSelect", new Color(.02f,.03f,.05f,.97f));
         AddTitle(levelMenu.transform, L("LEVEL SELECT", "ВЫБОР УРОВНЯ"), new Vector2(0,190), 50);
-        AddButton(levelMenu.transform, L("LEVEL 1 - TWIN ROUTE", "УРОВЕНЬ 1 - ДВА ПУТИ"), new Vector2(0,55), StartLevel);
-        AddButton(levelMenu.transform, L("LEVEL 2 - LOCKED", "УРОВЕНЬ 2 - ЗАКРЫТ"), new Vector2(0,-35), delegate { });
+        AddButton(levelMenu.transform, L("MAP 1 - THE LANDING", "КАРТА 1 - ВЫСАДКА"), new Vector2(0,55), StartLevel);
+        AddButton(levelMenu.transform, L("MAP 2 - LOCKED", "КАРТА 2 - ЗАКРЫТА"), new Vector2(0,-35), delegate { });
         AddButton(levelMenu.transform, L("BACK", "НАЗАД"), new Vector2(0,-155), ShowMainMenu);
 
         settingsMenu = MakeScreen("Settings", new Color(.02f,.03f,.05f,.97f));
@@ -94,10 +92,12 @@ public class GameMenuController : MonoBehaviour
         AddButton(pauseMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-130), ShowMainMenu);
         AddButton(pauseMenu.transform, L("EXIT", "ВЫХОД"), new Vector2(0,-205), QuitGame);
 
-        endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.92f));
-        endTitle = AddTitle(endMenu.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0,145), 60);
-        AddButton(endMenu.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(0,-20), RestartScene);
-        AddButton(endMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-105), ShowMainMenu);
+        endMenu = MakeScreen("EndMenu", new Color(.02f,.03f,.05f,.95f));
+        endTitle = AddTitle(endMenu.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0,300), 60);
+        endSummary = AddTitle(endMenu.transform, "", new Vector2(0,70), 24);
+        endSummary.rectTransform.sizeDelta = new Vector2(900, 360);
+        AddButton(endMenu.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(0,-185), RestartScene);
+        AddButton(endMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-265), ShowMainMenu);
 
         GameObject wavePanel = new GameObject("WaveControls");
         wavePanel.transform.SetParent(canvas.transform, false);
@@ -120,7 +120,10 @@ public class GameMenuController : MonoBehaviour
 
     void StartLevel()
     {
-        levelStarted = true; paused = false; Time.timeScale = 1f;
+        levelStarted = true;
+        paused = false;
+        CombatControlsUI.ResumeConfiguredSpeed();
+        GameManager.Instance?.BeginRun();
         mainMenu.SetActive(false); levelMenu.SetActive(false); settingsMenu.SetActive(false); pauseMenu.SetActive(false); endMenu.SetActive(false);
         if (spawner != null) spawner.ActivateLevel();
     }
@@ -138,18 +141,32 @@ public class GameMenuController : MonoBehaviour
     void ShowLevels(){ mainMenu.SetActive(false); levelMenu.SetActive(true); }
     void TogglePause(){ if (paused) Resume(); else Pause(); }
     void Pause(){ paused = true; Time.timeScale = 0f; pauseMenu.SetActive(true); }
-    void Resume(){ paused = false; Time.timeScale = 1f; pauseMenu.SetActive(false); settingsMenu.SetActive(false); }
+    void Resume(){ paused = false; CombatControlsUI.ResumeConfiguredSpeed(); pauseMenu.SetActive(false); settingsMenu.SetActive(false); }
     void ShowSettingsFromMain(){ mainMenu.SetActive(false); settingsMenu.SetActive(true); }
     void ShowSettingsFromPause(){ pauseMenu.SetActive(false); settingsMenu.SetActive(true); }
     void BackFromSettings(){ settingsMenu.SetActive(false); if (levelStarted && paused) pauseMenu.SetActive(true); else mainMenu.SetActive(true); }
+
     void ShowEnd()
     {
         Time.timeScale = 0f;
         paused = true;
-        bool victory = GameManager.Instance.EndMessage == "VICTORY";
+        GameManager gm = GameManager.Instance;
+        bool victory = gm.EndMessage == "VICTORY";
         endTitle.text = victory ? L("VICTORY", "ПОБЕДА") : L("GAME OVER", "ПОРАЖЕНИЕ");
+        int totalSeconds = Mathf.RoundToInt(gm.RunTime);
+        int min = totalSeconds / 60;
+        int sec = totalSeconds % 60;
+        endSummary.text =
+            $"{L("MAP", "КАРТА")} {gm.MapNumber}\n" +
+            $"{L("WAVES", "ВОЛНЫ")}: {gm.CurrentWave}/{gm.MaxWaves}\n" +
+            $"{L("TIME", "ВРЕМЯ")}: {min:00}:{sec:00}\n" +
+            $"{L("KILLS", "УБИТО")}: {gm.Kills}    {L("LEAKS", "ПРОПУЩЕНО")}: {gm.Leaks}\n" +
+            $"{L("GOLD EARNED", "ЗОЛОТО ПОЛУЧЕНО")}: {gm.GoldEarned}    {L("SPENT", "ПОТРАЧЕНО")}: {gm.GoldSpent}\n" +
+            $"{L("TOWERS BUILT", "ПОСТРОЕНО БАШЕН")}: {gm.TowersBuilt}    {L("SOLD", "ПРОДАНО")}: {gm.TowersSold}\n" +
+            $"{L("GATE HP", "HP ВОРОТ")}: {gm.BaseHealth}/20";
         endMenu.SetActive(true);
     }
+
     void RestartScene(){ Time.timeScale = 1f; Scene s = SceneManager.GetActiveScene(); if (!string.IsNullOrEmpty(s.name)) SceneManager.LoadScene(s.name); }
 
     void QuitGame()
