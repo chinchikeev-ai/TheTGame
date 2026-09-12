@@ -22,12 +22,8 @@ public static class DefaultDataAssetGenerator
         EnsureFolder(Root + "/Enemies");
         EnsureFolder(Root + "/Waves");
 
-        foreach (TowerType type in System.Enum.GetValues(typeof(TowerType)))
-            CreateTower(type);
-
-        foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype)))
-            CreateEnemy(type);
-
+        foreach (TowerType type in System.Enum.GetValues(typeof(TowerType))) CreateTower(type);
+        foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype))) CreateEnemy(type);
         for (int wave = 1; wave <= 5; wave++) CreateWave(wave);
 
         AssetDatabase.SaveAssets();
@@ -37,31 +33,43 @@ public static class DefaultDataAssetGenerator
     static void CreateTower(TowerType type)
     {
         string path = $"{Root}/Towers/{type}.asset";
-        if (AssetDatabase.LoadAssetAtPath<TowerData>(path) != null) return;
         TowerData source = BalanceCatalog.GetTowerRuntimeDefault(type);
-        TowerData asset = ScriptableObject.CreateInstance<TowerData>();
+        TowerData asset = AssetDatabase.LoadAssetAtPath<TowerData>(path);
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<TowerData>();
+            AssetDatabase.CreateAsset(asset, path);
+        }
         EditorUtility.CopySerialized(source, asset);
-        AssetDatabase.CreateAsset(asset, path);
+        EditorUtility.SetDirty(asset);
     }
 
     static void CreateEnemy(EnemyArchetype type)
     {
         string path = $"{Root}/Enemies/{type}.asset";
-        if (AssetDatabase.LoadAssetAtPath<EnemyData>(path) != null) return;
         EnemyData source = BalanceCatalog.GetEnemyRuntimeDefault(type);
-        EnemyData asset = ScriptableObject.CreateInstance<EnemyData>();
+        EnemyData asset = AssetDatabase.LoadAssetAtPath<EnemyData>(path);
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<EnemyData>();
+            AssetDatabase.CreateAsset(asset, path);
+        }
         EditorUtility.CopySerialized(source, asset);
-        AssetDatabase.CreateAsset(asset, path);
+        EditorUtility.SetDirty(asset);
     }
 
     static void CreateWave(int wave)
     {
         string path = $"{Root}/Waves/Wave_{wave:00}.asset";
-        if (AssetDatabase.LoadAssetAtPath<WaveData>(path) != null) return;
         WaveData source = BalanceCatalog.GetWaveRuntimeDefault(wave, 5);
-        WaveData asset = ScriptableObject.CreateInstance<WaveData>();
+        WaveData asset = AssetDatabase.LoadAssetAtPath<WaveData>(path);
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<WaveData>();
+            AssetDatabase.CreateAsset(asset, path);
+        }
         EditorUtility.CopySerialized(source, asset);
-        AssetDatabase.CreateAsset(asset, path);
+        EditorUtility.SetDirty(asset);
     }
 
     static void EnsureFolder(string path)
