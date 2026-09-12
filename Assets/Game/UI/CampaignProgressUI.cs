@@ -30,28 +30,17 @@ public class CampaignProgressUI : MonoBehaviour
 
     void Update()
     {
-        RefreshLevelSelectLabels();
         GameManager gm = GameManager.Instance;
         bool show = gm != null && gm.GameEnded;
         resultText.gameObject.SetActive(show);
         if (!show) return;
 
         bool victory = gm.EndMessage == "VICTORY";
-        string unlock = victory && CampaignSave.IsUnlocked(2)
+        bool chapterTwoUnlocked = CampaignController.Instance != null && CampaignController.Instance.IsChapterUnlocked(2);
+        string unlock = victory && chapterTwoUnlocked
             ? GameLanguage.T("CHAPTER II UNLOCKED", "ГЛАВА II ОТКРЫТА")
             : "";
         resultText.text = $"{GameLanguage.T("SCORE", "СЧЁТ")}: {gm.FinalScore}\n{unlock}";
-    }
-
-    void RefreshLevelSelectLabels()
-    {
-        if (!CampaignSave.IsUnlocked(2)) return;
-        foreach (Text text in FindObjectsByType<Text>(FindObjectsSortMode.None))
-        {
-            if (text == null || string.IsNullOrEmpty(text.text)) continue;
-            if (text.text.Contains("MAP 2 - LOCKED")) text.text = "MAP 2 - ROAD TO TROY • UNLOCKED";
-            else if (text.text.Contains("КАРТА 2 - ЗАКРЫТА")) text.text = "КАРТА 2 - ДОРОГА К ТРОЕ • ОТКРЫТА";
-        }
     }
 
     Text MakeText(Transform parent)
