@@ -27,6 +27,9 @@ public class GameBootstrap : MonoBehaviour
         MapBuilder mapBuilder = new GameObject("MapBuilder").AddComponent<MapBuilder>();
         mapBuilder.BuildMap();
         ChapterOneVisualEnhancer.Enhance();
+        TroyGateHeroBuilder.Build();
+        ChapterOneWallLife.Build();
+        new GameObject("ChapterOneAtmosphere").AddComponent<ChapterOneAtmosphereController>();
 
         EnemySpawner spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
         spawner.Initialize(mapBuilder.Paths);
@@ -36,6 +39,8 @@ public class GameBootstrap : MonoBehaviour
 
         CreateHector();
         new GameObject("LandingPresentation").AddComponent<LandingPresentation>();
+        ChapterOneCinematicCamera cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
+        cinematic.Initialize(cam);
 
         new GameObject("GameUI").AddComponent<GameUIController>();
         new GameObject("GameMenu").AddComponent<GameMenuController>();
@@ -91,6 +96,8 @@ public class GameBootstrap : MonoBehaviour
             lightComp.type = LightType.Directional;
             lightComp.intensity = 1.35f;
             lightComp.color = new Color(1f,.84f,.60f);
+            lightComp.shadows = LightShadows.Soft;
+            lightComp.shadowStrength = .72f;
             l.transform.rotation = Quaternion.Euler(52f, -38f, 0f);
         }
         return cam;
