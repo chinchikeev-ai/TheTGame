@@ -1,9 +1,6 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 public class TowerPlacement : MonoBehaviour
 {
@@ -53,7 +50,7 @@ public class TowerPlacement : MonoBehaviour
         if (gameCamera == null) gameCamera = Camera.main;
         if (gameCamera == null) return;
 
-        Vector2 pointer = ReadPointerPosition();
+        Vector2 pointer = GameInput.PointerPosition;
         bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         if (overUI)
         {
@@ -85,7 +82,7 @@ public class TowerPlacement : MonoBehaviour
         else if (SelectedTower != null) rangeIndicator.Show(SelectedTower);
         else rangeIndicator.Hide();
 
-        if (!ReadPrimaryClick()) return;
+        if (!GameInput.PrimaryPressed()) return;
 
         if (hoveredTower != null)
         {
@@ -109,23 +106,5 @@ public class TowerPlacement : MonoBehaviour
     {
         if (hoveredPoint != null) hoveredPoint.SetHovered(false);
         if (rangeIndicator != null) rangeIndicator.Hide();
-    }
-
-    Vector2 ReadPointerPosition()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
-#else
-        return Input.mousePosition;
-#endif
-    }
-
-    bool ReadPrimaryClick()
-    {
-#if ENABLE_INPUT_SYSTEM
-        return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
-#else
-        return Input.GetMouseButtonDown(0);
-#endif
     }
 }
