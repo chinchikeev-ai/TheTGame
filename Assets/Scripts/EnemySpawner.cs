@@ -33,6 +33,7 @@ public class EnemySpawner : MonoBehaviour
         GameManager.Instance.MaxWaves = maxWaves;
         EnemyRegistry.Clear();
         PrepareNextWave(1);
+        RuntimeFileLogger.Event("SPAWNER", $"Initialized routes={paths.Length}, maxWaves={maxWaves}");
     }
 
     public void ActivateLevel()
@@ -45,6 +46,7 @@ public class EnemySpawner : MonoBehaviour
         if (WaveActive || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
         requestStart = true;
         InterWaveCountdown = 0f;
+        RuntimeFileLogger.Event("WAVE", $"Manual start requested for wave={Mathf.Max(1, CurrentWave + 1)}");
     }
 
     IEnumerator GameLoop()
@@ -55,6 +57,8 @@ public class EnemySpawner : MonoBehaviour
             PrepareNextWave(wave);
             WaitingForManualStart = true;
             GameStateController.Instance?.SetState(wave == 1 ? GameState.Preparing : GameState.BetweenWaves);
+
+            RuntimeFileLogger.Event("WAVE", $"Prepared wave={wave}/{maxWaves}, enemies={preparedWave.enemyCount}, prep={preparedWave.preparationTime:0.0}s, target={preparedWave.targetDuration:0.0}s, spawnInterval={preparedWave.spawnInterval:0.00}s, hpMul={preparedWave.hpMultiplier:0.00}, speedMul={preparedWave.speedMultiplier:0.00}, boss={preparedWave.hasBoss}");
 
             InterWaveCountdown = preparedWave.preparationTime;
             while (InterWaveCountdown > 0f && !requestStart && !GameManager.Instance.GameEnded)
@@ -73,6 +77,7 @@ public class EnemySpawner : MonoBehaviour
             waveStartedAt = Time.time;
             lastWaveDuration = 0f;
             GameStateController.Instance?.SetState(GameState.WaveRunning);
+            RuntimeFileLogger.Event("WAVE", $"Started wave={wave}/{maxWaves}");
 
             for (int i = 0; i < preparedWave.enemyCount; i++)
             {
@@ -84,6 +89,7 @@ public class EnemySpawner : MonoBehaviour
             while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0) yield return null;
             lastWaveDuration = Mathf.Max(0f, Time.time - waveStartedAt);
             WaveActive = false;
+            RuntimeFileLogger.Event("WAVE", $"Completed wave={wave}/{maxWaves}, actualDuration={lastWaveDuration:0.0}s, target={preparedWave.targetDuration:0.0}s, killsTotal={GameManager.Instance.Kills}, leaksTotal={GameManager.Instance.Leaks}, gold={GameManager.Instance.Money}, gateHP={GameManager.Instance.BaseHealth}");
         }
 
         if (!GameManager.Instance.GameEnded) GameManager.Instance.WinGame();
