@@ -17,6 +17,35 @@ public static class GameInput
         }
     }
 
+    public static Vector2 CameraMove
+    {
+        get
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current == null) return Vector2.zero;
+            float x = (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed ? 1f : 0f)
+                    - (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed ? 1f : 0f);
+            float y = (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed ? 1f : 0f)
+                    - (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed ? 1f : 0f);
+            return new Vector2(x, y).normalized;
+#else
+            return new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+#endif
+        }
+    }
+
+    public static float ScrollDelta
+    {
+        get
+        {
+#if ENABLE_INPUT_SYSTEM
+            return Mouse.current == null ? 0f : Mouse.current.scroll.ReadValue().y / 120f;
+#else
+            return Input.mouseScrollDelta.y;
+#endif
+        }
+    }
+
     public static bool PrimaryPressed()
     {
 #if ENABLE_INPUT_SYSTEM
