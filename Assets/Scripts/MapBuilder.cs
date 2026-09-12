@@ -10,7 +10,7 @@ public class MapBuilder : MonoBehaviour
     public Transform[][] Paths { get; private set; }
 
     readonly HashSet<Vector2Int> roadCells = new HashSet<Vector2Int>();
-    readonly HashSet<Vector2Int> buildCells = new HashSet<Vector2Int>();
+    readonly HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>();
 
     public Transform[] BuildMap()
     {
@@ -24,6 +24,9 @@ public class MapBuilder : MonoBehaviour
 
     void DefineLayout()
     {
+        roadCells.Clear();
+        blockedCells.Clear();
+
         Vector2Int[] routeA = {
             C(0,8), C(1,8), C(2,8), C(3,8), C(4,8), C(5,8),
             C(5,7), C(5,6), C(6,6), C(7,6), C(8,6), C(9,6),
@@ -37,12 +40,9 @@ public class MapBuilder : MonoBehaviour
         foreach (Vector2Int p in routeA) roadCells.Add(p);
         foreach (Vector2Int p in routeB) roadCells.Add(p);
 
-        Vector2Int[] builds = {
-            C(2,6), C(3,10), C(4,6), C(6,9), C(7,7), C(8,3),
-            C(9,8), C(10,3), C(11,7), C(12,3), C(13,8), C(14,4),
-            C(15,8), C(16,4), C(7,2), C(11,9)
-        };
-        foreach (Vector2Int p in builds) buildCells.Add(p);
+        // Reserved/special cells can be extended later for Hector nodes,
+        // scenery, objectives, walls or scripted chapter objects.
+        blockedCells.Add(C(17,6)); // Troy Gate / base.
     }
 
     void CreateGrid()
@@ -63,6 +63,8 @@ public class MapBuilder : MonoBehaviour
                 Color color;
                 if (roadCells.Contains(cell))
                     color = ((x + y) & 1) == 0 ? new Color(0.48f,0.39f,0.27f) : new Color(0.43f,0.35f,0.24f);
+                else if (blockedCells.Contains(cell))
+                    color = new Color(0.48f,0.34f,0.16f);
                 else
                     color = ((x + y) & 1) == 0 ? new Color(0.19f,0.31f,0.18f) : new Color(0.16f,0.27f,0.16f);
                 TowerFactory.SetColor(tile, color);
@@ -82,11 +84,19 @@ public class MapBuilder : MonoBehaviour
 
     void CreateBuildPoints()
     {
-        foreach (Vector2Int cell in buildCells)
+        GameObject root = new GameObject("BuildableCells");
+        for (int y = 0; y < GridHeight; y++)
         {
-            GameObject root = new GameObject($"Build_{cell.x}_{cell.y}");
-            root.transform.position = CellToWorld(cell, 0f);
-            root.AddComponent<BuildPoint>().Initialize();
+            for (int x = 0; x < GridWidth; x++)
+            {
+                Vector2Int cell = C(x,y);
+                if (roadCells.Contains(cell) || blockedCells.Contains(cell)) continue;
+
+                GameObject build = new GameObject($"Build_{x}_{y}");
+                build.transform.SetParent(root.transform);
+                build.transform.position = CellToWorld(cell, 0f);
+                build.AddComponent<BuildPoint>().Initialize();
+            }
         }
     }
 
