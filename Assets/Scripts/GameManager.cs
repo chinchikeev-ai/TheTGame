@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
             MapNumber = Chapter.chapterNumber;
             MaxWaves = Chapter.combatEvents;
         }
-        RuntimeFileLogger.Event("GAME", $"GameManager ready. Map={MapNumber}, startGold={Money}, gateHP={BaseHealth}, maxWaves={MaxWaves}, chapter={(Chapter != null ? Chapter.chapterId : "runtime")}");
+        RuntimeFileLogger.Event("GAME", $"GameManager ready. Map={MapNumber}, startGold={Money}, gateHP={BaseHealth}, maxWaves={MaxWaves}, chapter={(Chapter != null ? Chapter.chapterId : "runtime")}, difficulty={CampaignSave.Difficulty}");
     }
 
     public void BeginRun()
@@ -53,7 +53,7 @@ public class GameManager : MonoBehaviour
         if (runStarted) return;
         runStarted = true;
         runStartTime = Time.unscaledTime;
-        RuntimeFileLogger.Event("RUN", $"Map {MapNumber} started. maxWaves={MaxWaves}, gold={Money}, gateHP={BaseHealth}");
+        RuntimeFileLogger.Event("RUN", $"Map {MapNumber} started. maxWaves={MaxWaves}, gold={Money}, gateHP={BaseHealth}, difficulty={CampaignSave.Difficulty}");
     }
 
     public void AddMoney(int amount)
@@ -122,7 +122,8 @@ public class GameManager : MonoBehaviour
         GameEnded = true;
         EndMessage = "VICTORY";
         FinalScore = CalculateScore();
-        if (Chapter != null) CampaignSave.CompleteChapter(Chapter.chapterNumber, FinalScore, Chapter.unlockChapter);
+        if (Chapter != null)
+            CampaignSave.RecordChapterResult(Chapter.chapterNumber, FinalScore, finalRunTime, BaseHealth, Chapter.unlockChapter);
         RuntimeFileLogger.Event("RESULT", $"VICTORY map={MapNumber}, waves={CurrentWave}/{MaxWaves}, score={FinalScore}, time={finalRunTime:0.0}s, pacing={PacingVerdict()}, kills={Kills}, leaks={Leaks}, goldEarned={GoldEarned}, goldSpent={GoldSpent}, built={TowersBuilt}, sold={TowersSold}, gateHP={BaseHealth}");
         GameStateController.Instance?.SetState(GameState.Victory);
     }
