@@ -29,7 +29,6 @@ public static class TowerFactory
                 Primitive(head.transform,"Bow",PrimitiveType.Cube,new Vector3(0f,.05f,.62f),new Vector3(.80f,.06f,.08f),new Color(.68f,.48f,.22f));
                 Primitive(head.transform,"Roof",PrimitiveType.Cylinder,new Vector3(0f,.48f,0f),new Vector3(.58f,.10f,.58f),new Color(.60f,.22f,.12f));
                 break;
-
             case TowerType.Cannon:
                 head.transform.localScale = new Vector3(.72f,.42f,.72f);
                 SetColor(head,new Color(.48f,.24f,.12f));
@@ -37,7 +36,6 @@ public static class TowerFactory
                 Primitive(head.transform,"BallistaArmL",PrimitiveType.Cube,new Vector3(-.45f,.05f,.34f),new Vector3(.65f,.08f,.10f),new Color(.72f,.48f,.18f),Quaternion.Euler(0f,18f,0f));
                 Primitive(head.transform,"BallistaArmR",PrimitiveType.Cube,new Vector3(.45f,.05f,.34f),new Vector3(.65f,.08f,.10f),new Color(.72f,.48f,.18f),Quaternion.Euler(0f,-18f,0f));
                 break;
-
             case TowerType.Slow:
                 SetColor(head,new Color(.54f,.48f,.78f));
                 SetColor(barrel,new Color(.72f,.68f,.92f));
@@ -45,20 +43,17 @@ public static class TowerFactory
                 Primitive(root.transform,"ColumnL",PrimitiveType.Cylinder,new Vector3(-.34f,.45f,0f),new Vector3(.10f,.42f,.10f),new Color(.80f,.72f,.54f));
                 Primitive(root.transform,"ColumnR",PrimitiveType.Cylinder,new Vector3(.34f,.45f,0f),new Vector3(.10f,.42f,.10f),new Color(.80f,.72f,.54f));
                 break;
-
             case TowerType.SpearThrower:
                 SetColor(head,new Color(.46f,.36f,.16f));
                 for (int i=-1;i<=1;i++)
                     Primitive(head.transform,"Spear"+i,PrimitiveType.Cylinder,new Vector3(i*.18f,.10f,.70f),new Vector3(.035f,.68f,.035f),new Color(.72f,.55f,.25f),Quaternion.Euler(90f,0f,0f));
                 break;
-
             case TowerType.FireTower:
                 SetColor(head,new Color(.42f,.18f,.10f));
                 SetColor(barrel,new Color(.32f,.12f,.07f));
                 Primitive(head.transform,"Brazier",PrimitiveType.Cylinder,new Vector3(0f,.48f,0f),new Vector3(.36f,.12f,.36f),new Color(.25f,.20f,.16f));
                 Primitive(head.transform,"FlameCore",PrimitiveType.Sphere,new Vector3(0f,.74f,0f),new Vector3(.30f,.42f,.30f),new Color(1f,.32f,.04f));
                 break;
-
             case TowerType.TrojanGuard:
                 SetColor(head,new Color(.52f,.18f,.14f));
                 barrel.SetActive(false);
@@ -71,6 +66,10 @@ public static class TowerFactory
         GameObject muzzle = new GameObject("Muzzle");
         muzzle.transform.SetParent(head.transform);
         muzzle.transform.localPosition = new Vector3(0f,0f,1.45f);
+
+        BoxCollider interaction = root.AddComponent<BoxCollider>();
+        interaction.center = new Vector3(0f,.55f,0f);
+        interaction.size = new Vector3(1.35f,1.45f,1.35f);
 
         Tower tower = root.AddComponent<Tower>();
         tower.head = head.transform;
