@@ -34,11 +34,11 @@ Last reviewed: 2026-09-12
 - EditMode architecture/data tests: implemented
 - isolated CampaignSave round-trip/reset/backup/Chapter VI→VII tests: implemented
 - PlayMode runtime graph tests: implemented
-- PlayMode acceptance tests: first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, final-wave boss data
+- PlayMode acceptance tests cover first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, final-wave boss data and Menelaus objective outcome
+- Chapter I pacing contract now asserts auto-start target remains inside 11–13 minutes
 - GitHub Actions architecture guard: VERIFIED GREEN
 - GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
 - therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
-- once Unity activation is configured in repository Actions settings, the existing workflow continues automatically through tests and build
 
 ## Current gameplay
 - DamageType / DamagePacket and Physical/Piercing/Fire/Hero: implemented
@@ -47,15 +47,24 @@ Last reviewed: 2026-09-12
 - 3 core tower upgrade levels: implemented; specialization branches pending
 - Hector Q/E/R/F, HP/downed/revive/HUD: implemented; movement constraints/progression incomplete
 - Menelaus boss/aura/reinforcements/final-wave integration: implemented
+- Chapter I victory now requires Menelaus to be defeated
+- Menelaus reaching the Trojan gate is an immediate chapter defeat even when gate HP remains
+- Menelaus defeat/breach are tracked separately in runtime telemetry
 - Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU, procedural coast/landing prototype
+- Chapter I tutorial reflects marked build points and Hector Q/E/R/F controls
 
-## Remaining production risks
-- first actual Unity compile/test pass after architecture migration
-- final real 11–13 minute Chapter I balance validation
-- projectile/enemy/VFX pooling
-- production art/environment pass
-- Hector movement constraints/progression
-- gameplay modules still share one runtime assembly pending interface/event decoupling
+## Remaining Chapter I RC work
+- real 1x playthrough validation against 11–13 minute target
+- final economy/enemy-pressure tuning from runtime logs
+- UI/UX production pass for build bar, result screen and combat readability
+- environment/landing presentation polish
+- Hector movement constraints and battlefield bounds
+- verify Trojan Guard blocking under high enemy density
+- verify Menelaus encounter/reinforcement pressure on Story/Strategos/Legendary
+- pooling before campaign scale-up
 
-## Next gate
-Configure Unity activation for GitHub Actions or run `tools/validate-project.ps1` locally with Unity 6000.6.0f1. Fix any resulting compile/test failures before starting Chapter II implementation.
+## Deferred infrastructure
+- Unity CI activation/full green compile-test-build cycle is intentionally deferred until later
+
+## Next product gate
+Finish Chapter I RC gameplay/UX/presentation pass, then perform one real 1x run and use its runtime log for the final balance adjustment before Chapter II production.
