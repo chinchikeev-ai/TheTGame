@@ -6,9 +6,12 @@ public class BuildPoint : MonoBehaviour
     public Tower Tower { get; private set; }
 
     Renderer marker;
-    readonly Color idleColor = new Color(.48f,.40f,.24f);
-    readonly Color hoverColor = new Color(.30f,.72f,.32f);
-    readonly Color occupiedColor = new Color(.20f,.20f,.18f);
+    Renderer rim;
+    bool hovered;
+    readonly Color idleColor = new Color(.78f,.58f,.20f);
+    readonly Color rimColor = new Color(.30f,.22f,.10f);
+    readonly Color hoverColor = new Color(.22f,.82f,.34f);
+    readonly Color occupiedColor = new Color(.16f,.16f,.14f);
 
     public void Initialize()
     {
@@ -16,14 +19,30 @@ public class BuildPoint : MonoBehaviour
         hitbox.center = new Vector3(0f, .04f, 0f);
         hitbox.size = new Vector3(MapBuilder.CellSize * .92f, .12f, MapBuilder.CellSize * .92f);
 
+        GameObject rimObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        rimObj.name = "BuildMarkerRim";
+        rimObj.transform.SetParent(transform);
+        rimObj.transform.localPosition = new Vector3(0f, .02f, 0f);
+        rimObj.transform.localScale = new Vector3(.40f, .012f, .40f);
+        Object.Destroy(rimObj.GetComponent<Collider>());
+        rim = rimObj.GetComponent<Renderer>();
+        TowerFactory.SetColor(rimObj, rimColor);
+
         GameObject markerObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        markerObj.name = "BuildMarker";
+        markerObj.name = "BuildMarkerCore";
         markerObj.transform.SetParent(transform);
-        markerObj.transform.localPosition = new Vector3(0f, .015f, 0f);
-        markerObj.transform.localScale = new Vector3(.20f, .015f, .20f);
+        markerObj.transform.localPosition = new Vector3(0f, .035f, 0f);
+        markerObj.transform.localScale = new Vector3(.29f, .014f, .29f);
         Object.Destroy(markerObj.GetComponent<Collider>());
         marker = markerObj.GetComponent<Renderer>();
         TowerFactory.SetColor(markerObj, idleColor);
+    }
+
+    void Update()
+    {
+        if (marker == null || rim == null || Occupied) return;
+        float pulse = hovered ? 1f + Mathf.Sin(Time.unscaledTime * 7f) * .08f : 1f;
+        marker.transform.localScale = new Vector3(.29f * pulse, .014f, .29f * pulse);
     }
 
     public bool TryBuild(TowerType type)
@@ -52,23 +71,27 @@ public class BuildPoint : MonoBehaviour
         RefreshVisual();
     }
 
-    public void SetHovered(bool hovered)
+    public void SetHovered(bool value)
     {
-        if (marker == null) return;
-        SetMarkerColor(Occupied ? occupiedColor : hovered ? hoverColor : idleColor);
-        marker.transform.localScale = hovered && !Occupied ? new Vector3(.34f,.02f,.34f) : new Vector3(.20f,.015f,.20f);
+        hovered = value;
+        if (marker == null || rim == null) return;
+        SetRendererColor(marker, Occupied ? occupiedColor : hovered ? hoverColor : idleColor);
+        SetRendererColor(rim, Occupied ? occupiedColor : hovered ? new Color(.10f,.42f,.16f) : rimColor);
     }
 
     public void RefreshVisual()
     {
-        if (marker == null) return;
-        SetMarkerColor(Occupied ? occupiedColor : idleColor);
-        marker.transform.localScale = Occupied ? new Vector3(.14f,.015f,.14f) : new Vector3(.20f,.015f,.20f);
+        if (marker == null || rim == null) return;
+        hovered = false;
+        SetRendererColor(marker, Occupied ? occupiedColor : idleColor);
+        SetRendererColor(rim, Occupied ? occupiedColor : rimColor);
+        marker.gameObject.SetActive(!Occupied);
+        rim.gameObject.SetActive(!Occupied);
     }
 
-    void SetMarkerColor(Color color)
+    void SetRendererColor(Renderer renderer, Color color)
     {
-        Material material = marker.material;
+        Material material = renderer.material;
         if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color")) material.SetColor("_Color", color);
     }
