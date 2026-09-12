@@ -18,13 +18,15 @@ public class GameManager : MonoBehaviour
     public int GoldSpent { get; private set; }
     public int TowersBuilt { get; private set; }
     public int TowersSold { get; private set; }
-    public float RunTime => Mathf.Max(0f, Time.unscaledTime - runStartTime);
+    public float RunTime => GameEnded ? finalRunTime : runStarted ? Mathf.Max(0f, Time.unscaledTime - runStartTime) : 0f;
     public float MagicCooldownRemaining => Mathf.Max(0f, magicReadyAt - Time.unscaledTime);
     public bool GiftAvailable => giftWave != CurrentWave;
 
     float runStartTime;
+    float finalRunTime;
     float magicReadyAt;
     int giftWave = -1;
+    bool runStarted;
 
     void Awake()
     {
@@ -34,6 +36,12 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+
+    public void BeginRun()
+    {
+        if (runStarted) return;
+        runStarted = true;
         runStartTime = Time.unscaledTime;
     }
 
@@ -97,6 +105,7 @@ public class GameManager : MonoBehaviour
     public void WinGame()
     {
         if (GameEnded) return;
+        FinalizeRun();
         GameEnded = true;
         EndMessage = "VICTORY";
         GameStateController.Instance?.SetState(GameState.Victory);
@@ -104,9 +113,16 @@ public class GameManager : MonoBehaviour
 
     void LoseGame()
     {
+        if (GameEnded) return;
+        FinalizeRun();
         GameEnded = true;
         BaseHealth = 0;
         EndMessage = "GAME OVER";
         GameStateController.Instance?.SetState(GameState.Defeat);
+    }
+
+    void FinalizeRun()
+    {
+        finalRunTime = runStarted ? Mathf.Max(0f, Time.unscaledTime - runStartTime) : 0f;
     }
 }
