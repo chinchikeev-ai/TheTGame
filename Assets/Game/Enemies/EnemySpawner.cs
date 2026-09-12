@@ -131,11 +131,8 @@ public class EnemySpawner : MonoBehaviour
         Transform[] routePath = paths[route];
         if (routePath == null || routePath.Length == 0) return;
 
-        PrimitiveType primitive = data.archetype == EnemyArchetype.BatteringRam ? PrimitiveType.Cube : PrimitiveType.Capsule;
-        GameObject enemyObj = GameObject.CreatePrimitive(primitive);
-        enemyObj.name = data.displayName;
+        GameObject enemyObj = EnemyVisualFactory.CreateEnemyObject(data);
         enemyObj.transform.position = routePath[0].position;
-        TowerFactory.SetColor(enemyObj, data.color);
 
         Enemy enemy = enemyObj.AddComponent<Enemy>();
         enemy.InitFromData(routePath, data, hpMultiplier, speedMultiplier);
