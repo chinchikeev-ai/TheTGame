@@ -59,11 +59,14 @@ public static class TowerFactory
 
     public static void SetColor(GameObject obj, Color color)
     {
-        Renderer r = obj.GetComponent<Renderer>();
-        if (r == null) return;
-        Material m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        if (m.shader == null) m = new Material(Shader.Find("Standard"));
-        m.color = color;
-        r.material = m;
+        Renderer renderer = obj.GetComponent<Renderer>();
+        if (renderer == null) return;
+
+        // Keep the primitive's material/shader so the player build cannot lose a
+        // dynamically found shader during stripping. Cloning through .material is
+        // enough for per-object color without Shader.Find().
+        Material material = renderer.material;
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
     }
 }
