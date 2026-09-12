@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -82,8 +83,7 @@ public class GameManager : MonoBehaviour
     {
         if (GameEnded || Time.unscaledTime < magicReadyAt || EnemyRegistry.AliveCount == 0) return false;
         magicReadyAt = Time.unscaledTime + 30f;
-        Enemy[] enemies = new Enemy[EnemyRegistry.All.Count];
-        EnemyRegistry.All.CopyTo(enemies);
+        List<Enemy> enemies = new List<Enemy>(EnemyRegistry.All);
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null) continue;
