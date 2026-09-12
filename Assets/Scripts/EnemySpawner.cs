@@ -5,7 +5,7 @@ public class EnemySpawner : MonoBehaviour
 {
     public Transform[] spawnPoints;
     public Transform[][] paths;
-    public int maxWaves = 7;
+    public int maxWaves = 5;
 
     public int CurrentWave { get; private set; }
     public int NextWaveEnemyCount { get; private set; }
@@ -13,6 +13,7 @@ public class EnemySpawner : MonoBehaviour
     public float NextWaveSpeedMultiplier { get; private set; } = 1f;
     public float InterWaveCountdown { get; private set; }
     public float TargetWaveDuration { get; private set; }
+    public float CurrentWaveElapsed => WaveActive ? Mathf.Max(0f, Time.time - waveStartedAt) : lastWaveDuration;
     public bool WaveActive { get; private set; }
     public bool WaitingForManualStart { get; private set; } = true;
     public bool NextWaveHasHeavy { get; private set; }
@@ -20,6 +21,8 @@ public class EnemySpawner : MonoBehaviour
 
     bool running;
     bool requestStart;
+    float waveStartedAt;
+    float lastWaveDuration;
     WaveData preparedWave;
 
     public void Initialize(Transform[][] newPaths)
@@ -67,6 +70,8 @@ public class EnemySpawner : MonoBehaviour
             CurrentWave = wave;
             GameManager.Instance.CurrentWave = wave;
             WaveActive = true;
+            waveStartedAt = Time.time;
+            lastWaveDuration = 0f;
             GameStateController.Instance?.SetState(GameState.WaveRunning);
 
             for (int i = 0; i < preparedWave.enemyCount; i++)
@@ -77,6 +82,7 @@ public class EnemySpawner : MonoBehaviour
             }
 
             while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0) yield return null;
+            lastWaveDuration = Mathf.Max(0f, Time.time - waveStartedAt);
             WaveActive = false;
         }
 
