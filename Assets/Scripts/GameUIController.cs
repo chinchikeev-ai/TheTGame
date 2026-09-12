@@ -45,7 +45,12 @@ public class GameUIController : MonoBehaviour
         if (GameManager.Instance.GameEnded) endText.text = GameManager.Instance.EndMessage == "VICTORY" ? L("VICTORY","ПОБЕДА") : L("GAME OVER","ПОРАЖЕНИЕ");
     }
 
-    void EnsureEventSystem(){ if(EventSystem.current!=null)return; GameObject es=new GameObject("EventSystem"); es.AddComponent<EventSystem>(); #if ENABLE_INPUT_SYSTEM
+    void EnsureEventSystem()
+    {
+        if (EventSystem.current != null) return;
+        GameObject es = new GameObject("EventSystem");
+        es.AddComponent<EventSystem>();
+#if ENABLE_INPUT_SYSTEM
         es.AddComponent<InputSystemUIInputModule>();
 #else
         es.AddComponent<StandaloneInputModule>();
