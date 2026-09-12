@@ -15,6 +15,7 @@ public class MapBuilder : MonoBehaviour
     public Transform[] BuildMap()
     {
         DefineLayout();
+        CoastEnvironmentBuilder.Build();
         CreateGrid();
         CreateBase();
         CreateBuildPoints();
@@ -39,47 +40,45 @@ public class MapBuilder : MonoBehaviour
         };
         foreach (Vector2Int p in routeA) roadCells.Add(p);
         foreach (Vector2Int p in routeB) roadCells.Add(p);
-
-        // Reserved/special cells can be extended later for Hector nodes,
-        // scenery, objectives, walls or scripted chapter objects.
-        blockedCells.Add(C(17,6)); // Troy Gate / base.
+        blockedCells.Add(C(17,6));
     }
 
     void CreateGrid()
     {
-        GameObject root = new GameObject("BalanceGrid");
-        for (int y = 0; y < GridHeight; y++)
+        GameObject root = new GameObject("Chapter01_Roads");
+        foreach (Vector2Int cell in roadCells)
         {
-            for (int x = 0; x < GridWidth; x++)
-            {
-                Vector2Int cell = C(x,y);
-                GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                tile.name = $"Cell_{x}_{y}";
-                tile.transform.SetParent(root.transform);
-                tile.transform.position = CellToWorld(cell, -0.08f);
-                tile.transform.localScale = new Vector3(CellSize * 0.94f, 0.12f, CellSize * 0.94f);
-                Object.Destroy(tile.GetComponent<Collider>());
-
-                Color color;
-                if (roadCells.Contains(cell))
-                    color = ((x + y) & 1) == 0 ? new Color(0.48f,0.39f,0.27f) : new Color(0.43f,0.35f,0.24f);
-                else if (blockedCells.Contains(cell))
-                    color = new Color(0.48f,0.34f,0.16f);
-                else
-                    color = ((x + y) & 1) == 0 ? new Color(0.19f,0.31f,0.18f) : new Color(0.16f,0.27f,0.16f);
-                TowerFactory.SetColor(tile, color);
-            }
+            GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            tile.name = $"Road_{cell.x}_{cell.y}";
+            tile.transform.SetParent(root.transform);
+            tile.transform.position = CellToWorld(cell, -0.045f);
+            tile.transform.localScale = new Vector3(CellSize * .96f, .06f, CellSize * .96f);
+            Object.Destroy(tile.GetComponent<Collider>());
+            bool alt = ((cell.x + cell.y) & 1) == 0;
+            TowerFactory.SetColor(tile, alt ? new Color(.40f,.34f,.25f) : new Color(.36f,.30f,.22f));
         }
     }
 
     void CreateBase()
     {
         Vector2Int baseCell = C(17,6);
-        GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        tile.name = "TroyGate";
-        tile.transform.position = CellToWorld(baseCell, 0.15f);
-        tile.transform.localScale = new Vector3(CellSize * 0.9f, 0.35f, CellSize * 0.9f);
-        TowerFactory.SetColor(tile, new Color(0.78f,0.62f,0.25f));
+        Vector3 p = CellToWorld(baseCell, .35f);
+
+        GameObject gate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        gate.name = "TroyGate";
+        gate.transform.position = p;
+        gate.transform.localScale = new Vector3(CellSize * .80f, 1.25f, CellSize * 1.8f);
+        TowerFactory.SetColor(gate, new Color(.46f,.28f,.14f));
+
+        for (int i = -1; i <= 1; i += 2)
+        {
+            GameObject tower = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            tower.name = "Troy Gate Tower";
+            tower.transform.position = p + new Vector3(0f, .55f, i * CellSize * 1.20f);
+            tower.transform.localScale = new Vector3(.75f, 1.1f, .75f);
+            Object.Destroy(tower.GetComponent<Collider>());
+            TowerFactory.SetColor(tower, new Color(.66f,.53f,.31f));
+        }
     }
 
     void CreateBuildPoints()
@@ -91,7 +90,6 @@ public class MapBuilder : MonoBehaviour
             {
                 Vector2Int cell = C(x,y);
                 if (roadCells.Contains(cell) || blockedCells.Contains(cell)) continue;
-
                 GameObject build = new GameObject($"Build_{x}_{y}");
                 build.transform.SetParent(root.transform);
                 build.transform.position = CellToWorld(cell, 0f);
@@ -102,12 +100,8 @@ public class MapBuilder : MonoBehaviour
 
     Transform[][] CreatePaths()
     {
-        Vector2Int[] a = {
-            C(0,8), C(2,8), C(5,8), C(5,6), C(9,6), C(13,6), C(16,6), C(17,6)
-        };
-        Vector2Int[] b = {
-            C(0,3), C(2,3), C(5,3), C(5,5), C(9,5), C(13,5), C(13,6), C(16,6), C(17,6)
-        };
+        Vector2Int[] a = { C(0,8), C(2,8), C(5,8), C(5,6), C(9,6), C(13,6), C(16,6), C(17,6) };
+        Vector2Int[] b = { C(0,3), C(2,3), C(5,3), C(5,5), C(9,5), C(13,5), C(13,6), C(16,6), C(17,6) };
         return new[] { MakePath("Route_A", a), MakePath("Route_B", b) };
     }
 
@@ -119,7 +113,7 @@ public class MapBuilder : MonoBehaviour
         {
             GameObject waypoint = new GameObject($"WP_{cell.x}_{cell.y}");
             waypoint.transform.SetParent(root.transform);
-            waypoint.transform.position = CellToWorld(cell, 0.55f);
+            waypoint.transform.position = CellToWorld(cell, .55f);
             points.Add(waypoint.transform);
         }
         return points.ToArray();
@@ -129,8 +123,8 @@ public class MapBuilder : MonoBehaviour
 
     public static Vector3 CellToWorld(Vector2Int cell, float height = 0f)
     {
-        float originX = -(GridWidth - 1) * CellSize * 0.5f;
-        float originZ = -(GridHeight - 1) * CellSize * 0.5f;
+        float originX = -(GridWidth - 1) * CellSize * .5f;
+        float originZ = -(GridHeight - 1) * CellSize * .5f;
         return new Vector3(originX + cell.x * CellSize, height, originZ + cell.y * CellSize);
     }
 }
