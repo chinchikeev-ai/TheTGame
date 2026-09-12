@@ -50,6 +50,7 @@ public class GameMenuController : MonoBehaviour
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = .5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
         mainMenu = MakeScreen("MainMenu", new Color(.02f,.03f,.05f,.72f));
@@ -92,14 +93,15 @@ public class GameMenuController : MonoBehaviour
         AddButton(endMenu.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(0,-205), RestartScene);
         AddButton(endMenu.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0,-285), ReturnToMainMenu);
 
+        // Dedicated lower-middle zone: above BuildBar and horizontally clear of HectorHUD.
         GameObject wavePanel = new GameObject("WaveControls");
         wavePanel.transform.SetParent(canvas.transform, false);
         RectTransform wr = wavePanel.AddComponent<RectTransform>();
         wr.anchorMin = wr.anchorMax = wr.pivot = new Vector2(.5f,0);
-        wr.anchoredPosition = new Vector2(0,150);
-        wr.sizeDelta = new Vector2(340,100);
-        startWaveButton = AddButton(wavePanel.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0,20), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(250,56));
-        countdownText = AddTitle(wavePanel.transform, L("READY", "ГОТОВО"), new Vector2(0,-28), 18);
+        wr.anchoredPosition = new Vector2(0,205);
+        wr.sizeDelta = new Vector2(320,82);
+        startWaveButton = AddButton(wavePanel.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0,10), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(230,50));
+        countdownText = AddTitle(wavePanel.transform, L("READY", "ГОТОВО"), new Vector2(0,-27), 16);
         startWaveButton.gameObject.SetActive(false);
 
         levelMenu.SetActive(false);
