@@ -6,23 +6,9 @@ public static class ChapterOneVisualEnhancer
     {
         if (GameObject.Find("Chapter01_VisualEnhancements") != null) return;
         GameObject root = new GameObject("Chapter01_VisualEnhancements");
-        AnimateExistingEnvironment();
         AddBeachLife(root.transform);
         AddTrojanSkyline(root.transform);
         AddBattleDebris(root.transform);
-    }
-
-    static void AnimateExistingEnvironment()
-    {
-        foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
-        {
-            if (t == null) continue;
-            string n = t.name;
-            if (n.Contains("Sea Glint") || n.Contains("Foam")) AttachMotion(t.gameObject, ChapterOneAmbientMotion.MotionKind.Sea);
-            else if (n.Contains("Flame")) AttachMotion(t.gameObject, ChapterOneAmbientMotion.MotionKind.Flame);
-            else if (n.Contains("Banner")) AttachMotion(t.gameObject, ChapterOneAmbientMotion.MotionKind.Banner);
-            else if (n.Contains("Smoke")) AttachMotion(t.gameObject, ChapterOneAmbientMotion.MotionKind.Smoke);
-        }
     }
 
     static void AddBeachLife(Transform parent)
@@ -84,12 +70,6 @@ public static class ChapterOneVisualEnhancer
             GameObject leaf=Part(parent,"Coastal Scrub",PrimitiveType.Cube,position+new Vector3((i-2)*.08f,.12f,((i%2)-.5f)*.12f),new Vector3(.04f,.30f,.07f)*scale,green*(.88f+i*.025f));
             leaf.transform.rotation=Quaternion.Euler(i*7f,i*31f,(i-2)*11f);
         }
-    }
-
-    static void AttachMotion(GameObject go, ChapterOneAmbientMotion.MotionKind kind)
-    {
-        if (go.GetComponent<ChapterOneAmbientMotion>() != null) return;
-        go.AddComponent<ChapterOneAmbientMotion>().kind=kind;
     }
 
     static GameObject Part(Transform parent,string name,PrimitiveType type,Vector3 position,Vector3 scale,Color color)

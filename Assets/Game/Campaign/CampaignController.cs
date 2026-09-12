@@ -7,6 +7,34 @@ public class CampaignController : MonoBehaviour
     public CampaignDifficulty Difficulty => CampaignSave.Difficulty;
     public int UnlockedChapter => CampaignSave.UnlockedChapter;
 
+    public bool HasProgress
+    {
+        get
+        {
+            if (UnlockedChapter > 1) return true;
+            for (int chapter = 1; chapter <= 7; chapter++)
+            {
+                ChapterProgress progress = GetProgress(chapter);
+                if (progress != null && (progress.completed || progress.bestScore > 0 || progress.completions > 0)) return true;
+            }
+            return false;
+        }
+    }
+
+    public int TotalBestScore
+    {
+        get
+        {
+            int score = 0;
+            for (int chapter = 1; chapter <= 7; chapter++)
+            {
+                ChapterProgress progress = GetProgress(chapter);
+                if (progress != null) score += progress.bestScore;
+            }
+            return score;
+        }
+    }
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,4 +60,5 @@ public class CampaignController : MonoBehaviour
     }
 
     public CampaignDifficulty CycleDifficulty() => CampaignSave.CycleDifficulty();
+    public void ResetProgress() => CampaignSave.ResetProgress();
 }
