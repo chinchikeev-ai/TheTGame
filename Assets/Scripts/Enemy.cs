@@ -118,14 +118,22 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
-        if (GameManager.Instance != null) GameManager.Instance.AddMoney(reward);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RecordKill();
+            GameManager.Instance.AddMoney(reward);
+        }
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss);
         Destroy(gameObject);
     }
 
     void ReachBase()
     {
-        if (GameManager.Instance != null) GameManager.Instance.DamageBase(baseDamage);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RecordLeak();
+            GameManager.Instance.DamageBase(baseDamage);
+        }
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss || Archetype == EnemyArchetype.BatteringRam);
         Destroy(gameObject);
     }
