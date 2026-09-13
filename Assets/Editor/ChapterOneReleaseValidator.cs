@@ -19,6 +19,7 @@ public static class ChapterOneReleaseValidator
         "Assets/Game/UI/ChapterFlowUI.cs",
         "Assets/Game/Characters/CharacterPresentationState.cs",
         "Assets/Game/Heroes/Hector/HectorPresentationBridge.cs",
+        "Assets/Game/Towers/TowerCrewAnimationBridge.cs",
         "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs"
     };
 
@@ -161,6 +162,43 @@ public static class ChapterOneReleaseValidator
             "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
             "ChapterOneCharacter.controller",
             "Chapter I animation builder must own the shared candidate controller path.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
+            "\"Block\"",
+            "Spear animation profile must retain the Guard Block hook.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
+            "\"Poke\"",
+            "Spear animation profile must retain the Spear Wall/Guard Poke hook.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
+            "\"Draw\"",
+            "Archer animation profile must retain the Draw hook.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
+            "\"Release\"",
+            "Archer animation profile must retain the Release hook.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Game/Towers/Tower.cs",
+            "crewAnimation?.PlayTowerAttack(Type)",
+            "Tower attacks must drive defensive-unit crew animation hooks.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Game/Towers/TrojanGuardSquad.cs",
+            "PlayGuardBlock()",
+            "Trojan Guard reservations must drive the Block presentation hook.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Game/Towers/TrojanGuardSquad.cs",
+            "PlayGuardPoke()",
+            "Trojan Guard attacks must drive the Poke presentation hook.",
             ref errors, log);
     }
 
