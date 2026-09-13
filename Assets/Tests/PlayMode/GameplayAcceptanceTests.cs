@@ -148,6 +148,23 @@ public class GameplayAcceptanceTests
     }
 
     [UnityTest]
+    public IEnumerator TowerPlacement_BuildModeRequiresExplicitSelection()
+    {
+        TowerPlacement placement = Object.FindFirstObjectByType<TowerPlacement>();
+        Assert.NotNull(placement);
+        Assert.IsFalse(placement.BuildModeActive);
+
+        placement.SelectBuildType(TowerType.MachineGun);
+        yield return null;
+        Assert.IsTrue(placement.BuildModeActive);
+        Assert.AreEqual(TowerType.MachineGun, placement.SelectedBuildType);
+
+        placement.CancelBuildMode();
+        yield return null;
+        Assert.IsFalse(placement.BuildModeActive);
+    }
+
+    [UnityTest]
     public IEnumerator LanguageSwitch_DoesNotReloadScene()
     {
         Scene beforeScene = SceneManager.GetActiveScene();
