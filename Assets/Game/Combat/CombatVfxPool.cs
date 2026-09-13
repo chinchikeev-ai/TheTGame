@@ -19,12 +19,13 @@ public sealed class CombatVfxPool : MonoBehaviour
 
     const int SphereCount = 18;
     const int CubeCount = 8;
+    const int CylinderCount = 8;
 
     static CombatVfxPool instance;
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
 
-    readonly List<Entry> entries = new List<Entry>(SphereCount + CubeCount);
+    readonly List<Entry> entries = new List<Entry>(SphereCount + CubeCount + CylinderCount);
     readonly MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
     Material sharedMaterial;
 
@@ -60,6 +61,7 @@ public sealed class CombatVfxPool : MonoBehaviour
         sharedMaterial = Resources.Load<Material>("RuntimeColorMaterial");
         WarmPool(PrimitiveType.Sphere, SphereCount);
         WarmPool(PrimitiveType.Cube, CubeCount);
+        WarmPool(PrimitiveType.Cylinder, CylinderCount);
     }
 
     void OnDestroy()
@@ -72,7 +74,10 @@ public sealed class CombatVfxPool : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             GameObject go = GameObject.CreatePrimitive(shape);
-            go.name = shape == PrimitiveType.Cube ? "Pooled Combat Shard" : "Pooled Combat Particle";
+            if (shape == PrimitiveType.Cube) go.name = "Pooled Combat Shard";
+            else if (shape == PrimitiveType.Cylinder) go.name = "Pooled Combat Ring";
+            else go.name = "Pooled Combat Particle";
+
             go.transform.SetParent(transform, false);
             Collider collider = go.GetComponent<Collider>();
             if (collider != null) Destroy(collider);
