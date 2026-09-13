@@ -4,360 +4,164 @@ Last reviewed: 2026-09-13
 
 ## Purpose
 
-This document is the source of truth for whether a visual asset is actually production-ready.
-
-Do not treat an editor generator, runtime fallback, procedural primitive, source pack, or documented target as a finished model.
+This file is the source of truth for model/art completion. A generator, source pack, procedural silhouette, runtime fallback, or production-path prefab is not automatically final art.
 
 ## Status definitions
 
-- `DONE` — final authored production asset is committed under `Assets/Game/Art/...`, runtime uses it without placeholder/procedural dependency, required animation/materials are connected, and the asset passed real Play Mode visual QA.
-- `GENERATED PLACEHOLDER` — reproducible character/prefab candidate is generated from an approved third-party/source asset, but final Troy-specific production art is not complete.
-- `PROCEDURAL` — reproducible candidate/presentation is assembled from Unity primitives, generated geometry/materials or code.
-- `MISSING` — no dedicated candidate or authored asset exists yet.
-- `SOURCE ONLY` — approved source material exists, but no Troy derivative exists yet.
+- `DONE` — final authored production asset is committed under `Assets/Game/Art/...`, runtime uses it, required materials/animations/colliders are correct, and it passed real Play Mode visual QA.
+- `GENERATED PLACEHOLDER` — reproducible model/prefab candidate exists but final Troy-specific production art is incomplete.
+- `PROCEDURAL` — reproducible presentation is assembled from Unity primitives/generated geometry/code.
+- `SOURCE ONLY` — approved source exists or has an installer, but the final generated/imported Troy asset is not committed/verified yet.
+- `MISSING` — no dedicated source/candidate/production asset exists.
 
-## Production rule
-
-A production-path location alone does not make an asset `DONE`.
-
-Preferred final roots:
-
-- `Assets/Game/Art/Characters/...`
-- `Assets/Game/Art/Environment/...`
-- `Assets/Game/Art/Structures/...`
-- `Assets/Game/Art/Vehicles/...`
-- `Assets/Game/Art/Props/...`
-
-Generated resources may live below those roots for runtime loading, but remain candidates until the acceptance gate at the end of this file is satisfied.
+`DONE` may only be used after the acceptance gate at the end of this file.
 
 ---
 
-# Implemented art pipeline
+# Current campaign coverage
 
-## Chapter I character candidates
+## Greek / Achaean units
 
-Production-first candidate root:
-
-`Assets/Game/Art/Characters/Resources/TroyProduction/Characters/...`
-
-Implemented by PR #17 / merge `0fe3bcc2667b46746f3e5175131dc730cd806a43`.
-
-Includes:
-
-- Greek Infantry;
-- Runner;
-- Heavy Hoplite;
-- Shield Bearer;
-- Archer;
-- boss/commander base;
-- Trojan Infantry;
-- Trojan Guard;
-- Trojan Archer;
-- Hector;
-- Menelaus;
-- Achilles later-campaign base.
-
-The pass also replaced the Chapter I archer crossbow silhouette with a bow, gave Heavy Hoplite spear + heavy shield, strengthened Late Bronze Age armor/helmet silhouettes and added hero capes/crests.
-
-## Character animation candidates
-
-PR #21 / merge `c65cdad0c13979bc8b49fde7c10623b55d9a20ee` adds `ChapterOneCharacterAnimationBuilder`.
-
-It builds a shared controller from KayKit's embedded animation clips and exposes the parameters already consumed by runtime presentation:
-
-- `Speed`;
-- `Attack`;
-- `Hit`;
-- `Die`;
-- `IsDowned` when a suitable clip is found.
-
-Exact automatically selected clips still require visual QA, so animation remains candidate-level.
-
-## Chapter I Tower-Unit presentation
-
-Commits:
-
-- `f6d9a696cfd4a1698f725175234deacb4ac9979e`
-- `b8689eea95780a613b1d5dbefa1730f8874ca442`
-
-Implemented:
-
-- non-mechanical defenses no longer show generic barrel silhouettes;
-- Archer Post uses two Trojan Archer candidates;
-- Ballista uses Trojan operator candidate;
-- Spear Wall uses Trojan infantry candidates;
-- Guard Post uses Trojan Guard candidates;
-- Priests of Apollo and Fire Tower have readable attendant silhouettes.
-
-## Chapter I landing / ships
-
-PR #19 / merge `a48cf743378b5e798813117789050e2d604a86a3`.
-
-Implemented:
-
-- production-first decorative Greek character loading;
-- decorative colliders/physics disabled;
-- expanded Achaean galley silhouette with hull/deck/gunwales/keel/prow/mast/sail/oars/benches/shields;
-- landing debris including crates, shields, oars and standard.
-
-## Troy gate / skyline
-
-PR #20 / merge `a70d58da85b855ed75a4195f18d635f1a35033d4`.
-
-Implemented:
-
-- layered gatehouse;
-- flanking wall wings;
-- parapets, buttresses, masonry, wall walk, crenellations, arrow slits;
-- twin hero towers;
-- gate relief and braziers;
-- stepped city houses;
-- citadel terraces;
-- temple focus;
-- inner-city skyline.
-
-## Art wiring regression protection
-
-PR #22 / merge `0c1fc2ed6444bd592f91c73b4ccb2384e20876b4` extends the Chapter I RC validator to protect:
-
-- production-first hero/enemy art paths;
-- landing production-character use;
-- decorative collider safety;
-- animation-builder wiring;
-- legacy primitive/capsule regressions.
-
-## Campaign candidate bank
-
-`CampaignArtCandidateBuilder` creates model candidates for Chapters II–VII.
-
-See `docs/CAMPAIGN_ART_PIPELINE.md`.
-
-It does **not** implement later-chapter gameplay and does **not** promote assets to `DONE`.
-
----
-
-# Chapter I — required production set
-
-## Heroes and combat characters
-
-| Asset | Status | Current implementation | Remaining to DONE |
-|---|---|---|---|
-| Hector | GENERATED PLACEHOLDER | production-first KayKit-derived hero candidate, Bronze Age kit, shared Animator candidate | Final authored hero mesh/materials, hero-specific ability/combat clips, Play Mode QA |
-| Menelaus | GENERATED PLACEHOLDER | commander candidate with command sword, shield, armor, cape, shared Animator candidate | Final boss mesh/materials, boss-specific animation set, Play Mode QA |
-| Greek Infantry | GENERATED PLACEHOLDER | production candidate | Final Achaean mesh/material/animation pass |
-| Greek Runner | GENERATED PLACEHOLDER | production candidate | Final runner/scout identity and animation pass |
-| Heavy Hoplite | GENERATED PLACEHOLDER | heavy cuirass/helmet, spear + heavy shield candidate | Final heavy authored model/animations |
-| Shield Bearer | GENERATED PLACEHOLDER | spear + oversized shield candidate | Final authored shield-bearer model/animations |
-| Greek Archer | GENERATED PLACEHOLDER | bow + quiver candidate | Final bow model + draw/release animation |
-| Trojan Infantry | GENERATED PLACEHOLDER | warm bronze/red candidate | Final authored Trojan infantry model |
-| Trojan Guard | GENERATED PLACEHOLDER | guard candidate + gameplay blocker | Final formation/block/melee animations and mesh |
-| Trojan Archer | GENERATED PLACEHOLDER | bow + quiver candidate; used as Archer Post crew | Final authored archer + bow animation |
-| Greek landing party | GENERATED PLACEHOLDER | production-first candidates, decorative colliders/physics removed | Final decorative variants + authored landing/run animation |
-
-**Chapter I character DONE count: 0.**
-
-## Defensive structures / Tower-Units
-
-| Asset | Status | Current implementation | Remaining to DONE |
-|---|---|---|---|
-| Archer Post | PROCEDURAL + GENERATED PLACEHOLDER crew | wood/bronze post + 2 Trojan Archer candidates | Authored structure + final crew/animations |
-| Ballista | PROCEDURAL + GENERATED PLACEHOLDER crew | readable ballista form + operator candidate | Authored mechanism, string/bolt, reload/fire animation, crew |
-| Priests of Apollo | PROCEDURAL | shrine + two priest silhouettes | Authored shrine + final priests + support animation/VFX anchors |
-| Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew | spear/shield defense + 2 infantry candidates | Authored post/formation + poke/block animation |
-| Fire Tower | PROCEDURAL | brazier/pitch/flame + fire-keeper silhouette | Authored fire defense + final props/keeper if retained |
-| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew | platform/banners + 2 Guard candidates | Authored station + final Guard squad |
-
-**Chapter I defense DONE count: 0.**
-
-## Environment and staging
-
-| Asset | Status | Current implementation | Remaining to DONE |
-|---|---|---|---|
-| Aegean sea | PROCEDURAL | runtime sea/foam presentation | Authored water material/mesh treatment |
-| Shoreline / wet sand | PROCEDURAL | runtime coastline | Authored terrain/mesh/material set |
-| Beach / dunes / rocks / scrub | PROCEDURAL | runtime dressing | Modular authored coast kit |
-| Invasion lanes | PROCEDURAL | gameplay paths with presentation treatment | Authored terrain blending while preserving gameplay paths |
-| Greek ships | PROCEDURAL | expanded galley candidate | Authored ship model kit with variants/LOD |
-| Landing debris | PROCEDURAL | crates/shields/oars/standard | Authored beachhead prop kit |
-| Greek camp | PROCEDURAL | campfires/standards/minimal props | Authored tent/supply/weapon-rack kit |
-| Troy wall | PROCEDURAL | fortified wall-wing presentation | Authored modular wall kit |
-| Troy gatehouse | PROCEDURAL | layered gate complex | Authored gatehouse prefab/mesh |
-| Troy towers | PROCEDURAL | enhanced hero towers | Authored modular tower set |
-| Troy skyline | PROCEDURAL | houses/citadel/temple/inner wall | Authored low-cost city kit |
-| Braziers | PROCEDURAL | readable flame focal props | Authored brazier + final VFX anchor |
-| Banners | PROCEDURAL | runtime cloth blocks/poles | Authored cloth/banner variants |
-| Vegetation / rocks | PROCEDURAL / generic | runtime dressing | Authored environment prop kit |
-
-**Chapter I environment DONE count: 0.**
-
----
-
-# Full campaign model bank
-
-## Greek / Achaean regular units
-
-| Asset | First use | Status | Candidate / requirement |
+| Asset | First use | Status | Current candidate |
 |---|---:|---|---|
-| Infantry | I | GENERATED PLACEHOLDER | Chapter I candidate exists |
-| Archer | I | GENERATED PLACEHOLDER | bow candidate exists |
-| Spearman | I/II | GENERATED PLACEHOLDER | `Enemy_Spearman` explicit campaign candidate |
-| Light Swordsman | II | GENERATED PLACEHOLDER | `Enemy_LightSwordsman` candidate |
-| Shield Bearer | I | GENERATED PLACEHOLDER | Chapter I candidate |
-| Hoplite | II | GENERATED PLACEHOLDER | `Enemy_Hoplite` candidate |
-| Heavy Hoplite | I | GENERATED PLACEHOLDER | Chapter I heavy candidate |
-| Scout | II | GENERATED PLACEHOLDER | `Enemy_Scout` candidate |
-| Runner | I/II | GENERATED PLACEHOLDER | Chapter I candidate |
-| Chariot | II | PROCEDURAL | `Vehicle_Chariot` candidate with two horse silhouettes, wheels/yoke and Greek crew |
-| Ram Crew | III | GENERATED PLACEHOLDER | `Enemy_RamCrew` candidate |
-| Battering Ram | III | PROCEDURAL | `Siege_BatteringRam` candidate with frame, suspended beam, bronze head, wheels, hide roof, crew |
-| Siege Tower | III | PROCEDURAL | `Siege_SiegeTower` candidate with wheels, ladder, hide front, fighting platform |
-| Sapper | III/V | GENERATED PLACEHOLDER | `Enemy_Sapper` candidate with satchel/tool silhouette |
-| Myrmidon | IV | GENERATED PLACEHOLDER | `Enemy_Myrmidon` black/bronze elite candidate |
-| Myrmidon Veteran | IV/V | GENERATED PLACEHOLDER | `Enemy_MyrmidonVeteran` candidate |
-| Greek Captain | IV/V | GENERATED PLACEHOLDER | `Enemy_GreekCaptain` commander candidate |
-| Hero Companion | IV/V | GENERATED PLACEHOLDER | `Enemy_HeroCompanion` elite candidate |
+| Infantry | I | GENERATED PLACEHOLDER | `Enemy_Infantry` |
+| Archer | I | GENERATED PLACEHOLDER | `Enemy_Archer`, bow/quiver candidate |
+| Spearman | I/II | GENERATED PLACEHOLDER | `Enemy_Spearman` |
+| Light Swordsman | II | GENERATED PLACEHOLDER | `Enemy_LightSwordsman` |
+| Shield Bearer | I | GENERATED PLACEHOLDER | `Enemy_ShieldBearer` |
+| Hoplite | II | GENERATED PLACEHOLDER | `Enemy_Hoplite` |
+| Heavy Hoplite | I | GENERATED PLACEHOLDER | `Enemy_HeavyHoplite`, spear + heavy shield |
+| Scout | II | GENERATED PLACEHOLDER | `Enemy_Scout` |
+| Runner | I/II | GENERATED PLACEHOLDER | `Enemy_Runner` |
+| Chariot | II | PROCEDURAL + SOURCE ONLY | `Vehicle_Chariot`; pinned animated CC0 horse FBX installer + chariot horse builder exist; generated result still requires Unity import/QA |
+| Ram Crew | III | GENERATED PLACEHOLDER | `Enemy_RamCrew` |
+| Battering Ram | III | PROCEDURAL | `Siege_BatteringRam` |
+| Siege Tower | III | PROCEDURAL | `Siege_SiegeTower` |
+| Sapper | III/V | GENERATED PLACEHOLDER | `Enemy_Sapper` |
+| Myrmidon | IV | GENERATED PLACEHOLDER | `Enemy_Myrmidon` |
+| Myrmidon Veteran | IV/V | GENERATED PLACEHOLDER | `Enemy_MyrmidonVeteran` |
+| Greek Captain | IV/V | GENERATED PLACEHOLDER | `Enemy_GreekCaptain` |
+| Hero Companion | IV/V | GENERATED PLACEHOLDER | `Enemy_HeroCompanion` |
 
-## Trojan units
+**Roster candidate coverage: complete for the current GDD. Final authored coverage: incomplete.**
 
-| Asset | Status | Candidate / requirement |
+## Trojan units / support
+
+| Asset | Status | Current candidate |
 |---|---|---|
-| Trojan Infantry | GENERATED PLACEHOLDER | Chapter I candidate |
-| Trojan Guard | GENERATED PLACEHOLDER | Chapter I candidate |
-| Trojan Archer | GENERATED PLACEHOLDER | Chapter I candidate |
-| Spear Wall soldiers | GENERATED PLACEHOLDER / PROCEDURAL | crew candidates exist; final formation animation missing |
-| Ballista crew | GENERATED PLACEHOLDER | Trojan operator candidate exists |
-| Priests of Apollo | PROCEDURAL | readable attendants exist; final character mesh absent |
-| Fire Tower crew | PROCEDURAL | Fire Keeper silhouette exists |
-| Civilians | GENERATED PLACEHOLDER | `Trojan_Civilian` candidate for Chapter VII evacuation |
+| Trojan Infantry | GENERATED PLACEHOLDER | `Trojan_Infantry` |
+| Trojan Guard | GENERATED PLACEHOLDER | `Trojan_Guard` |
+| Trojan Archer | GENERATED PLACEHOLDER | `Trojan_Archer` |
+| Spear Wall soldiers | GENERATED PLACEHOLDER + PROCEDURAL | Trojan infantry crew + procedural post |
+| Ballista crew | GENERATED PLACEHOLDER | `Trojan_BallistaCrew`; production candidate preferred when generated |
+| Priests of Apollo | GENERATED PLACEHOLDER + PROCEDURAL | `Trojan_PriestApollo` + procedural shrine |
+| Fire Tower crew | GENERATED PLACEHOLDER + PROCEDURAL | `Trojan_FireKeeper` + procedural fire defense |
+| Civilians | GENERATED PLACEHOLDER | base civilian plus `Worker`, `Elder`, `Young` variant builders |
 
 ## Named heroes / bosses
 
-| Character | Main chapter | Status | Candidate / requirement |
+| Character | Chapter | Status | Current candidate |
 |---|---:|---|---|
-| Hector | I–VII | GENERATED PLACEHOLDER | Chapter I hero candidate |
-| Menelaus | I | GENERATED PLACEHOLDER | Chapter I boss candidate |
-| Achilles | IV/V | GENERATED PLACEHOLDER | hero candidate generated from base pipeline |
-| Ajax | IV | GENERATED PLACEHOLDER | `Hero_Ajax` candidate with oversized shield/hero silhouette |
-| Odysseus | VII | GENERATED PLACEHOLDER | `Hero_Odysseus` cloak/satchel candidate |
+| Hector | I–VII | GENERATED PLACEHOLDER | Bronze Age hero candidate + shared Animator candidate |
+| Menelaus | I | GENERATED PLACEHOLDER | commander/boss candidate |
+| Achilles | IV/V | GENERATED PLACEHOLDER | hero candidate |
+| Ajax | IV | GENERATED PLACEHOLDER | oversized-shield hero candidate |
+| Odysseus | VII | GENERATED PLACEHOLDER | cloak/satchel hero candidate |
 
-## Mythic / narrative assets
+## Mythic / narrative
 
-| Asset | Chapter | Status | Candidate / requirement |
+| Asset | Chapter | Status | Current candidate |
 |---|---:|---|---|
-| Cyclops | Later | MISSING | No dedicated candidate yet |
-| Trojan Horse | VI/VII | PROCEDURAL | `Prop_TrojanHorse` large wooden-horse candidate with hatch |
+| Cyclops | Later | GENERATED PLACEHOLDER | `Mythic_Cyclops`, giant kitbash candidate |
+| Trojan Horse | VI/VII | PROCEDURAL | `Prop_TrojanHorse`, large wooden horse with visible hatch |
 
 ---
 
-# Campaign environment / structure inventory
+# Tower-Units
 
-| Asset family | First chapter | Status | Current state / requirement |
-|---|---:|---|---|
-| Coastal terrain kit | I | PROCEDURAL | staged; final authored coast kit missing |
-| Greek ship kit | I | PROCEDURAL | galley candidate exists; authored variants missing |
-| Greek beach camp | I | PROCEDURAL | partial staging; authored camp kit missing |
-| Trojan wall/gate kit | I/III | PROCEDURAL | strong candidate staging; authored modular kit missing |
-| Plains/road terrain kit | II | MISSING | still needs dedicated Chapter II environment candidate |
-| Chariot vehicle | II | PROCEDURAL | `Vehicle_Chariot` candidate exists |
-| Siege prop kit | III | PROCEDURAL | ram + siege tower candidates exist; final models/destruction states missing |
-| Damaged outer defenses | IV | MISSING | no dedicated environment kit yet |
-| Great Assault destruction states | V | MISSING | no authored/candidate destruction kit yet |
-| Greek abandoned camp / Horse scene | VI | PROCEDURAL / MISSING | Horse candidate exists; abandoned-camp environment still missing |
-| Troy interior | VII | MISSING | modular interior city kit still missing |
-| Burning Troy states | VII | MISSING | burning/collapse/blocked-street variants still missing |
+| Asset | Status | Current implementation | Remaining to DONE |
+|---|---|---|---|
+| Archer Post | PROCEDURAL + GENERATED PLACEHOLDER crew | wood/bronze post + Trojan Archers | Authored structure, bow animations, final materials |
+| Ballista | PROCEDURAL + GENERATED PLACEHOLDER crew | readable mechanism + `Trojan_BallistaCrew` candidate | Authored mechanism/string/bolt/reload/fire cycle |
+| Priests of Apollo | PROCEDURAL + GENERATED PLACEHOLDER crew | shrine + `Trojan_PriestApollo` candidates | Final shrine/priests/support animation/VFX |
+| Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew | spear defense + infantry crew | Final formation/poke/block art |
+| Fire Tower | PROCEDURAL + GENERATED PLACEHOLDER crew | brazier/pitch/flame + `Trojan_FireKeeper` | Final tower/props/keeper animation |
+| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew | platform/banners + Guards | Final station/shield-wall animation |
+| Level 2/3 differentiation | PROCEDURAL | runtime upgrade visual markers via `TowerProductionArtBinder` | Authored per-tower L2/L3 meshes and specialization variants |
+
+**Tower-Unit DONE count: 0.**
 
 ---
 
-# Animation inventory
+# Environment / structure coverage
+
+| Asset family | First chapter | Status | Current candidate |
+|---|---:|---|---|
+| Coastal terrain / shoreline | I | PROCEDURAL | sea, wet sand, beach/dunes/rocks/scrub presentation |
+| Greek ship kit | I | PROCEDURAL | expanded Achaean galley candidate; final variants/LOD missing |
+| Greek beach camp | I | PROCEDURAL | campfires/standards/landing props |
+| Trojan wall/gate/skyline | I/III | PROCEDURAL | fortified gatehouse, wall wings, towers, citadel/temple skyline |
+| Plains / road terrain | II | PROCEDURAL | `Env_PlainsRoadSegment`, junction, roadside set |
+| Siege breach / staging | III | PROCEDURAL | wall breach, ladder/shield/tool staging |
+| Damaged outer defenses | IV | PROCEDURAL | `Env_DamagedOuterDefense` |
+| Great Assault destruction | V | PROCEDURAL | destroyed build node + damaged/collapsed wall state |
+| Abandoned Greek camp | VI | PROCEDURAL | `Env_AbandonedGreekCamp` |
+| Trojan Horse plaza | VI | PROCEDURAL | ceremonial plaza candidate |
+| Troy interior | VII | PROCEDURAL | house + street modules |
+| Burning / collapsed Troy | VII | PROCEDURAL | burning house, collapsed house, evacuation street |
+
+**Environment candidate coverage now exists for Chapters I–VII. Final authored environment coverage remains incomplete.**
+
+---
+
+# Animation / mechanism coverage
 
 | Animation set | Status | Remaining |
 |---|---|---|
-| Generic Greek locomotion | GENERATED PLACEHOLDER | shared KayKit controller candidate; final clip selection/QA |
-| Greek melee attack | GENERATED PLACEHOLDER | candidate trigger/controller exists; final weapon-specific attack clips |
-| Greek ranged attack | GENERATED PLACEHOLDER | candidate trigger/controller exists; final bow draw/release |
-| Greek hit/death | GENERATED PLACEHOLDER | candidate hit/death states exist; visual QA/final clips |
-| Hector locomotion | GENERATED PLACEHOLDER | shared controller candidate; hero-specific final pass |
-| Hector Q/E/R/F | PROCEDURAL VFX + gameplay | authored body animations still needed |
-| Hector down/revive | GENERATED PLACEHOLDER | candidate downed state; final hero clips needed |
-| Menelaus combat/death | GENERATED PLACEHOLDER | shared candidate controller; boss-specific final clips needed |
-| Trojan Guard block/melee | GENERATED PLACEHOLDER / hook | final formation/block attack clips needed |
+| Generic Greek locomotion/melee/hit/death | GENERATED PLACEHOLDER | shared KayKit controller candidate; final weapon-specific clips/QA |
+| Greek bow attack | GENERATED PLACEHOLDER | final draw/release animation |
+| Hector locomotion/downed | GENERATED PLACEHOLDER | hero-specific final clips |
+| Hector Q/E/R/F | PROCEDURAL VFX + gameplay | authored body animations |
+| Menelaus combat/death | GENERATED PLACEHOLDER | boss-specific clips |
+| Trojan Guard block/melee | GENERATED PLACEHOLDER / hook | final formation/block/melee clips |
 | Ballista mechanism | MISSING | reload/tension/fire/recoil animation |
 | Battering Ram cycle | MISSING | push/impact/recover animation |
 | Siege Tower movement | MISSING | wheel/movement/assault animation |
-| Chariot movement/combat | MISSING | horse/chariot animation solution |
+| Chariot horse locomotion | SOURCE ONLY + generator | pinned Quaternius FBX installer and controller generator exist; Unity import/clip/orientation QA still required |
 
 ---
 
-# Production priorities
+# Remaining genuine model/art gaps
 
-## P0 — Chapter I freeze
+The campaign no longer has a major GDD roster item with no candidate at all. The remaining gaps are production-quality gaps rather than missing roster entries:
 
-Candidate/presentation passes are implemented for:
+1. final authored hero/enemy meshes/materials;
+2. final authored Tower-Unit structures and L2/L3/specialization variants;
+3. final Ballista/Ram/Siege Tower mechanisms and animations;
+4. final chariot integration after real horse FBX import and visual QA;
+5. authored Greek ship variants/LOD;
+6. final civilian variants and evacuation animations;
+7. authored intact/damaged/destroyed/burning states for walls, gates, buildings, siege objects and key narrative props;
+8. final authored terrain/environment modules for all chapters;
+9. real gameplay-camera and Play Mode QA.
 
-1. Hector;
-2. Menelaus;
-3. Greek Chapter I regular roster;
-4. Trojan Guard / Archer / Infantry;
-5. all six Tower-Unit presentations;
-6. Greek landing/galley presentation;
-7. Troy wall/gate/skyline presentation;
-8. production-first decorative landing units;
-9. shared character animation-controller candidate.
+---
 
-Still required before Chapter I art can be called finished:
+# Reproducible builders
 
-1. final authored character meshes/materials;
-2. final authored Tower-Unit models;
-3. authored coast/ship/Troy environment kit;
-4. hero/boss/tower-specific final animation pass;
-5. 16:9 real Play Mode visual QA, including RU UI;
-6. collider/material/shader validation in the actual Unity build.
+Current candidate pipeline includes:
 
-## P1 — Chapter II/III
+- `CartoonCharacterPrefabBuilder` — Chapter I character candidates;
+- `ChapterOneCharacterAnimationBuilder` — shared character Animator candidate;
+- `CampaignArtCandidateBuilder` — later Greek/Trojan/heroes/chariot/siege/Trojan Horse candidates;
+- `MythicAndSupportArtCandidateBuilder` — Priest, Fire Keeper, Ballista Crew, Cyclops;
+- `CampaignEnvironmentCandidateBuilder` — Chapter II–VII environment candidates;
+- `CampaignCivilianVariantBuilder` — Worker/Elder/Young civilians;
+- `CampaignHorseSourceInstaller` — pinned/integrity-checked animated CC0 horse source installer;
+- `CampaignChariotHorseBuilder` — replaces primitive chariot horses with imported animated source and builds a locomotion controller;
+- `ModelGapClosureBuilder` — one-shot full candidate-set build.
 
-Candidate bank now exists for Spearman, Scout, Light Swordsman, Hoplite, Chariot, Ram Crew, Battering Ram, Siege Tower and Sapper.
-
-Still missing at model/environment level:
-
-- final authored versions of those candidates;
-- Chapter II plains/roads environment;
-- expanded Chapter III wall damage/breach states;
-- mechanism/vehicle animations.
-
-## P2 — Chapter IV/V
-
-Candidate bank now exists for:
-
-- Achilles;
-- Ajax;
-- Myrmidon;
-- Myrmidon Veteran;
-- Greek Captain;
-- Hero Companion.
-
-Still missing:
-
-- final authored hero/elite models;
-- outer-defense environment kit;
-- large-siege/destruction states;
-- encounter-specific animation/cinematics.
-
-## P3 — Chapter VI/VII
-
-Candidate bank now exists for:
-
-- Trojan Horse;
-- Odysseus;
-- Trojan Civilian.
-
-Still missing:
-
-- final Trojan Horse hero prop;
-- final Odysseus model/animations;
-- civilian variants/evacuation animations;
-- abandoned Greek camp environment;
-- Troy interior modular kit;
-- burning/collapse states.
+Horse provenance is documented in `docs/third_party/QUATERNIUS_HORSE.md`.
 
 ---
 
@@ -365,25 +169,17 @@ Still missing:
 
 An asset can move to `DONE` only when all applicable checks pass:
 
-1. Final mesh/prefab exists in `Assets/Game/Art/...`.
-2. Unity `.meta` files are tracked.
-3. Third-party provenance/license is documented when applicable.
-4. Runtime references the final production prefab instead of relying on placeholder/procedural fallback.
-5. Collider setup is intentional; decorative variants cannot affect gameplay physics.
-6. Materials/textures follow `ART_BIBLE.md` faction palette and render correctly.
-7. Silhouette is readable from the gameplay camera.
-8. Required animation is connected to runtime presentation hooks.
-9. No missing-material/pink-shader state exists in the target render pipeline.
-10. Asset has passed real Play Mode QA at target 16:9 layouts and relevant EN/RU framing.
+1. final mesh/prefab exists under `Assets/Game/Art/...`;
+2. Unity `.meta` is tracked;
+3. third-party provenance/license is documented where applicable;
+4. runtime uses the final production prefab rather than a placeholder/procedural fallback;
+5. collider setup is intentional and decorative variants cannot affect gameplay physics;
+6. materials/textures follow `ART_BIBLE.md` and render correctly;
+7. silhouette is readable from the gameplay camera;
+8. required animations are connected to runtime presentation hooks;
+9. no missing-material/pink-shader state exists;
+10. real Play Mode QA passes at target 16:9 layouts and relevant EN/RU framing.
 
-## AI implementation rule
+## AI reporting rule
 
-AI agents must use this inventory when reporting art/model completion and must never call an asset finished merely because:
-
-- an editor builder can generate it;
-- a KayKit source model exists;
-- a runtime fallback renders something;
-- a procedural candidate looks recognizable;
-- the GDD/Art Bible specifies it.
-
-Use the exact inventory status until a newer verified change updates this file.
+Never call an asset finished solely because a builder can generate it, a source model exists, a runtime fallback renders it, or this inventory lists a candidate. Use `DONE` only after the full acceptance gate passes.
