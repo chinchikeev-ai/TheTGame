@@ -1,0 +1,10 @@
+{
+  "playModeVisualQa": false,
+  "englishFramingQa": false,
+  "russianFramingQa": false,
+  "towerUnitVisualQa": false,
+  "environmentVisualQa": false,
+  "animationVisualQa": false,
+  "referenceResolution": "1920x1080",
+  "notes": "Set QA flags only after a real Chapter I Play Mode visual pass."
+}
