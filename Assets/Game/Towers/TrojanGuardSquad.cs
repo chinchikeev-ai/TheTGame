@@ -5,6 +5,7 @@ public class TrojanGuardSquad : MonoBehaviour
 {
     static readonly List<TrojanGuardSquad> all = new List<TrojanGuardSquad>();
     readonly HashSet<Enemy> blockedEnemies = new HashSet<Enemy>();
+    readonly List<Enemy> cleanupBuffer = new List<Enemy>(4);
 
     public static IReadOnlyList<TrojanGuardSquad> All => all;
 
@@ -95,26 +96,22 @@ public class TrojanGuardSquad : MonoBehaviour
         int capacity = Mathf.Max(0, blockCapacity);
         if (blockedEnemies.Count >= capacity) return;
 
-        List<Enemy> candidates = new List<Enemy>();
         float radiusSq = blockRadius * blockRadius;
-        foreach (Enemy enemy in EnemyRegistry.All)
+        while (blockedEnemies.Count < capacity)
         {
-            if (enemy == null || !enemy.IsAlive || blockedEnemies.Contains(enemy)) continue;
-            float distanceSq = (enemy.transform.position - transform.position).sqrMagnitude;
-            if (distanceSq <= radiusSq) candidates.Add(enemy);
-        }
+            Enemy nearest = null;
+            float nearestSq = radiusSq;
 
-        candidates.Sort((a, b) =>
-        {
-            float da = (a.transform.position - transform.position).sqrMagnitude;
-            float db = (b.transform.position - transform.position).sqrMagnitude;
-            return da.CompareTo(db);
-        });
+            foreach (Enemy enemy in EnemyRegistry.All)
+            {
+                if (enemy == null || !enemy.IsAlive || enemy.IsBlockedByGuard || blockedEnemies.Contains(enemy)) continue;
+                float distanceSq = (enemy.transform.position - transform.position).sqrMagnitude;
+                if (distanceSq > nearestSq) continue;
+                nearestSq = distanceSq;
+                nearest = enemy;
+            }
 
-        foreach (Enemy enemy in candidates)
-        {
-            if (blockedEnemies.Count >= capacity) break;
-            enemy.TrySetBlockedByGuard(this);
+            if (nearest == null || !nearest.TrySetBlockedByGuard(this)) break;
         }
     }
 
@@ -123,19 +120,22 @@ public class TrojanGuardSquad : MonoBehaviour
         if (blockedEnemies.Count == 0) return;
         float releaseRadius = blockRadius * 1.35f;
         float releaseRadiusSq = releaseRadius * releaseRadius;
-        List<Enemy> snapshot = new List<Enemy>(blockedEnemies);
-        foreach (Enemy enemy in snapshot)
-        {
-            if (enemy == null)
-            {
-                blockedEnemies.Remove(enemy);
-                continue;
-            }
 
-            bool valid = IsAlive && enemy.IsAlive &&
+        cleanupBuffer.Clear();
+        foreach (Enemy enemy in blockedEnemies)
+        {
+            bool valid = enemy != null && IsAlive && enemy.IsAlive &&
                          (enemy.transform.position - transform.position).sqrMagnitude <= releaseRadiusSq;
-            if (!valid) enemy.ClearBlockedByGuard(this);
+            if (!valid) cleanupBuffer.Add(enemy);
         }
+
+        for (int i = 0; i < cleanupBuffer.Count; i++)
+        {
+            Enemy enemy = cleanupBuffer[i];
+            if (enemy == null) blockedEnemies.Remove(enemy);
+            else enemy.ClearBlockedByGuard(this);
+        }
+        cleanupBuffer.Clear();
     }
 
     Enemy FindNearestBlockedEnemy()
@@ -156,10 +156,16 @@ public class TrojanGuardSquad : MonoBehaviour
     void ReleaseAll()
     {
         if (blockedEnemies.Count == 0) return;
-        List<Enemy> snapshot = new List<Enemy>(blockedEnemies);
-        foreach (Enemy enemy in snapshot)
+
+        cleanupBuffer.Clear();
+        foreach (Enemy enemy in blockedEnemies) cleanupBuffer.Add(enemy);
+        for (int i = 0; i < cleanupBuffer.Count; i++)
+        {
+            Enemy enemy = cleanupBuffer[i];
             if (enemy != null) enemy.ClearBlockedByGuard(this);
+        }
         blockedEnemies.Clear();
+        cleanupBuffer.Clear();
     }
 
     public void TakeDamage(float amount)

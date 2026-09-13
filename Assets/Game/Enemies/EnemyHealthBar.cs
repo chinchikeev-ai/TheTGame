@@ -3,20 +3,24 @@ using UnityEngine;
 public class EnemyHealthBar : MonoBehaviour
 {
     Enemy enemy;
+    Camera targetCamera;
+    Transform back;
     Transform fill;
     Vector3 fillBaseScale;
 
     void Start()
     {
         enemy = GetComponent<Enemy>();
+        targetCamera = Camera.main;
 
-        GameObject back = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        back.name = "HP_Back";
-        back.transform.SetParent(transform);
-        back.transform.localPosition = new Vector3(0f, 1.65f, 0f);
-        back.transform.localScale = new Vector3(1.15f, 0.10f, 0.08f);
-        Destroy(back.GetComponent<Collider>());
-        SetColor(back, new Color(0.12f, 0.12f, 0.12f));
+        GameObject backObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        backObj.name = "HP_Back";
+        backObj.transform.SetParent(transform);
+        backObj.transform.localPosition = new Vector3(0f, 1.65f, 0f);
+        backObj.transform.localScale = new Vector3(1.15f, 0.10f, 0.08f);
+        Destroy(backObj.GetComponent<Collider>());
+        TowerFactory.SetColor(backObj, new Color(0.12f, 0.12f, 0.12f));
+        back = backObj.transform;
 
         GameObject fillObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         fillObj.name = "HP_Fill";
@@ -24,7 +28,7 @@ public class EnemyHealthBar : MonoBehaviour
         fillObj.transform.localPosition = new Vector3(0f, 1.65f, -0.055f);
         fillObj.transform.localScale = new Vector3(1.05f, 0.065f, 0.06f);
         Destroy(fillObj.GetComponent<Collider>());
-        SetColor(fillObj, new Color(0.20f, 0.90f, 0.25f));
+        TowerFactory.SetColor(fillObj, new Color(0.20f, 0.90f, 0.25f));
 
         fill = fillObj.transform;
         fillBaseScale = fill.localScale;
@@ -33,10 +37,13 @@ public class EnemyHealthBar : MonoBehaviour
 
     void LateUpdate()
     {
-        if (Camera.main == null) return;
-        Vector3 euler = Camera.main.transform.eulerAngles;
-        transform.GetChild(transform.childCount - 2).rotation = Quaternion.Euler(euler.x, euler.y, 0f);
-        transform.GetChild(transform.childCount - 1).rotation = Quaternion.Euler(euler.x, euler.y, 0f);
+        if (targetCamera == null) targetCamera = Camera.main;
+        if (targetCamera == null) return;
+
+        Vector3 euler = targetCamera.transform.eulerAngles;
+        Quaternion rotation = Quaternion.Euler(euler.x, euler.y, 0f);
+        if (back != null) back.rotation = rotation;
+        if (fill != null) fill.rotation = rotation;
     }
 
     public void Refresh()
@@ -49,15 +56,5 @@ public class EnemyHealthBar : MonoBehaviour
         scale.x = fillBaseScale.x * ratio;
         fill.localScale = scale;
         fill.localPosition = new Vector3(-(fillBaseScale.x - scale.x) * 0.5f, 1.65f, -0.055f);
-    }
-
-    static void SetColor(GameObject obj, Color color)
-    {
-        Renderer r = obj.GetComponent<Renderer>();
-        if (r == null) return;
-
-        Material material = r.material;
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
     }
 }

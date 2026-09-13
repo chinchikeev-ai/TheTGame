@@ -3,6 +3,9 @@ using UnityEngine;
 public static class TowerFactory
 {
     const string RuntimeMaterialResource = "RuntimeColorMaterial";
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    static readonly int ColorId = Shader.PropertyToID("_Color");
+    static readonly MaterialPropertyBlock ColorBlock = new MaterialPropertyBlock();
     static Material runtimeMaterialTemplate;
 
     public static int GetCost(TowerType type) => BalanceCatalog.GetTower(type).cost;
@@ -40,10 +43,14 @@ public static class TowerFactory
     {
         Renderer renderer = obj.GetComponent<Renderer>();
         if (renderer == null) return;
-        Material material = new Material(GetRuntimeMaterialTemplate());
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
-        renderer.material = material;
+
+        Material material = GetRuntimeMaterialTemplate();
+        if (material != null) renderer.sharedMaterial = material;
+
+        ColorBlock.Clear();
+        ColorBlock.SetColor(BaseColorId, color);
+        ColorBlock.SetColor(ColorId, color);
+        renderer.SetPropertyBlock(ColorBlock);
     }
 
     static Material GetRuntimeMaterialTemplate()
@@ -51,8 +58,9 @@ public static class TowerFactory
         if (runtimeMaterialTemplate != null) return runtimeMaterialTemplate;
         runtimeMaterialTemplate = Resources.Load<Material>(RuntimeMaterialResource);
         if (runtimeMaterialTemplate != null) return runtimeMaterialTemplate;
+
         Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-        runtimeMaterialTemplate = new Material(shader);
+        if (shader != null) runtimeMaterialTemplate = new Material(shader);
         return runtimeMaterialTemplate;
     }
 }

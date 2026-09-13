@@ -22,5 +22,10 @@ public class GameStateController : MonoBehaviour
         Instance = this;
     }
 
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     public void SetState(GameState state) => State = state;
 }

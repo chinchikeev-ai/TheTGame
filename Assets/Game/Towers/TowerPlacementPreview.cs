@@ -2,8 +2,15 @@ using UnityEngine;
 
 public sealed class TowerPlacementPreview : MonoBehaviour
 {
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    static readonly int ColorId = Shader.PropertyToID("_Color");
+
+    readonly MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
     GameObject ghost;
+    Renderer[] renderers = System.Array.Empty<Renderer>();
     TowerType currentType;
+    bool hasState;
+    bool lastValid;
 
     public void Show(BuildPoint point, TowerType type, bool valid)
     {
@@ -19,7 +26,13 @@ public sealed class TowerPlacementPreview : MonoBehaviour
         currentType = type;
         ghost.SetActive(true);
         ghost.transform.position = point.transform.position + Vector3.up * .5f;
-        SetGhostState(valid);
+
+        if (!hasState || lastValid != valid)
+        {
+            SetGhostState(valid);
+            hasState = true;
+            lastValid = valid;
+        }
     }
 
     public void Hide()
@@ -32,6 +45,7 @@ public sealed class TowerPlacementPreview : MonoBehaviour
         if (ghost != null) Destroy(ghost);
         ghost = TowerFactory.CreateTower(Vector3.zero, type, "PlacementGhost");
         currentType = type;
+        hasState = false;
 
         MonoBehaviour[] behaviours = ghost.GetComponentsInChildren<MonoBehaviour>(true);
         for (int i = 0; i < behaviours.Length; i++)
@@ -41,7 +55,7 @@ public sealed class TowerPlacementPreview : MonoBehaviour
         for (int i = 0; i < colliders.Length; i++)
             colliders[i].enabled = false;
 
-        Renderer[] renderers = ghost.GetComponentsInChildren<Renderer>(true);
+        renderers = ghost.GetComponentsInChildren<Renderer>(true);
         for (int i = 0; i < renderers.Length; i++)
         {
             Material material = renderers[i].material;
@@ -55,14 +69,17 @@ public sealed class TowerPlacementPreview : MonoBehaviour
 
     void SetGhostState(bool valid)
     {
-        if (ghost == null) return;
         Color tint = valid ? new Color(.35f, 1f, .45f, .42f) : new Color(1f, .26f, .18f, .42f);
-        Renderer[] renderers = ghost.GetComponentsInChildren<Renderer>(true);
+        colorBlock.Clear();
+        colorBlock.SetColor(BaseColorId, tint);
+        colorBlock.SetColor(ColorId, tint);
+
         for (int i = 0; i < renderers.Length; i++)
-        {
-            Material material = renderers[i].material;
-            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", tint);
-            if (material.HasProperty("_Color")) material.SetColor("_Color", tint);
-        }
+            if (renderers[i] != null) renderers[i].SetPropertyBlock(colorBlock);
+    }
+
+    void OnDestroy()
+    {
+        if (ghost != null) Destroy(ghost);
     }
 }

@@ -1,14 +1,16 @@
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class TowerPlacement : MonoBehaviour
 {
+    const int PointerHitCapacity = 64;
+
     public Camera gameCamera;
     public TowerType SelectedBuildType { get; private set; } = TowerType.SpearThrower;
     public Tower SelectedTower { get; private set; }
     public bool BuildModeActive { get; private set; }
 
+    readonly RaycastHit[] pointerHits = new RaycastHit[PointerHitCapacity];
     BuildPoint hoveredPoint;
     TowerRangeIndicator rangeIndicator;
     TowerPlacementPreview placementPreview;
@@ -82,16 +84,7 @@ public class TowerPlacement : MonoBehaviour
         }
 
         Ray ray = gameCamera.ScreenPointToRay(pointer);
-        RaycastHit[] hits = Physics.RaycastAll(ray, 250f).OrderBy(h => h.distance).ToArray();
-
-        BuildPoint newPoint = null;
-        Tower hoveredTower = null;
-        foreach (RaycastHit hit in hits)
-        {
-            if (hoveredTower == null) hoveredTower = hit.collider.GetComponentInParent<Tower>();
-            if (BuildModeActive && newPoint == null) newPoint = hit.collider.GetComponentInParent<BuildPoint>();
-            if (hoveredTower != null || newPoint != null) break;
-        }
+        FindPointerTarget(ray, out Tower hoveredTower, out BuildPoint newPoint);
 
         if (hoveredPoint != newPoint)
         {
@@ -154,6 +147,28 @@ public class TowerPlacement : MonoBehaviour
             {
                 RuntimeEffects.Instance?.PlayBuildDenied(hoveredPoint.transform.position + Vector3.up * .2f);
             }
+        }
+    }
+
+    void FindPointerTarget(Ray ray, out Tower tower, out BuildPoint point)
+    {
+        tower = null;
+        point = null;
+        float closestDistance = float.PositiveInfinity;
+        int hitCount = Physics.RaycastNonAlloc(ray, pointerHits, 250f);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = pointerHits[i];
+            if (hit.collider == null || hit.distance >= closestDistance) continue;
+
+            Tower candidateTower = hit.collider.GetComponentInParent<Tower>();
+            BuildPoint candidatePoint = BuildModeActive ? hit.collider.GetComponentInParent<BuildPoint>() : null;
+            if (candidateTower == null && candidatePoint == null) continue;
+
+            closestDistance = hit.distance;
+            tower = candidateTower;
+            point = candidatePoint;
         }
     }
 
