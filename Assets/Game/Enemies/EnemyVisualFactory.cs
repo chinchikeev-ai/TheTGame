@@ -25,6 +25,8 @@ public static class EnemyVisualFactory
         }
 
         instance.name = data != null ? data.displayName : "Enemy";
+        if (archetype == EnemyArchetype.Boss)
+            HeroSignatureArt.Enhance(instance, TroyHeroId.Menelaus);
         EnemyMotionAnimator.Attach(instance, archetype);
         return instance;
     }
