@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
+    static readonly Dictionary<TowerType, Material> TrailMaterials = new Dictionary<TowerType, Material>();
+
     Enemy target;
     float damage;
     float speed;
@@ -9,6 +12,7 @@ public class Projectile : MonoBehaviour
     float slowMultiplier = 1f;
     float slowDuration;
     TowerType sourceType;
+
     public void Init(Enemy newTarget, float newDamage, float newSpeed, float newSplashRadius = 0f, float newSlowMultiplier = 1f, float newSlowDuration = 0f, TowerType newSourceType = TowerType.MachineGun)
     {
         target = newTarget;
@@ -41,6 +45,8 @@ public class Projectile : MonoBehaviour
     void Impact(Vector3 point)
     {
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(point + Vector3.up * .4f, splashRadius > .01f);
+        CombatImpactPresentation.ProjectileHit(point + Vector3.up * .15f, sourceType);
+
         if (splashRadius > .01f)
         {
             foreach (Enemy enemy in EnemyRegistry.All)
@@ -71,12 +77,12 @@ public class Projectile : MonoBehaviour
 
         TrailRenderer trail = gameObject.AddComponent<TrailRenderer>();
         trail.time = sourceType == TowerType.FireTower ? .42f : .26f;
-        trail.startWidth = sourceType == TowerType.Cannon ? .26f : .15f;
+        trail.startWidth = sourceType == TowerType.Cannon ? .26f : sourceType == TowerType.SpearThrower ? .10f : .15f;
         trail.endWidth = 0f;
         trail.numCornerVertices = 3;
         trail.numCapVertices = 4;
         trail.minVertexDistance = .04f;
-        trail.material = MakeTrailMaterial(core);
+        trail.material = GetTrailMaterial(sourceType, core);
         trail.startColor = new Color(core.r, core.g, core.b, .78f);
         trail.endColor = new Color(core.r, core.g, core.b, 0f);
 
@@ -115,16 +121,20 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    static Material MakeTrailMaterial(Color color)
+    static Material GetTrailMaterial(TowerType type, Color color)
     {
+        if (TrailMaterials.TryGetValue(type, out Material cached) && cached != null) return cached;
+
         Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
             ?? Shader.Find("Universal Render Pipeline/Unlit")
             ?? Shader.Find("Sprites/Default")
             ?? Shader.Find("Standard");
         Material material = new Material(shader);
+        material.name = $"ProjectileTrail_{type}";
         if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color")) material.SetColor("_Color", color);
         if (material.HasProperty("_TintColor")) material.SetColor("_TintColor", color);
+        TrailMaterials[type] = material;
         return material;
     }
 }
