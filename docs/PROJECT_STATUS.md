@@ -41,6 +41,8 @@ Last reviewed: 2026-09-13
 - Chapter I pacing contract asserts auto-start target remains inside 11–13 minutes
 - Chapter I 1x playthrough reporter: implemented; writes per-run JSON plus per-wave CSV under `Application.persistentDataPath/Logs`
 - playthrough report captures result, pacing verdict, score, kills/leaks, economy, gate HP, tower counts, Menelaus outcome, average FPS and per-wave target/actual duration, economy deltas and peak alive-enemy pressure
+- Chapter I RC playthrough analyzer: implemented as `TheTroyGame/Validation/Analyze Latest Chapter I Playthrough`; reads the newest reporter JSON, generates `ChapterI_RC_Analysis_*.md`, assigns PASS/WARN/FAIL findings and gives wave-local tuning actions for pacing, economy, pressure, leaks, gate health, Menelaus and performance
+- Chapter I final gameplay playtest protocol: `docs/CHAPTER_I_RC_PLAYTEST.md`
 - GitHub Actions architecture guard: VERIFIED GREEN on Chapter I RC combat hardening
 - GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
 - therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
@@ -83,10 +85,10 @@ Last reviewed: 2026-09-13
 - first production-art priorities are Hector, Menelaus, Chapter I Greek regulars, Trojan Guard/Archer, six Chapter I Tower-Units, Greek landing ships, coast kit and Troy wall/gate kit
 
 ## Remaining Chapter I RC work
-- real 1x playthrough validation against the 11–13 minute target using the generated JSON/CSV playthrough report
-- final economy/enemy-pressure tuning from per-wave report deltas and peak alive-enemy pressure
-- final 16:9/RU visual-fit QA in real Play Mode
-- verify Menelaus encounter/reinforcement pressure on Story/Strategos/Legendary using runtime playthrough data
+- real 1x Story playthrough validation against the 11–13 minute target using the generated JSON/CSV playthrough report and `Analyze Latest Chapter I Playthrough`
+- resolve/accept analyzer FAIL/WARN findings, then freeze Story pacing/economy/enemy-pressure baseline
+- repeat pressure validation on Strategos and Legendary after Story is frozen
+- final 16:9 RU/EN visual-fit QA in real Play Mode at 1920x1080 and 1366/1376x768
 - production-art replacement pass defined in `docs/MODEL_ART_INVENTORY.md`
 - replace procedural presentation hooks with fully authored/retargeted animation clips where final art requires them
 - pooling before campaign scale-up; not required for Chapter I acceptance unless profiling shows allocation spikes
@@ -97,7 +99,7 @@ Last reviewed: 2026-09-13
 ## Next product gate
 Chapter I has two independent gates before it can be frozen as the campaign baseline:
 
-1. **Gameplay RC gate:** run Chapter I once at 1x in the Unity Editor/build, inspect `ChapterI_Playthrough_*.json` and `ChapterI_Waves_*.csv`, tune pacing/economy/pressure, then complete 16:9/RU visual-fit QA.
+1. **Gameplay RC gate:** complete one clean Story run at 1x, run `TheTroyGame/Validation/Analyze Latest Chapter I Playthrough`, resolve all FAIL findings and intentionally resolve/accept WARN findings, then repeat pressure validation on Strategos/Legendary and complete 16:9 RU/EN visual-fit QA. The exact protocol is `docs/CHAPTER_I_RC_PLAYTEST.md`.
 2. **Production-art gate:** promote the P0 Chapter I assets in `docs/MODEL_ART_INVENTORY.md` from `GENERATED PLACEHOLDER` / `PROCEDURAL` to `DONE` with final assets under `Assets/Game/Art/...` and real Play Mode QA.
 
 Chapter II production should not treat Chapter I art as finalized until both gates are closed.
