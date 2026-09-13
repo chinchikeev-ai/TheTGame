@@ -167,7 +167,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildSelectedCard(Transform parent)
     {
-        GameObject card = Panel(parent, "SelectedTowerCard", new Vector2(-24, -182), new Vector2(450, 430), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 1), new Vector2(1, 1));
+        GameObject card = Panel(parent, "SelectedTowerCard", new Vector2(-24, -230), new Vector2(450, 430), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 1), new Vector2(1, 1));
         selectedTitle = Text(card.transform, L("SELECT A DEFENSE", "ВЫБЕРИТЕ ОБОРОНУ"), new Vector2(24, -22), new Vector2(400, 46), 24, new Color(1f, .70f, .28f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
         selectedStats = Text(card.transform, "", new Vector2(24, -82), new Vector2(400, 138), 17, new Color(.94f, .87f, .77f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
         selectedUpgradePreview = Text(card.transform, "", new Vector2(24, -214), new Vector2(400, 68), 15, new Color(1f, .73f, .31f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);

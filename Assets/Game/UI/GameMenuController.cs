@@ -7,6 +7,7 @@ public class GameMenuController : MonoBehaviour
 {
     const string MainMenuBackgroundResource = "Menu/Main_screen";
     static bool openLevelSelectAfterReload;
+    static bool startLevelAfterReload;
 
     static readonly Vector2[] SupportedResolutions =
     {
@@ -61,7 +62,12 @@ public class GameMenuController : MonoBehaviour
         BuildUI();
         SyncSettingsUi();
 
-        if (openLevelSelectAfterReload)
+        if (startLevelAfterReload)
+        {
+            startLevelAfterReload = false;
+            StartLevel();
+        }
+        else if (openLevelSelectAfterReload)
         {
             openLevelSelectAfterReload = false;
             ShowLevels();
@@ -114,7 +120,6 @@ public class GameMenuController : MonoBehaviour
         BuildSettingsMenu();
         BuildPauseMenu();
         BuildEndMenu();
-        BuildWaveControls();
 
         levelMenu.SetActive(false);
         settingsMenu.SetActive(false);
@@ -203,7 +208,7 @@ public class GameMenuController : MonoBehaviour
         AddTitle(panel.transform, L("The battle waits for your command", "Битва ждёт вашего приказа"), new Vector2(0, 202), 18, MenuTextStyle.Muted);
         AddButton(panel.transform, L("RESUME", "ВЕРНУТЬСЯ В ИГРУ"), new Vector2(0, 110), Resume, new Vector2(420, 64), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, 32), ShowSettingsFromPause, new Vector2(420, 60), MenuButtonStyle.Stone);
-        AddButton(panel.transform, L("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"), new Vector2(0, -46), RestartScene, new Vector2(420, 60), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"), new Vector2(0, -46), RestartChapter, new Vector2(420, 60), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0, -124), ReturnToMainMenu, new Vector2(420, 60), MenuButtonStyle.Ghost);
         AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0, -202), QuitGame, new Vector2(420, 56), MenuButtonStyle.Ghost);
     }
@@ -215,7 +220,7 @@ public class GameMenuController : MonoBehaviour
 
         endTitle = AddTitle(panel.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0, 320), 58, MenuTextStyle.Logo);
         endSummary = AddTitle(panel.transform, "", new Vector2(0, 80), 22, MenuTextStyle.Normal, new Vector2(840, 420));
-        AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-175, -300), RestartScene, new Vector2(300, 64), MenuButtonStyle.Highlight);
+        AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-175, -300), RestartChapter, new Vector2(300, 64), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(175, -300), ReturnToMainMenu, new Vector2(300, 64), MenuButtonStyle.Stone);
     }
 
@@ -567,6 +572,12 @@ public class GameMenuController : MonoBehaviour
     {
         if (reloading) return;
         StartCoroutine(ReloadSceneRoutine());
+    }
+
+    void RestartChapter()
+    {
+        startLevelAfterReload = true;
+        RestartScene();
     }
 
     IEnumerator ReloadSceneRoutine()

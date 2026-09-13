@@ -60,17 +60,22 @@ public class CombatControlsUI : MonoBehaviour
         root.transform.SetParent(canvas.transform, false);
         RectTransform rr = root.AddComponent<RectTransform>();
         rr.anchorMin = rr.anchorMax = rr.pivot = new Vector2(1f, 1f);
-        rr.anchoredPosition = new Vector2(-20f, -20f);
-        rr.sizeDelta = new Vector2(360f, 250f);
+        rr.anchoredPosition = new Vector2(-20f, -18f);
+        rr.sizeDelta = new Vector2(340f, 180f);
 
-        AddSmallButton(root.transform, "-", new Vector2(-248, 0), DecreaseSpeed);
-        speedLabel = AddButton(root.transform, new Vector2(0, 0), IncreaseSpeed);
+        AddSmallButton(root.transform, "-", new Vector2(-282, 0), DecreaseSpeed);
+        speedLabel = AddButton(root.transform, new Vector2(-68, 0), IncreaseSpeed, new Vector2(190f, 58f));
         AddSmallButton(root.transform, "+", new Vector2(0, 0), IncreaseSpeed);
-        magicLabel = AddButton(root.transform, new Vector2(0, -72), () => GameManager.Instance?.UseMagic());
-        giftLabel = AddButton(root.transform, new Vector2(0, -144), () => GameManager.Instance?.UseGift());
+        magicLabel = AddButton(root.transform, new Vector2(0, -66), () => GameManager.Instance?.UseMagic());
+        giftLabel = AddButton(root.transform, new Vector2(0, -126), () => GameManager.Instance?.UseGift());
     }
 
     Text AddButton(Transform parent, Vector2 pos, UnityEngine.Events.UnityAction action)
+    {
+        return AddButton(parent, pos, action, new Vector2(330f, 54f));
+    }
+
+    Text AddButton(Transform parent, Vector2 pos, UnityEngine.Events.UnityAction action, Vector2 size)
     {
         GameObject go = new GameObject("ControlButton");
         go.transform.SetParent(parent, false);
@@ -82,7 +87,7 @@ public class CombatControlsUI : MonoBehaviour
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
         rt.anchoredPosition = pos;
-        rt.sizeDelta = new Vector2(330f, 58f);
+        rt.sizeDelta = size;
         return AddText(go.transform, 18);
     }
 

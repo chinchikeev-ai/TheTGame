@@ -51,22 +51,22 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         mapFieldImage.color = new Color(.07f, .042f, .025f, .74f);
         mapFieldImage.raycastTarget = false;
         RectTransform field = mapFieldImage.rectTransform;
-        field.anchorMin = field.anchorMax = field.pivot = new Vector2(.34f, .5f);
-        field.anchoredPosition = new Vector2(-80f, 0f);
-        field.sizeDelta = new Vector2(1120f, 820f);
+        field.anchorMin = field.anchorMax = field.pivot = new Vector2(.30f, .5f);
+        field.anchoredPosition = new Vector2(0f, 0f);
+        field.sizeDelta = new Vector2(860f, 660f);
         Outline fieldOutline = mapField.AddComponent<Outline>();
         fieldOutline.effectColor = new Color(.58f, .31f, .12f, .38f);
         fieldOutline.effectDistance = new Vector2(2f, -2f);
 
         Vector2[] points =
         {
-            new Vector2(-390, -165),
-            new Vector2(-300,  -35),
-            new Vector2(-165,   82),
-            new Vector2(   0,  160),
-            new Vector2( 165,  105),
-            new Vector2( 295,   -5),
-            new Vector2( 390, -150)
+            new Vector2(-300, -120),
+            new Vector2(-230,  -25),
+            new Vector2(-120,   68),
+            new Vector2(   0,  125),
+            new Vector2( 120,   82),
+            new Vector2( 220,   -8),
+            new Vector2( 300, -110)
         };
 
         int unlockedChapter = Campaign != null ? Campaign.UnlockedChapter : 1;
@@ -183,7 +183,7 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         Text text = MakeText(parent,
             L("THE WAR FOR TROY", "ВОЙНА ЗА ТРОЮ"),
             new Vector2(0, 315), 24, new Color(1f, .73f, .34f, .96f));
-        text.rectTransform.sizeDelta = new Vector2(520f, 44f);
+        text.rectTransform.sizeDelta = new Vector2(440f, 44f);
     }
 
     void MakeProgressHeader(Transform parent)
@@ -200,8 +200,8 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         }
         Text text = MakeText(parent,
             L($"CHAPTER {unlocked}/7  •  COMPLETED {completed}/7", $"ГЛАВА {unlocked}/7  •  ПРОЙДЕНО {completed}/7"),
-            new Vector2(0, 275), 14, new Color(.82f, .70f, .56f, .90f));
-        text.rectTransform.sizeDelta = new Vector2(500f, 34f);
+            new Vector2(0, 275), 13, new Color(.82f, .70f, .56f, .90f));
+        text.rectTransform.sizeDelta = new Vector2(440f, 34f);
     }
 
     Text MakeText(Transform parent, string value, Vector2 pos, int size, Color color)
