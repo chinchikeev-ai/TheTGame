@@ -157,7 +157,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
             gateHpStart = startGateHp,
             gateHpEnd = game.BaseHealth,
             maxAliveEnemies = maxAlive,
-            completed = completed && !game.GameEnded
+            completed = completed
         };
         report.waves.Add(wave);
         RuntimeFileLogger.Event("RC_REPORT", $"Wave snapshot wave={wave.wave}, actual={wave.actualDurationSeconds:0.0}s, target={wave.targetDurationSeconds:0.0}s, kills={wave.kills}, leaks={wave.leaks}, goldEarned={wave.goldEarned}, goldSpent={wave.goldSpent}, money={wave.moneyStart}->{wave.moneyEnd}, gateHP={wave.gateHpStart}->{wave.gateHpEnd}, maxAlive={wave.maxAliveEnemies}, completed={wave.completed}");
