@@ -26,7 +26,10 @@ public class LandingPresentation : MonoBehaviour
         GameObject[] boats = new GameObject[4];
         float[] z = { 7.2f, 2.4f, -2.4f, -7.0f };
         for (int i = 0; i < boats.Length; i++)
+        {
             boats[i] = GreekLandingShipVisualFactory.Create(root.transform, new Vector3(-19.2f - i * .55f, .12f, z[i]), "Incoming Achaean Galley");
+            CreateBoatWake(boats[i].transform,i);
+        }
 
         float duration = 5.2f;
         float elapsed = 0f;
@@ -43,13 +46,15 @@ public class LandingPresentation : MonoBehaviour
                 Vector3 pos = Vector3.Lerp(start, end, eased);
                 pos.y += Mathf.Sin((elapsed + i * .45f) * 2.4f) * .045f;
                 boats[i].transform.position = pos;
-                boats[i].transform.rotation = Quaternion.Euler(0f, 88f + Mathf.Sin(elapsed + i) * 2f, Mathf.Sin(elapsed * 2f + i) * 1.8f);
+                float yaw = -3.5f + i * 2.2f + Mathf.Sin(elapsed + i) * 1.4f;
+                boats[i].transform.rotation = Quaternion.Euler(0f, yaw, Mathf.Sin(elapsed * 2f + i) * 1.8f);
             }
             yield return null;
         }
 
         CreateLandingDebris(root.transform);
-        RuntimeEffects.Instance?.PlayHeroPulse(new Vector3(-13.6f,.12f,0f), new Color(.72f,.55f,.28f), 6.5f, .55f);
+        RuntimeEffects.Instance?.PlayHeroCueSound();
+        CombatImpactPresentation.GroundPulse(new Vector3(-13.6f,.12f,0f), new Color(.72f,.55f,.28f), 6.5f, .55f);
         yield return StartCoroutine(DeployLandingParty(root.transform));
 
         RuntimeFileLogger.Event("CHAPTER", "Chapter I landing presentation completed");
@@ -123,6 +128,21 @@ public class LandingPresentation : MonoBehaviour
         return soldier;
     }
 
+    void CreateBoatWake(Transform boat,int index)
+    {
+        GameObject wakeA = DecorPrimitive(boat,"Cinematic Bow Wake",PrimitiveType.Sphere,
+            new Vector3(1.18f,-.27f,0f),new Vector3(.72f,.012f,.48f),new Color(.70f,.80f,.79f));
+        ChapterOneAmbientMotion motionA = wakeA.AddComponent<ChapterOneAmbientMotion>();
+        motionA.kind = ChapterOneAmbientMotion.MotionKind.Sea;
+        motionA.phase = .4f + index * .7f;
+
+        GameObject wakeB = DecorPrimitive(boat,"Cinematic Stern Wake",PrimitiveType.Sphere,
+            new Vector3(-1.55f,-.28f,0f),new Vector3(1.45f,.010f,.10f),new Color(.54f,.70f,.71f));
+        ChapterOneAmbientMotion motionB = wakeB.AddComponent<ChapterOneAmbientMotion>();
+        motionB.kind = ChapterOneAmbientMotion.MotionKind.Sea;
+        motionB.phase = 1.1f + index * .63f;
+    }
+
     void CreateLandingDebris(Transform parent)
     {
         Color wood = new Color(.30f,.17f,.075f);
@@ -133,7 +153,8 @@ public class LandingPresentation : MonoBehaviour
         {
             float z = -5.8f + i * 2.8f;
             DecorPrimitive(parent,"Landing Crate",PrimitiveType.Cube,new Vector3(-12.45f,.18f,z),new Vector3(.40f,.36f,.46f),wood,Quaternion.Euler(0f,8f*i,0f));
-            DecorPrimitive(parent,"Discarded Greek Shield",PrimitiveType.Cylinder,new Vector3(-11.95f,.16f,z+.48f),new Vector3(.24f,.045f,.24f),bronze,Quaternion.Euler(82f,0f,18f+i*7f));
+            GameObject shield = DecorPrimitive(parent,"Discarded Greek Shield",PrimitiveType.Cylinder,new Vector3(-11.95f,.16f,z+.48f),new Vector3(.24f,.045f,.24f),cloth,Quaternion.Euler(82f,0f,18f+i*7f));
+            DecorPrimitive(shield.transform,"Shield Boss",PrimitiveType.Sphere,new Vector3(0f,.06f,0f),new Vector3(.42f,.12f,.42f),bronze);
             DecorPrimitive(parent,"Landing Oar",PrimitiveType.Cylinder,new Vector3(-12.10f,.12f,z-.55f),new Vector3(.025f,.72f,.025f),wood,Quaternion.Euler(82f,0f,28f));
         }
 
