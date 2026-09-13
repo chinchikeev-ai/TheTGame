@@ -23,12 +23,15 @@ public static class TowerArtDirector
                 AddPost(art.transform,new Vector3(.42f,.62f,.30f),wood);
                 Part(art.transform,"Wooden Platform",PrimitiveType.Cube,new Vector3(0f,.95f,0f),new Vector3(1.05f,.12f,.90f),lightWood);
                 Part(art.transform,"Red Canopy",PrimitiveType.Cylinder,new Vector3(0f,1.38f,0f),new Vector3(.72f,.16f,.72f),red).transform.rotation=Quaternion.Euler(0f,30f,0f);
+                Part(art.transform,"Arrow Bundle",PrimitiveType.Cylinder,new Vector3(.48f,1.12f,.18f),new Vector3(.10f,.42f,.10f),wood).transform.rotation=Quaternion.Euler(10f,0f,-12f);
                 break;
             case TowerType.Cannon:
                 Part(art.transform,"Ballista Deck",PrimitiveType.Cube,new Vector3(0f,.55f,0f),new Vector3(1.15f,.14f,1.0f),wood);
                 for(int s=-1;s<=1;s+=2)
                     Part(art.transform,"Ballista Support",PrimitiveType.Cube,new Vector3(s*.48f,.40f,0f),new Vector3(.12f,.62f,.14f),lightWood);
                 Part(art.transform,"Counterweight",PrimitiveType.Cube,new Vector3(0f,.30f,-.36f),new Vector3(.38f,.38f,.38f),stone);
+                Part(art.transform,"Ballista Rail",PrimitiveType.Cube,new Vector3(0f,1.05f,.18f),new Vector3(.16f,.12f,1.15f),lightWood);
+                Part(art.transform,"Ballista Bow",PrimitiveType.Cube,new Vector3(0f,1.05f,.78f),new Vector3(1.18f,.08f,.10f),bronze);
                 break;
             case TowerType.Slow:
                 for(int i=0;i<4;i++)
@@ -37,21 +40,24 @@ public static class TowerArtDirector
                     Part(art.transform,"Shrine Column",PrimitiveType.Cylinder,new Vector3(Mathf.Cos(a)*.46f,.58f,Mathf.Sin(a)*.46f),new Vector3(.09f,.55f,.09f),new Color(.80f,.71f,.52f));
                 }
                 Part(art.transform,"Shrine Roof",PrimitiveType.Cylinder,new Vector3(0f,1.18f,0f),new Vector3(.72f,.11f,.72f),bronze).transform.rotation=Quaternion.Euler(0f,30f,0f);
+                Part(art.transform,"Apollo Disc",PrimitiveType.Cylinder,new Vector3(0f,1.48f,0f),new Vector3(.28f,.05f,.28f),new Color(.94f,.72f,.20f)).transform.rotation=Quaternion.Euler(90f,0f,0f);
                 break;
             case TowerType.SpearThrower:
                 Part(art.transform,"Spear Rack",PrimitiveType.Cube,new Vector3(-.52f,.55f,-.05f),new Vector3(.18f,.80f,.42f),wood);
-                for(int i=0;i<3;i++)
+                for(int i=0;i<4;i++)
                 {
-                    GameObject spear=Part(art.transform,"Rack Spear",PrimitiveType.Cylinder,new Vector3(-.52f,.72f,-.22f+i*.22f),new Vector3(.025f,.66f,.025f),bronze);
+                    GameObject spear=Part(art.transform,"Rack Spear",PrimitiveType.Cylinder,new Vector3(-.52f,.72f,-.30f+i*.20f),new Vector3(.025f,.72f,.025f),bronze);
                     spear.transform.rotation=Quaternion.Euler(0f,0f,-8f);
                 }
+                Part(art.transform,"Spear Crest",PrimitiveType.Cube,new Vector3(.28f,1.18f,0f),new Vector3(.12f,.34f,.42f),red);
                 break;
             case TowerType.FireTower:
                 Part(art.transform,"Fire Stone Base",PrimitiveType.Cylinder,new Vector3(0f,.30f,0f),new Vector3(.70f,.25f,.70f),stone);
+                Part(art.transform,"Fire Bowl",PrimitiveType.Cylinder,new Vector3(0f,.86f,0f),new Vector3(.42f,.12f,.42f),bronze);
                 for(int i=0;i<4;i++)
                 {
                     float a=i*Mathf.PI*.5f;
-                    GameObject flame=Part(art.transform,"Fire Accent",PrimitiveType.Sphere,new Vector3(Mathf.Cos(a)*.42f,.82f,Mathf.Sin(a)*.42f),new Vector3(.12f,.22f,.12f),new Color(1f,.32f,.04f));
+                    GameObject flame=Part(art.transform,"Fire Accent",PrimitiveType.Sphere,new Vector3(Mathf.Cos(a)*.30f,1.05f,Mathf.Sin(a)*.30f),new Vector3(.12f,.22f,.12f),new Color(1f,.32f,.04f));
                     flame.AddComponent<ChapterOneAmbientMotion>().kind=ChapterOneAmbientMotion.MotionKind.Flame;
                 }
                 break;
@@ -59,6 +65,7 @@ public static class TowerArtDirector
                 Part(art.transform,"Guard Platform",PrimitiveType.Cube,new Vector3(0f,.20f,0f),new Vector3(1.15f,.20f,1.0f),stone);
                 AddStandard(art.transform,new Vector3(-.54f,1.05f,-.18f),red,bronze);
                 AddStandard(art.transform,new Vector3(.54f,1.05f,-.18f),red,bronze);
+                Part(art.transform,"Shield Rack",PrimitiveType.Cube,new Vector3(0f,.65f,.46f),new Vector3(.72f,.55f,.10f),red);
                 break;
         }
     }
