@@ -55,7 +55,7 @@ public static class ChapterOneCharacterAnimationBuilder
     static AnimationClip[] LoadAllSourceClips()
     {
         var result = new List<AnimationClip>();
-        var seen = new HashSet<int>();
+        var seen = new HashSet<string>();
         string[] guids = AssetDatabase.FindAssets("", new[] { ThirdPartyRoot });
         foreach (string guid in guids)
         {
@@ -66,7 +66,10 @@ public static class ChapterOneCharacterAnimationBuilder
             {
                 AnimationClip clip = asset as AnimationClip;
                 if (clip == null || clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase) || clip.length <= .05f) continue;
-                if (seen.Add(clip.GetInstanceID())) result.Add(clip);
+                string clipKey = clip.name;
+                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(clip, out string assetGuid, out long localId))
+                    clipKey = assetGuid + ":" + localId;
+                if (seen.Add(clipKey)) result.Add(clip);
             }
         }
         return result.ToArray();

@@ -53,8 +53,8 @@ public class LandingPresentation : MonoBehaviour
         }
 
         CreateLandingDebris(root.transform);
-        RuntimeEffects.Instance?.PlayHeroCueSound();
-        CombatImpactPresentation.GroundPulse(new Vector3(-13.6f,.12f,0f), new Color(.72f,.55f,.28f), 6.5f, .55f);
+        RuntimeEffects.Instance?.PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(new Vector3(-13.6f,.12f,0f), new Color(.72f,.55f,.28f), 6.5f, .55f);
         yield return StartCoroutine(DeployLandingParty(root.transform));
 
         RuntimeFileLogger.Event("CHAPTER", "Chapter I landing presentation completed");
