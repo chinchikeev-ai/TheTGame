@@ -21,6 +21,20 @@ public static class ChapterOneCharacterAnimationBuilder
     const string PriestControllerPath = AnimationRoot + "/ChapterOne_PriestApollo.controller";
     const string FireKeeperControllerPath = AnimationRoot + "/ChapterOne_FireKeeper.controller";
 
+    static readonly string[] SpearRoleTokens = { "spear", "polearm", "thrust", "stab" };
+    static readonly string[] SpearActionTokens = { "thrust", "stab", "poke", "attack", "melee" };
+    static readonly string[] SpearAvoidTokens = { "bow", "shoot", "ranged", "cast", "spell", "magic" };
+
+    static readonly string[] ShieldRoleTokens = { "shield", "guard", "defend", "block" };
+    static readonly string[] ShieldActionTokens = { "block", "brace", "defend", "guard", "idle" };
+    static readonly string[] ShieldAvoidTokens = { "bow", "shoot", "cast", "spell", "magic" };
+
+    static readonly string[] BowRoleTokens = { "bow", "archer", "arrow", "ranged" };
+    static readonly string[] BowDrawTokens = { "draw", "aim", "ready", "charge" };
+    static readonly string[] BowReleaseTokens = { "release", "shoot", "fire", "attack" };
+    static readonly string[] BowDrawAvoidTokens = { "release", "shoot", "fire", "melee", "slash" };
+    static readonly string[] BowReleaseAvoidTokens = { "draw", "aim", "ready", "melee", "slash" };
+
     [MenuItem("The Troy Game/Characters/Build Chapter I Animation Controller")]
     public static void BuildAll()
     {
@@ -36,10 +50,10 @@ public static class ChapterOneCharacterAnimationBuilder
         var controllers = new Dictionary<string, RuntimeAnimatorController>
         {
             { "generic", BuildController(GenericControllerPath, clips, "generic", null, false, false) },
-            { "spear", BuildController(SpearControllerPath, clips, "spear", new[] { "spear", "thrust", "stab" }, false, false) },
-            { "archer", BuildController(ArcherControllerPath, clips, "archer", new[] { "bow", "shoot", "arrow", "ranged" }, false, false) },
+            { "spear", BuildController(SpearControllerPath, clips, "spear", SpearRoleTokens, false, false) },
+            { "archer", BuildController(ArcherControllerPath, clips, "archer", BowRoleTokens, false, false) },
             { "skirmisher", BuildController(SkirmisherControllerPath, clips, "skirmisher", new[] { "dagger", "knife", "slash", "swing" }, false, false) },
-            { "hector", BuildController(HectorControllerPath, clips, "hector", new[] { "spear", "thrust", "stab", "hero" }, true, false) },
+            { "hector", BuildController(HectorControllerPath, clips, "hector", SpearRoleTokens, true, false) },
             { "menelaus", BuildController(MenelausControllerPath, clips, "menelaus", new[] { "sword", "slash", "heavy", "attack" }, false, true) },
             { "ballista", BuildController(BallistaControllerPath, clips, "ballista", new[] { "interact", "work", "pull", "attack" }, false, false) },
             { "priest", BuildController(PriestControllerPath, clips, "priest", new[] { "cast", "spell", "magic", "chant" }, false, false) },
@@ -49,7 +63,7 @@ public static class ChapterOneCharacterAnimationBuilder
         int assigned = AssignControllers(controllers);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log($"Chapter I role animation profiles built from {clips.Length} imported clips and assigned to {assigned} production candidates.");
+        Debug.Log($"Chapter I role animation profiles built from {clips.Length} imported clips and assigned to {assigned} production candidates. Specialized bindings are candidate mappings until real Play Mode timing/pose QA passes.");
     }
 
     static AnimationClip[] LoadAllSourceClips()
@@ -72,21 +86,24 @@ public static class ChapterOneCharacterAnimationBuilder
                 if (seen.Add(clipKey)) result.Add(clip);
             }
         }
+
+        result.Sort(CompareClips);
         return result.ToArray();
     }
 
     static AnimatorController BuildController(string path, AnimationClip[] clips, string profileName, string[] roleTokens, bool hectorAbilities, bool commanderAction)
     {
-        AnimationClip idle = Pick(clips, "idle", "stand");
-        AnimationClip move = Pick(clips, "run", "walk", "move");
-        AnimationClip attack = PickAction(clips, roleTokens, "attack", "slash", "swing", "stab", "thrust", "shoot", "fire", "melee", "interact");
-        AnimationClip hit = Pick(clips, "hit", "hurt", "damage", "impact");
-        AnimationClip death = Pick(clips, "death", "die", "defeat", "dead");
-        AnimationClip downed = Pick(clips, "down", "knockdown", "fall");
+        AnimationClip idle = PickBest(clips, "idle", "stand");
+        AnimationClip move = PickBest(clips, "run", "walk", "move");
+        AnimationClip attack = PickBestAction(clips, roleTokens,
+            new[] { "attack", "slash", "swing", "stab", "thrust", "shoot", "fire", "melee", "interact" }, null);
+        AnimationClip hit = PickBest(clips, "hit", "hurt", "damage", "impact");
+        AnimationClip death = PickBest(clips, "death", "die", "defeat", "dead");
+        AnimationClip downed = PickBest(clips, "down", "knockdown", "fall");
 
         if (idle == null) idle = clips[0];
         if (move == null) move = idle;
-        if (attack == null) attack = Pick(clips, "attack", "slash", "swing", "melee", "punch", "interact");
+        if (attack == null) attack = PickBest(clips, "attack", "slash", "swing", "melee", "punch", "interact");
         if (downed == null) downed = death;
 
         AssetDatabase.DeleteAsset(path);
@@ -117,27 +134,42 @@ public static class ChapterOneCharacterAnimationBuilder
         AddAction(controller, machine, idleState, "Attack", attack, .86f);
         AddAction(controller, machine, idleState, "Hit", hit, .78f);
 
-        if (string.Equals(profileName, "spear", StringComparison.Ordinal))
+        AnimationClip spearPoke = null;
+        AnimationClip shieldBlock = null;
+        bool spearProfile = string.Equals(profileName, "spear", StringComparison.Ordinal) ||
+                            string.Equals(profileName, "hector", StringComparison.Ordinal);
+        if (spearProfile)
         {
-            AnimationClip block = PickAction(clips, new[] { "shield", "block", "guard", "defend" }, "block", "guard", "defend", "idle");
-            AnimationClip poke = PickAction(clips, new[] { "spear", "thrust", "stab" }, "thrust", "stab", "attack", "spear");
-            AddAction(controller, machine, idleState, "Block", block != null ? block : idle, .90f);
-            AddAction(controller, machine, idleState, "Poke", poke != null ? poke : attack, .86f);
+            spearPoke = PickBestAction(clips, SpearRoleTokens, SpearActionTokens, SpearAvoidTokens);
+            shieldBlock = PickBestAction(clips, ShieldRoleTokens, ShieldActionTokens, ShieldAvoidTokens);
+            AddAction(controller, machine, idleState, "Poke", spearPoke != null ? spearPoke : attack, .86f);
+            AddAction(controller, machine, idleState, "Block", shieldBlock != null ? shieldBlock : idle, .90f);
+            ReportBinding(profileName, "Poke", spearPoke, attack);
+            ReportBinding(profileName, "Block", shieldBlock, idle);
         }
 
         if (string.Equals(profileName, "archer", StringComparison.Ordinal))
         {
-            AnimationClip draw = PickAction(clips, new[] { "bow", "archer", "arrow" }, "draw", "aim", "ready", "attack");
-            AnimationClip release = PickAction(clips, new[] { "bow", "archer", "arrow" }, "release", "shoot", "fire", "attack");
-            AddAction(controller, machine, idleState, "Draw", draw != null ? draw : attack, .86f);
-            AddAction(controller, machine, idleState, "Release", release != null ? release : attack, .82f);
+            AnimationClip draw = PickBestAction(clips, BowRoleTokens, BowDrawTokens, BowDrawAvoidTokens);
+            var excluded = new HashSet<AnimationClip>();
+            if (draw != null) excluded.Add(draw);
+            AnimationClip release = PickBestAction(clips, BowRoleTokens, BowReleaseTokens, BowReleaseAvoidTokens, excluded);
+
+            AnimationClip drawBinding = draw != null ? draw : attack;
+            AnimationClip releaseBinding = release != null ? release : attack;
+            AddAction(controller, machine, idleState, "Draw", drawBinding, .86f);
+            AddAction(controller, machine, idleState, "Release", releaseBinding, .82f);
+            ReportBinding(profileName, "Draw", draw, attack);
+            ReportBinding(profileName, "Release", release, attack);
+            if (drawBinding != null && drawBinding == releaseBinding)
+                Debug.LogWarning($"Chapter I animation profile={profileName}: Draw and Release both resolve to {Name(drawBinding)}. Dedicated bow clips are still required for production acceptance.");
         }
 
         if (string.Equals(profileName, "ballista", StringComparison.Ordinal))
         {
-            AnimationClip reload = Pick(clips, "reload", "interact", "work", "pickup", "pull");
-            AnimationClip tension = Pick(clips, "pull", "charge", "ready", "interact", "work");
-            AnimationClip fire = Pick(clips, "attack", "push", "interact", "work");
+            AnimationClip reload = PickBest(clips, "reload", "interact", "work", "pickup", "pull");
+            AnimationClip tension = PickBest(clips, "pull", "charge", "ready", "interact", "work");
+            AnimationClip fire = PickBest(clips, "attack", "push", "interact", "work");
             AddAction(controller, machine, idleState, "Reload", reload != null ? reload : attack, .88f);
             AddAction(controller, machine, idleState, "Tension", tension != null ? tension : attack, .88f);
             AddAction(controller, machine, idleState, "Fire", fire != null ? fire : attack, .82f);
@@ -145,37 +177,47 @@ public static class ChapterOneCharacterAnimationBuilder
 
         if (string.Equals(profileName, "priest", StringComparison.Ordinal))
         {
-            AnimationClip cast = Pick(clips, "cast", "spell", "magic", "attack", "interact");
-            AnimationClip channel = Pick(clips, "chant", "cast", "spell", "idle", "interact");
+            AnimationClip cast = PickBest(clips, "cast", "spell", "magic", "attack", "interact");
+            AnimationClip channel = PickBest(clips, "chant", "cast", "spell", "idle", "interact");
             AddAction(controller, machine, idleState, "Cast", cast != null ? cast : attack, .88f);
             AddAction(controller, machine, idleState, "Channel", channel != null ? channel : idle, .92f);
         }
 
         if (string.Equals(profileName, "firekeeper", StringComparison.Ordinal))
         {
-            AnimationClip stoke = Pick(clips, "interact", "work", "pickup", "attack");
-            AnimationClip throwClip = Pick(clips, "throw", "attack", "swing", "interact");
+            AnimationClip stoke = PickBest(clips, "interact", "work", "pickup", "attack");
+            AnimationClip throwClip = PickBest(clips, "throw", "attack", "swing", "interact");
             AddAction(controller, machine, idleState, "Stoke", stoke != null ? stoke : attack, .88f);
             AddAction(controller, machine, idleState, "Throw", throwClip != null ? throwClip : attack, .84f);
         }
 
         if (commanderAction)
         {
-            AnimationClip command = Pick(clips, "taunt", "cheer", "cast", "spell", "shout", "attack");
-            if (command == null) command = attack;
-            AddAction(controller, machine, idleState, "Command", command, .88f);
+            AnimationClip command = PickBestAction(clips,
+                new[] { "command", "taunt", "cheer", "shout", "hero" },
+                new[] { "command", "taunt", "cheer", "shout", "cast", "attack" },
+                new[] { "death", "die", "down", "hurt" });
+            AddAction(controller, machine, idleState, "Command", command != null ? command : attack, .88f);
+            ReportBinding(profileName, "Command", command, attack);
         }
 
         if (hectorAbilities)
         {
-            AnimationClip q = Pick(clips, "taunt", "cheer", "shout", "cast");
-            AnimationClip e = PickAction(clips, new[] { "shield", "block", "defend" }, "block", "defend", "guard", "attack");
-            AnimationClip r = PickAction(clips, new[] { "spear", "thrust", "stab" }, "attack", "stab", "thrust", "throw");
-            AnimationClip f = Pick(clips, "heavy", "attack", "slash", "swing", "cast");
+            AnimationClip q = PickBest(clips, "taunt", "cheer", "shout", "cast");
+            AnimationClip e = shieldBlock != null ? shieldBlock :
+                PickBestAction(clips, ShieldRoleTokens, ShieldActionTokens, ShieldAvoidTokens);
+            AnimationClip r = spearPoke != null ? spearPoke :
+                PickBestAction(clips, SpearRoleTokens, new[] { "throw", "thrust", "stab", "attack" }, SpearAvoidTokens);
+            AnimationClip f = PickBestAction(clips,
+                new[] { "heavy", "hero", "attack" },
+                new[] { "heavy", "attack", "slash", "swing", "cast" },
+                new[] { "bow", "shoot", "death", "die" });
             AddAction(controller, machine, idleState, "AbilityQ", q != null ? q : attack, .90f);
             AddAction(controller, machine, idleState, "AbilityE", e != null ? e : attack, .90f);
             AddAction(controller, machine, idleState, "AbilityR", r != null ? r : attack, .88f);
             AddAction(controller, machine, idleState, "AbilityF", f != null ? f : attack, .92f);
+            ReportBinding(profileName, "AbilityE", e, attack);
+            ReportBinding(profileName, "AbilityR", r, attack);
         }
 
         if (death != null)
@@ -277,36 +319,89 @@ public static class ChapterOneCharacterAnimationBuilder
         return "generic";
     }
 
-    static AnimationClip PickAction(AnimationClip[] clips, string[] roleTokens, params string[] actionTokens)
+    static AnimationClip PickBestAction(AnimationClip[] clips, string[] roleTokens, string[] actionTokens, string[] avoidTokens, HashSet<AnimationClip> excluded = null)
     {
-        if (roleTokens != null && roleTokens.Length > 0)
+        AnimationClip roleMatch = PickBestScored(clips, roleTokens, actionTokens, avoidTokens, excluded, true);
+        if (roleMatch != null) return roleMatch;
+        return PickBestScored(clips, roleTokens, actionTokens, avoidTokens, excluded, false);
+    }
+
+    static AnimationClip PickBest(AnimationClip[] clips, params string[] actionTokens)
+    {
+        return PickBestScored(clips, null, actionTokens, null, null, false);
+    }
+
+    static AnimationClip PickBestScored(AnimationClip[] clips, string[] roleTokens, string[] actionTokens, string[] avoidTokens,
+        HashSet<AnimationClip> excluded, bool requireRoleMatch)
+    {
+        AnimationClip best = null;
+        int bestScore = int.MinValue;
+        foreach (AnimationClip clip in clips)
         {
-            foreach (AnimationClip clip in clips)
+            if (clip == null || (excluded != null && excluded.Contains(clip))) continue;
+            string name = clip.name.ToLowerInvariant();
+            if (ContainsAny(name, avoidTokens)) continue;
+
+            int actionMatches = CountMatches(name, actionTokens);
+            if (actionTokens != null && actionTokens.Length > 0 && actionMatches == 0) continue;
+            int roleMatches = CountMatches(name, roleTokens);
+            if (requireRoleMatch && roleTokens != null && roleTokens.Length > 0 && roleMatches == 0) continue;
+
+            int score = actionMatches * 30 + roleMatches * 12;
+            if (StartsWithAny(name, actionTokens)) score += 8;
+            if (StartsWithAny(name, roleTokens)) score += 4;
+
+            if (best == null || score > bestScore || (score == bestScore && CompareClips(clip, best) < 0))
             {
-                string name = clip.name.ToLowerInvariant();
-                if (ContainsAny(name, roleTokens) && ContainsAny(name, actionTokens)) return clip;
+                best = clip;
+                bestScore = score;
             }
         }
-        return Pick(clips, actionTokens);
+        return best;
     }
 
-    static AnimationClip Pick(AnimationClip[] clips, params string[] tokens)
+    static int CountMatches(string value, string[] tokens)
     {
+        if (tokens == null) return 0;
+        int count = 0;
         foreach (string token in tokens)
-        {
-            string wanted = token.ToLowerInvariant();
-            foreach (AnimationClip clip in clips)
-                if (clip.name.ToLowerInvariant().Contains(wanted)) return clip;
-        }
-        return null;
+            if (!string.IsNullOrEmpty(token) && value.Contains(token.ToLowerInvariant())) count++;
+        return count;
     }
 
-    static bool ContainsAny(string value, string[] tokens)
+    static bool ContainsAny(string value, string[] tokens) => CountMatches(value, tokens) > 0;
+
+    static bool StartsWithAny(string value, string[] tokens)
     {
         if (tokens == null) return false;
         foreach (string token in tokens)
-            if (value.Contains(token.ToLowerInvariant())) return true;
+            if (!string.IsNullOrEmpty(token) && value.StartsWith(token.ToLowerInvariant(), StringComparison.Ordinal)) return true;
         return false;
+    }
+
+    static int CompareClips(AnimationClip a, AnimationClip b)
+    {
+        if (ReferenceEquals(a, b)) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        int nameCompare = string.Compare(a.name, b.name, StringComparison.OrdinalIgnoreCase);
+        if (nameCompare != 0) return nameCompare;
+        string pathA = AssetDatabase.GetAssetPath(a) ?? string.Empty;
+        string pathB = AssetDatabase.GetAssetPath(b) ?? string.Empty;
+        return string.Compare(pathA, pathB, StringComparison.Ordinal);
+    }
+
+    static void ReportBinding(string profileName, string actionName, AnimationClip specialized, AnimationClip fallback)
+    {
+        AnimationClip chosen = specialized != null ? specialized : fallback;
+        string source = chosen != null ? AssetDatabase.GetAssetPath(chosen) : "none";
+        if (specialized == null)
+        {
+            Debug.LogWarning($"Chapter I animation binding profile={profileName} action={actionName}: no specialized source clip matched; fallback={Name(fallback)} source={source}. This remains a placeholder binding pending authored animation QA.");
+            return;
+        }
+
+        Debug.Log($"Chapter I animation binding profile={profileName} action={actionName}: clip={Name(specialized)} source={source}");
     }
 
     static string Name(AnimationClip clip) => clip != null ? clip.name : "none";

@@ -184,6 +184,26 @@ if ARMOR.exists():
         if token not in armor_text:
             errors.append(f"Chapter I armor candidate contract missing token: {token}")
 
+ANIMATION_BUILDER = ROOT / "Assets" / "Editor" / "ChapterOneCharacterAnimationBuilder.cs"
+if ANIMATION_BUILDER.exists():
+    animation_text = ANIMATION_BUILDER.read_text(encoding="utf-8")
+    for token in (
+        "static readonly string[] SpearRoleTokens",
+        "static readonly string[] BowDrawTokens",
+        "result.Sort(CompareClips);",
+        'string.Equals(profileName, "hector", StringComparison.Ordinal)',
+        'AddAction(controller, machine, idleState, "Poke"',
+        'AddAction(controller, machine, idleState, "Block"',
+        "var excluded = new HashSet<AnimationClip>();",
+        "PickBestAction(clips, BowRoleTokens, BowReleaseTokens",
+        'ReportBinding(profileName, "Draw"',
+        'ReportBinding(profileName, "Release"',
+        "Dedicated bow clips are still required for production acceptance.",
+        "placeholder binding pending authored animation QA",
+    ):
+        if token not in animation_text:
+            errors.append(f"Chapter I animation profile contract missing token: {token}")
+
 PRESENTATION = ROOT / "Assets" / "Game" / "Characters" / "CharacterPresentationState.cs"
 if PRESENTATION.exists():
     presentation_text = PRESENTATION.read_text(encoding="utf-8")

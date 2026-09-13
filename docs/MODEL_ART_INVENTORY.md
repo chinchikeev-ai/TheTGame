@@ -24,7 +24,7 @@ A builder succeeding does **not** promote an asset to `DONE`.
 | Shield Bearer | GENERATED PLACEHOLDER + SOURCE ONLY | spear + shield + armor candidates |
 | Greek Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow/quiver candidate; draw/release hooks exist |
 | Menelaus / Boss | GENERATED PLACEHOLDER | commander silhouette + command hook; final boss clips/materials pending |
-| Hector | GENERATED PLACEHOLDER + SOURCE ONLY | hero silhouette + spear/shield/armor candidates + Q/E/R/F hooks |
+| Hector | GENERATED PLACEHOLDER + SOURCE ONLY | hero silhouette + spear/shield/armor candidates + explicit `Poke`/`Block` profile states + Q/E/R/F hooks |
 | Trojan Infantry | GENERATED PLACEHOLDER + SOURCE ONLY | spear/shield/armor candidate pass |
 | Trojan Guard | GENERATED PLACEHOLDER + SOURCE ONLY | shield/spear/armor candidates + block/poke hooks |
 | Trojan Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow candidate + draw/release hooks |
@@ -78,18 +78,20 @@ Final grip, scale, materials, skin deformation, clipping and gameplay-camera rea
 
 | Set | Status | Current state / remaining work |
 |---|---|---|
-| Generic locomotion / hit / death | GENERATED PLACEHOLDER | role controllers exist; final authored clips/QA pending |
-| Spear combat | GENERATED PLACEHOLDER | `Poke` hooks wired to relevant runtime attacks; final authored thrust/brace clips pending |
-| Archer combat | GENERATED PLACEHOLDER | `Draw` / `Release` wired; final weapon/hand timing pending |
-| Shield block | GENERATED PLACEHOLDER | `Block` wired for Trojan Guard; final pose/clip pending |
-| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX | basic combat + Q/E/R/F hooks; final hero body clips pending |
-| Menelaus | GENERATED PLACEHOLDER | command hook tied to reinforcements; final boss-specific clips pending |
+| Generic locomotion / hit / death | GENERATED PLACEHOLDER | role controllers exist; imported clips are now selected deterministically by scored token matching; final authored clips/QA pending |
+| Spear combat | GENERATED PLACEHOLDER | `Poke` hooks wired to relevant runtime attacks; spear profiles use deterministic thrust/stab/poke candidate selection; final authored thrust/brace clips pending |
+| Archer combat | GENERATED PLACEHOLDER | `Draw` / `Release` wired; builder prefers distinct bow-role candidates and warns if both actions collapse to the same fallback; final weapon/hand timing and authored clips pending |
+| Shield block | GENERATED PLACEHOLDER | `Block` wired for Trojan Guard and now present in Hector's spear-bearing controller profile; final pose/clip pending |
+| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX | basic combat now has explicit `Poke`/`Block` states in Hector's controller; Q/E/R/F hooks remain; final hero body clips pending |
+| Menelaus | GENERATED PLACEHOLDER | command hook tied to reinforcements; deterministic command candidate/fallback is logged; final boss-specific clips pending |
 | Ballista mechanism | PROCEDURAL | `TowerSupportMechanismPresentation` performs release/reload/tension feedback; final authored mechanism animation pending |
 | Apollo shrine mechanism | PROCEDURAL | cast pulse/disc motion exists; final authored support presentation pending |
 | Fire Tower mechanism | PROCEDURAL | flame pulse exists; final authored fire/keeper presentation pending |
 | Battering Ram cycle | MISSING | later chapter push/impact/recover animation |
 | Siege Tower movement | MISSING | later chapter wheel/movement/assault animation |
 | Chariot horse locomotion | SOURCE ONLY + generator | pinned horse source + generator; real import/orientation/clip QA pending |
+
+The current Chapter I animation builder is an auditable candidate-binding system, not final animation production. It logs specialized selections and explicit fallbacks; generated controllers and timing/pose quality still require real Unity Play Mode inspection.
 
 ## Later-campaign candidate coverage
 
@@ -137,7 +139,7 @@ Character/equipment:
 - `ChapterOneShieldCandidateBuilder`
 - `ChapterOneArmorCandidateBuilder`
 - `ChapterOneProductionEquipmentBuilder`
-- `ChapterOneCharacterAnimationBuilder`
+- `ChapterOneCharacterAnimationBuilder` — deterministic per-role Animator candidates, including spear/Hector `Poke` + `Block`, bow `Draw` + `Release`, commander/hero hooks, and explicit binding/fallback logs
 - `MythicAndSupportArtCandidateBuilder`
 
 Campaign-wide candidates:
