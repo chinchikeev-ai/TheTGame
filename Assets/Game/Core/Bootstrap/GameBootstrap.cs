@@ -33,6 +33,7 @@ public class GameBootstrap : MonoBehaviour
 
         EnemySpawner spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
         spawner.Initialize(mapBuilder.Paths);
+        new GameObject("ChapterOnePlaythroughReporter").AddComponent<ChapterOnePlaythroughReporter>();
 
         TowerPlacement placement = new GameObject("TowerPlacement").AddComponent<TowerPlacement>();
         placement.gameCamera = cam;
