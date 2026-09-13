@@ -13,6 +13,16 @@ public static class ChapterOneArmorCandidateBuilder
     const string SourceCuirassName = "SourceArmor_DendraCandidate";
     const string SourceHelmetName = "SourceHelmet_BoarTuskCandidate";
 
+    static readonly string[] TorsoBoneHints =
+    {
+        "upperchest", "chest", "spine2", "spine02", "spine1", "spine01", "spine"
+    };
+
+    static readonly string[] HeadBoneHints =
+    {
+        "head", "head01"
+    };
+
     struct ArmorTarget
     {
         public string prefabPath;
@@ -53,7 +63,7 @@ public static class ChapterOneArmorCandidateBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Chapter I Late Bronze Age armor pass upgraded " + upgraded + " prefab(s). Meshes remain static production candidates until real Unity gameplay-camera, animation-clearance and material QA.");
+        Debug.Log("Chapter I Late Bronze Age armor pass upgraded " + upgraded + " prefab(s). Armor now rigidly follows resolved torso/head bones where available, but meshes are still unskinned production candidates pending real Unity animation-clearance, material and gameplay-camera QA.");
     }
 
     static bool Upgrade(ArmorTarget target, GameObject cuirassSource, GameObject helmetSource)
@@ -76,12 +86,16 @@ public static class ChapterOneArmorCandidateBuilder
             cuirass.transform.localRotation = Quaternion.identity;
             cuirass.transform.localScale = Vector3.one * target.cuirassScale;
             PrepareDecorativeMesh(cuirass, new Color(.67f, .44f, .17f), "cuirass");
+            Transform torsoBone = ResolveTorsoBone(root);
+            AttachRigidlyToBone(cuirass, torsoBone, target.prefabPath, "cuirass");
 
             GameObject helmet = InstantiateSource(helmetSource, SourceHelmetName, root.transform);
             helmet.transform.localPosition = new Vector3(0f, 1.70f, 0f);
             helmet.transform.localRotation = Quaternion.identity;
             helmet.transform.localScale = Vector3.one * target.helmetScale;
             PrepareDecorativeMesh(helmet, new Color(.76f, .70f, .55f), "helmet");
+            Transform headBone = ResolveHeadBone(root);
+            AttachRigidlyToBone(helmet, headBone, target.prefabPath, "helmet");
 
             PrefabUtility.SaveAsPrefabAsset(root, target.prefabPath);
             return true;
@@ -113,6 +127,70 @@ public static class ChapterOneArmorCandidateBuilder
 
         foreach (Renderer renderer in renderers)
             TowerFactory.SetColor(renderer.gameObject, tint);
+    }
+
+    static Transform ResolveTorsoBone(GameObject root)
+    {
+        Animator animator = root.GetComponentInChildren<Animator>(true);
+        Transform humanoidBone = ResolveHumanoidBone(animator, HumanBodyBones.UpperChest);
+        if (humanoidBone == null) humanoidBone = ResolveHumanoidBone(animator, HumanBodyBones.Chest);
+        if (humanoidBone == null) humanoidBone = ResolveHumanoidBone(animator, HumanBodyBones.Spine);
+        return humanoidBone != null ? humanoidBone : FindBoneByHints(root, TorsoBoneHints);
+    }
+
+    static Transform ResolveHeadBone(GameObject root)
+    {
+        Animator animator = root.GetComponentInChildren<Animator>(true);
+        Transform humanoidBone = ResolveHumanoidBone(animator, HumanBodyBones.Head);
+        return humanoidBone != null ? humanoidBone : FindBoneByHints(root, HeadBoneHints);
+    }
+
+    static Transform ResolveHumanoidBone(Animator animator, HumanBodyBones bone)
+    {
+        if (animator == null || animator.avatar == null || !animator.avatar.isHuman) return null;
+        return animator.GetBoneTransform(bone);
+    }
+
+    static Transform FindBoneByHints(GameObject root, string[] hints)
+    {
+        Transform[] all = root.GetComponentsInChildren<Transform>(true);
+        foreach (string hint in hints)
+        {
+            foreach (Transform transform in all)
+            {
+                if (transform == null || transform == root.transform) continue;
+                string normalized = NormalizeBoneName(transform.name);
+                if (normalized == hint || normalized.EndsWith(hint, StringComparison.Ordinal)) return transform;
+            }
+        }
+        return null;
+    }
+
+    static string NormalizeBoneName(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        char[] buffer = new char[value.Length];
+        int count = 0;
+        for (int i = 0; i < value.Length; i++)
+        {
+            char c = value[i];
+            if (!char.IsLetterOrDigit(c)) continue;
+            buffer[count++] = char.ToLowerInvariant(c);
+        }
+        return new string(buffer, 0, count);
+    }
+
+    static void AttachRigidlyToBone(GameObject item, Transform bone, string prefabPath, string label)
+    {
+        if (bone == null)
+        {
+            Debug.LogWarning("Chapter I " + label + " candidate could not resolve a rig bone for " + prefabPath + "; keeping the candidate in root-space for visual QA.");
+            return;
+        }
+
+        // Preserve the authored/rest-pose world transform while making the static mesh follow the animated bone.
+        // This is a rigid attachment only; it does not claim skinning or deformation quality.
+        item.transform.SetParent(bone, true);
     }
 
     static void RemoveProceduralArmorParts(GameObject root)
