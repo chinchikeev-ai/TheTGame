@@ -30,13 +30,14 @@ Last reviewed: 2026-09-13
 
 ## Automated validation
 - Unity architecture smoke validator: implemented
+- Chapter I release-candidate validator: `TheTroyGame/Validation/Validate Chapter I Release Candidate`; checks data, 5-event/11-13-minute contract, Menelaus final wave, EN/RU objectives/tutorial, required presentation wiring and legacy placeholder regressions
 - command-line architecture validation: implemented
 - EditMode architecture/data tests: implemented
 - isolated CampaignSave round-trip/reset/backup/Chapter VI→VII tests: implemented
 - PlayMode runtime graph tests: implemented
 - PlayMode acceptance tests cover first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, Hector battlefield bounds, Trojan Guard block-capacity/refill, enemy death-presentation lifecycle, final-wave boss data and Menelaus objective outcome
 - Chapter I pacing contract asserts auto-start target remains inside 11–13 minutes
-- GitHub Actions architecture guard: VERIFIED GREEN on the previous Chapter I beauty pass
+- GitHub Actions architecture guard: VERIFIED GREEN on Chapter I RC combat hardening
 - GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
 - therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
 - local Windows build after UI polish: VERIFIED GREEN with 0 errors
