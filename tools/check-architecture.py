@@ -28,6 +28,8 @@ REQUIRED = [
     "Assets/Editor/ChapterOneArtFreezeValidator.cs.meta",
     "Assets/Editor/ChapterOneWeaponSourceInstaller.cs",
     "Assets/Editor/ChapterOneWeaponSourceInstaller.cs.meta",
+    "Assets/Editor/ChapterOneSpearSourceInstaller.cs",
+    "Assets/Editor/ChapterOneSpearSourceInstaller.cs.meta",
     "Assets/Editor/ChapterOneProductionEquipmentBuilder.cs",
     "Assets/Editor/ChapterOneProductionEquipmentBuilder.cs.meta",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json",
@@ -107,16 +109,41 @@ if WEAPON_SOURCE.exists():
         if token not in source_text:
             errors.append(f"Chapter I bow source contract missing token: {token}")
 
+SPEAR_SOURCE = ROOT / "Assets" / "Editor" / "ChapterOneSpearSourceInstaller.cs"
+if SPEAR_SOURCE.exists():
+    source_text = SPEAR_SOURCE.read_text(encoding="utf-8")
+    for token in (
+        "DevHuang1/embervale-godot/aa6608e466c377ef588a09eca993f89c0c92470e",
+        'ExpectedGitBlobSha = "47ccecfadd1779ae687a94d780b81a8934855b7d"',
+        "ExpectedSize = 38556",
+        "Quaternius/MedievalWeapons/Spear.fbx",
+        "GitBlobSha(bytes)",
+    ):
+        if token not in source_text:
+            errors.append(f"Chapter I spear source contract missing token: {token}")
+
 EQUIPMENT = ROOT / "Assets" / "Editor" / "ChapterOneProductionEquipmentBuilder.cs"
 if EQUIPMENT.exists():
     equipment_text = EQUIPMENT.read_text(encoding="utf-8")
     for token in (
         "ChapterOneWeaponSourceInstaller.Install();",
         "ChapterOneWeaponSourceInstaller.LoadBow()",
+        "ChapterOneSpearSourceInstaller.Install();",
+        "ChapterOneSpearSourceInstaller.LoadSpear()",
         "Enemy_Archer.prefab",
         "Trojan_Archer.prefab",
+        "Enemy_Infantry.prefab",
+        "Enemy_HeavyHoplite.prefab",
+        "Enemy_ShieldBearer.prefab",
+        "Trojan_Infantry.prefab",
+        "Trojan_Guard.prefab",
+        "Hero_Hector.prefab",
         "SourceBow_Quaternius_MedievalWeapons",
+        "SourceSpear_Quaternius_MedievalWeapons",
         "RemoveProceduralBow",
+        "FindProceduralSpear",
+        'HasChild(transform, "Shaft")',
+        'HasChild(transform, "BronzeTip")',
     ):
         if token not in equipment_text:
             errors.append(f"Chapter I production equipment contract missing token: {token}")
