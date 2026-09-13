@@ -15,6 +15,6 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
     {
         MenuSceneNavigationFix legacy = FindFirstObjectByType<MenuSceneNavigationFix>();
         if (legacy != null)
-            Destroy(legacy.gameObject);
+            Object.Destroy(legacy.gameObject);
     }
 }
