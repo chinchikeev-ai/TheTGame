@@ -48,8 +48,10 @@ public class TowerPlacement : MonoBehaviour
     {
         if (SelectedTower == null) return;
         Vector3 position = SelectedTower.transform.position;
-        if (SelectedTower.Upgrade())
-            RuntimeEffects.Instance?.PlayBuildSuccess(position, true);
+        if (!SelectedTower.Upgrade()) return;
+
+        RuntimeEffects.Instance?.PlayBuildSuccessSound(true);
+        BuildFeedbackPresentation.Success(position, true);
     }
 
     public void SellSelected()
@@ -134,18 +136,23 @@ public class TowerPlacement : MonoBehaviour
 
         if (hoveredPoint != null && !hoveredPoint.Occupied)
         {
+            Vector3 feedbackPosition = hoveredPoint.transform.position + Vector3.up * .2f;
             if (hoveredPoint.TryBuild(SelectedBuildType))
             {
                 SelectedTower = hoveredPoint.Tower;
                 BuildModeActive = false;
                 ClearHoveredPoint();
                 placementPreview?.Hide();
-                RuntimeEffects.Instance?.PlayBuildSuccess(SelectedTower.transform.position + Vector3.up * .5f, false);
+
+                feedbackPosition = SelectedTower.transform.position + Vector3.up * .5f;
+                RuntimeEffects.Instance?.PlayBuildSuccessSound(false);
+                BuildFeedbackPresentation.Success(feedbackPosition, false);
                 rangeIndicator.Show(SelectedTower);
             }
             else
             {
-                RuntimeEffects.Instance?.PlayBuildDenied(hoveredPoint.transform.position + Vector3.up * .2f);
+                RuntimeEffects.Instance?.PlayBuildDeniedSound();
+                BuildFeedbackPresentation.Denied(feedbackPosition);
             }
         }
     }
