@@ -10,6 +10,8 @@ Last reviewed: 2026-09-13
 ## AI development readiness
 - `AGENTS.md`: authoritative AI entrypoint
 - `docs/AI_PIPELINE.md`: validation contract
+- `docs/PROJECT_STATUS.md`: product/runtime status
+- `docs/MODEL_ART_INVENTORY.md`: authoritative production-art/model completion status
 - `docs/ARCHITECTURE.md`: ownership/dependency rules
 - `docs/MODULE_MAP.md`: task-to-module routing
 - `docs/DATA_CATALOG.md`: authored-data ownership
@@ -69,11 +71,23 @@ Last reviewed: 2026-09-13
 - settings difficulty changes no longer reload the scene from the main menu
 - Chapter II selection gives explicit in-production feedback after Chapter I unlocks it
 
+## Production art status
+- `docs/MODEL_ART_INVENTORY.md` now defines the completion contract for all characters, Tower-Units, siege assets, vehicles, environments and named heroes
+- KayKit Adventurers is integrated as an approved CC0 source/base and prefab-generation pipeline
+- current KayKit-derived Greek/Trojan characters and Hector/Menelaus/Achilles are `GENERATED PLACEHOLDER`, not final production models
+- current Chapter I defensive structures are primarily `PROCEDURAL`; `TowerArtDirector` builds recognizable silhouettes from Unity primitives
+- current Chapter I coastline, Greek landing, ships, Troy wall/gate and environmental dressing are staged procedurally rather than as a complete authored production environment kit
+- `Assets/Resources/TroyCharacters` is a generated-output target and is not evidence that production assets are committed
+- the production destination for promoted final art is `Assets/Game/Art/...`
+- Chapter I currently has no character or Tower-Unit that qualifies as `DONE` under the production-art acceptance gate
+- first production-art priorities are Hector, Menelaus, Chapter I Greek regulars, Trojan Guard/Archer, six Chapter I Tower-Units, Greek landing ships, coast kit and Troy wall/gate kit
+
 ## Remaining Chapter I RC work
 - real 1x playthrough validation against the 11–13 minute target using the generated JSON/CSV playthrough report
 - final economy/enemy-pressure tuning from per-wave report deltas and peak alive-enemy pressure
 - final 16:9/RU visual-fit QA in real Play Mode
 - verify Menelaus encounter/reinforcement pressure on Story/Strategos/Legendary using runtime playthrough data
+- production-art replacement pass defined in `docs/MODEL_ART_INVENTORY.md`
 - replace procedural presentation hooks with fully authored/retargeted animation clips where final art requires them
 - pooling before campaign scale-up; not required for Chapter I acceptance unless profiling shows allocation spikes
 
@@ -81,4 +95,9 @@ Last reviewed: 2026-09-13
 - Unity CI activation/full green compile-test-build cycle is intentionally deferred until repository Unity activation is configured
 
 ## Next product gate
-Run Chapter I once at 1x in the Unity Editor/build, then inspect `ChapterI_Playthrough_*.json` and `ChapterI_Waves_*.csv` from `Application.persistentDataPath/Logs`. Use those metrics for the final pacing/economy/pressure adjustment and 16:9/RU visual-fit QA. After that Chapter I can be frozen as the campaign vertical-slice baseline and Chapter II production can begin.
+Chapter I has two independent gates before it can be frozen as the campaign baseline:
+
+1. **Gameplay RC gate:** run Chapter I once at 1x in the Unity Editor/build, inspect `ChapterI_Playthrough_*.json` and `ChapterI_Waves_*.csv`, tune pacing/economy/pressure, then complete 16:9/RU visual-fit QA.
+2. **Production-art gate:** promote the P0 Chapter I assets in `docs/MODEL_ART_INVENTORY.md` from `GENERATED PLACEHOLDER` / `PROCEDURAL` to `DONE` with final assets under `Assets/Game/Art/...` and real Play Mode QA.
+
+Chapter II production should not treat Chapter I art as finalized until both gates are closed.
