@@ -2,6 +2,8 @@ using UnityEngine;
 
 public sealed class HectorAbilityPresentation : MonoBehaviour
 {
+    const float ShieldVisualLifetime = 6.1f;
+
     static readonly Color WarCryColor = new Color(1f, .52f, .08f);
     static readonly Color ShieldWallColor = new Color(.95f, .72f, .18f);
     static readonly Color SpearColor = new Color(1f, .78f, .20f);
@@ -12,15 +14,17 @@ public sealed class HectorAbilityPresentation : MonoBehaviour
         RuntimeEffects.Instance?.PlayHeroPulse(transform.position, WarCryColor, radius * 1.35f, .55f);
     }
 
-    public void PlayShieldWall(ShieldWallZone zone)
+    public void PlayShieldWall(Vector3 center, Quaternion rotation)
     {
-        if (zone == null) return;
+        GameObject root = new GameObject("Hector Shield Wall Visual");
+        root.transform.position = center;
+        root.transform.rotation = rotation;
 
-        Transform root = zone.transform;
         for (int i = -1; i <= 1; i++)
-            CreateShield(root, i * 1.05f);
+            CreateShield(root.transform, i * 1.05f);
 
-        RuntimeEffects.Instance?.PlayHeroPulse(root.position, ShieldWallColor, 3.8f, .48f);
+        RuntimeEffects.Instance?.PlayHeroPulse(center, ShieldWallColor, 3.8f, .48f);
+        Destroy(root, ShieldVisualLifetime);
     }
 
     public void PlaySpearImpact(Vector3 point)
