@@ -37,6 +37,8 @@ Last reviewed: 2026-09-13
 - PlayMode runtime graph tests: implemented
 - PlayMode acceptance tests cover first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, Hector battlefield bounds, Trojan Guard block-capacity/refill, enemy death-presentation lifecycle, final-wave boss data and Menelaus objective outcome
 - Chapter I pacing contract asserts auto-start target remains inside 11–13 minutes
+- Chapter I 1x playthrough reporter: implemented; writes per-run JSON plus per-wave CSV under `Application.persistentDataPath/Logs`
+- playthrough report captures result, pacing verdict, score, kills/leaks, economy, gate HP, tower counts, Menelaus outcome, average FPS and per-wave target/actual duration, economy deltas and peak alive-enemy pressure
 - GitHub Actions architecture guard: VERIFIED GREEN on Chapter I RC combat hardening
 - GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
 - therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
@@ -68,8 +70,8 @@ Last reviewed: 2026-09-13
 - Chapter II selection gives explicit in-production feedback after Chapter I unlocks it
 
 ## Remaining Chapter I RC work
-- real 1x playthrough validation against the 11–13 minute target
-- final economy/enemy-pressure tuning from runtime logs
+- real 1x playthrough validation against the 11–13 minute target using the generated JSON/CSV playthrough report
+- final economy/enemy-pressure tuning from per-wave report deltas and peak alive-enemy pressure
 - final 16:9/RU visual-fit QA in real Play Mode
 - verify Menelaus encounter/reinforcement pressure on Story/Strategos/Legendary using runtime playthrough data
 - replace procedural presentation hooks with fully authored/retargeted animation clips where final art requires them
@@ -79,4 +81,4 @@ Last reviewed: 2026-09-13
 - Unity CI activation/full green compile-test-build cycle is intentionally deferred until repository Unity activation is configured
 
 ## Next product gate
-Run Chapter I once at 1x in the Unity Editor/build, verify 11–13 minute duration and visual fit, then use the generated runtime log for the final economy/pressure adjustment. After that Chapter I can be frozen as the campaign vertical-slice baseline and Chapter II production can begin.
+Run Chapter I once at 1x in the Unity Editor/build, then inspect `ChapterI_Playthrough_*.json` and `ChapterI_Waves_*.csv` from `Application.persistentDataPath/Logs`. Use those metrics for the final pacing/economy/pressure adjustment and 16:9/RU visual-fit QA. After that Chapter I can be frozen as the campaign vertical-slice baseline and Chapter II production can begin.
