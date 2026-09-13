@@ -60,7 +60,11 @@ public class Projectile : MonoBehaviour
 
         GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         Collider collider = projectileObject.GetComponent<Collider>();
-        if (collider != null) Destroy(collider);
+        if (collider != null)
+        {
+            collider.enabled = false;
+            Object.Destroy(collider);
+        }
         Projectile projectile = projectileObject.AddComponent<Projectile>();
         projectile.EnsureVisualComponents();
         return projectile;
