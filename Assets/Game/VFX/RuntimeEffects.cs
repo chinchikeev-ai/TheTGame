@@ -31,25 +31,22 @@ public class RuntimeEffects : MonoBehaviour
         Instance = null;
     }
 
-    public void PlayShot(TowerType type, Vector3 position)
+    public void PlayShotSound(TowerType type)
     {
         float freq = 820f;
         float dur = .055f;
         float volume = .12f;
-        Color flash = new Color(1f,.68f,.18f);
-        float size = .28f;
 
         switch(type)
         {
-            case TowerType.Cannon: freq=120f; dur=.14f; volume=.25f; flash=new Color(1f,.42f,.08f); size=.48f; break;
-            case TowerType.Slow: freq=520f; flash=new Color(.30f,.70f,1f); size=.34f; break;
-            case TowerType.SpearThrower: freq=680f; flash=new Color(.92f,.78f,.36f); size=.24f; break;
-            case TowerType.FireTower: freq=180f; dur=.10f; volume=.18f; flash=new Color(1f,.18f,.02f); size=.52f; break;
-            case TowerType.TrojanGuard: freq=260f; dur=.08f; flash=new Color(.76f,.38f,.12f); size=.26f; break;
+            case TowerType.Cannon: freq=120f; dur=.14f; volume=.25f; break;
+            case TowerType.Slow: freq=520f; break;
+            case TowerType.SpearThrower: freq=680f; break;
+            case TowerType.FireTower: freq=180f; dur=.10f; volume=.18f; break;
+            case TowerType.TrojanGuard: freq=260f; dur=.08f; break;
         }
 
         source.PlayOneShot(GetTone(freq,dur,volume));
-        Flash(position, flash, size);
     }
 
     public void PlayHitSound(bool heavy = false)
@@ -62,39 +59,62 @@ public class RuntimeEffects : MonoBehaviour
         source.PlayOneShot(GetTone(boss ? 70f : 150f, boss ? .35f : .16f, boss ? .32f : .16f));
     }
 
-    // Compatibility helper for callers that intentionally want generic hit visuals.
-    public void PlayHit(Vector3 position, bool heavy = false)
-    {
-        PlayHitSound(heavy);
-        Burst(position, heavy ? .75f : .34f, heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f));
-    }
-
-    // Compatibility helper. Combat targets should prefer CombatImpactPresentation + PlayDeathSound.
-    public void PlayDeath(Vector3 position, bool boss = false)
-    {
-        PlayDeathSound(boss);
-        Burst(position, boss ? 2.2f : .88f, boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f));
-        if (boss) BossShockwave(position);
-    }
-
-    public void PlayHeroPulse(Vector3 position, Color color, float radius = 2.8f, float duration = .42f)
+    public void PlayHeroAbilitySound()
     {
         source.PlayOneShot(GetTone(330f, .12f, .16f));
-        GroundPulse(position, color, radius, duration);
     }
 
-    public void PlayBuildSuccess(Vector3 position, bool upgrade)
+    public void PlayBuildSuccessSound(bool upgrade)
     {
         source.PlayOneShot(GetTone(upgrade ? 620f : 510f, upgrade ? .16f : .12f, .18f));
         source.PlayOneShot(GetTone(upgrade ? 880f : 720f, .08f, .10f));
-        GroundPulse(position, upgrade ? new Color(1f,.68f,.18f) : new Color(.24f,.88f,.34f), upgrade ? 1.45f : 1.15f, .32f);
-        BuildBurst(position, upgrade);
     }
 
-    public void PlayBuildDenied(Vector3 position)
+    public void PlayBuildDeniedSound()
     {
         source.PlayOneShot(GetTone(115f, .12f, .18f));
-        GroundPulse(position, new Color(.95f,.12f,.08f), .8f, .22f);
+    }
+
+    [System.Obsolete("Use PlayShotSound and CombatImpactPresentation.ShotFlash separately.")]
+    public void PlayShot(TowerType type, Vector3 position)
+    {
+        PlayShotSound(type);
+        CombatImpactPresentation.ShotFlash(position, type);
+    }
+
+    [System.Obsolete("Use PlayHitSound and CombatImpactPresentation.GenericHit separately.")]
+    public void PlayHit(Vector3 position, bool heavy = false)
+    {
+        PlayHitSound(heavy);
+        CombatImpactPresentation.GenericHit(position, heavy);
+    }
+
+    [System.Obsolete("Use PlayDeathSound and CombatImpactPresentation.GenericDeath separately.")]
+    public void PlayDeath(Vector3 position, bool boss = false)
+    {
+        PlayDeathSound(boss);
+        CombatImpactPresentation.GenericDeath(position, boss);
+    }
+
+    [System.Obsolete("Use PlayHeroAbilitySound and CombatImpactPresentation.Pulse separately.")]
+    public void PlayHeroPulse(Vector3 position, Color color, float radius = 2.8f, float duration = .42f)
+    {
+        PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(position, color, radius, duration);
+    }
+
+    [System.Obsolete("Use PlayBuildSuccessSound and BuildFeedbackPresentation.Success separately.")]
+    public void PlayBuildSuccess(Vector3 position, bool upgrade)
+    {
+        PlayBuildSuccessSound(upgrade);
+        BuildFeedbackPresentation.Success(position, upgrade);
+    }
+
+    [System.Obsolete("Use PlayBuildDeniedSound and BuildFeedbackPresentation.Denied separately.")]
+    public void PlayBuildDenied(Vector3 position)
+    {
+        PlayBuildDeniedSound();
+        BuildFeedbackPresentation.Denied(position);
     }
 
     AudioClip GetTone(float frequency, float duration, float volume)
@@ -121,35 +141,5 @@ public class RuntimeEffects : MonoBehaviour
         clip.SetData(data, 0);
         toneCache[key] = clip;
         return clip;
-    }
-
-    static void Flash(Vector3 position, Color color, float size)
-    {
-        CombatVfxPool.Spawn(PrimitiveType.Sphere, position, Vector3.one * size, Vector3.one * (size * .20f), color, .07f, Vector3.zero);
-    }
-
-    static void Burst(Vector3 position, float size, Color color)
-    {
-        CombatVfxPool.Spawn(PrimitiveType.Sphere, position, Vector3.one * .10f, Vector3.one * size, color, .18f, Vector3.up * .06f);
-    }
-
-    static void BuildBurst(Vector3 position, bool upgrade)
-    {
-        Color color = upgrade ? new Color(1f,.65f,.16f) : new Color(.30f,.92f,.38f);
-        for (int i = 0; i < 5; i++)
-        {
-            Vector3 start = position + new Vector3((i - 2) * .18f, .12f + (i % 2) * .08f, ((i * 3) % 5 - 2) * .12f);
-            CombatVfxPool.Spawn(PrimitiveType.Sphere, start, Vector3.one * .08f, Vector3.one * .015f, color, .28f + i * .025f, Vector3.up * .8f);
-        }
-    }
-
-    static void BossShockwave(Vector3 position)
-    {
-        CombatVfxPool.Spawn(PrimitiveType.Cylinder, position + Vector3.up * .04f, new Vector3(.2f,.02f,.2f), new Vector3(3.8f,.02f,3.8f), new Color(.95f,.62f,.12f), .5f, Vector3.zero);
-    }
-
-    static void GroundPulse(Vector3 position, Color color, float radius, float duration)
-    {
-        CombatVfxPool.Spawn(PrimitiveType.Cylinder, position + Vector3.up * .045f, new Vector3(.22f,.018f,.22f), new Vector3(radius,.018f,radius), color, duration, Vector3.zero);
     }
 }
