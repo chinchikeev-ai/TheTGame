@@ -23,13 +23,22 @@ public sealed class TowerProductionArtBinder : MonoBehaviour
     {
         Transform art = transform.Find("ArtEnhancement");
         if (art == null) return;
-        if (tower.Type == TowerType.Cannon) AddCrew(art,"Trojan_BallistaCrew",new Vector3(-.58f,.35f,-.40f),.58f,18f);
-        if (tower.Type == TowerType.Slow)
+        if (tower.Type == TowerType.Cannon && Has("Trojan_BallistaCrew"))
         {
+            HideNamed(art,"TowerCrew_Trojan_Infantry");
+            AddCrew(art,"Trojan_BallistaCrew",new Vector3(-.58f,.35f,-.40f),.58f,18f);
+        }
+        if (tower.Type == TowerType.Slow && Has("Trojan_PriestApollo"))
+        {
+            HideNamed(art,"PriestOfApollo");
             AddCrew(art,"Trojan_PriestApollo",new Vector3(-.22f,.35f,.08f),.56f,-8f);
             AddCrew(art,"Trojan_PriestApollo",new Vector3(.22f,.35f,-.02f),.56f,8f);
         }
-        if (tower.Type == TowerType.FireTower) AddCrew(art,"Trojan_FireKeeper",new Vector3(.52f,.26f,-.20f),.58f,0f);
+        if (tower.Type == TowerType.FireTower && Has("Trojan_FireKeeper"))
+        {
+            HideNamed(art,"FireKeeper");
+            AddCrew(art,"Trojan_FireKeeper",new Vector3(.52f,.26f,-.20f),.58f,0f);
+        }
     }
 
     void ApplyLevel()
@@ -54,6 +63,14 @@ public sealed class TowerProductionArtBinder : MonoBehaviour
         Collider col = ring.GetComponent<Collider>();
         if (col != null) Destroy(col);
         TowerFactory.SetColor(ring,c);
+    }
+
+    static bool Has(string prefabName) => Resources.Load<GameObject>(Root + prefabName) != null;
+
+    static void HideNamed(Transform root,string objectName)
+    {
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+            if (child != root && child.name == objectName) child.gameObject.SetActive(false);
     }
 
     static void AddCrew(Transform parent,string prefabName,Vector3 p,float scale,float yaw)
