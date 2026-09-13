@@ -7,6 +7,7 @@ public class TowerPlacement : MonoBehaviour
     public Camera gameCamera;
     public TowerType SelectedBuildType { get; private set; } = TowerType.SpearThrower;
     public Tower SelectedTower { get; private set; }
+    public bool BuildModeActive { get; private set; }
 
     BuildPoint hoveredPoint;
     TowerRangeIndicator rangeIndicator;
@@ -27,6 +28,18 @@ public class TowerPlacement : MonoBehaviour
     {
         SelectedBuildType = type;
         SelectedTower = null;
+        BuildModeActive = true;
+        ClearHoveredPoint();
+        rangeIndicator?.Hide();
+    }
+
+    public void CancelBuildMode()
+    {
+        BuildModeActive = false;
+        ClearHoveredPoint();
+        placementPreview?.Hide();
+        if (SelectedTower != null) rangeIndicator?.Show(SelectedTower);
+        else rangeIndicator?.Hide();
     }
 
     public void UpgradeSelected()
@@ -76,7 +89,7 @@ public class TowerPlacement : MonoBehaviour
         foreach (RaycastHit hit in hits)
         {
             if (hoveredTower == null) hoveredTower = hit.collider.GetComponentInParent<Tower>();
-            if (newPoint == null) newPoint = hit.collider.GetComponentInParent<BuildPoint>();
+            if (BuildModeActive && newPoint == null) newPoint = hit.collider.GetComponentInParent<BuildPoint>();
             if (hoveredTower != null || newPoint != null) break;
         }
 
@@ -86,16 +99,16 @@ public class TowerPlacement : MonoBehaviour
             hoveredPoint = newPoint;
         }
 
-        bool validPlacement = hoveredPoint != null && !hoveredPoint.Occupied && CanAffordSelected();
+        bool validPlacement = BuildModeActive && hoveredPoint != null && !hoveredPoint.Occupied && CanAffordSelected();
         if (hoveredPoint != null)
-            hoveredPoint.SetPlacementState(true, validPlacement);
+            hoveredPoint.SetPlacementState(BuildModeActive, validPlacement);
 
         if (hoveredTower != null)
         {
             placementPreview?.Hide();
             rangeIndicator.Show(hoveredTower);
         }
-        else if (hoveredPoint != null && !hoveredPoint.Occupied)
+        else if (BuildModeActive && hoveredPoint != null && !hoveredPoint.Occupied)
         {
             placementPreview?.Show(hoveredPoint, SelectedBuildType, validPlacement);
             float previewRange = BalanceCatalog.GetTower(SelectedBuildType).range;
@@ -111,8 +124,18 @@ public class TowerPlacement : MonoBehaviour
 
         if (hoveredTower != null)
         {
+            BuildModeActive = false;
+            ClearHoveredPoint();
+            placementPreview?.Hide();
             SelectedTower = hoveredTower;
             rangeIndicator.Show(SelectedTower);
+            return;
+        }
+
+        if (!BuildModeActive)
+        {
+            SelectedTower = null;
+            rangeIndicator.Hide();
             return;
         }
 
@@ -121,8 +144,10 @@ public class TowerPlacement : MonoBehaviour
             if (hoveredPoint.TryBuild(SelectedBuildType))
             {
                 SelectedTower = hoveredPoint.Tower;
+                BuildModeActive = false;
+                ClearHoveredPoint();
                 placementPreview?.Hide();
-                RuntimeEffects.Instance?.PlayBuildSuccess(hoveredPoint.transform.position + Vector3.up * .5f, false);
+                RuntimeEffects.Instance?.PlayBuildSuccess(SelectedTower.transform.position + Vector3.up * .5f, false);
                 rangeIndicator.Show(SelectedTower);
             }
             else
@@ -130,15 +155,11 @@ public class TowerPlacement : MonoBehaviour
                 RuntimeEffects.Instance?.PlayBuildDenied(hoveredPoint.transform.position + Vector3.up * .2f);
             }
         }
-        else
-        {
-            SelectedTower = null;
-        }
     }
 
     bool CanAffordSelected()
     {
-        return GameManager.Instance != null && GameManager.Instance.Money >= TowerFactory.GetCost(SelectedBuildType);
+        return BuildModeActive && GameManager.Instance != null && GameManager.Instance.Money >= TowerFactory.GetCost(SelectedBuildType);
     }
 
     void ClearHoveredPoint()
@@ -150,6 +171,7 @@ public class TowerPlacement : MonoBehaviour
 
     void OnDisable()
     {
+        BuildModeActive = false;
         ClearHoveredPoint();
         placementPreview?.Hide();
         if (rangeIndicator != null) rangeIndicator.Hide();
