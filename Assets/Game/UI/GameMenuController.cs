@@ -39,6 +39,7 @@ public class GameMenuController : MonoBehaviour
         if (startLevelAfterReload)
         {
             startLevelAfterReload = false;
+            openLevelSelectAfterReload = false;
             StartLevel();
         }
         else if (openLevelSelectAfterReload)
@@ -96,7 +97,7 @@ public class GameMenuController : MonoBehaviour
     {
         mainMenu = MakeMainMenuScreen(canvas, MainMenuBackgroundResource);
 
-        GameObject heroPanel = MakePanel(mainMenu.transform, "HeroPanel", new Vector2(.18f, .5f), new Vector2(620, 820), new Color(.055f, .028f, .018f, .74f));
+        GameObject heroPanel = MakePanel(mainMenu.transform, "HeroPanel", new Vector2(.18f, .5f), new Vector2(620, 820), new Color(.055f, .028f, .018f, .82f));
         heroPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(40f, 0f);
 
         AddTitle(heroPanel.transform, "THE TROY GAME", new Vector2(0, 270), 66, MenuTextStyle.Logo, new Vector2(560, 100));
@@ -105,7 +106,7 @@ public class GameMenuController : MonoBehaviour
         AddTitle(heroPanel.transform, L("DEFEND TROY • MASTER THE FIRE", "ЗАЩИТИ ТРОЮ • ПОВЕЛЕВАЙ ОГНЁМ"), new Vector2(0, 115), 18, MenuTextStyle.Muted, new Vector2(520, 46));
 
         AddButton(heroPanel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(0, 20), ShowLevels, new Vector2(430, 68), MenuButtonStyle.Highlight);
-        AddButton(heroPanel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(0, -64), ShowLevels, new Vector2(430, 62), MenuButtonStyle.Stone);
+        AddButton(heroPanel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(0, -64), StartNewCampaign, new Vector2(430, 62), MenuButtonStyle.Stone);
         AddButton(heroPanel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, -140), ShowLevels, new Vector2(430, 62), MenuButtonStyle.Stone);
         AddButton(heroPanel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, -216), ShowSettingsFromMain, new Vector2(430, 62), MenuButtonStyle.Ghost);
         AddButton(heroPanel.transform, L("EXIT", "ВЫХОД"), new Vector2(0, -292), QuitGame, new Vector2(430, 58), MenuButtonStyle.Ghost);
@@ -116,8 +117,8 @@ public class GameMenuController : MonoBehaviour
 
     void BuildLevelMenu()
     {
-        levelMenu = MakeScreen(canvas, "LevelSelect", new Color(.025f, .018f, .014f, .95f));
-        GameObject panel = MakePanel(levelMenu.transform, "LevelCard", new Vector2(.5f, .5f), new Vector2(980, 700), new Color(.08f, .045f, .025f, .97f));
+        levelMenu = MakeScreen(canvas, "LevelSelect", new Color(.025f, .018f, .014f, .985f));
+        GameObject panel = MakePanel(levelMenu.transform, "LevelCard", new Vector2(.5f, .5f), new Vector2(980, 700), new Color(.08f, .045f, .025f, .98f));
 
         AddTitle(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, 270), 48, MenuTextStyle.Logo);
         AddTitle(panel.transform, L("Choose where the defense of Troy continues", "Выберите этап обороны Трои"), new Vector2(0, 215), 20, MenuTextStyle.Muted);
@@ -133,14 +134,13 @@ public class GameMenuController : MonoBehaviour
 
     void BuildSettingsMenu()
     {
-        // ModernSettingsPresentation is the sole visual owner of settings content.
-        settingsMenu = MakeScreen(canvas, "Settings", new Color(.02f, .015f, .012f, .97f));
+        settingsMenu = MakeScreen(canvas, "Settings", new Color(.02f, .015f, .012f, .99f));
     }
 
     void BuildPauseMenu()
     {
-        pauseMenu = MakeScreen(canvas, "PauseMenu", new Color(.02f, .015f, .012f, .93f));
-        GameObject panel = MakePanel(pauseMenu.transform, "PauseCard", new Vector2(.5f, .5f), new Vector2(620, 680), new Color(.07f, .04f, .025f, .98f));
+        pauseMenu = MakeScreen(canvas, "PauseMenu", new Color(.02f, .015f, .012f, .985f));
+        GameObject panel = MakePanel(pauseMenu.transform, "PauseCard", new Vector2(.5f, .5f), new Vector2(620, 680), new Color(.07f, .04f, .025f, .99f));
 
         AddTitle(panel.transform, L("PAUSED", "ПАУЗА"), new Vector2(0, 250), 52, MenuTextStyle.Logo);
         AddTitle(panel.transform, L("The battle waits for your command", "Битва ждёт вашего приказа"), new Vector2(0, 202), 18, MenuTextStyle.Muted);
@@ -153,13 +153,13 @@ public class GameMenuController : MonoBehaviour
 
     void BuildEndMenu()
     {
-        endMenu = MakeScreen(canvas, "EndMenu", new Color(.02f, .015f, .012f, .95f));
-        GameObject panel = MakePanel(endMenu.transform, "ResultCard", new Vector2(.5f, .5f), new Vector2(980, 820), new Color(.07f, .04f, .025f, .98f));
+        endMenu = MakeScreen(canvas, "EndMenu", new Color(.02f, .015f, .012f, .99f));
+        GameObject panel = MakePanel(endMenu.transform, "ResultCard", new Vector2(.5f, .5f), new Vector2(980, 820), new Color(.07f, .04f, .025f, .99f));
 
         endTitle = AddTitle(panel.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0, 320), 58, MenuTextStyle.Logo);
         endSummary = AddTitle(panel.transform, "", new Vector2(0, 80), 22, MenuTextStyle.Normal, new Vector2(840, 420));
         AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-175, -300), RestartChapter, new Vector2(300, 64), MenuButtonStyle.Highlight);
-        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(175, -300), ReturnToMainMenu, new Vector2(300, 64), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(175, -300), ReturnToChapterSelect, new Vector2(300, 64), MenuButtonStyle.Stone);
     }
 
     void ToggleLanguage()
@@ -178,31 +178,10 @@ public class GameMenuController : MonoBehaviour
         GameObject oldCanvas = canvas != null ? canvas.gameObject : null;
         BuildUI();
 
-        if (wasSettings)
-        {
-            mainMenu.SetActive(false);
-            levelMenu.SetActive(false);
-            pauseMenu.SetActive(false);
-            settingsMenu.SetActive(true);
-        }
-        else if (wasPause)
-        {
-            mainMenu.SetActive(false);
-            levelMenu.SetActive(false);
-            settingsMenu.SetActive(false);
-            pauseMenu.SetActive(true);
-        }
-        else if (wasLevels)
-        {
-            mainMenu.SetActive(false);
-            settingsMenu.SetActive(false);
-            pauseMenu.SetActive(false);
-            levelMenu.SetActive(true);
-        }
-        else
-        {
-            ShowMainMenu();
-        }
+        if (wasSettings) SetScreenState(settings: true);
+        else if (wasPause) SetScreenState(pause: true);
+        else if (wasLevels) SetScreenState(levels: true);
+        else ShowMainMenu();
 
         if (oldCanvas != null) Destroy(oldCanvas);
     }
@@ -230,6 +209,13 @@ public class GameMenuController : MonoBehaviour
         RuntimeFileLogger.Event("CAMPAIGN", "Chapter II selected but content is not implemented yet");
     }
 
+    void StartNewCampaign()
+    {
+        CampaignController.Instance?.ResetProgress();
+        RuntimeFileLogger.Event("CAMPAIGN", "New campaign started from main menu");
+        ShowLevels();
+    }
+
     void StartLevel()
     {
         levelStarted = true;
@@ -237,38 +223,38 @@ public class GameMenuController : MonoBehaviour
         CombatControlsUI.ResumeConfiguredSpeed();
         if (Time.timeScale <= 0f) Time.timeScale = 1f;
         GameManager.Instance?.BeginRun();
-        mainMenu.SetActive(false);
-        levelMenu.SetActive(false);
-        settingsMenu.SetActive(false);
-        pauseMenu.SetActive(false);
-        endMenu.SetActive(false);
+        SetScreenState();
         spawner?.ActivateLevel();
     }
 
     void ShowMainMenu()
     {
         Time.timeScale = 0f;
+        levelStarted = false;
         paused = false;
         RefreshLevelSelect();
         SetScreenState(main: true);
     }
 
-    void ReturnToMainMenu()
+    public void ReturnToMainMenu()
     {
-        if (!levelStarted)
-        {
-            ShowLevels();
-            return;
-        }
+        RuntimeFileLogger.Event("MENU", "Returning to main menu through scene reset");
+        startLevelAfterReload = false;
+        openLevelSelectAfterReload = false;
+        RestartScene();
+    }
 
-        RuntimeFileLogger.Event("MENU", "Returning to main menu through clean scene reset");
-        if (GameManager.Instance != null && GameManager.Instance.GameEnded)
-            openLevelSelectAfterReload = true;
+    public void ReturnToChapterSelect()
+    {
+        RuntimeFileLogger.Event("MENU", "Returning to chapter select through scene reset");
+        startLevelAfterReload = false;
+        openLevelSelectAfterReload = true;
         RestartScene();
     }
 
     void ShowLevels()
     {
+        Time.timeScale = 0f;
         RefreshLevelSelect();
         SetScreenState(levels: true);
     }
@@ -282,41 +268,30 @@ public class GameMenuController : MonoBehaviour
     {
         paused = true;
         Time.timeScale = 0f;
-        if (pauseMenu != null) pauseMenu.SetActive(true);
+        SetScreenState(pause: true);
     }
 
     void Resume()
     {
         paused = false;
         CombatControlsUI.ResumeConfiguredSpeed();
-        if (pauseMenu != null) pauseMenu.SetActive(false);
-        if (settingsMenu != null) settingsMenu.SetActive(false);
+        SetScreenState();
     }
 
     void ShowSettingsFromMain()
     {
-        if (mainMenu != null) mainMenu.SetActive(false);
-        if (settingsMenu != null) settingsMenu.SetActive(true);
+        SetScreenState(settings: true);
     }
 
     void ShowSettingsFromPause()
     {
-        if (pauseMenu != null) pauseMenu.SetActive(false);
-        if (settingsMenu != null) settingsMenu.SetActive(true);
+        SetScreenState(settings: true);
     }
 
-    // Called by ModernSettingsPresentation via SendMessage. Keep method name stable.
     void BackFromSettings()
     {
-        if (settingsMenu != null) settingsMenu.SetActive(false);
-        if (levelStarted && paused)
-        {
-            if (pauseMenu != null) pauseMenu.SetActive(true);
-        }
-        else if (mainMenu != null)
-        {
-            mainMenu.SetActive(true);
-        }
+        if (levelStarted && paused) SetScreenState(pause: true);
+        else SetScreenState(main: true);
     }
 
     void ShowEnd()
@@ -324,6 +299,8 @@ public class GameMenuController : MonoBehaviour
         Time.timeScale = 0f;
         paused = true;
         GameManager gm = GameManager.Instance;
+        if (gm == null) return;
+
         bool victory = gm.EndMessage == "VICTORY";
         endTitle.text = victory ? L("VICTORY", "ПОБЕДА") : L("GAME OVER", "ПОРАЖЕНИЕ");
 
@@ -344,7 +321,7 @@ public class GameMenuController : MonoBehaviour
             $"{L("TOWERS BUILT", "ПОСТРОЕНО БАШЕН")}: {gm.TowersBuilt}    {L("SOLD", "ПРОДАНО")}: {gm.TowersSold}\n" +
             $"{L("GATE HP", "HP ВОРОТ")}: {gm.BaseHealth}/{gm.MaxBaseHealth}{unlock}";
 
-        if (endMenu != null) endMenu.SetActive(true);
+        SetScreenState(end: true);
     }
 
     public void RestartScene()
@@ -362,21 +339,27 @@ public class GameMenuController : MonoBehaviour
                 button.interactable = false;
         }
 
-        int buildIndex = scene.buildIndex >= 0 ? scene.buildIndex : 0;
-        SceneManager.LoadScene(buildIndex, LoadSceneMode.Single);
+        if (scene.buildIndex >= 0)
+            SceneManager.LoadScene(scene.buildIndex, LoadSceneMode.Single);
+        else if (!string.IsNullOrEmpty(scene.name))
+            SceneManager.LoadScene(scene.name, LoadSceneMode.Single);
+        else
+            SceneManager.LoadScene(0, LoadSceneMode.Single);
     }
 
     public void RestartChapter()
     {
         startLevelAfterReload = true;
+        openLevelSelectAfterReload = false;
         RestartScene();
     }
 
-    void QuitGame()
+    public void QuitGame()
     {
+        RuntimeFileLogger.Event("MENU", "Exit requested");
         Time.timeScale = 1f;
 #if UNITY_EDITOR
-        Debug.Log("EXIT requested. Application.Quit() is ignored inside the Unity Editor.");
+        UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
