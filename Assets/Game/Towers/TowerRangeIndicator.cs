@@ -5,7 +5,7 @@ public class TowerRangeIndicator : MonoBehaviour
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
 
-    readonly MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
+    MaterialPropertyBlock colorBlock;
     GameObject ring;
     Renderer ringRenderer;
     Tower selected;
@@ -64,6 +64,7 @@ public class TowerRangeIndicator : MonoBehaviour
     void ApplyColor(Color color)
     {
         if (ringRenderer == null) return;
+        if (colorBlock == null) colorBlock = new MaterialPropertyBlock();
         colorBlock.Clear();
         colorBlock.SetColor(BaseColorId, color);
         colorBlock.SetColor(ColorId, color);

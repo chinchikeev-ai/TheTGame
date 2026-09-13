@@ -5,7 +5,7 @@ public sealed class TowerPlacementPreview : MonoBehaviour
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
 
-    readonly MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
+    MaterialPropertyBlock colorBlock;
     GameObject ghost;
     Renderer[] renderers = System.Array.Empty<Renderer>();
     TowerType currentType;
@@ -69,6 +69,7 @@ public sealed class TowerPlacementPreview : MonoBehaviour
 
     void SetGhostState(bool valid)
     {
+        if (colorBlock == null) colorBlock = new MaterialPropertyBlock();
         Color tint = valid ? new Color(.35f, 1f, .45f, .42f) : new Color(1f, .26f, .18f, .42f);
         colorBlock.Clear();
         colorBlock.SetColor(BaseColorId, tint);

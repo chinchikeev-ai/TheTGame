@@ -102,7 +102,8 @@ public class Projectile : MonoBehaviour
         if (splashRadius > .01f)
         {
             float radiusSq = splashRadius * splashRadius;
-            foreach (Enemy enemy in EnemyRegistry.All)
+            List<Enemy> enemies = new List<Enemy>(EnemyRegistry.All);
+            foreach (Enemy enemy in enemies)
             {
                 if (enemy == null) continue;
                 if ((enemy.transform.position - point).sqrMagnitude <= radiusSq) Apply(enemy);

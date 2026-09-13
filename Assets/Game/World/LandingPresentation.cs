@@ -58,8 +58,17 @@ public class LandingPresentation : MonoBehaviour
         yield return StartCoroutine(DeployLandingParty(root.transform));
 
         RuntimeFileLogger.Event("CHAPTER", "Chapter I landing presentation completed");
+        StartFirstWaveAfterLanding();
         Destroy(title, 1.5f);
         Destroy(root, 10f);
+    }
+
+    void StartFirstWaveAfterLanding()
+    {
+        EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null || spawner.CurrentWave != 0 || !spawner.WaitingForManualStart || spawner.WaveActive) return;
+        RuntimeFileLogger.Event("CHAPTER", "Chapter I landing presentation auto-started first wave");
+        spawner.StartWaveNow();
     }
 
     IEnumerator DeployLandingParty(Transform parent)
@@ -113,6 +122,16 @@ public class LandingPresentation : MonoBehaviour
         GameObject soldier = prefab != null
             ? Instantiate(prefab)
             : RuntimeWarriorVisualFactory.CreateEnemyFallback(archetype, new Color(.42f,.52f,.68f));
+
+        foreach (Enemy enemy in soldier.GetComponentsInChildren<Enemy>(true))
+        {
+            EnemyRegistry.Unregister(enemy);
+            enemy.enabled = false;
+            Destroy(enemy);
+        }
+
+        foreach (EnemyHealthBar bar in soldier.GetComponentsInChildren<EnemyHealthBar>(true))
+            Destroy(bar);
 
         foreach (Collider collider in soldier.GetComponentsInChildren<Collider>(true))
         {

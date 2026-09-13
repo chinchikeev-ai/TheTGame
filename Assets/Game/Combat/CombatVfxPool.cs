@@ -26,7 +26,7 @@ public sealed class CombatVfxPool : MonoBehaviour
     static readonly int ColorId = Shader.PropertyToID("_Color");
 
     readonly List<Entry> entries = new List<Entry>(SphereCount + CubeCount + CylinderCount);
-    readonly MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+    MaterialPropertyBlock propertyBlock;
     Material sharedMaterial;
 
     public static void Spawn(
@@ -141,6 +141,7 @@ public sealed class CombatVfxPool : MonoBehaviour
     void ApplyColor(Renderer renderer, Color color)
     {
         if (renderer == null) return;
+        if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
         renderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetColor(BaseColorId, color);
         propertyBlock.SetColor(ColorId, color);

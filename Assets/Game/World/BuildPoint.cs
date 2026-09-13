@@ -20,7 +20,7 @@ public class BuildPoint : MonoBehaviour
     public bool Occupied { get; private set; }
     public Tower Tower { get; private set; }
 
-    readonly MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
+    MaterialPropertyBlock colorBlock;
     Renderer marker;
     Renderer rim;
     bool hovered;
@@ -126,6 +126,7 @@ public class BuildPoint : MonoBehaviour
 
     void SetRendererColor(Renderer renderer, Color color)
     {
+        if (colorBlock == null) colorBlock = new MaterialPropertyBlock();
         colorBlock.Clear();
         colorBlock.SetColor(BaseColorId, color);
         colorBlock.SetColor(ColorId, color);

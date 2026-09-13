@@ -5,7 +5,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
 
-    readonly MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
+    MaterialPropertyBlock colorBlock;
 
     HectorController hector;
     HectorAbilityPresentation abilityPresentation;
@@ -94,6 +94,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     void RefreshSelectionTint()
     {
         if (bodyRenderer == null) return;
+        if (colorBlock == null) colorBlock = new MaterialPropertyBlock();
 
         Color color = previousDowned
             ? new Color(.25f, .25f, .25f)

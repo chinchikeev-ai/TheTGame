@@ -56,6 +56,9 @@ public class GameMenuController : MonoBehaviour
     {
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
 
+        if (levelStarted && !paused && GameManager.Instance != null && !GameManager.Instance.GameEnded && Time.timeScale <= 0f)
+            CombatControlsUI.ResumeConfiguredSpeed();
+
         if (levelStarted && GameManager.Instance != null && !GameManager.Instance.GameEnded && GameInput.PausePressed())
             TogglePause();
 
@@ -232,6 +235,7 @@ public class GameMenuController : MonoBehaviour
         levelStarted = true;
         paused = false;
         CombatControlsUI.ResumeConfiguredSpeed();
+        if (Time.timeScale <= 0f) Time.timeScale = 1f;
         GameManager.Instance?.BeginRun();
         mainMenu.SetActive(false);
         levelMenu.SetActive(false);
