@@ -11,12 +11,12 @@ public sealed class ResultScreenPresentation : MonoBehaviour
 
     void Start()
     {
-        canvas = FindFirstObjectByType<Canvas>();
+        canvas = FindMenuCanvas();
     }
 
     void Update()
     {
-        if (canvas == null) canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) canvas = FindMenuCanvas();
         if (canvas == null) return;
 
         Transform endMenu = canvas.transform.Find("EndMenu");
@@ -34,6 +34,12 @@ public sealed class ResultScreenPresentation : MonoBehaviour
             Build(endMenu, gm);
             builtForCurrentResult = true;
         }
+    }
+
+    Canvas FindMenuCanvas()
+    {
+        GameObject menu = GameObject.Find("MenuCanvas");
+        return menu != null ? menu.GetComponent<Canvas>() : null;
     }
 
     void Build(Transform endMenu, GameManager gm)

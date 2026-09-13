@@ -22,7 +22,8 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Main combat HUD, controls, wave strip, build details | `ModernCombatHud` | Legacy combat/build canvases |
+| Main combat HUD layout/content, controls, wave strip, build details | `ModernCombatHud` | Legacy combat/build canvases; secondary layout owner |
+| Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
 | Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Legacy `ChapterFlowUI` canvas |
 | Hector health and ability HUD | `HectorHUD` | Main combat resources/build UI |
 | Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
@@ -30,7 +31,7 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Visual next-wave enemy cards | `VisualWavePreviewPresentation` | General combat HUD |
 | Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card |
 | End-of-battle menu/result shell | `GameMenuController` | Extra result canvases |
-| Detailed end-of-battle metrics | `ResultScreenPresentation` | Independent result screen |
+| Detailed end-of-battle metrics inside `MenuCanvas/EndMenu` | `ResultScreenPresentation` | Independent result screen/canvas |
 
 ## Compatibility-only UI
 
@@ -43,6 +44,10 @@ These classes must not create visual canvases. They remain only so older seriali
 - `CombatControlsUI` — speed state/actions only; graphics belong to `ModernCombatHud`.
 
 `ExtendedBalanceUI` is dormant and is not auto-created; its enemy-hover inspector is a separate optional diagnostic surface, not part of the canonical combat HUD.
+
+## Decorator rule
+
+A decorator may skin an object owned elsewhere, but it must not become a second layout or content builder. `TroyCombatHudSkin` may replace panel/button sprites and colors, replace the existing `CoinIcon` sprite, and add non-overlapping semantic icons. It must not resize/re-anchor HUD panels or create a second icon for information already rendered by `ModernCombatHud`.
 
 ## Character visual resolution order
 
