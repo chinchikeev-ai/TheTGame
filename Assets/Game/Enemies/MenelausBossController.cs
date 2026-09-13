@@ -10,6 +10,7 @@ public class MenelausBossController : MonoBehaviour
 
     Enemy self;
     EnemySpawner spawner;
+    CharacterPresentationState presentation;
     float nextAuraPulse;
     float nextReinforcement;
     LineRenderer outerRing;
@@ -21,6 +22,8 @@ public class MenelausBossController : MonoBehaviour
     {
         self = GetComponent<Enemy>();
         spawner = FindFirstObjectByType<EnemySpawner>();
+        presentation = GetComponent<CharacterPresentationState>();
+        if (presentation == null) presentation = gameObject.AddComponent<CharacterPresentationState>();
         nextReinforcement = Time.time + 8f;
         BuildAuraVisual();
         RuntimeFileLogger.Event("BOSS", "Menelaus entered battle");
@@ -48,6 +51,7 @@ public class MenelausBossController : MonoBehaviour
             nextReinforcement = Time.time + reinforcementInterval;
             if (spawner != null)
             {
+                presentation?.PlayCommand();
                 spawner.SpawnMenelausReinforcements(reinforcementCount);
                 RuntimeFileLogger.Event("BOSS", $"Menelaus called reinforcements count={reinforcementCount}");
             }
