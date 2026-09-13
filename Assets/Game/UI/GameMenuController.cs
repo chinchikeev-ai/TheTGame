@@ -5,19 +5,9 @@ using UnityEngine.UI;
 public class GameMenuController : MonoBehaviour
 {
     const string MainMenuBackgroundResource = "Menu/Main_screen";
+
     static bool openLevelSelectAfterReload;
     static bool startLevelAfterReload;
-
-    static readonly Vector2[] SupportedResolutions =
-    {
-        new Vector2(1366, 768),
-        new Vector2(1600, 900),
-        new Vector2(1920, 1080),
-        new Vector2(2560, 1440),
-        new Vector2(3840, 2160)
-    };
-
-    static readonly int[] FpsOptions = { 30, 60, 120, 144, -1 };
 
     Canvas canvas;
     EnemySpawner spawner;
@@ -26,26 +16,11 @@ public class GameMenuController : MonoBehaviour
     GameObject settingsMenu;
     GameObject pauseMenu;
     GameObject endMenu;
-    Button startWaveButton;
-    Text countdownText;
     Text endTitle;
     Text endSummary;
     Text map2Label;
     Text map2Info;
-    Text difficultyLabel;
-    Text masterVolumeValue;
-    Text musicVolumeValue;
-    Text resolutionValue;
-    Text fullscreenValue;
-    Text vsyncValue;
-    Text fpsValue;
-    Text languageValue;
-    Text qualityValue;
-    Slider masterVolumeSlider;
-    Slider musicVolumeSlider;
 
-    int resolutionIndex;
-    int fpsIndex;
     bool levelStarted;
     bool paused;
     bool reloading;
@@ -59,7 +34,6 @@ public class GameMenuController : MonoBehaviour
         GameUserSettings.ApplySaved();
         spawner = FindFirstObjectByType<EnemySpawner>();
         BuildUI();
-        SyncSettingsUi();
 
         if (startLevelAfterReload)
         {
@@ -84,19 +58,7 @@ public class GameMenuController : MonoBehaviour
         if (levelStarted && GameManager.Instance != null && !GameManager.Instance.GameEnded && GameInput.PausePressed())
             TogglePause();
 
-        if (spawner != null && startWaveButton != null)
-        {
-            startWaveButton.gameObject.SetActive(levelStarted && !paused && !spawner.WaveActive && GameManager.Instance != null && !GameManager.Instance.GameEnded);
-
-            if (spawner.InterWaveCountdown > 0f)
-                countdownText.text = L("AUTO START  ", "АВТОСТАРТ  ") + Mathf.CeilToInt(spawner.InterWaveCountdown) + L("s", "с");
-            else if (!spawner.WaveActive)
-                countdownText.text = L("READY", "ГОТОВО");
-            else
-                countdownText.text = "";
-        }
-
-        if (levelStarted && GameManager.Instance != null && GameManager.Instance.GameEnded && !endMenu.activeSelf)
+        if (levelStarted && GameManager.Instance != null && GameManager.Instance.GameEnded && endMenu != null && !endMenu.activeSelf)
             ShowEnd();
     }
 
@@ -167,6 +129,7 @@ public class GameMenuController : MonoBehaviour
 
     void BuildSettingsMenu()
     {
+        // ModernSettingsPresentation is the sole visual owner of settings content.
         settingsMenu = MakeScreen("Settings", new Color(.02f, .015f, .012f, .97f));
     }
 
@@ -195,141 +158,6 @@ public class GameMenuController : MonoBehaviour
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(175, -300), ReturnToMainMenu, new Vector2(300, 64), MenuButtonStyle.Stone);
     }
 
-    void BuildWaveControls()
-    {
-        GameObject wavePanel = MakePanel(canvas.transform, "WaveControls", new Vector2(.5f, 0f), new Vector2(390, 120), new Color(.06f, .035f, .02f, .90f));
-        wavePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 84);
-        startWaveButton = AddButton(wavePanel.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0, 22), delegate { if (spawner != null) spawner.StartWaveNow(); }, new Vector2(290, 56), MenuButtonStyle.Highlight);
-        countdownText = AddTitle(wavePanel.transform, L("READY", "ГОТОВО"), new Vector2(0, -32), 16, MenuTextStyle.Muted, new Vector2(330, 38));
-        startWaveButton.gameObject.SetActive(false);
-    }
-
-    void OnMasterVolumeChanged(float value)
-    {
-        GameUserSettings.MasterVolume = value;
-        if (masterVolumeValue != null) masterVolumeValue.text = Mathf.RoundToInt(value * 100f) + "%";
-    }
-
-    void OnMusicVolumeChanged(float value)
-    {
-        GameUserSettings.MusicVolume = value;
-        if (musicVolumeValue != null) musicVolumeValue.text = Mathf.RoundToInt(value * 100f) + "%";
-    }
-
-    void ToggleFullscreen()
-    {
-        GameUserSettings.Fullscreen = !GameUserSettings.Fullscreen;
-        RefreshSettingsLabels();
-    }
-
-    void CycleResolution()
-    {
-        resolutionIndex = (resolutionIndex + 1) % SupportedResolutions.Length;
-        Vector2 resolution = SupportedResolutions[resolutionIndex];
-        GameUserSettings.SetResolution((int)resolution.x, (int)resolution.y);
-        RefreshSettingsLabels();
-    }
-
-    void ToggleVSync()
-    {
-        GameUserSettings.VSync = !GameUserSettings.VSync;
-        RefreshSettingsLabels();
-    }
-
-    void CycleFpsLimit()
-    {
-        fpsIndex = (fpsIndex + 1) % FpsOptions.Length;
-        GameUserSettings.FpsLimit = FpsOptions[fpsIndex];
-        RefreshSettingsLabels();
-    }
-
-    void CycleQuality()
-    {
-        int count = QualitySettings.names.Length;
-        if (count <= 0) return;
-        int next = (QualitySettings.GetQualityLevel() + 1) % count;
-        QualitySettings.SetQualityLevel(next, true);
-        RefreshSettingsLabels();
-    }
-
-    void ResetSettings()
-    {
-        GameUserSettings.ResetToDefaults();
-        SyncSettingsUi();
-    }
-
-    void ApplySettingsAndBack()
-    {
-        GameUserSettings.Save();
-        GameUserSettings.ApplySaved();
-        BackFromSettings();
-    }
-
-    void SyncSettingsUi()
-    {
-        FindClosestResolutionIndex();
-        fpsIndex = FindFpsIndex(GameUserSettings.FpsLimit);
-
-        if (masterVolumeSlider != null)
-            masterVolumeSlider.SetValueWithoutNotify(GameUserSettings.MasterVolume);
-        if (musicVolumeSlider != null)
-            musicVolumeSlider.SetValueWithoutNotify(GameUserSettings.MusicVolume);
-
-        RefreshSettingsLabels();
-        RefreshDifficultyLabel();
-    }
-
-    void RefreshSettingsLabels()
-    {
-        if (masterVolumeValue != null)
-            masterVolumeValue.text = Mathf.RoundToInt(GameUserSettings.MasterVolume * 100f) + "%";
-        if (musicVolumeValue != null)
-            musicVolumeValue.text = Mathf.RoundToInt(GameUserSettings.MusicVolume * 100f) + "%";
-
-        Vector2 resolution = SupportedResolutions[Mathf.Clamp(resolutionIndex, 0, SupportedResolutions.Length - 1)];
-        if (resolutionValue != null)
-            resolutionValue.text = $"{(int)resolution.x} × {(int)resolution.y}";
-        if (fullscreenValue != null)
-            fullscreenValue.text = GameUserSettings.Fullscreen ? L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН") : L("WINDOWED", "ОКОННЫЙ");
-        if (vsyncValue != null)
-            vsyncValue.text = GameUserSettings.VSync ? L("ON", "ВКЛ") : L("OFF", "ВЫКЛ");
-        if (fpsValue != null)
-            fpsValue.text = GameUserSettings.FpsLimit <= 0 ? L("UNLIMITED", "БЕЗ ЛИМИТА") : GameUserSettings.FpsLimit.ToString();
-        if (languageValue != null)
-            languageValue.text = GameLanguage.Russian ? "Русский" : "English";
-        if (qualityValue != null)
-        {
-            string[] names = QualitySettings.names;
-            qualityValue.text = names.Length > 0 ? names[Mathf.Clamp(QualitySettings.GetQualityLevel(), 0, names.Length - 1)] : "Default";
-        }
-    }
-
-    void FindClosestResolutionIndex()
-    {
-        float best = float.MaxValue;
-        int bestIndex = 0;
-
-        for (int i = 0; i < SupportedResolutions.Length; i++)
-        {
-            Vector2 candidate = SupportedResolutions[i];
-            float distance = Mathf.Abs(candidate.x - GameUserSettings.ResolutionWidth) + Mathf.Abs(candidate.y - GameUserSettings.ResolutionHeight);
-            if (distance < best)
-            {
-                best = distance;
-                bestIndex = i;
-            }
-        }
-
-        resolutionIndex = bestIndex;
-    }
-
-    int FindFpsIndex(int fps)
-    {
-        for (int i = 0; i < FpsOptions.Length; i++)
-            if (FpsOptions[i] == fps) return i;
-        return 1;
-    }
-
     void ToggleLanguage()
     {
         bool wasSettings = settingsMenu != null && settingsMenu.activeSelf;
@@ -345,7 +173,6 @@ public class GameMenuController : MonoBehaviour
     {
         GameObject oldCanvas = canvas != null ? canvas.gameObject : null;
         BuildUI();
-        SyncSettingsUi();
 
         if (wasSettings)
         {
@@ -373,27 +200,7 @@ public class GameMenuController : MonoBehaviour
             ShowMainMenu();
         }
 
-        if (oldCanvas != null)
-            Destroy(oldCanvas);
-    }
-
-    void CycleDifficulty()
-    {
-        if (levelStarted)
-        {
-            RuntimeFileLogger.Event("DIFFICULTY", "Difficulty change ignored during active run");
-            return;
-        }
-        if (CampaignController.Instance == null) return;
-        CampaignDifficulty difficulty = CampaignController.Instance.CycleDifficulty();
-        RuntimeFileLogger.Event("DIFFICULTY", $"Selected {difficulty}");
-        RefreshDifficultyLabel();
-    }
-
-    void RefreshDifficultyLabel()
-    {
-        if (difficultyLabel != null)
-            difficultyLabel.text = L("DIFFICULTY", "СЛОЖНОСТЬ") + ": " + DifficultyRules.Label(CurrentDifficulty);
+        if (oldCanvas != null) Destroy(oldCanvas);
     }
 
     void RefreshLevelSelect()
@@ -430,7 +237,7 @@ public class GameMenuController : MonoBehaviour
         settingsMenu.SetActive(false);
         pauseMenu.SetActive(false);
         endMenu.SetActive(false);
-        if (spawner != null) spawner.ActivateLevel();
+        spawner?.ActivateLevel();
     }
 
     void ShowMainMenu()
@@ -438,11 +245,7 @@ public class GameMenuController : MonoBehaviour
         Time.timeScale = 0f;
         paused = false;
         RefreshLevelSelect();
-        if (mainMenu != null) mainMenu.SetActive(true);
-        if (levelMenu != null) levelMenu.SetActive(false);
-        if (settingsMenu != null) settingsMenu.SetActive(false);
-        if (pauseMenu != null) pauseMenu.SetActive(false);
-        if (endMenu != null) endMenu.SetActive(false);
+        SetScreenState(main: true);
     }
 
     void ReturnToMainMenu()
@@ -462,10 +265,7 @@ public class GameMenuController : MonoBehaviour
     void ShowLevels()
     {
         RefreshLevelSelect();
-        mainMenu.SetActive(false);
-        levelMenu.SetActive(true);
-        settingsMenu.SetActive(false);
-        pauseMenu.SetActive(false);
+        SetScreenState(levels: true);
     }
 
     void TogglePause()
@@ -477,36 +277,41 @@ public class GameMenuController : MonoBehaviour
     {
         paused = true;
         Time.timeScale = 0f;
-        pauseMenu.SetActive(true);
+        if (pauseMenu != null) pauseMenu.SetActive(true);
     }
 
     void Resume()
     {
         paused = false;
         CombatControlsUI.ResumeConfiguredSpeed();
-        pauseMenu.SetActive(false);
-        settingsMenu.SetActive(false);
+        if (pauseMenu != null) pauseMenu.SetActive(false);
+        if (settingsMenu != null) settingsMenu.SetActive(false);
     }
 
     void ShowSettingsFromMain()
     {
-        mainMenu.SetActive(false);
-        SyncSettingsUi();
-        settingsMenu.SetActive(true);
+        if (mainMenu != null) mainMenu.SetActive(false);
+        if (settingsMenu != null) settingsMenu.SetActive(true);
     }
 
     void ShowSettingsFromPause()
     {
-        pauseMenu.SetActive(false);
-        SyncSettingsUi();
-        settingsMenu.SetActive(true);
+        if (pauseMenu != null) pauseMenu.SetActive(false);
+        if (settingsMenu != null) settingsMenu.SetActive(true);
     }
 
+    // Called by ModernSettingsPresentation via SendMessage. Keep method name stable.
     void BackFromSettings()
     {
-        settingsMenu.SetActive(false);
-        if (levelStarted && paused) pauseMenu.SetActive(true);
-        else mainMenu.SetActive(true);
+        if (settingsMenu != null) settingsMenu.SetActive(false);
+        if (levelStarted && paused)
+        {
+            if (pauseMenu != null) pauseMenu.SetActive(true);
+        }
+        else if (mainMenu != null)
+        {
+            mainMenu.SetActive(true);
+        }
     }
 
     void ShowEnd()
@@ -534,7 +339,7 @@ public class GameMenuController : MonoBehaviour
             $"{L("TOWERS BUILT", "ПОСТРОЕНО БАШЕН")}: {gm.TowersBuilt}    {L("SOLD", "ПРОДАНО")}: {gm.TowersSold}\n" +
             $"{L("GATE HP", "HP ВОРОТ")}: {gm.BaseHealth}/{gm.MaxBaseHealth}{unlock}";
 
-        endMenu.SetActive(true);
+        if (endMenu != null) endMenu.SetActive(true);
     }
 
     public void RestartScene()
@@ -546,8 +351,11 @@ public class GameMenuController : MonoBehaviour
         Time.timeScale = 1f;
         paused = false;
 
-        foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
-            button.interactable = false;
+        if (canvas != null)
+        {
+            foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
+                button.interactable = false;
+        }
 
         int buildIndex = scene.buildIndex >= 0 ? scene.buildIndex : 0;
         SceneManager.LoadScene(buildIndex, LoadSceneMode.Single);
@@ -567,6 +375,15 @@ public class GameMenuController : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+
+    void SetScreenState(bool main = false, bool levels = false, bool settings = false, bool pause = false, bool end = false)
+    {
+        if (mainMenu != null) mainMenu.SetActive(main);
+        if (levelMenu != null) levelMenu.SetActive(levels);
+        if (settingsMenu != null) settingsMenu.SetActive(settings);
+        if (pauseMenu != null) pauseMenu.SetActive(pause);
+        if (endMenu != null) endMenu.SetActive(end);
     }
 
     GameObject MakeScreen(string name, Color color)
@@ -626,7 +443,7 @@ public class GameMenuController : MonoBehaviour
         return go;
     }
 
-    void StretchToParent(RectTransform rect)
+    static void StretchToParent(RectTransform rect)
     {
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;
@@ -665,79 +482,6 @@ public class GameMenuController : MonoBehaviour
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
         rect.anchoredPosition = position;
         rect.sizeDelta = new Vector2(width, 2f);
-    }
-
-    void AddSectionLabel(Transform parent, string label, Vector2 position)
-    {
-        Text text = AddTitle(parent, label, position, 18, MenuTextStyle.Subtitle, new Vector2(470, 40));
-        text.alignment = TextAnchor.MiddleLeft;
-    }
-
-    Slider AddSliderRow(Transform parent, string label, Vector2 position, float value, UnityEngine.Events.UnityAction<float> onChanged, out Text valueText)
-    {
-        Text labelText = AddTitle(parent, label, position + new Vector2(-65, 30), 18, MenuTextStyle.Normal, new Vector2(330, 34));
-        labelText.alignment = TextAnchor.MiddleLeft;
-
-        GameObject sliderObject = new GameObject(label + " Slider");
-        sliderObject.transform.SetParent(parent, false);
-        Slider slider = sliderObject.AddComponent<Slider>();
-        RectTransform rect = sliderObject.GetComponent<RectTransform>();
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-        rect.anchoredPosition = position + new Vector2(-25, -12);
-        rect.sizeDelta = new Vector2(330, 28);
-
-        GameObject background = new GameObject("Background");
-        background.transform.SetParent(sliderObject.transform, false);
-        Image backgroundImage = background.AddComponent<Image>();
-        backgroundImage.color = new Color(.20f, .12f, .08f, 1f);
-        StretchToParent(backgroundImage.rectTransform);
-
-        GameObject fillArea = new GameObject("Fill Area");
-        fillArea.transform.SetParent(sliderObject.transform, false);
-        RectTransform fillAreaRect = fillArea.AddComponent<RectTransform>();
-        StretchToParent(fillAreaRect);
-        fillAreaRect.offsetMin = new Vector2(4, 7);
-        fillAreaRect.offsetMax = new Vector2(-4, -7);
-
-        GameObject fill = new GameObject("Fill");
-        fill.transform.SetParent(fillArea.transform, false);
-        Image fillImage = fill.AddComponent<Image>();
-        fillImage.color = new Color(.75f, .22f, .08f, 1f);
-        StretchToParent(fillImage.rectTransform);
-        slider.fillRect = fillImage.rectTransform;
-
-        GameObject handleArea = new GameObject("Handle Slide Area");
-        handleArea.transform.SetParent(sliderObject.transform, false);
-        RectTransform handleAreaRect = handleArea.AddComponent<RectTransform>();
-        StretchToParent(handleAreaRect);
-        handleAreaRect.offsetMin = new Vector2(8, 0);
-        handleAreaRect.offsetMax = new Vector2(-8, 0);
-
-        GameObject handle = new GameObject("Handle");
-        handle.transform.SetParent(handleArea.transform, false);
-        Image handleImage = handle.AddComponent<Image>();
-        handleImage.color = new Color(1f, .72f, .28f, 1f);
-        RectTransform handleRect = handleImage.rectTransform;
-        handleRect.sizeDelta = new Vector2(22, 38);
-
-        slider.handleRect = handleRect;
-        slider.targetGraphic = handleImage;
-        slider.direction = Slider.Direction.LeftToRight;
-        slider.minValue = 0f;
-        slider.maxValue = 1f;
-        slider.SetValueWithoutNotify(value);
-        slider.onValueChanged.AddListener(onChanged);
-
-        valueText = AddTitle(parent, Mathf.RoundToInt(value * 100f) + "%", position + new Vector2(195, -12), 18, MenuTextStyle.Subtitle, new Vector2(80, 34));
-        return slider;
-    }
-
-    Text AddSelectorRow(Transform parent, string label, Vector2 position, UnityEngine.Events.UnityAction action)
-    {
-        Text labelText = AddTitle(parent, label, position + new Vector2(-70, 28), 18, MenuTextStyle.Normal, new Vector2(330, 34));
-        labelText.alignment = TextAnchor.MiddleLeft;
-        Button button = AddButton(parent, "", position + new Vector2(10, -15), action, new Vector2(430, 54), MenuButtonStyle.Stone);
-        return button.GetComponentInChildren<Text>();
     }
 
     Button AddButton(Transform parent, string label, Vector2 position, UnityEngine.Events.UnityAction action, Vector2? customSize = null, MenuButtonStyle style = MenuButtonStyle.Default)
@@ -785,7 +529,7 @@ public class GameMenuController : MonoBehaviour
         return button;
     }
 
-    Color TextColor(MenuTextStyle style)
+    static Color TextColor(MenuTextStyle style)
     {
         switch (style)
         {
@@ -796,7 +540,7 @@ public class GameMenuController : MonoBehaviour
         }
     }
 
-    Color ButtonColor(MenuButtonStyle style)
+    static Color ButtonColor(MenuButtonStyle style)
     {
         switch (style)
         {
