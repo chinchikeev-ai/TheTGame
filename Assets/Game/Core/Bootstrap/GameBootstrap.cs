@@ -43,6 +43,7 @@ public class GameBootstrap : MonoBehaviour
         cinematic.Initialize(cam);
 
         new GameObject("ModernCombatHUD").AddComponent<ModernCombatHud>();
+        new GameObject("ChapterOneGuidance").AddComponent<ChapterOneGuidancePresentation>();
         new GameObject("GameMenu").AddComponent<GameMenuController>();
         new GameObject("GameMenuUX").AddComponent<GameMenuUxEnhancer>();
         new GameObject("GameMenuProgress").AddComponent<MenuProgressPresentation>();
