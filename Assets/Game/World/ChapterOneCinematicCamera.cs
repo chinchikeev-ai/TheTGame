@@ -32,19 +32,25 @@ public class ChapterOneCinematicCamera : MonoBehaviour
     {
         if (controller != null) controller.enabled = false;
 
-        Vector3 sea = new Vector3(-8.5f, 24.5f, -8.0f);
-        Quaternion seaRot = Quaternion.Euler(70f, 18f, 0f);
-        Vector3 gate = new Vector3(5.8f, 23.0f, -5.2f);
-        Quaternion gateRot = Quaternion.Euler(72f, -11f, 0f);
+        Vector3 sea = new Vector3(-8.8f, 24.8f, -7.2f);
+        Quaternion seaRot = Quaternion.Euler(70f, 16f, 0f);
+        Vector3 battlefield = new Vector3(.25f, 23.9f, -5.7f);
+        Quaternion battlefieldRot = Quaternion.Euler(72f, 3f, 0f);
+        Vector3 gate = new Vector3(6.8f, 22.7f, -5.0f);
+        Quaternion gateRot = Quaternion.Euler(72f, -10f, 0f);
 
         cam.transform.position = sea;
         cam.transform.rotation = seaRot;
-        cam.orthographicSize = 8.9f;
+        cam.orthographicSize = 8.8f;
 
-        yield return MoveShot(sea, seaRot, 8.9f, gate, gateRot, 8.2f, 2.25f);
-        yield return new WaitForSecondsRealtime(.35f);
-        yield return MoveShot(gate, gateRot, 8.2f, gameplayPosition, gameplayRotation, gameplaySize, 1.65f);
+        yield return MoveShot(sea, seaRot, 8.8f, battlefield, battlefieldRot, 8.45f, 1.45f);
+        yield return MoveShot(battlefield, battlefieldRot, 8.45f, gate, gateRot, 7.85f, 1.20f);
+        yield return new WaitForSecondsRealtime(.28f);
+        yield return MoveShot(gate, gateRot, 7.85f, gameplayPosition, gameplayRotation, gameplaySize, 1.40f);
 
+        cam.transform.position = gameplayPosition;
+        cam.transform.rotation = gameplayRotation;
+        cam.orthographicSize = gameplaySize;
         if (controller != null) controller.enabled = true;
     }
 
