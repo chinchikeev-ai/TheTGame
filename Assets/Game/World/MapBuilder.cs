@@ -63,11 +63,15 @@ public class MapBuilder : MonoBehaviour
         GameObject root = new GameObject("Chapter01_Roads");
         Vector2Int[] routeA = { C(0,8),C(5,8),C(5,6),C(13,6),C(16,6) };
         Vector2Int[] routeB = { C(0,3),C(5,3),C(5,5),C(13,5),C(13,6),C(16,6) };
-        CreateRoadRibbon(root.transform,routeA,"Upper Track");
-        CreateRoadRibbon(root.transform,routeB,"Lower Track");
+        CreateRoadRibbon(root.transform,routeA,"Upper Track",11);
+        CreateRoadRibbon(root.transform,routeB,"Lower Track",23);
+
+        CreateRoadJunction(root.transform,C(5,6),1.42f,-8f);
+        CreateRoadJunction(root.transform,C(13,6),1.58f,7f);
+        CreateRoadJunction(root.transform,C(16,6),1.46f,-3f);
     }
 
-    void CreateRoadRibbon(Transform parent, Vector2Int[] cells, string name)
+    void CreateRoadRibbon(Transform parent, Vector2Int[] cells, string name, int routeSeed)
     {
         GameObject routeRoot = new GameObject(name);
         routeRoot.transform.SetParent(parent,false);
@@ -75,18 +79,103 @@ public class MapBuilder : MonoBehaviour
         {
             Vector3 a = CellToWorld(cells[i],-.045f);
             Vector3 b = CellToWorld(cells[i+1],-.045f);
-            CreateRoadSegment(routeRoot.transform,a,b,CellSize*1.12f,new Color(.37f,.30f,.21f),"Packed Earth");
-            CreateRoadSegment(routeRoot.transform,a+Vector3.up*.025f,b+Vector3.up*.025f,CellSize*.68f,new Color(.49f,.40f,.28f),"Worn Center");
+            int seed = routeSeed + i * 7;
 
-            if (i % 2 == 0)
+            CreateRoadSegment(routeRoot.transform,a,b,CellSize*1.08f,new Color(.35f,.285f,.20f),"Packed Earth");
+            CreateIrregularShoulder(routeRoot.transform,a,b,CellSize*1.08f,seed);
+            CreateRoadSegment(routeRoot.transform,a+Vector3.up*.026f,b+Vector3.up*.026f,CellSize*.57f,new Color(.48f,.39f,.275f),"Worn Center");
+            CreateWheelRuts(routeRoot.transform,a,b,CellSize*1.08f,seed);
+
+            if (i % 3 != 1)
             {
-                Vector3 mid = (a+b)*.5f;
+                Vector3 mid = Vector3.Lerp(a,b,.42f + Mathf.Sin(seed*.37f)*.08f);
                 Vector3 dir = (b-a).normalized;
                 Vector3 side = new Vector3(-dir.z,0f,dir.x);
-                AddRoadStone(routeRoot.transform,mid+side*CellSize*.56f,i*37f);
-                AddRoadStone(routeRoot.transform,mid-side*CellSize*.56f,i*41f+13f);
+                float sign = ((i + routeSeed) & 1) == 0 ? 1f : -1f;
+                AddRoadStone(routeRoot.transform,mid+side*CellSize*(.53f+.05f*Mathf.Sin(seed)),seed*17f);
+                if (i % 3 == 0)
+                    AddRoadStone(routeRoot.transform,mid-side*CellSize*.58f,seed*23f+19f);
             }
         }
+    }
+
+    void CreateIrregularShoulder(Transform parent, Vector3 a, Vector3 b, float width, int seed)
+    {
+        Vector3 delta = b-a;
+        if (delta.sqrMagnitude < .001f) return;
+
+        Vector3 dir = delta.normalized;
+        Vector3 side = new Vector3(-dir.z,0f,dir.x);
+        float length = delta.magnitude;
+        int count = Mathf.Max(2,Mathf.CeilToInt(length/2.25f));
+        Quaternion rotation = Quaternion.LookRotation(dir,Vector3.up);
+        Color shoulder = new Color(.405f,.335f,.235f);
+
+        for (int i = 0; i < count; i++)
+        {
+            float t = (i+.5f)/count;
+            float wave = Mathf.Sin(seed*.83f+i*1.91f);
+            float offset = wave*width*.13f;
+            float patchWidth = width*(.78f+.08f*Mathf.Sin(seed*.21f+i*2.7f));
+            float patchLength = (length/count)*(1.05f+.12f*Mathf.Sin(i*1.43f+seed));
+            GameObject patch = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            patch.name = "Irregular Road Shoulder";
+            patch.transform.SetParent(parent,false);
+            patch.transform.position = Vector3.Lerp(a,b,t)+side*offset+Vector3.up*.018f;
+            patch.transform.rotation = rotation;
+            patch.transform.localScale = new Vector3(patchWidth,.035f,patchLength);
+            Object.Destroy(patch.GetComponent<Collider>());
+            TowerFactory.SetColor(patch,shoulder*(.94f+(i%3)*.025f));
+        }
+    }
+
+    void CreateWheelRuts(Transform parent, Vector3 a, Vector3 b, float roadWidth, int seed)
+    {
+        Vector3 delta = b-a;
+        if (delta.sqrMagnitude < .001f) return;
+
+        Vector3 dir = delta.normalized;
+        Vector3 side = new Vector3(-dir.z,0f,dir.x);
+        float drift = Mathf.Sin(seed*.71f)*roadWidth*.035f;
+        float separation = roadWidth*.19f;
+        CreateRoadMark(parent,a+side*(separation+drift),b+side*(separation+drift),"Cart Rut");
+        CreateRoadMark(parent,a-side*(separation-drift),b-side*(separation-drift),"Cart Rut");
+    }
+
+    void CreateRoadMark(Transform parent, Vector3 a, Vector3 b, string name)
+    {
+        Vector3 delta = b-a;
+        float length = delta.magnitude;
+        GameObject mark = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        mark.name = name;
+        mark.transform.SetParent(parent,false);
+        mark.transform.position = (a+b)*.5f+Vector3.up*.046f;
+        mark.transform.localScale = new Vector3(.075f,.012f,length+.08f);
+        mark.transform.rotation = Quaternion.LookRotation(delta.normalized,Vector3.up);
+        Object.Destroy(mark.GetComponent<Collider>());
+        TowerFactory.SetColor(mark,new Color(.285f,.235f,.175f));
+    }
+
+    void CreateRoadJunction(Transform parent, Vector2Int cell, float scale, float yaw)
+    {
+        Vector3 p = CellToWorld(cell,-.020f);
+        GameObject outer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        outer.name = "Trampled Road Junction";
+        outer.transform.SetParent(parent,false);
+        outer.transform.position = p;
+        outer.transform.rotation = Quaternion.Euler(0f,yaw,0f);
+        outer.transform.localScale = new Vector3(CellSize*1.55f*scale,.050f,CellSize*1.12f*scale);
+        Object.Destroy(outer.GetComponent<Collider>());
+        TowerFactory.SetColor(outer,new Color(.355f,.285f,.20f));
+
+        GameObject center = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        center.name = "Worn Junction Center";
+        center.transform.SetParent(parent,false);
+        center.transform.position = p+Vector3.up*.028f;
+        center.transform.rotation = Quaternion.Euler(0f,yaw+11f,0f);
+        center.transform.localScale = new Vector3(CellSize*.88f*scale,.028f,CellSize*.69f*scale);
+        Object.Destroy(center.GetComponent<Collider>());
+        TowerFactory.SetColor(center,new Color(.49f,.40f,.285f));
     }
 
     void CreateRoadSegment(Transform parent, Vector3 a, Vector3 b, float width, Color color, string name)
