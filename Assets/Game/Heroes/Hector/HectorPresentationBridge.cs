@@ -8,6 +8,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     readonly MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
 
     HectorController hector;
+    HectorAbilityPresentation abilityPresentation;
     CharacterPresentationState characterPresentation;
     Renderer bodyRenderer;
     Vector3 previousPosition;
@@ -17,6 +18,8 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     public void Initialize(HectorController controller)
     {
         hector = controller;
+        abilityPresentation = GetComponent<HectorAbilityPresentation>();
+        if (abilityPresentation == null) abilityPresentation = gameObject.AddComponent<HectorAbilityPresentation>();
         characterPresentation = GetComponent<CharacterPresentationState>();
         if (characterPresentation == null) characterPresentation = gameObject.AddComponent<CharacterPresentationState>();
         bodyRenderer = GetComponentInChildren<Renderer>();
@@ -44,25 +47,13 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         CombatImpactPresentation.HeroHit(transform.position + Vector3.up * .7f, damage >= 25f);
     }
 
-    public void PlayWarCry(float radius)
-    {
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.52f,.08f), radius * 1.35f, .55f);
-    }
+    public void PlayWarCry(float radius) => abilityPresentation?.PlayWarCry(radius);
 
-    public void PlayShieldWall(Vector3 center)
-    {
-        RuntimeEffects.Instance?.PlayHeroPulse(center, new Color(.95f,.72f,.18f), 3.8f, .48f);
-    }
+    public void PlayShieldWall(ShieldWallZone zone) => abilityPresentation?.PlayShieldWall(zone);
 
-    public void PlaySpearImpact(Vector3 point)
-    {
-        RuntimeEffects.Instance?.PlayHeroPulse(point, new Color(1f,.78f,.20f), 2.2f, .32f);
-    }
+    public void PlaySpearImpact(Vector3 point) => abilityPresentation?.PlaySpearImpact(point);
 
-    public void PlayUltimate(float radius)
-    {
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.18f,.04f), radius * 1.15f, .72f);
-    }
+    public void PlayUltimate(float radius) => abilityPresentation?.PlayUltimate(radius);
 
     void LateUpdate()
     {
