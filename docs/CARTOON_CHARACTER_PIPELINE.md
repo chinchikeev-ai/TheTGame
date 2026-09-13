@@ -14,6 +14,8 @@ Initialize it after cloning:
 git submodule update --init --recursive
 ```
 
+The CC0 KayKit Adventurers character FBXs are fully rigged and include 75 embedded animation clips.
+
 ## Build Chapter I production candidates
 
 Open Unity and run:
@@ -51,6 +53,35 @@ Generated Chapter I names include:
 - Heavy Hoplite uses spear + heavy shield rather than a two-handed sword + shield combination.
 - Menelaus uses a one-handed command sword + royal shield.
 
+## Chapter I animation controller
+
+Run:
+
+`The Troy Game -> Characters -> Build Chapter I Animation Controller`
+
+`ChapterOneCharacterAnimationBuilder` scans the embedded clips from the KayKit character FBX and uses fuzzy clip-name matching to select candidates for:
+
+- idle;
+- walk/run movement;
+- attack;
+- hit reaction;
+- death;
+- downed/fall.
+
+It creates:
+
+`Assets/Game/Art/Characters/Animation/ChapterOneCharacter.controller`
+
+and assigns it to generated Chapter I production candidate prefabs. The controller exposes the parameters already consumed by `CharacterPresentationState`:
+
+- `Speed`;
+- `Attack`;
+- `Hit`;
+- `Die`;
+- `IsDowned` when a suitable down/death clip is available.
+
+The editor auto-builder is idempotent: it builds missing production candidates first, then builds/assigns the animation controller if it is absent. The exact chosen clip names are logged in the Unity Console and must be visually checked before treating animation as final.
+
 ## Runtime behavior
 
 `EnemyVisualFactory` and `HeroVisualFactory` first load `TroyProduction/...` resources. If a production candidate is absent, they fall back to the older generated `TroyCharacters/...` path and then to runtime procedural visuals.
@@ -59,4 +90,4 @@ This preserves gameplay while production art is replaced incrementally.
 
 ## Status rule
 
-These generated prefabs remain `GENERATED PLACEHOLDER` in `MODEL_ART_INVENTORY.md` until final authored assets are committed, connected to final animation/materials, and pass visual QA. Merely living under `Assets/Game/Art` does not make them `DONE`.
+These generated prefabs and automatically selected KayKit animation clips remain `GENERATED PLACEHOLDER` in `MODEL_ART_INVENTORY.md` until final authored assets are committed, connected to final animation/materials, and pass visual QA. Merely living under `Assets/Game/Art` does not make them `DONE`.
