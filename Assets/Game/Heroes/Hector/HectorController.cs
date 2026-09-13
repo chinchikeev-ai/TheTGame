@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class HectorController : MonoBehaviour
 {
@@ -30,6 +29,8 @@ public class HectorController : MonoBehaviour
     public float downedDuration = 12f;
     public float battlefieldMargin = 0.65f;
 
+    readonly List<Enemy> enemySnapshot = new List<Enemy>(64);
+
     Vector3 destination;
     Vector3 spawnPosition;
     float nextAttack;
@@ -38,9 +39,17 @@ public class HectorController : MonoBehaviour
     float nextSpearThrow;
     float nextUltimate;
     float reviveAt;
-    Renderer body;
+    HectorPresentationBridge presentation;
 
-    void Awake() => Instance = this;
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     void OnDestroy()
     {
@@ -53,8 +62,8 @@ public class HectorController : MonoBehaviour
         destination = transform.position;
         spawnPosition = transform.position;
         Health = maxHealth;
-        body = GetComponentInChildren<Renderer>();
-        RefreshColor();
+        presentation = GetComponent<HectorPresentationBridge>();
+        presentation?.SetSelected(Selected);
     }
 
     void Update()
@@ -67,44 +76,24 @@ public class HectorController : MonoBehaviour
             return;
         }
 
-        HandleSelectionAndMove();
         Move();
         AutoAttack();
-
-        if (!Selected) return;
-        if (GameInput.Ability1Pressed()) UseWarCry();
-        if (GameInput.Ability2Pressed()) UseShieldWall();
-        if (GameInput.Ability3Pressed()) UseSpearThrow();
-        if (GameInput.UltimatePressed()) UseUltimate();
     }
 
-    void HandleSelectionAndMove()
+    public void SetSelected(bool selected)
     {
-        Camera cam = Camera.main;
-        if (cam == null) return;
+        bool next = !IsDowned && selected;
+        if (Selected == next) return;
+        Selected = next;
+        presentation?.SetSelected(Selected);
+    }
 
-        if (GameInput.PrimaryPressed() && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
-        {
-            Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 200f))
-            {
-                HectorController h = hit.collider.GetComponentInParent<HectorController>();
-                Selected = h == this;
-                RefreshColor();
-            }
-        }
-
-        if (Selected && GameInput.SecondaryPressed() && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
-        {
-            Plane plane = new Plane(Vector3.up, Vector3.zero);
-            Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
-            if (plane.Raycast(ray, out float enter))
-            {
-                destination = ray.GetPoint(enter);
-                destination.y = transform.position.y;
-                destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
-            }
-        }
+    public void MoveTo(Vector3 worldPosition)
+    {
+        if (IsDowned) return;
+        destination = worldPosition;
+        destination.y = transform.position.y;
+        destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
     }
 
     void Move()
@@ -123,16 +112,17 @@ public class HectorController : MonoBehaviour
         if (Time.time < nextAttack) return;
         Enemy best = FindNearestEnemy(attackRange);
         if (best == null) return;
-        nextAttack = Time.time + 1f / attackRate;
+
+        nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate);
         best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
-        RuntimeEffects.Instance?.PlayHit(best.transform.position, false);
+        presentation?.PlayAttackImpact(best.transform.position);
     }
 
     public void TakeDamage(float damage)
     {
         if (IsDowned || Health <= 0f) return;
         Health -= Mathf.Max(1f, damage);
-        RuntimeEffects.Instance?.PlayHit(transform.position, damage >= 25f);
+        presentation?.PlayDamageImpact(damage);
         if (Health <= 0f) Down();
     }
 
@@ -140,10 +130,9 @@ public class HectorController : MonoBehaviour
     {
         Health = 0f;
         IsDowned = true;
-        Selected = false;
+        SetSelected(false);
         reviveAt = Time.time + downedDuration;
         destination = transform.position;
-        RefreshColor();
         RuntimeFileLogger.Event("HECTOR", $"Downed; reviveIn={downedDuration:0.0}s");
     }
 
@@ -153,7 +142,6 @@ public class HectorController : MonoBehaviour
         Health = maxHealth * .50f;
         transform.position = MapBuilder.ClampToPlayableArea(spawnPosition, battlefieldMargin);
         destination = transform.position;
-        RefreshColor();
         RuntimeFileLogger.Event("HECTOR", $"Revived hp={Health:0}/{maxHealth:0}");
     }
 
@@ -161,16 +149,19 @@ public class HectorController : MonoBehaviour
     {
         if (IsDowned || Time.time < nextWarCry) return;
         nextWarCry = Time.time + warCryCooldown;
+
         int buffed = 0;
+        float radiusSq = warCryRadius * warCryRadius;
         foreach (Tower tower in TowerRegistry.All)
         {
             if (tower == null) continue;
-            if (Vector3.Distance(tower.transform.position, transform.position) > warCryRadius) continue;
+            if ((tower.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
             tower.ApplyWarCry(warCryDuration, 1.15f, 1.30f);
             buffed++;
         }
+
         RuntimeFileLogger.Event("HECTOR", $"War Cry used; towersBuffed={buffed}");
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.52f,.08f), warCryRadius * 1.35f, .55f);
+        presentation?.PlayWarCry(warCryRadius);
     }
 
     public void UseShieldWall()
@@ -179,25 +170,10 @@ public class HectorController : MonoBehaviour
         nextShieldWall = Time.time + shieldWallCooldown;
 
         Vector3 center = transform.position + transform.forward * 2.2f;
-        GameObject root = new GameObject("Hector Shield Wall");
-        root.transform.position = center;
-        root.transform.rotation = transform.rotation;
-        ShieldWallZone zone = root.AddComponent<ShieldWallZone>();
+        HectorShieldWallFactory.Create(center, transform.rotation);
 
-        for (int i = -1; i <= 1; i++)
-        {
-            GameObject shield = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            shield.name = "Shield";
-            shield.transform.SetParent(root.transform, false);
-            shield.transform.localPosition = new Vector3(i * 1.05f, .55f, 0f);
-            shield.transform.localScale = new Vector3(.9f, 1.1f, .28f);
-            TowerFactory.SetColor(shield, new Color(.70f, .50f, .18f));
-            Destroy(shield.GetComponent<Collider>());
-        }
-
-        Destroy(root, zone.duration + .1f);
         RuntimeFileLogger.Event("HECTOR", "Shield Wall used");
-        RuntimeEffects.Instance?.PlayHeroPulse(center, new Color(.95f,.72f,.18f), 3.8f, .48f);
+        presentation?.PlayShieldWall(center);
     }
 
     public void UseSpearThrow()
@@ -210,7 +186,7 @@ public class HectorController : MonoBehaviour
         target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
         target.ApplyArmorBreak(.25f, 6f);
         RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
-        RuntimeEffects.Instance?.PlayHeroPulse(target.transform.position, new Color(1f,.78f,.20f), 2.2f, .32f);
+        presentation?.PlaySpearImpact(target.transform.position);
     }
 
     public void UseUltimate()
@@ -229,18 +205,22 @@ public class HectorController : MonoBehaviour
 
         int enemiesHit = 0;
         float radiusSq = ultimateEnemyRadius * ultimateEnemyRadius;
-        List<Enemy> snapshot = new List<Enemy>(EnemyRegistry.All);
-        foreach (Enemy enemy in snapshot)
+        enemySnapshot.Clear();
+        foreach (Enemy enemy in EnemyRegistry.All)
+            if (enemy != null) enemySnapshot.Add(enemy);
+
+        for (int i = 0; i < enemySnapshot.Count; i++)
         {
-            if (enemy == null) continue;
-            if ((enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
+            Enemy enemy = enemySnapshot[i];
+            if (enemy == null || (enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
             enemy.ReceiveDamage(new DamagePacket(100f, DamageType.Hero));
             if (enemy != null) enemy.ApplySlow(.70f, 4f);
             enemiesHit++;
         }
+        enemySnapshot.Clear();
 
         RuntimeFileLogger.Event("HECTOR", $"For Troy ultimate used; towersBuffed={towersBuffed}, enemiesHit={enemiesHit}, hp={Health:0}/{maxHealth:0}");
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.18f,.04f), ultimateEnemyRadius * 1.15f, .72f);
+        presentation?.PlayUltimate(ultimateEnemyRadius);
     }
 
     Enemy FindNearestEnemy(float radius)
@@ -250,8 +230,10 @@ public class HectorController : MonoBehaviour
         foreach (Enemy enemy in EnemyRegistry.All)
         {
             if (enemy == null) continue;
-            float d = (enemy.transform.position - transform.position).sqrMagnitude;
-            if (d < bestSq) { bestSq = d; best = enemy; }
+            float distanceSq = (enemy.transform.position - transform.position).sqrMagnitude;
+            if (distanceSq >= bestSq) continue;
+            bestSq = distanceSq;
+            best = enemy;
         }
         return best;
     }
@@ -260,13 +242,4 @@ public class HectorController : MonoBehaviour
     public float ShieldWallCooldownRemaining => Mathf.Max(0f, nextShieldWall - Time.time);
     public float SpearThrowCooldownRemaining => Mathf.Max(0f, nextSpearThrow - Time.time);
     public float UltimateCooldownRemaining => Mathf.Max(0f, nextUltimate - Time.time);
-
-    void RefreshColor()
-    {
-        if (body == null) return;
-        Color color = IsDowned ? new Color(.25f, .25f, .25f) : Selected ? new Color(.95f,.78f,.18f) : new Color(.72f,.48f,.12f);
-        Material material = body.material;
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
-    }
 }

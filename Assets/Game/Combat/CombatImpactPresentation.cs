@@ -34,6 +34,16 @@ public static class CombatImpactPresentation
         Burst(point, color, 2, .085f, .20f);
     }
 
+    public static void HeroHit(Vector3 point, bool heavy)
+    {
+        Burst(
+            point,
+            heavy ? new Color(.92f,.30f,.08f) : new Color(1f,.72f,.24f),
+            heavy ? 3 : 1,
+            heavy ? .14f : .08f,
+            heavy ? .34f : .18f);
+    }
+
     public static void BurnStatus(Vector3 point)
     {
         for (int i = 0; i < 2; i++)

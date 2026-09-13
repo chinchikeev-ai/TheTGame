@@ -38,7 +38,7 @@ public class GameBootstrap : MonoBehaviour
         TowerPlacement placement = new GameObject("TowerPlacement").AddComponent<TowerPlacement>();
         placement.gameCamera = cam;
 
-        CreateHector();
+        CreateHector(cam);
         new GameObject("LandingPresentation").AddComponent<LandingPresentation>();
         ChapterOneCinematicCamera cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
         cinematic.Initialize(cam);
@@ -56,7 +56,7 @@ public class GameBootstrap : MonoBehaviour
         RuntimeFileLogger.Event("BOOT", $"Runtime graph ready. unlockedChapter={campaign.UnlockedChapter}, activeChapter={(chapters.ActiveChapter != null ? chapters.ActiveChapter.chapterId : "none")}");
     }
 
-    void CreateHector()
+    void CreateHector(Camera cam)
     {
         GameObject hector = HeroVisualFactory.Create(TroyHeroId.Hector);
         hector.name = "Hector";
@@ -68,9 +68,12 @@ public class GameBootstrap : MonoBehaviour
             collider.height = 1.8f;
             collider.radius = .35f;
         }
+
         HectorController controller = hector.AddComponent<HectorController>();
         HectorPresentationBridge presentation = hector.AddComponent<HectorPresentationBridge>();
         presentation.Initialize(controller);
+        HectorInputDriver input = hector.AddComponent<HectorInputDriver>();
+        input.Initialize(controller, cam);
     }
 
     Camera SetupLightingAndCamera()
