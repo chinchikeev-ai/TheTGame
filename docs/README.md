@@ -15,13 +15,13 @@ For development or AI-assisted work, use this order:
 7. `AI_PIPELINE.md` — validation and CI truthfulness rules.
 8. `MODEL_ART_INVENTORY.md` — authoritative production-art completion status.
 9. `UNITY_ROADMAP.md` — milestone order from the current project state to v1.0.
-10. `GDD_v0.1.md` — canonical game design document; the filename is legacy, the document content is v0.2.
+10. `GDD.md` — canonical game design document.
 
 For non-trivial work use `tasks/TASK_TEMPLATE.md`.
 
 ## Canonical product documents
 
-- `GDD_v0.1.md` — game design, campaign, pacing, towers, enemies, Hector, bosses, ending.
+- `GDD.md` — game design, campaign, pacing, towers, enemies, Hector, bosses, ending.
 - `PROJECT_STATUS.md` — what is actually implemented now. This overrides older plans and audits when they disagree.
 - `UNITY_ROADMAP.md` — what should be built next and in what order.
 - `TERMINOLOGY.md` — naming conventions for gameplay and documentation.
