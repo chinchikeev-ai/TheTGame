@@ -40,6 +40,7 @@ public class Enemy : MonoBehaviour
     float burnUntil;
     float burnDps;
     float nextBurnTick;
+    float nextBurnVisual;
     float armorBreakUntil;
     float armorBreakAmount;
     float commanderUntil;
@@ -80,6 +81,7 @@ public class Enemy : MonoBehaviour
         presentation = GetComponent<CharacterPresentationState>();
         if (presentation == null) presentation = gameObject.AddComponent<CharacterPresentationState>();
         healthBar = gameObject.AddComponent<EnemyHealthBar>();
+        HeavyEnemyGroundVfx.Attach(this);
     }
 
     public bool TrySetBlockedByGuard(TrojanGuardSquad guard)
@@ -219,12 +221,24 @@ public class Enemy : MonoBehaviour
 
     void TickStatuses()
     {
-        if (Time.time < burnUntil && burnDps > 0f && Time.time >= nextBurnTick)
+        if (Time.time < burnUntil && burnDps > 0f)
         {
-            nextBurnTick = Time.time + 1f;
-            ReceiveDamage(new DamagePacket(burnDps, DamageType.Fire));
+            if (Time.time >= nextBurnVisual)
+            {
+                nextBurnVisual = Time.time + .24f;
+                CombatImpactPresentation.BurnStatus(transform.position);
+            }
+
+            if (Time.time >= nextBurnTick)
+            {
+                nextBurnTick = Time.time + 1f;
+                ReceiveDamage(new DamagePacket(burnDps, DamageType.Fire));
+            }
         }
-        else if (Time.time >= burnUntil) burnDps = 0f;
+        else if (Time.time >= burnUntil)
+        {
+            burnDps = 0f;
+        }
     }
 
     public void TakeDamage(float damage) => ReceiveDamage(new DamagePacket(damage, DamageType.Physical));
@@ -274,6 +288,7 @@ public class Enemy : MonoBehaviour
         burnDps = Mathf.Max(burnDps, damagePerSecond);
         burnUntil = Mathf.Max(burnUntil, Time.time + duration);
         nextBurnTick = Mathf.Min(nextBurnTick <= 0f ? Time.time + .5f : nextBurnTick, Time.time + .5f);
+        nextBurnVisual = Mathf.Min(nextBurnVisual <= 0f ? Time.time : nextBurnVisual, Time.time);
     }
 
     public void ApplyArmorBreak(float amount, float duration)
@@ -306,6 +321,7 @@ public class Enemy : MonoBehaviour
 
         if (healthBar != null) healthBar.enabled = false;
         foreach (Collider collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
+        CombatImpactPresentation.EnemyDeath(transform.position, Archetype);
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss);
         float presentationDelay = presentation != null ? presentation.PlayDeath(Archetype == EnemyArchetype.Boss) : .1f;
         Destroy(gameObject, Mathf.Max(.08f, presentationDelay));
