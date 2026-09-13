@@ -4,6 +4,8 @@ using UnityEngine.UI;
 public sealed class TroyCombatHudSkin : MonoBehaviour
 {
     bool applied;
+    TowerPlacement placement;
+    Image selectedTowerIcon;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -14,31 +16,49 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
 
     void Update()
     {
-        if (applied) return;
-        GameObject hud = GameObject.Find("ModernCombatHUD");
-        if (hud == null) return;
-        Apply(hud.transform);
-        applied = true;
+        if (!applied)
+        {
+            GameObject hud = GameObject.Find("ModernCombatHUD");
+            if (hud == null) return;
+            placement = FindFirstObjectByType<TowerPlacement>();
+            Apply(hud.transform);
+            applied = true;
+        }
+
+        if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
+        if (selectedTowerIcon != null && placement != null)
+        {
+            Tower tower = placement.SelectedTower;
+            TowerType type = tower != null ? tower.Type : placement.SelectedBuildType;
+            selectedTowerIcon.sprite = TroyHudArt.Tower(type);
+        }
     }
 
     void Apply(Transform hud)
     {
-        RestylePanel(hud.Find("TopResources"), new Vector2(24,-24), new Vector2(420,96), new Vector2(0,1), new Vector2(0,1));
+        RestylePanel(hud.Find("TopResources"), new Vector2(24,-24), new Vector2(500,96), new Vector2(0,1), new Vector2(0,1));
         RestylePanel(hud.Find("WaveStatus"), new Vector2(0,-24), new Vector2(760,146), new Vector2(.5f,1), new Vector2(.5f,1));
-        RestylePanel(hud.Find("CombatActions"), new Vector2(-24,-24), new Vector2(330,146), new Vector2(1,1), new Vector2(1,1));
-        RestylePanel(hud.Find("BuildDock"), new Vector2(0,24), new Vector2(980,150), new Vector2(.5f,0), new Vector2(.5f,0));
-        RestylePanel(hud.Find("SelectedTowerCard"), new Vector2(-24,24), new Vector2(390,420), new Vector2(1,0), new Vector2(1,0));
-        RestylePanel(hud.Find("PcHints"), new Vector2(24,24), new Vector2(500,48), new Vector2(0,0), new Vector2(0,0));
-        RestylePanel(hud.Find("BuildHoverTooltip"), new Vector2(0,338), new Vector2(520,174), new Vector2(.5f,0), new Vector2(.5f,0));
+        RestylePanel(hud.Find("CombatActions"), new Vector2(-24,-24), new Vector2(430,190), new Vector2(1,1), new Vector2(1,1));
+        RestylePanel(hud.Find("BuildDock"), new Vector2(0,24), new Vector2(1120,154), new Vector2(.5f,0), new Vector2(.5f,0));
+        RestylePanel(hud.Find("SelectedTowerCard"), new Vector2(-24,24), new Vector2(450,430), new Vector2(1,0), new Vector2(1,0));
+        RestylePanel(hud.Find("PcHints"), new Vector2(24,24), new Vector2(650,48), new Vector2(0,0), new Vector2(0,0));
+        RestylePanel(hud.Find("BuildHoverTooltip"), new Vector2(0,344), new Vector2(520,174), new Vector2(.5f,0), new Vector2(.5f,0));
 
         Transform top = hud.Find("TopResources");
         if (top != null)
         {
-            EnsureIcon(top,"ArtGold",new Vector2(34,0),38,TroyHudArt.Icon("gold"));
-            EnsureIcon(top,"ArtGate",new Vector2(150,0),38,TroyHudArt.Icon("gate"));
-            EnsureIcon(top,"ArtEnemy",new Vector2(282,0),38,TroyHudArt.Icon("enemy"));
+            EnsureIcon(top,"ArtGold",new Vector2(36,0),38,TroyHudArt.Icon("gold"));
+            EnsureIcon(top,"ArtGate",new Vector2(178,0),38,TroyHudArt.Icon("gate"));
+            EnsureIcon(top,"ArtEnemy",new Vector2(340,0),38,TroyHudArt.Icon("enemy"));
             Text[] texts = top.GetComponentsInChildren<Text>(true);
-            for (int i=0;i<texts.Length;i++) texts[i].fontSize = Mathf.Min(texts[i].fontSize,18);
+            for (int i=0;i<texts.Length;i++)
+            {
+                texts[i].fontSize = Mathf.Min(texts[i].fontSize,18);
+                RectTransform rt = texts[i].rectTransform;
+                if (i == 0) { rt.anchoredPosition = new Vector2(72,0); rt.sizeDelta = new Vector2(86,60); }
+                else if (i == 1) { rt.anchoredPosition = new Vector2(226,0); rt.sizeDelta = new Vector2(116,60); }
+                else if (i == 2) { rt.anchoredPosition = new Vector2(405,0); rt.sizeDelta = new Vector2(150,60); }
+            }
         }
 
         Transform wave = hud.Find("WaveStatus");
@@ -72,7 +92,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         Transform selected = hud.Find("SelectedTowerCard");
         if(selected!=null)
         {
-            EnsureIcon(selected,"SelectedTowerCrest",new Vector2(-160,164),46,TroyHudArt.Icon("shield"));
+            selectedTowerIcon = EnsureIcon(selected,"SelectedTowerCrest",new Vector2(-178,166),48,TroyHudArt.Icon("shield"));
             Text[] texts=selected.GetComponentsInChildren<Text>(true);
             for(int i=0;i<texts.Length;i++) if(texts[i].fontSize>20) texts[i].fontSize=20;
         }
@@ -107,9 +127,10 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         }
     }
 
-    void EnsureIcon(Transform parent,string name,Vector2 pos,float size,Sprite sprite)
+    Image EnsureIcon(Transform parent,string name,Vector2 pos,float size,Sprite sprite)
     {
-        if(parent.Find(name)!=null) return;
+        Transform existing = parent.Find(name);
+        if(existing != null) return existing.GetComponent<Image>();
         GameObject go=new GameObject(name);
         go.transform.SetParent(parent,false);
         Image image=go.AddComponent<Image>();
@@ -117,5 +138,6 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         RectTransform rt=image.rectTransform;
         rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f);
         rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(size,size);
+        return image;
     }
 }
