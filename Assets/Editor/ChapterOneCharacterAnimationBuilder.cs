@@ -108,6 +108,22 @@ public static class ChapterOneCharacterAnimationBuilder
         AddAction(controller, machine, idleState, "Attack", attack, .86f);
         AddAction(controller, machine, idleState, "Hit", hit, .78f);
 
+        if (string.Equals(profileName, "spear", StringComparison.Ordinal))
+        {
+            AnimationClip block = PickAction(clips, new[] { "shield", "block", "guard", "defend" }, "block", "guard", "defend", "idle");
+            AnimationClip poke = PickAction(clips, new[] { "spear", "thrust", "stab" }, "thrust", "stab", "attack", "spear");
+            AddAction(controller, machine, idleState, "Block", block != null ? block : idle, .90f);
+            AddAction(controller, machine, idleState, "Poke", poke != null ? poke : attack, .86f);
+        }
+
+        if (string.Equals(profileName, "archer", StringComparison.Ordinal))
+        {
+            AnimationClip draw = PickAction(clips, new[] { "bow", "archer", "arrow" }, "draw", "aim", "ready", "attack");
+            AnimationClip release = PickAction(clips, new[] { "bow", "archer", "arrow" }, "release", "shoot", "fire", "attack");
+            AddAction(controller, machine, idleState, "Draw", draw != null ? draw : attack, .86f);
+            AddAction(controller, machine, idleState, "Release", release != null ? release : attack, .82f);
+        }
+
         if (commanderAction)
         {
             AnimationClip command = Pick(clips, "taunt", "cheer", "cast", "spell", "shout", "attack");
