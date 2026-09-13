@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,29 +10,19 @@ public static class BuildTooltipTacticalDecorator
     static readonly Color green = new Color(.23f, .62f, .30f, .98f);
     static readonly Color purple = new Color(.48f, .31f, .66f, .98f);
 
-    public static void Apply(Transform buildButton)
+    public static void Apply(Transform buildButton, TowerType towerType)
     {
         if (buildButton == null) return;
         Transform root = buildButton.root;
         Transform tooltip = root != null ? root.Find("BuildHoverTooltip") : null;
         if (tooltip == null) return;
 
-        int slot = InferSlot(buildButton.name);
-        ConfigurePortrait(tooltip, slot);
-        BuildBadges(tooltip, slot);
-        HideLegacyTagLine(tooltip);
+        ConfigurePortrait(tooltip, towerType);
+        BuildBadges(tooltip, towerType);
     }
 
-    static int InferSlot(string objectName)
+    static void ConfigurePortrait(Transform tooltip, TowerType towerType)
     {
-        for (int slot = 1; slot <= 6; slot++)
-            if (objectName.StartsWith("[" + slot + "]", StringComparison.Ordinal)) return slot;
-        return 0;
-    }
-
-    static void ConfigurePortrait(Transform tooltip, int slot)
-    {
-        HideOldSilhouette(tooltip);
         Transform existing = tooltip.Find("TowerArtPortrait");
         Image image;
         if (existing == null)
@@ -53,38 +42,14 @@ public static class BuildTooltipTacticalDecorator
             if (image == null) image = existing.gameObject.AddComponent<Image>();
         }
 
-        image.sprite = TroyHudArt.Tower(TowerForSlot(slot));
+        image.sprite = TroyHudArt.Tower(towerType);
         image.color = Color.white;
     }
 
-    static TowerType TowerForSlot(int slot)
-    {
-        switch (slot)
-        {
-            case 1: return TowerType.SpearThrower;
-            case 2: return TowerType.MachineGun;
-            case 3: return TowerType.Cannon;
-            case 4: return TowerType.Slow;
-            case 5: return TowerType.FireTower;
-            case 6: return TowerType.TrojanGuard;
-            default: return TowerType.MachineGun;
-        }
-    }
-
-    static void HideOldSilhouette(Transform tooltip)
-    {
-        string[] names = { "SilhouetteHead", "SilhouetteBody", "SilhouetteWeapon" };
-        for (int i = 0; i < names.Length; i++)
-        {
-            Transform child = tooltip.Find(names[i]);
-            if (child != null) child.gameObject.SetActive(false);
-        }
-    }
-
-    static void BuildBadges(Transform tooltip, int slot)
+    static void BuildBadges(Transform tooltip, TowerType towerType)
     {
         Transform old = tooltip.Find("TacticalBadges");
-        if (old != null) UnityEngine.Object.Destroy(old.gameObject);
+        if (old != null) Object.Destroy(old.gameObject);
 
         GameObject row = new GameObject("TacticalBadges");
         row.transform.SetParent(tooltip, false);
@@ -95,29 +60,29 @@ public static class BuildTooltipTacticalDecorator
 
         string[] labels;
         Color[] colors;
-        switch (slot)
+        switch (towerType)
         {
-            case 1:
+            case TowerType.SpearThrower:
                 labels = new[] { "ARMOR", "HEAVY" };
                 colors = new[] { bronze, red };
                 break;
-            case 2:
+            case TowerType.MachineGun:
                 labels = new[] { "RANGED", "LIGHT" };
                 colors = new[] { blue, green };
                 break;
-            case 3:
+            case TowerType.Cannon:
                 labels = new[] { "SIEGE", "BOSS", "PIERCE" };
                 colors = new[] { bronze, red, gold };
                 break;
-            case 4:
+            case TowerType.Slow:
                 labels = new[] { "SLOW", "SUPPORT" };
                 colors = new[] { blue, purple };
                 break;
-            case 5:
+            case TowerType.FireTower:
                 labels = new[] { "AOE", "BURN", "ZONE" };
                 colors = new[] { red, new Color(1f, .33f, .04f, .98f), bronze };
                 break;
-            case 6:
+            case TowerType.TrojanGuard:
                 labels = new[] { "BLOCK", "FRONT" };
                 colors = new[] { bronze, red };
                 break;
@@ -180,19 +145,5 @@ public static class BuildTooltipTacticalDecorator
         textRt.anchorMax = Vector2.one;
         textRt.offsetMin = new Vector2(10f, 0f);
         textRt.offsetMax = Vector2.zero;
-    }
-
-    static void HideLegacyTagLine(Transform tooltip)
-    {
-        Text[] texts = tooltip.GetComponentsInChildren<Text>(true);
-        for (int i = 0; i < texts.Length; i++)
-        {
-            RectTransform rt = texts[i].rectTransform;
-            if (Vector2.Distance(rt.anchoredPosition, new Vector2(-116f, -47f)) < 2f)
-            {
-                texts[i].enabled = false;
-                return;
-            }
-        }
     }
 }

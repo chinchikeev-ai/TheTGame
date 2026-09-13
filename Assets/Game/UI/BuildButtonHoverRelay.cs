@@ -5,9 +5,11 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
 {
     System.Action onEnter;
     System.Action onExit;
+    TowerType towerType;
 
-    public void Initialize(System.Action enter, System.Action exit)
+    public void Initialize(TowerType type, System.Action enter, System.Action exit)
     {
+        towerType = type;
         onEnter = enter;
         onExit = exit;
     }
@@ -15,7 +17,7 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
     public void OnPointerEnter(PointerEventData eventData)
     {
         onEnter?.Invoke();
-        BuildTooltipTacticalDecorator.Apply(transform);
+        BuildTooltipTacticalDecorator.Apply(transform, towerType);
     }
 
     public void OnPointerExit(PointerEventData eventData) => onExit?.Invoke();

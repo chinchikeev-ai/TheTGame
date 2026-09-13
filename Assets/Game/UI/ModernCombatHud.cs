@@ -25,7 +25,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     GameObject buildTooltip;
     Image tooltipAccent;
-    Text tooltipTitle, tooltipRole, tooltipStats, tooltipTags, tooltipMatchup;
+    Text tooltipTitle, tooltipRole, tooltipStats, tooltipMatchup;
     TowerType hoveredBuildType;
     bool buildTooltipVisible;
 
@@ -129,7 +129,7 @@ public sealed class ModernCombatHud : MonoBehaviour
             float x = -430 + i * 174;
             buildButtons[i] = Button(dock.transform, BuildLabel(type, buildHotkeys[i]), new Vector2(x, -18), new Vector2(158, 82), () => SelectBuild(type), false);
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
-            relay.Initialize(() => ShowBuildTooltip(type), HideBuildTooltip);
+            relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
         }
     }
 
@@ -150,7 +150,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         tooltipTitle = Text(buildTooltip.transform, "", new Vector2(-116, 55), new Vector2(300, 30), 20, new Color(1f, .76f, .31f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipRole = Text(buildTooltip.transform, "", new Vector2(-116, 26), new Vector2(300, 28), 13, new Color(.78f, .70f, .61f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipStats = Text(buildTooltip.transform, "", new Vector2(-116, -10), new Vector2(300, 38), 13, new Color(.93f, .87f, .79f, 1f), TextAnchor.MiddleLeft, FontStyle.Normal);
-        tooltipTags = Text(buildTooltip.transform, "", new Vector2(-116, -47), new Vector2(300, 28), 13, new Color(.96f, .63f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipMatchup = Text(buildTooltip.transform, "", new Vector2(126, -2), new Vector2(220, 112), 13, new Color(.78f, .91f, .70f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         buildTooltip.SetActive(false);
     }
@@ -387,7 +386,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         tooltipRole.text = TowerRole(hoveredBuildType);
         float dps = data.damage * Mathf.Max(.01f, data.attacksPerSecond);
         tooltipStats.text = $"{L("DMG", "УРОН")} {data.damage:0.#}   •   DPS {dps:0.#}   •   {L("RNG", "ДАЛЬН")} {data.range:0.0}   •   {data.cost} {L("GOLD", "ЗОЛОТА")}";
-        tooltipTags.text = TowerTags(hoveredBuildType);
         tooltipMatchup.text = $"+ {L("STRONG", "СИЛЁН")}\n{StrongAgainst(hoveredBuildType)}\n\n− {L("WEAK", "СЛАБ")}\n{WeakAgainst(hoveredBuildType)}";
     }
 
