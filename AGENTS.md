@@ -4,17 +4,27 @@ This is the mandatory entrypoint for AI-assisted development.
 
 ## Read order
 1. `AGENTS.md`
-2. `docs/AI_PIPELINE.md`
+2. `docs/README.md`
 3. `docs/PROJECT_STATUS.md`
-4. `docs/MODEL_ART_INVENTORY.md`
-5. `docs/ARCHITECTURE.md`
-6. `docs/MODULE_MAP.md`
-7. `docs/DATA_CATALOG.md`
-8. `docs/RUNTIME_GRAPH.md`
-9. `docs/NAMESPACE_POLICY.md`
-10. relevant GDD/roadmap/chapter document
+4. `docs/AI_PIPELINE.md`
+5. `docs/MODEL_ART_INVENTORY.md`
+6. `docs/ARCHITECTURE.md`
+7. `docs/MODULE_MAP.md`
+8. `docs/DATA_CATALOG.md`
+9. `docs/RUNTIME_GRAPH.md`
+10. `docs/NAMESPACE_POLICY.md`
+11. relevant GDD/roadmap/chapter document
 
 For non-trivial work, use `docs/tasks/TASK_TEMPLATE.md`.
+
+## Documentation authority
+- `docs/PROJECT_STATUS.md` is authoritative for current implementation state.
+- `docs/MODEL_ART_INVENTORY.md` is authoritative for production-art completion.
+- `docs/ARCHITECTURE.md` is authoritative for module ownership/dependency rules.
+- `docs/UNITY_ROADMAP.md` describes future milestone order, not current completion.
+- audit documents are diagnostic snapshots and must not override current code/status/validation.
+
+Do not create duplicate status/roadmap documents. Update the canonical owner document instead.
 
 ## Canonical runtime layout
 Runtime code belongs under `Assets/Game` only. Do not recreate `Assets/Scripts`.
@@ -101,9 +111,10 @@ Keep runtime classes in the global namespace for now. Do not introduce `namespac
 5. Preserve public APIs when practical.
 6. Update `docs/PROJECT_STATUS.md` for meaningful status changes.
 7. Update `docs/MODEL_ART_INVENTORY.md` when asset status changes.
-8. Add/update EditMode or PlayMode tests.
-9. Run `python tools/check-architecture.py`.
-10. When Unity is available, run full validation before claiming completion.
+8. Update the GDD/roadmap/architecture document only when its owned contract changes.
+9. Add/update EditMode or PlayMode tests.
+10. Run `python tools/check-architecture.py`.
+11. When Unity is available, run full validation before claiming completion.
 
 ## Full validation
 Windows: `./tools/validate-project.ps1`
