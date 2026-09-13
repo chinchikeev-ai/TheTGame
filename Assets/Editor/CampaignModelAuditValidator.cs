@@ -36,6 +36,12 @@ public static class CampaignModelAuditValidator
         public AuditRow[] rows;
     }
 
+    [Serializable]
+    sealed class AcceptanceManifest
+    {
+        public string[] acceptedPaths;
+    }
+
     sealed class Spec
     {
         public readonly string name;
@@ -44,12 +50,15 @@ public static class CampaignModelAuditValidator
         public readonly bool animator;
         public readonly bool resources;
         public readonly ColliderPolicy colliders;
-        public readonly bool finalAccepted;
 
-        public Spec(string name,string category,string path,bool animator=false,bool resources=true,ColliderPolicy colliders=ColliderPolicy.Ignore,bool finalAccepted=false)
+        public Spec(string name,string category,string path,bool animator=false,bool resources=true,ColliderPolicy colliders=ColliderPolicy.Ignore)
         {
-            this.name=name; this.category=category; this.path=path; this.animator=animator;
-            this.resources=resources; this.colliders=colliders; this.finalAccepted=finalAccepted;
+            this.name=name;
+            this.category=category;
+            this.path=path;
+            this.animator=animator;
+            this.resources=resources;
+            this.colliders=colliders;
         }
     }
 
@@ -62,6 +71,7 @@ public static class CampaignModelAuditValidator
     const string Siege = "Assets/Game/Art/Vehicles/Resources/TroyProduction/Siege/";
     const string Props = "Assets/Game/Art/Props/Resources/TroyProduction/Props/";
     const string Env = "Assets/Game/Art/Environment/Resources/TroyProduction/Environment/";
+    const string AcceptancePath = "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json";
     const string ReportDir = "Logs/Validation";
 
     static readonly Spec[] Specs =
@@ -121,8 +131,10 @@ public static class CampaignModelAuditValidator
 
     public static AuditReport Run(bool log)
     {
+        HashSet<string> accepted = LoadAcceptedPaths();
         List<AuditRow> rows = new List<AuditRow>(Specs.Length + 8);
-        foreach (Spec spec in Specs) rows.Add(AuditPrefab(spec));
+        foreach (Spec spec in Specs) rows.Add(AuditPrefab(spec,accepted.Contains(spec.path)));
+        AddAcceptanceManifestChecks(rows,accepted);
         AddPipelineChecks(rows);
         AuditReport report = BuildReport(rows);
         WriteReport(report);
@@ -137,9 +149,9 @@ public static class CampaignModelAuditValidator
         EditorApplication.Exit(report.missing == 0 && report.broken == 0 ? 0 : 1);
     }
 
-    static AuditRow AuditPrefab(Spec spec)
+    static AuditRow AuditPrefab(Spec spec,bool accepted)
     {
-        AuditRow row = NewRow(spec);
+        AuditRow row = new AuditRow { name=spec.name, category=spec.category, path=spec.path };
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(spec.path);
         if (prefab == null)
         {
@@ -161,8 +173,9 @@ public static class CampaignModelAuditValidator
         {
             Material[] materials = renderer.sharedMaterials;
             if (materials == null || materials.Length == 0) { faults.Add("renderer without material"); break; }
-            foreach (Material material in materials) if (material == null) { faults.Add("missing material"); break; }
-            if (faults.Contains("missing material")) break;
+            bool missingMaterial = false;
+            foreach (Material material in materials) if (material == null) { missingMaterial=true; break; }
+            if (missingMaterial) { faults.Add("missing material"); break; }
         }
         if (spec.animator && !row.animator) faults.Add("Animator/controller missing");
         if (spec.resources && spec.path.IndexOf("/Resources/",StringComparison.Ordinal) < 0) faults.Add("not under Resources");
@@ -174,43 +187,79 @@ public static class CampaignModelAuditValidator
             row.status = AuditStatus.Broken.ToString().ToUpperInvariant();
             row.details = string.Join("; ",faults);
         }
-        else
+        else if (accepted)
         {
-            row.status = (spec.finalAccepted ? AuditStatus.Done : AuditStatus.Candidate).ToString().ToUpperInvariant();
-            row.details = spec.finalAccepted ? "Accepted production asset." : "Structurally valid candidate; final visual QA still required.";
-        }
-        return row;
-    }
-
-    static AuditRow NewRow(Spec spec) => new AuditRow { name=spec.name, category=spec.category, path=spec.path };
-
-    static void AddPipelineChecks(List<AuditRow> rows)
-    {
-        SourceCheck(rows,"Tower-Unit production binder","Pipeline","Assets/Game/Towers/TowerProductionArtBinder.cs","UpgradeVisual_L","Production crew + L2/L3 visual binding");
-        SourceCheck(rows,"Tower art director","Pipeline","Assets/Game/Towers/TowerArtDirector.cs","TrojanProductionRoot","Production-first Tower-Unit art path");
-        SourceCheck(rows,"Full candidate build entrypoint","Pipeline","Assets/Editor/ModelGapClosureBuilder.cs","CampaignChariotHorseBuilder.Build()","One-shot campaign candidate build");
-        SourceCheck(rows,"Animated horse source installer","Pipeline","Assets/Editor/CampaignHorseSourceInstaller.cs","ExpectedGitBlobSha","Pinned horse source integrity verification");
-        SourceCheck(rows,"Chariot horse builder","Pipeline","Assets/Editor/CampaignChariotHorseBuilder.cs","ChariotHorse.controller","Animated chariot-horse integration");
-        SourceCheck(rows,"Environment candidate builder","Pipeline","Assets/Editor/CampaignEnvironmentCandidateBuilder.cs","BuildEvacuationStreet","Chapter II-VII environment coverage");
-    }
-
-    static void SourceCheck(List<AuditRow> rows,string name,string category,string path,string token,string description)
-    {
-        AuditRow row = new AuditRow { name=name, category=category, path=path };
-        if (!File.Exists(path))
-        {
-            row.status = AuditStatus.Missing.ToString().ToUpperInvariant();
-            row.details = "Required source file missing.";
-        }
-        else if (!File.ReadAllText(path).Contains(token))
-        {
-            row.status = AuditStatus.Broken.ToString().ToUpperInvariant();
-            row.details = "Required contract token missing: " + token;
+            row.status = AuditStatus.Done.ToString().ToUpperInvariant();
+            row.details = "Structurally valid and explicitly accepted after production visual QA.";
         }
         else
         {
             row.status = AuditStatus.Candidate.ToString().ToUpperInvariant();
-            row.details = description;
+            row.details = "Structurally valid candidate; production visual QA/acceptance still required.";
+        }
+        return row;
+    }
+
+    static HashSet<string> LoadAcceptedPaths()
+    {
+        HashSet<string> result = new HashSet<string>(StringComparer.Ordinal);
+        if (!File.Exists(AcceptancePath)) return result;
+        AcceptanceManifest manifest = JsonUtility.FromJson<AcceptanceManifest>(File.ReadAllText(AcceptancePath));
+        if (manifest == null || manifest.acceptedPaths == null) return result;
+        foreach (string path in manifest.acceptedPaths)
+            if (!string.IsNullOrWhiteSpace(path)) result.Add(path.Trim());
+        return result;
+    }
+
+    static void AddAcceptanceManifestChecks(List<AuditRow> rows,HashSet<string> accepted)
+    {
+        AuditRow manifestRow = new AuditRow { name="Production acceptance manifest", category="Acceptance", path=AcceptancePath };
+        if (!File.Exists(AcceptancePath))
+        {
+            manifestRow.status="MISSING";
+            manifestRow.details="Explicit production acceptance manifest is missing.";
+            rows.Add(manifestRow);
+            return;
+        }
+
+        HashSet<string> known = new HashSet<string>(StringComparer.Ordinal);
+        foreach (Spec spec in Specs) known.Add(spec.path);
+        List<string> unknown = new List<string>();
+        foreach (string path in accepted) if (!known.Contains(path)) unknown.Add(path);
+        manifestRow.status = unknown.Count == 0 ? "CANDIDATE" : "BROKEN";
+        manifestRow.details = unknown.Count == 0
+            ? $"Manifest valid. Explicitly accepted assets: {accepted.Count}."
+            : "Unknown accepted path(s): " + string.Join(", ",unknown);
+        rows.Add(manifestRow);
+    }
+
+    static void AddPipelineChecks(List<AuditRow> rows)
+    {
+        SourceCheck(rows,"Tower-Unit production binder","Assets/Game/Towers/TowerProductionArtBinder.cs","UpgradeVisual_L","Production crew + L2/L3 visual binding");
+        SourceCheck(rows,"Tower art director","Assets/Game/Towers/TowerArtDirector.cs","TrojanProductionRoot","Production-first Tower-Unit art path");
+        SourceCheck(rows,"Full candidate build entrypoint","Assets/Editor/ModelGapClosureBuilder.cs","CampaignChariotHorseBuilder.Build()","One-shot campaign candidate build");
+        SourceCheck(rows,"Animated horse source installer","Assets/Editor/CampaignHorseSourceInstaller.cs","ExpectedGitBlobSha","Pinned horse source integrity verification");
+        SourceCheck(rows,"Chariot horse builder","Assets/Editor/CampaignChariotHorseBuilder.cs","ChariotHorse.controller","Animated chariot-horse integration");
+        SourceCheck(rows,"Environment candidate builder","Assets/Editor/CampaignEnvironmentCandidateBuilder.cs","BuildEvacuationStreet","Chapter II-VII environment coverage");
+    }
+
+    static void SourceCheck(List<AuditRow> rows,string name,string path,string token,string description)
+    {
+        AuditRow row = new AuditRow { name=name, category="Pipeline", path=path };
+        if (!File.Exists(path))
+        {
+            row.status="MISSING";
+            row.details="Required source file missing.";
+        }
+        else if (!File.ReadAllText(path).Contains(token))
+        {
+            row.status="BROKEN";
+            row.details="Required contract token missing: " + token;
+        }
+        else
+        {
+            row.status="CANDIDATE";
+            row.details=description;
         }
         rows.Add(row);
     }
@@ -239,7 +288,6 @@ public static class CampaignModelAuditValidator
         md.AppendLine("| Status | Category | Asset | Details |").AppendLine("|---|---|---|---|");
         foreach (AuditRow row in report.rows) md.AppendLine($"| {row.status} | {row.category} | `{row.name}` | {row.details} |");
         File.WriteAllText(Path.Combine(ReportDir,"CampaignModelAudit.md"),md.ToString());
-        AssetDatabase.Refresh();
     }
 
     static void LogReport(AuditReport report)
