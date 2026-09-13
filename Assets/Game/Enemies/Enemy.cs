@@ -24,27 +24,18 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    readonly EnemyStatusState statuses = new EnemyStatusState();
+
     Transform[] waypoints;
     int waypointIndex;
     EnemyHealthBar healthBar;
     CharacterPresentationState presentation;
     float baseSpeed;
-    float slowMultiplier = 1f;
-    float slowUntil;
     float armor;
     float arrowResistance;
     float attackRange;
     float attackInterval = 1.5f;
     float nextAttack;
-    float burnUntil;
-    float burnDps;
-    float nextBurnTick;
-    float nextBurnVisual;
-    float armorBreakUntil;
-    float armorBreakAmount;
-    float commanderUntil;
-    float commanderSpeedMultiplier = 1f;
-    float commanderDamageMultiplier = 1f;
     bool attackingGate;
     bool dying;
     TrojanGuardSquad blockingGuard;
@@ -124,7 +115,7 @@ public class Enemy : MonoBehaviour
     {
         if (dying || GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
 
-        TickStatuses();
+        TickBurn();
         if (Health <= 0f) return;
 
         if (attackingGate)
@@ -140,13 +131,8 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if (Time.time >= slowUntil) slowMultiplier = 1f;
-        if (Time.time >= commanderUntil)
-        {
-            commanderSpeedMultiplier = 1f;
-            commanderDamageMultiplier = 1f;
-        }
-        speed = baseSpeed * slowMultiplier * commanderSpeedMultiplier;
+        statuses.RefreshMovementModifiers(Time.time);
+        speed = baseSpeed * statuses.SpeedMultiplier;
 
         if (TryHandleGuardCombat()) return;
         if (TryHandleHectorCombat()) return;
@@ -160,8 +146,7 @@ public class Enemy : MonoBehaviour
         if (blockingGuard == null) return false;
 
         float releaseRadius = blockingGuard.blockRadius * 1.35f;
-        bool reservationValid = blockingGuard.IsAlive &&
-                                blockingGuard.OwnsReservation(this) &&
+        bool reservationValid = blockingGuard.IsAlive && blockingGuard.OwnsReservation(this) &&
                                 (transform.position - blockingGuard.transform.position).sqrMagnitude <= releaseRadius * releaseRadius;
         if (!reservationValid)
         {
@@ -174,7 +159,7 @@ public class Enemy : MonoBehaviour
         {
             nextAttack = Time.time + attackInterval;
             presentation?.PlayAttack();
-            blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * commanderDamageMultiplier));
+            blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * statuses.DamageMultiplier));
         }
         return true;
     }
@@ -194,7 +179,7 @@ public class Enemy : MonoBehaviour
         {
             nextAttack = Time.time + attackInterval;
             presentation?.PlayAttack();
-            hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * commanderDamageMultiplier));
+            hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * statuses.DamageMultiplier));
         }
         return true;
     }
@@ -211,7 +196,7 @@ public class Enemy : MonoBehaviour
         {
             nextAttack = Time.time + attackInterval;
             presentation?.PlayAttack();
-            GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier)));
+            GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier)));
             RuntimeEffects.Instance?.PlayHitSound(false);
             CombatImpactPresentation.GateHit(finalTarget.position, false);
         }
@@ -236,26 +221,11 @@ public class Enemy : MonoBehaviour
         if (waypointIndex >= waypoints.Length) ReachBase();
     }
 
-    void TickStatuses()
+    void TickBurn()
     {
-        if (Time.time < burnUntil && burnDps > 0f)
-        {
-            if (Time.time >= nextBurnVisual)
-            {
-                nextBurnVisual = Time.time + .24f;
-                CombatImpactPresentation.BurnStatus(transform.position);
-            }
-
-            if (Time.time >= nextBurnTick)
-            {
-                nextBurnTick = Time.time + 1f;
-                ReceiveDamage(new DamagePacket(burnDps, DamageType.Fire));
-            }
-        }
-        else if (Time.time >= burnUntil)
-        {
-            burnDps = 0f;
-        }
+        EnemyBurnTickResult tick = statuses.TickBurn(Time.time);
+        if (tick.ShowVisual) CombatImpactPresentation.BurnStatus(transform.position);
+        if (tick.Damage > 0f) ReceiveDamage(new DamagePacket(tick.Damage, DamageType.Fire));
     }
 
     public void TakeDamage(float damage) => ReceiveDamage(new DamagePacket(damage, DamageType.Physical));
@@ -265,43 +235,18 @@ public class Enemy : MonoBehaviour
     {
         if (!IsAlive) return;
 
-        float currentArmor = armor;
-        if (Time.time < armorBreakUntil)
-            currentArmor = Mathf.Max(0f, currentArmor - armorBreakAmount);
-
+        float currentArmor = statuses.CurrentArmor(armor, Time.time);
         Health -= EnemyDamageResolver.Resolve(packet, Archetype, currentArmor, arrowResistance);
         presentation?.PlayHit();
         healthBar?.Refresh();
         if (Health <= 0f) Die();
     }
 
-    public void ApplySlow(float multiplier, float duration)
-    {
-        multiplier = Mathf.Clamp(multiplier, .15f, 1f);
-        if (multiplier < slowMultiplier || Time.time >= slowUntil) slowMultiplier = multiplier;
-        slowUntil = Mathf.Max(slowUntil, Time.time + duration);
-    }
-
-    public void ApplyBurn(float damagePerSecond, float duration)
-    {
-        burnDps = Mathf.Max(burnDps, damagePerSecond);
-        burnUntil = Mathf.Max(burnUntil, Time.time + duration);
-        nextBurnTick = Mathf.Min(nextBurnTick <= 0f ? Time.time + .5f : nextBurnTick, Time.time + .5f);
-        nextBurnVisual = Mathf.Min(nextBurnVisual <= 0f ? Time.time : nextBurnVisual, Time.time);
-    }
-
-    public void ApplyArmorBreak(float amount, float duration)
-    {
-        armorBreakAmount = Mathf.Max(armorBreakAmount, Mathf.Clamp01(amount));
-        armorBreakUntil = Mathf.Max(armorBreakUntil, Time.time + duration);
-    }
-
-    public void ApplyCommanderAura(float speedMultiplier, float damageMultiplier, float duration)
-    {
-        commanderSpeedMultiplier = Mathf.Max(commanderSpeedMultiplier, speedMultiplier);
-        commanderDamageMultiplier = Mathf.Max(commanderDamageMultiplier, damageMultiplier);
-        commanderUntil = Mathf.Max(commanderUntil, Time.time + duration);
-    }
+    public void ApplySlow(float multiplier, float duration) => statuses.ApplySlow(multiplier, duration, Time.time);
+    public void ApplyBurn(float damagePerSecond, float duration) => statuses.ApplyBurn(damagePerSecond, duration, Time.time);
+    public void ApplyArmorBreak(float amount, float duration) => statuses.ApplyArmorBreak(amount, duration, Time.time);
+    public void ApplyCommanderAura(float speedMultiplier, float damageMultiplier, float duration) =>
+        statuses.ApplyCommanderAura(speedMultiplier, damageMultiplier, duration, Time.time);
 
     void Die()
     {
@@ -333,7 +278,7 @@ public class Enemy : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
-            int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
+            int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
             if (Archetype == EnemyArchetype.Boss)
             {
                 attackingGate = true;
@@ -359,7 +304,7 @@ public class Enemy : MonoBehaviour
 
         nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
         presentation?.PlayAttack();
-        int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
+        int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
         GameManager.Instance.BossReachedGate(damage);
         RuntimeEffects.Instance?.PlayHitSound(true);
         CombatImpactPresentation.GateHit(transform.position, true);
