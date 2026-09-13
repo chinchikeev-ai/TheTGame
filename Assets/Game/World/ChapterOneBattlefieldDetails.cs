@@ -7,6 +7,7 @@ public sealed class ChapterOneBattlefieldDetails : MonoBehaviour
     static readonly Color Wood = new Color(.29f,.17f,.08f);
     static readonly Color DarkSand = new Color(.41f,.34f,.24f);
     static readonly Color Rock = new Color(.27f,.26f,.23f);
+    static readonly Color Dust = new Color(.46f,.38f,.27f);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -23,6 +24,7 @@ public sealed class ChapterOneBattlefieldDetails : MonoBehaviour
         BuildDebris(root.transform);
         BuildStandards(root.transform);
         BuildRouteMarkers(root.transform);
+        BuildCentralTerrain(root.transform);
     }
 
     void BuildDebris(Transform parent)
@@ -92,6 +94,54 @@ public sealed class ChapterOneBattlefieldDetails : MonoBehaviour
         };
         for(int i=0;i<trampled.Length;i++)
             Primitive(parent,"Trampled Earth Patch",PrimitiveType.Sphere,trampled[i],new Vector3(.58f+(i%2)*.20f,.012f,.34f+(i%3)*.10f),DarkSand*(.90f+(i%3)*.035f),Quaternion.Euler(0f,i*29f-17f,0f));
+    }
+
+    void BuildCentralTerrain(Transform parent)
+    {
+        Vector3[] clusters =
+        {
+            new Vector3(-3.0f,.05f,2.55f), new Vector3(-2.2f,.05f,-2.45f),
+            new Vector3(.7f,.05f,2.70f), new Vector3(2.35f,.05f,-2.55f),
+            new Vector3(4.9f,.05f,2.50f), new Vector3(6.7f,.05f,-2.05f)
+        };
+        for(int i=0;i<clusters.Length;i++) CreateTerrainCluster(parent,clusters[i],i*37f,.82f+(i%3)*.12f);
+
+        CreateSupplyCart(parent,new Vector3(.65f,.03f,3.15f),-17f,1f);
+        CreateSupplyCart(parent,new Vector3(4.45f,.03f,-3.05f),14f,.82f);
+        CreateScorchedPatch(parent,new Vector3(2.85f,.014f,-2.75f),.72f);
+        CreateScorchedPatch(parent,new Vector3(6.20f,.014f,2.60f),.58f);
+
+        CreateFootprintTrail(parent,new Vector3(-3.8f,.015f,1.62f),new Vector3(4.8f,.015f,1.45f),10,1.7f);
+        CreateFootprintTrail(parent,new Vector3(-3.7f,.015f,-1.55f),new Vector3(5.2f,.015f,-1.35f),10,2.2f);
+        CreateFootprintTrail(parent,new Vector3(5.0f,.015f,-.25f),new Vector3(9.3f,.015f,.58f),7,2.8f);
+    }
+
+    void CreateTerrainCluster(Transform parent,Vector3 pos,float yaw,float scale)
+    {
+        GameObject root=new GameObject("Battlefield Terrain Cluster");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition=pos;
+        root.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
+        root.transform.localScale=Vector3.one*scale;
+        Primitive(root.transform,"Stone",PrimitiveType.Sphere,new Vector3(-.28f,.08f,.08f),new Vector3(.34f,.16f,.27f),Rock*.94f,Quaternion.Euler(0f,18f,0f));
+        Primitive(root.transform,"Stone",PrimitiveType.Sphere,new Vector3(.20f,.065f,-.16f),new Vector3(.27f,.13f,.22f),Rock*1.08f,Quaternion.Euler(0f,-21f,0f));
+        Primitive(root.transform,"Earth Clod",PrimitiveType.Cube,new Vector3(.34f,.055f,.17f),new Vector3(.22f,.09f,.16f),Dust*.82f,Quaternion.Euler(7f,31f,9f));
+        Primitive(root.transform,"Weathered Timber",PrimitiveType.Cube,new Vector3(-.06f,.13f,-.28f),new Vector3(.58f,.055f,.08f),Wood*.88f,Quaternion.Euler(3f,-24f,7f));
+    }
+
+    void CreateSupplyCart(Transform parent,Vector3 pos,float yaw,float scale)
+    {
+        GameObject root=new GameObject("Abandoned Supply Cart");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition=pos;
+        root.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
+        root.transform.localScale=Vector3.one*scale;
+        Primitive(root.transform,"Cart Bed",PrimitiveType.Cube,new Vector3(0f,.30f,0f),new Vector3(1.20f,.12f,.72f),Wood*.96f,Quaternion.Euler(0f,0f,-4f));
+        Primitive(root.transform,"Cart Side",PrimitiveType.Cube,new Vector3(0f,.52f,.34f),new Vector3(1.15f,.28f,.06f),Wood*1.10f,Quaternion.Euler(0f,0f,-3f));
+        Primitive(root.transform,"Loose Side",PrimitiveType.Cube,new Vector3(.18f,.44f,-.34f),new Vector3(.72f,.07f,.06f),Wood*.78f,Quaternion.Euler(0f,0f,17f));
+        Primitive(root.transform,"Cart Wheel",PrimitiveType.Cylinder,new Vector3(0f,.23f,.48f),new Vector3(.34f,.045f,.34f),Wood*.82f,Quaternion.Euler(90f,0f,0f));
+        Primitive(root.transform,"Loose Wheel",PrimitiveType.Cylinder,new Vector3(.18f,.12f,-.62f),new Vector3(.28f,.035f,.28f),Wood*.70f,Quaternion.Euler(76f,18f,12f));
+        Primitive(root.transform,"Draw Beam",PrimitiveType.Cube,new Vector3(-.98f,.20f,0f),new Vector3(.85f,.07f,.08f),Wood*.86f,Quaternion.Euler(0f,0f,-5f));
     }
 
     void CreateFootprintTrail(Transform parent,Vector3 start,Vector3 end,int count,float phase)
