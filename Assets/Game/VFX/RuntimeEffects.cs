@@ -55,6 +55,20 @@ public class RuntimeEffects : MonoBehaviour
         StartCoroutine(GroundPulse(position, color, radius, duration));
     }
 
+    public void PlayBuildSuccess(Vector3 position, bool upgrade)
+    {
+        source.PlayOneShot(MakeTone(upgrade ? 620f : 510f, upgrade ? .16f : .12f, .18f));
+        source.PlayOneShot(MakeTone(upgrade ? 880f : 720f, .08f, .10f));
+        StartCoroutine(GroundPulse(position, upgrade ? new Color(1f,.68f,.18f) : new Color(.24f,.88f,.34f), upgrade ? 1.45f : 1.15f, .32f));
+        StartCoroutine(BuildBurst(position, upgrade));
+    }
+
+    public void PlayBuildDenied(Vector3 position)
+    {
+        source.PlayOneShot(MakeTone(115f, .12f, .18f));
+        StartCoroutine(GroundPulse(position, new Color(.95f,.12f,.08f), .8f, .22f));
+    }
+
     AudioClip MakeTone(float frequency, float duration, float volume)
     {
         int rate = 44100;
@@ -99,6 +113,37 @@ public class RuntimeEffects : MonoBehaviour
             yield return null;
         }
         if (go != null) Destroy(go);
+    }
+
+    IEnumerator BuildBurst(Vector3 position, bool upgrade)
+    {
+        Color color = upgrade ? new Color(1f,.65f,.16f) : new Color(.30f,.92f,.38f);
+        for (int i = 0; i < 5; i++)
+        {
+            GameObject spark = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            spark.name = upgrade ? "UpgradeSpark" : "BuildSpark";
+            Destroy(spark.GetComponent<Collider>());
+            spark.transform.position = position + new Vector3((i - 2) * .18f, .12f + (i % 2) * .08f, ((i * 3) % 5 - 2) * .12f);
+            spark.transform.localScale = Vector3.one * .08f;
+            TowerFactory.SetColor(spark, color);
+            StartCoroutine(FloatSpark(spark, .28f + i * .025f));
+        }
+        yield return null;
+    }
+
+    IEnumerator FloatSpark(GameObject spark, float duration)
+    {
+        float t = 0f;
+        Vector3 start = spark.transform.position;
+        while (t < duration && spark != null)
+        {
+            t += Time.deltaTime;
+            float u = Mathf.Clamp01(t / duration);
+            spark.transform.position = start + Vector3.up * Mathf.Lerp(0f, .8f, u);
+            spark.transform.localScale = Vector3.one * Mathf.Lerp(.08f, .015f, u);
+            yield return null;
+        }
+        if (spark != null) Destroy(spark);
     }
 
     IEnumerator BossShockwave(Vector3 position)
