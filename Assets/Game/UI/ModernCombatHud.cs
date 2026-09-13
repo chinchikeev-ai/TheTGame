@@ -1,8 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
+using static CombatHudTowerCatalog;
+using static CombatHudUiFactory;
 
 public sealed class ModernCombatHud : MonoBehaviour
 {
+    static readonly string[] BlockingMenuNames =
+    {
+        "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal"
+    };
+
     Canvas canvas;
     CanvasGroup group;
     TowerPlacement placement;
@@ -15,7 +22,6 @@ public sealed class ModernCombatHud : MonoBehaviour
     Text selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview;
     Button upgradeButton, sellButton, priorityButton, startWaveButton, magicButton, giftButton;
     Text buildSelectionText;
-    static Sprite coinSprite;
 
     GameObject buildTooltip;
     Image tooltipAccent;
@@ -61,11 +67,13 @@ public sealed class ModernCombatHud : MonoBehaviour
         canvas = root.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 80;
+
         CanvasScaler scaler = root.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         scaler.matchWidthOrHeight = .5f;
+
         root.AddComponent<GraphicRaycaster>();
         group = root.AddComponent<CanvasGroup>();
 
@@ -139,47 +147,12 @@ public sealed class ModernCombatHud : MonoBehaviour
         accentRt.anchoredPosition = new Vector2(8f, 0f);
         accentRt.sizeDelta = new Vector2(8f, 154f);
 
-        BuildTooltipSilhouette(buildTooltip.transform);
         tooltipTitle = Text(buildTooltip.transform, "", new Vector2(-116, 55), new Vector2(300, 30), 20, new Color(1f, .76f, .31f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipRole = Text(buildTooltip.transform, "", new Vector2(-116, 26), new Vector2(300, 28), 13, new Color(.78f, .70f, .61f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipStats = Text(buildTooltip.transform, "", new Vector2(-116, -10), new Vector2(300, 38), 13, new Color(.93f, .87f, .79f, 1f), TextAnchor.MiddleLeft, FontStyle.Normal);
         tooltipTags = Text(buildTooltip.transform, "", new Vector2(-116, -47), new Vector2(300, 28), 13, new Color(.96f, .63f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipMatchup = Text(buildTooltip.transform, "", new Vector2(126, -2), new Vector2(220, 112), 13, new Color(.78f, .91f, .70f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         buildTooltip.SetActive(false);
-    }
-
-    void BuildTooltipSilhouette(Transform parent)
-    {
-        GameObject head = new GameObject("SilhouetteHead");
-        head.transform.SetParent(parent, false);
-        Image headImage = head.AddComponent<Image>();
-        headImage.color = new Color(.74f, .42f, .14f, .92f);
-        headImage.raycastTarget = false;
-        RectTransform headRt = headImage.rectTransform;
-        headRt.anchorMin = headRt.anchorMax = headRt.pivot = new Vector2(.5f, .5f);
-        headRt.anchoredPosition = new Vector2(-214, 36);
-        headRt.sizeDelta = new Vector2(34, 34);
-
-        GameObject body = new GameObject("SilhouetteBody");
-        body.transform.SetParent(parent, false);
-        Image bodyImage = body.AddComponent<Image>();
-        bodyImage.color = new Color(.56f, .25f, .09f, .92f);
-        bodyImage.raycastTarget = false;
-        RectTransform bodyRt = bodyImage.rectTransform;
-        bodyRt.anchorMin = bodyRt.anchorMax = bodyRt.pivot = new Vector2(.5f, .5f);
-        bodyRt.anchoredPosition = new Vector2(-214, -20);
-        bodyRt.sizeDelta = new Vector2(54, 74);
-
-        GameObject weapon = new GameObject("SilhouetteWeapon");
-        weapon.transform.SetParent(parent, false);
-        Image weaponImage = weapon.AddComponent<Image>();
-        weaponImage.color = new Color(.91f, .68f, .25f, .92f);
-        weaponImage.raycastTarget = false;
-        RectTransform weaponRt = weaponImage.rectTransform;
-        weaponRt.anchorMin = weaponRt.anchorMax = weaponRt.pivot = new Vector2(.5f, .5f);
-        weaponRt.anchoredPosition = new Vector2(-182, -2);
-        weaponRt.sizeDelta = new Vector2(10, 104);
-        weaponRt.localRotation = Quaternion.Euler(0f, 0f, -18f);
     }
 
     void BuildSelectedCard(Transform parent)
@@ -231,11 +204,10 @@ public sealed class ModernCombatHud : MonoBehaviour
     bool IsMenuBlockingCombat()
     {
         if (menuCanvas == null) return false;
-        string[] names = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal" };
-        foreach (string n in names)
+        for (int i = 0; i < BlockingMenuNames.Length; i++)
         {
-            Transform t = menuCanvas.transform.Find(n);
-            if (t != null && t.gameObject.activeInHierarchy) return true;
+            Transform menu = menuCanvas.transform.Find(BlockingMenuNames[i]);
+            if (menu != null && menu.gameObject.activeInHierarchy) return true;
         }
         return false;
     }
@@ -358,11 +330,9 @@ public sealed class ModernCombatHud : MonoBehaviour
         {
             TowerType type = buildTypes[i];
             float score = RecommendationScore(type);
-            if (score > best)
-            {
-                best = score;
-                winner = type;
-            }
+            if (score <= best) continue;
+            best = score;
+            winner = type;
         }
         return winner;
     }
@@ -421,76 +391,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         tooltipMatchup.text = $"+ {L("STRONG", "СИЛЁН")}\n{StrongAgainst(hoveredBuildType)}\n\n− {L("WEAK", "СЛАБ")}\n{WeakAgainst(hoveredBuildType)}";
     }
 
-    string TowerDisplayName(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.MachineGun: return L("TROJAN ARCHERS", "ТРОЯНСКИЕ ЛУЧНИКИ");
-            case TowerType.SpearThrower: return L("SPEAR THROWERS", "МЕТАТЕЛИ КОПИЙ");
-            case TowerType.Cannon: return L("BALLISTA CREW", "РАСЧЁТ БАЛЛИСТЫ");
-            case TowerType.Slow: return L("PRIESTS OF APOLLO", "ЖРЕЦЫ АПОЛЛОНА");
-            case TowerType.FireTower: return L("FIRE CREW", "ОГНЕННЫЙ РАСЧЁТ");
-            case TowerType.TrojanGuard: return L("SHIELD GUARD", "ЩИТОВАЯ ГВАРДИЯ");
-            default: return type.ToString().ToUpperInvariant();
-        }
-    }
-
-    string TowerRole(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.MachineGun: return L("RANGED DPS • ANTI-LIGHT", "ДАЛЬНИЙ БОЙ • ПРОТИВ ЛЁГКИХ");
-            case TowerType.SpearThrower: return L("ARMOR PIERCE • ANTI-HEAVY", "БРОНЕБОЙНЫЙ • ПРОТИВ ТЯЖЁЛЫХ");
-            case TowerType.Cannon: return L("HEAVY SINGLE TARGET • ANTI-SIEGE", "ТЯЖЁЛЫЙ УРОН • ПРОТИВ ОСАДЫ");
-            case TowerType.Slow: return L("SUPPORT • CONTROL", "ПОДДЕРЖКА • КОНТРОЛЬ");
-            case TowerType.FireTower: return L("AOE • BURN • AREA DENIAL", "AOE • ГОРЕНИЕ • КОНТРОЛЬ ЗОНЫ");
-            case TowerType.TrojanGuard: return L("BLOCKER • FRONTLINE", "БЛОКИРОВКА • ПЕРЕДОВАЯ");
-            default: return "";
-        }
-    }
-
-    string TowerTags(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.MachineGun: return "[RANGED]   [LIGHT]";
-            case TowerType.SpearThrower: return "[ARMOR]   [HEAVY]";
-            case TowerType.Cannon: return "[SIEGE]   [BOSS]   [PIERCE]";
-            case TowerType.Slow: return "[SLOW]   [SUPPORT]";
-            case TowerType.FireTower: return "[AOE]   [BURN]   [ZONE]";
-            case TowerType.TrojanGuard: return "[BLOCK]   [FRONTLINE]";
-            default: return "";
-        }
-    }
-
-    string StrongAgainst(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.MachineGun: return L("Runners • Infantry", "Бегуны • Пехота");
-            case TowerType.SpearThrower: return L("Heavy • Shields", "Тяжёлые • Щитоносцы");
-            case TowerType.Cannon: return L("Boss • Siege • Heavy", "Босс • Осада • Тяжёлые");
-            case TowerType.Slow: return L("Fast groups", "Быстрые группы");
-            case TowerType.FireTower: return L("Dense groups", "Плотные группы");
-            case TowerType.TrojanGuard: return L("Holding lanes", "Удержание линии");
-            default: return "—";
-        }
-    }
-
-    string WeakAgainst(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.MachineGun: return L("Heavy armor", "Тяжёлая броня");
-            case TowerType.SpearThrower: return L("Light swarms", "Толпы лёгких");
-            case TowerType.Cannon: return L("Fast swarms", "Быстрые толпы");
-            case TowerType.Slow: return L("Damage races", "Чистый урон");
-            case TowerType.FireTower: return L("Single heavy", "Одиночные тяжёлые");
-            case TowerType.TrojanGuard: return L("Ranged pressure", "Дальний обстрел");
-            default: return "—";
-        }
-    }
-
     void UpdateSelected()
     {
         Tower tower = placement != null ? placement.SelectedTower : null;
@@ -543,125 +443,6 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void SelectBuild(TowerType type) => placement?.SelectBuildType(type);
 
-    void IncreaseSpeed()
-    {
-        CombatControlsUI.IncreaseSpeed();
-    }
-
-    void DecreaseSpeed()
-    {
-        CombatControlsUI.DecreaseSpeed();
-    }
-
-    string BuildLabel(TowerType type, string key) => $"[{key}]  {TowerName(type)}\n{TowerFactory.GetCost(type)} {L("GOLD", "ЗОЛОТА")}";
-
-    string TowerName(TowerType type)
-    {
-        switch (type)
-        {
-            case TowerType.SpearThrower: return L("SPEAR", "КОПЬЯ");
-            case TowerType.MachineGun: return L("ARCHERS", "ЛУЧНИКИ");
-            case TowerType.Cannon: return L("BALLISTA", "БАЛЛИСТА");
-            case TowerType.Slow: return L("APOLLO", "АПОЛЛОН");
-            case TowerType.FireTower: return L("FIRE", "ОГОНЬ");
-            case TowerType.TrojanGuard: return L("GUARD", "СТРАЖА");
-            default: return type.ToString();
-        }
-    }
-
-    GameObject Panel(Transform parent, string name, Vector2 pos, Vector2 size, Color color, Vector2 anchor, Vector2 pivot)
-    {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        Image image = go.AddComponent<Image>();
-        image.color = color;
-        RectTransform rt = image.rectTransform;
-        rt.anchorMin = rt.anchorMax = anchor;
-        rt.pivot = pivot;
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        Outline outline = go.AddComponent<Outline>();
-        outline.effectColor = new Color(.67f, .36f, .13f, .42f);
-        outline.effectDistance = new Vector2(1.5f, -1.5f);
-        return go;
-    }
-
-    Image Icon(Transform parent, string name, Vector2 pos, Vector2 size, Sprite sprite)
-    {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        Image image = go.AddComponent<Image>();
-        image.sprite = sprite;
-        image.raycastTarget = false;
-        RectTransform rt = image.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        return image;
-    }
-
-    Button Button(Transform parent, string label, Vector2 pos, Vector2 size, UnityEngine.Events.UnityAction action, bool primary)
-    {
-        GameObject go = new GameObject(label);
-        go.transform.SetParent(parent, false);
-        Image image = go.AddComponent<Image>();
-        image.color = primary ? new Color(.55f, .11f, .045f, .98f) : new Color(.24f, .14f, .08f, .96f);
-        Button button = go.AddComponent<Button>();
-        button.targetGraphic = image;
-        button.onClick.AddListener(action);
-        RectTransform rt = image.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        go.AddComponent<MenuButtonFeedback>();
-        go.AddComponent<MenuUiAudioFeedback>();
-        Text(go.transform, label, Vector2.zero, size, 15, primary ? new Color(1f, .88f, .50f, 1f) : new Color(.94f, .84f, .70f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        return button;
-    }
-
-    Text Text(Transform parent, string value, Vector2 pos, Vector2 size, int fontSize, Color color, TextAnchor alignment, FontStyle style)
-    {
-        GameObject go = new GameObject("Text");
-        go.transform.SetParent(parent, false);
-        Text t = go.AddComponent<Text>();
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        t.text = value;
-        t.fontSize = fontSize;
-        t.fontStyle = style;
-        t.color = color;
-        t.alignment = alignment;
-        t.horizontalOverflow = HorizontalWrapMode.Wrap;
-        t.verticalOverflow = VerticalWrapMode.Truncate;
-        RectTransform rt = t.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-        return t;
-    }
-
-    static Sprite CoinSprite()
-    {
-        if (coinSprite != null) return coinSprite;
-        const int size = 64;
-        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        Color clear = new Color(0f, 0f, 0f, 0f);
-        Color edge = new Color(.74f, .38f, .06f, 1f);
-        Color gold = new Color(1f, .72f, .18f, 1f);
-        Color shine = new Color(1f, .92f, .48f, 1f);
-        Vector2 center = new Vector2((size - 1) * .5f, (size - 1) * .5f);
-        for (int y = 0; y < size; y++)
-        {
-            for (int x = 0; x < size; x++)
-            {
-                float d = Vector2.Distance(new Vector2(x, y), center);
-                Color c = clear;
-                if (d < 29f) c = d > 24f ? edge : gold;
-                if (d < 17f && x < 30 && y > 33) c = shine;
-                texture.SetPixel(x, y, c);
-            }
-        }
-        texture.Apply();
-        coinSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(.5f, .5f));
-        return coinSprite;
-    }
+    void IncreaseSpeed() => CombatControlsUI.IncreaseSpeed();
+    void DecreaseSpeed() => CombatControlsUI.DecreaseSpeed();
 }
