@@ -57,6 +57,11 @@ public class RuntimeEffects : MonoBehaviour
         source.PlayOneShot(GetTone(heavy ? 90f : 240f, .06f, .10f));
     }
 
+    public void PlayDeathSound(bool boss = false)
+    {
+        source.PlayOneShot(GetTone(boss ? 70f : 150f, boss ? .35f : .16f, boss ? .32f : .16f));
+    }
+
     // Compatibility helper for callers that intentionally want generic hit visuals.
     public void PlayHit(Vector3 position, bool heavy = false)
     {
@@ -64,9 +69,10 @@ public class RuntimeEffects : MonoBehaviour
         Burst(position, heavy ? .75f : .34f, heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f));
     }
 
+    // Compatibility helper. Combat targets should prefer CombatImpactPresentation + PlayDeathSound.
     public void PlayDeath(Vector3 position, bool boss = false)
     {
-        source.PlayOneShot(GetTone(boss ? 70f : 150f, boss ? .35f : .16f, boss ? .32f : .16f));
+        PlayDeathSound(boss);
         Burst(position, boss ? 2.2f : .88f, boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f));
         if (boss) BossShockwave(position);
     }

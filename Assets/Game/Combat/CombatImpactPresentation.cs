@@ -8,11 +8,11 @@ public static class CombatImpactPresentation
         {
             case TowerType.Cannon:
                 Burst(point, new Color(1f,.34f,.05f), 4, .22f, .72f);
-                RuntimeEffects.Instance?.PlayHeroPulse(point, new Color(1f,.26f,.03f), 1.5f, .20f);
+                GroundPulse(point, new Color(1f,.26f,.03f), 1.5f, .20f);
                 break;
             case TowerType.FireTower:
                 Burst(point, new Color(1f,.18f,.02f), 4, .16f, .52f);
-                RuntimeEffects.Instance?.PlayHeroPulse(point, new Color(1f,.42f,.04f), 1.2f, .18f);
+                GroundPulse(point, new Color(1f,.42f,.04f), 1.2f, .18f);
                 break;
             case TowerType.SpearThrower:
                 Burst(point, new Color(.92f,.70f,.27f), 2, .10f, .34f);
@@ -24,6 +24,14 @@ public static class CombatImpactPresentation
                 Burst(point, new Color(1f,.76f,.20f), 1, .07f, .22f);
                 break;
         }
+    }
+
+    public static void MeleeHit(Vector3 point, TowerType sourceType)
+    {
+        Color color = sourceType == TowerType.TrojanGuard
+            ? new Color(.86f,.42f,.13f)
+            : new Color(.92f,.76f,.32f);
+        Burst(point, color, 2, .085f, .20f);
     }
 
     public static void BurnStatus(Vector3 point)
@@ -48,10 +56,18 @@ public static class CombatImpactPresentation
     {
         bool heavy = archetype == EnemyArchetype.HeavyHoplite || archetype == EnemyArchetype.ShieldBearer || archetype == EnemyArchetype.BatteringRam;
         bool boss = archetype == EnemyArchetype.Boss;
-        if (!heavy && !boss) return;
 
-        Color color = boss ? new Color(.78f,.08f,.03f) : new Color(.55f,.43f,.29f);
-        Burst(point + Vector3.up*.15f, color, boss ? 7 : 4, boss ? .24f : .15f, boss ? .85f : .52f);
+        Color color = boss
+            ? new Color(.78f,.08f,.03f)
+            : heavy
+                ? new Color(.55f,.43f,.29f)
+                : new Color(1f,.72f,.18f);
+        int count = boss ? 7 : heavy ? 4 : 2;
+        float size = boss ? .24f : heavy ? .15f : .10f;
+        float spread = boss ? .85f : heavy ? .52f : .30f;
+
+        Burst(point + Vector3.up * .15f, color, count, size, spread);
+        if (boss) GroundPulse(point, new Color(.95f,.62f,.12f), 3.8f, .5f);
     }
 
     static void Burst(Vector3 point, Color color, int count, float size, float spread)
@@ -79,5 +95,17 @@ public static class CombatImpactPresentation
                 lifetime,
                 drift);
         }
+    }
+
+    static void GroundPulse(Vector3 point, Color color, float radius, float duration)
+    {
+        CombatVfxPool.Spawn(
+            PrimitiveType.Cylinder,
+            point + Vector3.up * .045f,
+            new Vector3(.22f,.018f,.22f),
+            new Vector3(radius,.018f,radius),
+            color,
+            duration,
+            Vector3.zero);
     }
 }

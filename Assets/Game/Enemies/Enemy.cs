@@ -271,7 +271,6 @@ public class Enemy : MonoBehaviour
 
         Health -= Mathf.Max(1f, finalDamage);
         presentation?.PlayHit();
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, packet.type == DamageType.Fire || baseDamage > 1);
         if (healthBar != null) healthBar.Refresh();
         if (Health <= 0f) Die();
     }
@@ -322,7 +321,7 @@ public class Enemy : MonoBehaviour
         if (healthBar != null) healthBar.enabled = false;
         foreach (Collider collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
         CombatImpactPresentation.EnemyDeath(transform.position, Archetype);
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss);
+        RuntimeEffects.Instance?.PlayDeathSound(Archetype == EnemyArchetype.Boss);
         float presentationDelay = presentation != null ? presentation.PlayDeath(Archetype == EnemyArchetype.Boss) : .1f;
         Destroy(gameObject, Mathf.Max(.08f, presentationDelay));
     }
