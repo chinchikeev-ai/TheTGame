@@ -11,6 +11,7 @@ public class EnemyMotionAnimator : MonoBehaviour
     Transform aura;
     float phase;
     bool initialized;
+    bool hasAuthoredAnimator;
 
     public static void Attach(GameObject target, EnemyArchetype enemyArchetype)
     {
@@ -22,7 +23,9 @@ public class EnemyMotionAnimator : MonoBehaviour
     void Start()
     {
         phase = Random.value * Mathf.PI * 2f;
-        CaptureParts();
+        Animator authored = GetComponentInChildren<Animator>(true);
+        hasAuthoredAnimator = authored != null && authored.runtimeAnimatorController != null;
+        if (!hasAuthoredAnimator) CaptureParts();
         if (archetype == EnemyArchetype.Boss) CreateBossAura();
         initialized = true;
     }
@@ -31,22 +34,25 @@ public class EnemyMotionAnimator : MonoBehaviour
     {
         if (!initialized) return;
 
-        float speed = archetype == EnemyArchetype.Runner ? 9.5f : archetype == EnemyArchetype.BatteringRam ? 4.5f : 6.8f;
-        float bob = Mathf.Sin(Time.time * speed + phase);
-        float sway = Mathf.Cos(Time.time * speed * .5f + phase);
-
-        for (int i = 0; i < animatedParts.Count; i++)
+        if (!hasAuthoredAnimator)
         {
-            Transform part = animatedParts[i];
-            if (part == null) continue;
+            float speed = archetype == EnemyArchetype.Runner ? 9.5f : archetype == EnemyArchetype.BatteringRam ? 4.5f : 6.8f;
+            float bob = Mathf.Sin(Time.time * speed + phase);
+            float sway = Mathf.Cos(Time.time * speed * .5f + phase);
 
-            float vertical = archetype == EnemyArchetype.BatteringRam ? .015f : .035f;
-            float lateral = archetype == EnemyArchetype.Boss ? .025f : .015f;
-            part.localPosition = baseLocalPositions[i] + new Vector3(sway * lateral, Mathf.Abs(bob) * vertical, 0f);
+            for (int i = 0; i < animatedParts.Count; i++)
+            {
+                Transform part = animatedParts[i];
+                if (part == null) continue;
 
-            float squash = archetype == EnemyArchetype.BatteringRam ? .012f : .022f;
-            Vector3 scale = baseLocalScales[i];
-            part.localScale = new Vector3(scale.x * (1f + bob * squash), scale.y * (1f - bob * squash * .55f), scale.z);
+                float vertical = archetype == EnemyArchetype.BatteringRam ? .015f : .035f;
+                float lateral = archetype == EnemyArchetype.Boss ? .025f : .015f;
+                part.localPosition = baseLocalPositions[i] + new Vector3(sway * lateral, Mathf.Abs(bob) * vertical, 0f);
+
+                float squash = archetype == EnemyArchetype.BatteringRam ? .012f : .022f;
+                Vector3 scale = baseLocalScales[i];
+                part.localScale = new Vector3(scale.x * (1f + bob * squash), scale.y * (1f - bob * squash * .55f), scale.z);
+            }
         }
 
         if (aura != null)
