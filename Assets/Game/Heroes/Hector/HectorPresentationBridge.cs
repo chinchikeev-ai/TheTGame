@@ -37,7 +37,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
     public void PlayAttackImpact(Vector3 point)
     {
-        characterPresentation?.PlayAttack();
+        characterPresentation?.PlaySpearAttack();
         CombatImpactPresentation.MeleeHit(point, TowerType.TrojanGuard);
         RuntimeEffects.Instance?.PlayHitSound(false);
     }
