@@ -29,6 +29,10 @@ public class CharacterPresentationState : MonoBehaviour
     public void PlayAbilityE() => Trigger("AbilityE", "Attack");
     public void PlayAbilityR() => Trigger("AbilityR", "Attack");
     public void PlayAbilityF() => Trigger("AbilityF", "Attack");
+    public void PlayBlock() => Trigger("Block", "Attack");
+    public void PlayPoke() => Trigger("Poke", "Attack");
+    public void PlayDraw() => Trigger("Draw", "Attack");
+    public void PlayRelease() => Trigger("Release", "Attack");
 
     public void PlayHit()
     {
