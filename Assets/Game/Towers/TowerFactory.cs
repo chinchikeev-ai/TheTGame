@@ -18,13 +18,14 @@ public static class TowerFactory
         Color bronze = new Color(.55f,.36f,.16f);
         Color darkWood = new Color(.24f,.14f,.07f);
 
-        GameObject baseObj = Primitive(root.transform, "Base", PrimitiveType.Cylinder, Vector3.zero, new Vector3(.78f,.28f,.78f), stone);
+        Primitive(root.transform, "Base", PrimitiveType.Cylinder, Vector3.zero, new Vector3(.78f,.28f,.78f), stone);
         GameObject head = Primitive(root.transform, "Head", PrimitiveType.Cube, new Vector3(0f,.72f,0f), new Vector3(.58f,.34f,.70f), bronze);
         GameObject barrel = Primitive(head.transform, "Barrel", PrimitiveType.Cylinder, new Vector3(0f,0f,.82f), new Vector3(.10f,.48f,.10f), darkWood, Quaternion.Euler(90f,0f,0f));
 
         switch (type)
         {
             case TowerType.MachineGun:
+                barrel.SetActive(false);
                 SetColor(head, new Color(.48f,.31f,.14f));
                 Primitive(head.transform,"Bow",PrimitiveType.Cube,new Vector3(0f,.05f,.62f),new Vector3(.80f,.06f,.08f),new Color(.68f,.48f,.22f));
                 Primitive(head.transform,"Roof",PrimitiveType.Cylinder,new Vector3(0f,.48f,0f),new Vector3(.58f,.10f,.58f),new Color(.60f,.22f,.12f));
@@ -37,20 +38,21 @@ public static class TowerFactory
                 Primitive(head.transform,"BallistaArmR",PrimitiveType.Cube,new Vector3(.45f,.05f,.34f),new Vector3(.65f,.08f,.10f),new Color(.72f,.48f,.18f),Quaternion.Euler(0f,-18f,0f));
                 break;
             case TowerType.Slow:
+                barrel.SetActive(false);
                 SetColor(head,new Color(.54f,.48f,.78f));
-                SetColor(barrel,new Color(.72f,.68f,.92f));
                 Primitive(head.transform,"ApolloCore",PrimitiveType.Sphere,new Vector3(0f,.55f,0f),Vector3.one*.34f,new Color(.98f,.72f,.18f));
                 Primitive(root.transform,"ColumnL",PrimitiveType.Cylinder,new Vector3(-.34f,.45f,0f),new Vector3(.10f,.42f,.10f),new Color(.80f,.72f,.54f));
                 Primitive(root.transform,"ColumnR",PrimitiveType.Cylinder,new Vector3(.34f,.45f,0f),new Vector3(.10f,.42f,.10f),new Color(.80f,.72f,.54f));
                 break;
             case TowerType.SpearThrower:
+                barrel.SetActive(false);
                 SetColor(head,new Color(.46f,.36f,.16f));
                 for (int i=-1;i<=1;i++)
                     Primitive(head.transform,"Spear"+i,PrimitiveType.Cylinder,new Vector3(i*.18f,.10f,.70f),new Vector3(.035f,.68f,.035f),new Color(.72f,.55f,.25f),Quaternion.Euler(90f,0f,0f));
                 break;
             case TowerType.FireTower:
+                barrel.SetActive(false);
                 SetColor(head,new Color(.42f,.18f,.10f));
-                SetColor(barrel,new Color(.32f,.12f,.07f));
                 Primitive(head.transform,"Brazier",PrimitiveType.Cylinder,new Vector3(0f,.48f,0f),new Vector3(.36f,.12f,.36f),new Color(.25f,.20f,.16f));
                 GameObject flame = Primitive(head.transform,"FlameCore",PrimitiveType.Sphere,new Vector3(0f,.74f,0f),new Vector3(.30f,.42f,.30f),new Color(1f,.32f,.04f));
                 flame.AddComponent<ChapterOneAmbientMotion>().kind = ChapterOneAmbientMotion.MotionKind.Flame;
