@@ -38,8 +38,13 @@ public static class TowerArtDirector
                 AddPost(art.transform,new Vector3(-.42f,.62f,.30f),wood);
                 AddPost(art.transform,new Vector3(.42f,.62f,.30f),wood);
                 Part(art.transform,"Wooden Platform",PrimitiveType.Cube,new Vector3(0f,.95f,0f),new Vector3(1.05f,.12f,.90f),lightWood);
-                Part(art.transform,"Red Canopy",PrimitiveType.Cylinder,new Vector3(0f,1.38f,0f),new Vector3(.72f,.16f,.72f),red).transform.rotation=Quaternion.Euler(0f,30f,0f);
+                Part(art.transform,"Archer Parapet",PrimitiveType.Cube,new Vector3(0f,1.13f,.43f),new Vector3(1.00f,.28f,.10f),wood);
+                Part(art.transform,"Archer Parapet Left",PrimitiveType.Cube,new Vector3(-.48f,1.13f,.05f),new Vector3(.10f,.28f,.72f),wood);
+                Part(art.transform,"Archer Parapet Right",PrimitiveType.Cube,new Vector3(.48f,1.13f,.05f),new Vector3(.10f,.28f,.72f),wood);
+                Part(art.transform,"Red Canopy",PrimitiveType.Cylinder,new Vector3(0f,1.48f,0f),new Vector3(.72f,.16f,.72f),red).transform.rotation=Quaternion.Euler(0f,30f,0f);
                 Part(art.transform,"Arrow Bundle",PrimitiveType.Cylinder,new Vector3(.48f,1.12f,.18f),new Vector3(.10f,.42f,.10f),wood).transform.rotation=Quaternion.Euler(10f,0f,-12f);
+                Part(art.transform,"Arrow Crate",PrimitiveType.Cube,new Vector3(-.42f,1.08f,-.26f),new Vector3(.30f,.18f,.26f),lightWood);
+                Part(art.transform,"Bronze Archer Emblem",PrimitiveType.Cylinder,new Vector3(0f,1.18f,.50f),new Vector3(.14f,.025f,.14f),bronze,Quaternion.Euler(90f,0f,0f));
                 Part(head,"Archer Bow",PrimitiveType.Cube,new Vector3(0f,.18f,.62f),new Vector3(.80f,.06f,.08f),bronze);
                 AddProductionCrew(head,"Trojan_Archer",new Vector3(-.24f,.24f,-.02f),.60f,8f);
                 AddProductionCrew(head,"Trojan_Archer",new Vector3(.24f,.24f,-.10f),.60f,-8f);
@@ -70,6 +75,13 @@ public static class TowerArtDirector
                 break;
 
             case TowerType.SpearThrower:
+                Part(art.transform,"Spear Wall Beam",PrimitiveType.Cube,new Vector3(0f,.48f,.46f),new Vector3(1.10f,.16f,.14f),wood);
+                for (int s=-1;s<=1;s++)
+                {
+                    float x=s*.34f;
+                    Part(art.transform,"Spear Wall Shield",PrimitiveType.Cylinder,new Vector3(x,.66f,.54f),new Vector3(.27f,.055f,.34f),s==0?red:bronze,Quaternion.Euler(90f,0f,0f));
+                    Part(art.transform,"Forward Spear",PrimitiveType.Cylinder,new Vector3(x,.72f,.90f),new Vector3(.028f,.72f,.028f),bronze,Quaternion.Euler(90f,0f,0f));
+                }
                 Part(art.transform,"Spear Rack",PrimitiveType.Cube,new Vector3(-.52f,.55f,-.05f),new Vector3(.18f,.80f,.42f),wood);
                 for (int i=0;i<4;i++)
                 {
@@ -92,9 +104,15 @@ public static class TowerArtDirector
 
             case TowerType.TrojanGuard:
                 Part(art.transform,"Guard Platform",PrimitiveType.Cube,new Vector3(0f,.20f,0f),new Vector3(1.15f,.20f,1.0f),stone);
+                Part(art.transform,"Guard Bronze Rail",PrimitiveType.Cube,new Vector3(0f,.58f,.48f),new Vector3(1.10f,.10f,.10f),bronze);
+                for (int s=-1;s<=1;s++)
+                {
+                    float x=s*.34f;
+                    Part(art.transform,"Guard Shield Wall",PrimitiveType.Cylinder,new Vector3(x,.72f,.54f),new Vector3(.30f,.06f,.40f),s==0?red:bronze,Quaternion.Euler(90f,0f,0f));
+                }
                 AddStandard(art.transform,new Vector3(-.54f,1.05f,-.18f),red,bronze);
                 AddStandard(art.transform,new Vector3(.54f,1.05f,-.18f),red,bronze);
-                Part(art.transform,"Shield Rack",PrimitiveType.Cube,new Vector3(0f,.65f,.46f),new Vector3(.72f,.55f,.10f),red);
+                Part(art.transform,"Shield Rack",PrimitiveType.Cube,new Vector3(0f,.65f,-.42f),new Vector3(.72f,.55f,.10f),red);
                 AddProductionCrew(art.transform,"Trojan_Guard",new Vector3(-.26f,.26f,-.06f),.62f,5f);
                 AddProductionCrew(art.transform,"Trojan_Guard",new Vector3(.26f,.26f,-.06f),.62f,-5f);
                 break;
