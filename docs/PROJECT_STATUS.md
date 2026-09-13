@@ -1,105 +1,232 @@
-# TheTroyGame Project Status
+# TheTroyGame — Project Status
 
 Last reviewed: 2026-09-13
 
-## Campaign
-- Chapter I: functional vertical slice, release-candidate gameplay/presentation stage
-- Chapter II: unlock plumbing exists; content not implemented
-- Chapters III-VII: planned in GDD/Roadmap
+This document is the canonical answer to **what is implemented now**. It intentionally does not duplicate the GDD or roadmap.
 
-## AI development readiness
-- `AGENTS.md`: authoritative AI entrypoint
-- `docs/AI_PIPELINE.md`: validation contract
-- `docs/PROJECT_STATUS.md`: product/runtime status
-- `docs/MODEL_ART_INVENTORY.md`: authoritative production-art/model completion status
-- `docs/ARCHITECTURE.md`: ownership/dependency rules
-- `docs/MODULE_MAP.md`: task-to-module routing
-- `docs/DATA_CATALOG.md`: authored-data ownership
-- `docs/RUNTIME_GRAPH.md`: runtime composition/lifecycle
-- `docs/NAMESPACE_POLICY.md`: global-namespace policy until dedicated migration
-- `docs/tasks/TASK_TEMPLATE.md`: non-trivial task contract
-- legacy `Assets/Scripts`: removed
-- GUID-preserving modular migration: complete
-- fast architecture guard: `tools/check-architecture.py`
-- local full validation: `tools/validate-project.ps1` / `tools/validate-project.sh`
-- GitHub Actions pipeline: `.github/workflows/unity-ci.yml`
+## Current phase
 
-## Data authoring
-- TowerData / EnemyData / WaveData / ChapterData assets are runtime sources of truth
-- default-data generator is non-destructive and creates missing assets only
-- missing authored runtime balance data fails fast instead of silently falling back
-- DifficultyRules remains code-authored; migrate to DifficultyData only if tuning complexity requires it
+**Chapter I: The Landing — gameplay release candidate + production-art candidate pass.**
 
-## Automated validation
-- Unity architecture smoke validator: implemented
-- Chapter I release-candidate validator: `TheTroyGame/Validation/Validate Chapter I Release Candidate`; checks data, 5-event/11-13-minute contract, Menelaus final wave, EN/RU objectives/tutorial, required presentation wiring and legacy placeholder regressions
-- command-line architecture validation: implemented
-- EditMode architecture/data tests: implemented
-- isolated CampaignSave round-trip/reset/backup/Chapter VI→VII tests: implemented
-- PlayMode runtime graph tests: implemented
-- PlayMode acceptance tests cover first-wave start/completion, victory/unlock, defeat/no-unlock, language switch, Hector Q/E/R/F safety, Hector battlefield bounds, Trojan Guard block-capacity/refill, enemy death-presentation lifecycle, final-wave boss data and Menelaus objective outcome
-- Chapter I pacing contract asserts auto-start target remains inside 11–13 minutes
-- Chapter I 1x playthrough reporter: implemented; writes per-run JSON plus per-wave CSV under `Application.persistentDataPath/Logs`
-- playthrough report captures result, pacing verdict, score, kills/leaks, economy, gate HP, tower counts, Menelaus outcome, average FPS and per-wave target/actual duration, economy deltas and peak alive-enemy pressure
-- Chapter I RC playthrough analyzer: implemented as `TheTroyGame/Validation/Analyze Latest Chapter I Playthrough`; reads the newest reporter JSON, generates `ChapterI_RC_Analysis_*.md`, assigns PASS/WARN/FAIL findings and gives wave-local tuning actions for pacing, economy, pressure, leaks, gate health, Menelaus and performance
-- Chapter I final gameplay playtest protocol: `docs/CHAPTER_I_RC_PLAYTEST.md`
-- GitHub Actions architecture guard: VERIFIED GREEN on Chapter I RC combat hardening
-- GitHub Unity test jobs: BLOCKED BEFORE UNITY START by missing repository Unity activation credentials/license configuration
-- therefore Unity compile, EditMode, PlayMode and Windows build are NOT YET VERIFIED by CI
-- local Windows build after UI polish: VERIFIED GREEN with 0 errors
+Chapter I is functionally playable as a vertical slice, but it is **not frozen** yet. Two independent gates remain:
 
-## Current gameplay
-- DamageType / DamagePacket and Physical/Piercing/Fire/Hero: implemented
-- Slow / Burn / ArmorBreak: implemented; Stun / Fear pending
-- six Chapter I defense types: implemented
-- 3 core tower upgrade levels: implemented; specialization branches pending
-- Hector Q/E/R/F, HP/downed/revive/HUD: implemented
-- Hector movement is clamped to playable battlefield bounds and now has a locomotion/down-state presentation bridge for authored Animator controllers
-- Menelaus boss/aura/reinforcements/final-wave integration: implemented
-- Chapter I victory requires Menelaus to be defeated
-- Menelaus reaching the Trojan gate starts gradual gate damage; Chapter I defeat happens only when gate HP reaches 0
-- Menelaus defeat/breach are tracked separately in runtime telemetry
-- Chapter I has 5 events, objectives/tutorial, score/save/unlock, EN/RU and a stylized coast/landing/Troy presentation
-- Chapter I tutorial reflects marked build points and Hector Q/E/R/F controls
-- combat tower selection uses a single right-side `+` picker; the old duplicate bottom tower strip has been removed
-- tower projectiles have type-colored trails and heavy/fire projectile light; towers have basic recoil feedback on attack
-- Chapter I coast has Trojan braziers, smoke columns, Greek campfires, city silhouette, fortified gate and warmer scene lighting
-- enemies have lightweight locomotion motion, hit/attack presentation hooks and delayed death presentation instead of instant combat disappearance
-- Menelaus has a pulsing aura ring and longer boss death presentation for readability
-- Trojan Guard now owns explicit block reservations: capacity is deterministic, enemies cannot be stolen by another active squad, and slots release/refill when enemies die or leave range
-- Hector abilities and Trojan Guard melee/rally trigger readable ground-pulse feedback
-- Spear Wall is the default first build option; it uses a short 1.5-cell poke radius and no thrown projectile
-- combat speed control uses bounded `-` / `+` controls instead of cycling into extreme speeds
-- settings difficulty changes no longer reload the scene from the main menu
-- Chapter II selection gives explicit in-production feedback after Chapter I unlocks it
+1. Gameplay RC gate — real 1x playthrough, telemetry analysis, difficulty pressure checks, RU/EN visual-fit QA.
+2. Production-art gate — promote P0 assets from generated/procedural candidates to accepted final art after Play Mode visual QA.
+
+Chapter II unlock plumbing exists, but Chapter II content is not implemented. Chapters III–VII remain design/roadmap work.
+
+## Canonical project structure
+
+Runtime code:
+
+```text
+Assets/Game/
+├── Core/
+├── Campaign/
+├── Combat/
+├── Towers/
+├── Enemies/
+├── Heroes/Hector/
+├── World/
+├── UI/
+├── Audio/
+└── VFX/
+```
+
+`Assets/Scripts` is legacy and must not be recreated.
+
+Runtime currently remains in one intentional `TheTroyGame.Runtime` assembly because module references still cross folder boundaries. Assembly splitting is deferred until contracts/events remove those cycles.
+
+## Current gameplay systems
+
+Implemented:
+
+- explicit game-state flow;
+- Gold economy and chapter scoring;
+- data-driven `TowerData`, `EnemyData`, `WaveData`, `ChapterData`;
+- six Chapter I defensive roles;
+- three core upgrade levels;
+- Upgrade / Sell / target priority;
+- one-shot build mode: successful placement exits build mode and requires a fresh selection for the next placement;
+- contextual selected-unit menu positioned around the selected defense;
+- placement preview, valid/invalid feedback and range visualization;
+- DamagePacket / Physical / Piercing / Fire / Hero;
+- Slow / Burn / ArmorBreak;
+- deterministic Trojan Guard blocking reservations and refill;
+- Hector movement, HP, downed/revive and Q/E/R/F;
+- Hector battlefield clamping;
+- Menelaus boss, commander aura, reinforcement calls and final-wave objective integration;
+- Chapter I victory requires Menelaus defeated;
+- Menelaus reaching the gate damages it over time; defeat occurs when gate HP reaches zero;
+- EN/RU gameplay text and language switching;
+- save/unlock flow for Chapter I → Chapter II;
+- bounded combat-speed controls;
+- Chapter I telemetry and playthrough reporting.
+
+Pending core mechanics:
+
+- Stun / Fear shared status implementations;
+- tower specialization branches after Level 3;
+- obstacle-aware hero/path movement if later maps require it;
+- pooling before campaign-scale density unless Chapter I profiling proves it necessary sooner.
+
+## Chapter I content contract
+
+Current target:
+
+- 5 combat events;
+- approximately 11–13 minutes at 1x;
+- coast / Greek landing setting;
+- Menelaus climax;
+- tutorialized defensive placement + Hector controls;
+- canonical Chapter II unlock on valid victory.
+
+The playthrough reporter writes JSON + per-wave CSV under `Application.persistentDataPath/Logs` with:
+
+- result and difficulty;
+- total duration and per-wave actual/target duration;
+- kills / leaks;
+- Gold earned / spent / refunded;
+- gate HP;
+- tower mix;
+- Menelaus result;
+- peak alive-enemy pressure;
+- average FPS.
+
+`TheTroyGame/Validation/Analyze Latest Chapter I Playthrough` produces an RC Markdown report with PASS/WARN/FAIL findings and wave-local tuning actions.
+
+Exact manual protocol: `CHAPTER_I_RC_PLAYTEST.md`.
+
+## UI / combat readability
+
+Implemented presentation work includes:
+
+- responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
+- separate wave, boss, Hector, build and selected-unit regions;
+- selected-defense contextual menu around the unit;
+- tower hover/selection/range feedback;
+- projectile trails and type-specific hit feedback;
+- tower recoil;
+- Menelaus aura, boss warning and longer boss death presentation;
+- Hector ability pulses and hit feedback;
+- improved coast, road, Greek landing, ships, Trojan gate/walls, banners, braziers and atmosphere;
+- cinematic Chapter I opening camera pass.
+
+Final RU/EN 16:9 Play Mode QA is still required before Chapter I freeze.
+
+## Character and defensive-unit animation candidates
+
+Role-specific Animator profiles now exist for:
+
+- generic infantry;
+- spear infantry;
+- archer;
+- skirmisher;
+- Hector;
+- Menelaus;
+- Ballista crew;
+- Apollo priest;
+- Fire Keeper.
+
+Runtime presentation hooks include:
+
+- Hector: Attack / Q / E / R / F / Hit / Downed;
+- Menelaus: Command;
+- Trojan Guard: Block / Poke;
+- Spear Wall: Poke;
+- Archer Post: Draw / Release;
+- Ballista: Fire / Reload / Tension;
+- Priests of Apollo: Cast / Channel;
+- Fire Keeper: Throw / Stoke.
+
+`TowerSupportMechanismPresentation` drives visible mechanism feedback for Ballista, Apollo shrine and Fire Tower. The old procedural enemy bob/squash layer no longer fights authored Animator controllers.
+
+These are **presentation/production candidates**, not proof of final production animation quality.
 
 ## Production art status
-- `docs/MODEL_ART_INVENTORY.md` now defines the completion contract for all characters, Tower-Units, siege assets, vehicles, environments and named heroes
-- KayKit Adventurers is integrated as an approved CC0 source/base and prefab-generation pipeline
-- current KayKit-derived Greek/Trojan characters and Hector/Menelaus/Achilles are `GENERATED PLACEHOLDER`, not final production models
-- current Chapter I defensive structures are primarily `PROCEDURAL`; `TowerArtDirector` builds recognizable silhouettes from Unity primitives
-- current Chapter I coastline, Greek landing, ships, Troy wall/gate and environmental dressing are staged procedurally rather than as a complete authored production environment kit
-- `Assets/Resources/TroyCharacters` is a generated-output target and is not evidence that production assets are committed
-- the production destination for promoted final art is `Assets/Game/Art/...`
-- Chapter I currently has no character or Tower-Unit that qualifies as `DONE` under the production-art acceptance gate
-- first production-art priorities are Hector, Menelaus, Chapter I Greek regulars, Trojan Guard/Archer, six Chapter I Tower-Units, Greek landing ships, coast kit and Troy wall/gate kit
 
-## Remaining Chapter I RC work
-- real 1x Story playthrough validation against the 11–13 minute target using the generated JSON/CSV playthrough report and `Analyze Latest Chapter I Playthrough`
-- resolve/accept analyzer FAIL/WARN findings, then freeze Story pacing/economy/enemy-pressure baseline
-- repeat pressure validation on Strategos and Legendary after Story is frozen
-- final 16:9 RU/EN visual-fit QA in real Play Mode at 1920x1080 and 1366/1376x768
-- production-art replacement pass defined in `docs/MODEL_ART_INVENTORY.md`
-- replace procedural presentation hooks with fully authored/retargeted animation clips where final art requires them
-- pooling before campaign scale-up; not required for Chapter I acceptance unless profiling shows allocation spikes
+`MODEL_ART_INVENTORY.md` is authoritative for asset completion.
+
+Current rules:
+
+- KayKit and other third-party sources are source material / candidate bases, not final completion by themselves;
+- generated character prefabs remain `GENERATED PLACEHOLDER` until accepted;
+- procedural tower/environment geometry remains `PROCEDURAL` until replaced/promoted;
+- `DONE` requires final derivative assets under `Assets/Game/Art/...`, runtime adoption, and real Play Mode visual QA.
+
+Recent P0 presentation passes improved:
+
+- Hector silhouette;
+- Menelaus silhouette;
+- Trojan Guard;
+- Trojan Archer / Archer Post;
+- Spear Wall;
+- Ballista + crew;
+- Priests of Apollo;
+- Fire Keeper / Fire Tower.
+
+This does **not** change their production-art acceptance status automatically.
+
+## Automated validation
+
+Implemented:
+
+- `python tools/check-architecture.py`;
+- Unity architecture smoke validator;
+- Chapter I release-candidate validator;
+- EditMode architecture/data/save tests;
+- PlayMode runtime and gameplay acceptance tests;
+- Chapter I pacing contract;
+- Chapter I playthrough reporter + analyzer;
+- CI workflow `.github/workflows/unity-ci.yml`.
+
+The Chapter I RC validator protects current presentation contracts including defensive-unit/support animation hooks and production-art wiring.
+
+### Verified state
+
+- Architecture guard: verified green on current Chapter I work.
+- A previous local Windows build after UI polish was reported green with 0 errors.
+- GitHub Unity EditMode/PlayMode/build jobs are **not considered verified** while repository Unity activation is not configured.
+
+Static inspection or architecture success must never be described as Unity compile/test/build success.
+
+## Remaining Chapter I work
+
+### Gameplay RC
+
+1. Complete one clean Story run at 1x.
+2. Run the latest-playthrough analyzer.
+3. Resolve all FAIL findings.
+4. Resolve or explicitly accept WARN findings.
+5. Freeze Story pacing/economy/pressure baseline.
+6. Repeat pressure validation on Strategos and Legendary.
+7. Perform final 1920x1080 + 1366/1376x768 RU/EN Play Mode visual-fit QA.
+
+### Production art
+
+P0 order:
+
+1. Hector + Menelaus final character acceptance.
+2. Chapter I Greek regulars: Infantry / Runner / Heavy Hoplite / Shield Bearer / Archer.
+3. Trojan Guard / Archer and all six defensive structures/units.
+4. Greek landing ships + coast kit.
+5. Troy wall/gate environment kit.
+6. Final authored/retargeted animation review.
+
+### Performance
+
+Profile real Chapter I density before adding pooling. Pooling becomes mandatory before campaign-scale content if allocations or frame spikes are visible.
 
 ## Deferred infrastructure
-- Unity CI activation/full green compile-test-build cycle is intentionally deferred until repository Unity activation is configured
+
+Unity CI activation and a full green compile → EditMode → PlayMode → build cycle are deferred until repository Unity activation is configured.
 
 ## Next product gate
-Chapter I has two independent gates before it can be frozen as the campaign baseline:
 
-1. **Gameplay RC gate:** complete one clean Story run at 1x, run `TheTroyGame/Validation/Analyze Latest Chapter I Playthrough`, resolve all FAIL findings and intentionally resolve/accept WARN findings, then repeat pressure validation on Strategos/Legendary and complete 16:9 RU/EN visual-fit QA. The exact protocol is `docs/CHAPTER_I_RC_PLAYTEST.md`.
-2. **Production-art gate:** promote the P0 Chapter I assets in `docs/MODEL_ART_INVENTORY.md` from `GENERATED PLACEHOLDER` / `PROCEDURAL` to `DONE` with final assets under `Assets/Game/Art/...` and real Play Mode QA.
+Do not treat Chapter I as the campaign baseline until both are true:
 
-Chapter II production should not treat Chapter I art as finalized until both gates are closed.
+**Gameplay RC:** clean Story 1x run → analyzer has no unresolved FAIL → Strategos/Legendary pressure check → RU/EN 16:9 QA.
+
+**Production art:** P0 Chapter I assets satisfy `MODEL_ART_INVENTORY.md` acceptance and are visually verified in real Play Mode.
+
+Only after both gates close should Chapter II move into full content production.
