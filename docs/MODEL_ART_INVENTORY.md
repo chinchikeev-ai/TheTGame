@@ -81,12 +81,12 @@ This file is the source of truth for model/art completion. A generator, source p
 
 | Asset | Status | Current implementation | Remaining to DONE |
 |---|---|---|---|
-| Archer Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY bow | wood/bronze post + Trojan Archers; pinned CC0 source bow is available through the Chapter I equipment pass | Authored structure, final archer/bow rig, draw/release animations, final materials |
+| Archer Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY bow | wood/bronze post + Trojan Archers; pinned CC0 source bow is available through the Chapter I equipment pass | Authored structure, final archer/bow rig, authored draw/release clips, final materials |
 | Ballista | PROCEDURAL + GENERATED PLACEHOLDER crew | readable mechanism + `Trojan_BallistaCrew` candidate | Authored mechanism/string/bolt/reload/fire cycle |
 | Priests of Apollo | PROCEDURAL + GENERATED PLACEHOLDER crew | shrine + `Trojan_PriestApollo` candidates | Final shrine/priests/support animation/VFX |
 | Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | spear defense + Trojan infantry crew; pinned source spear + authored round shield/armor candidates available after equipment pass | Final formation/poke/block art, final authored structure/materials |
 | Fire Tower | PROCEDURAL + GENERATED PLACEHOLDER crew | brazier/pitch/flame + `Trojan_FireKeeper` | Final tower/props/keeper animation |
-| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | platform/banners + Guards; pinned source spear + authored figure-eight shield/armor candidates available after equipment pass | Final station/shield-wall animation and authored station/materials |
+| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | platform/banners + Guards; pinned source spear + authored figure-eight shield/armor candidates available after equipment pass; runtime guard combat now invokes block/poke presentation hooks | Final station/shield-wall authored clips and authored station/materials |
 | Level 2/3 differentiation | PROCEDURAL | runtime upgrade visual markers via `TowerProductionArtBinder` | Authored per-tower L2/L3 meshes and specialization variants |
 
 **Tower-Unit DONE count: 0.**
@@ -118,15 +118,15 @@ This file is the source of truth for model/art completion. A generator, source p
 
 | Animation set | Status | Remaining |
 |---|---|---|
-| Generic Greek locomotion/melee/hit/death | GENERATED PLACEHOLDER | shared KayKit controller candidate; final weapon-specific clips/QA |
-| Greek bow attack | GENERATED PLACEHOLDER + SOURCE ONLY bow geometry | pinned CC0 bow mesh can replace primitive bow geometry; final draw/release animation and weapon rig still missing |
-| Greek/Trojan spear melee | GENERATED PLACEHOLDER + SOURCE ONLY spear geometry | pinned CC0 spear mesh can replace primitive spear on Chapter I base prefabs; final thrust/brace/formation animation and grip/orientation QA still missing |
-| Shield block / brace | GENERATED PLACEHOLDER + authored static shield candidates | Aegean round and figure-eight/tower shield meshes exist; final hand pose, block animation, materials and gameplay-camera QA still missing |
-| Armor deformation / clearance | GENERATED PLACEHOLDER + authored static armor candidates | Dendra-inspired cuirass and boar-tusk-inspired helmet are static meshes, not skinned armor; final rigged character integration and clipping QA still missing |
-| Hector locomotion/downed | GENERATED PLACEHOLDER | hero-specific final clips |
-| Hector Q/E/R/F | PROCEDURAL VFX + gameplay | authored body animations |
-| Menelaus combat/death | GENERATED PLACEHOLDER | boss-specific clips |
-| Trojan Guard block/melee | GENERATED PLACEHOLDER + SOURCE ONLY spear / authored shield/armor candidates | source spear + figure-eight shield + armor candidates available; final formation/block/melee clips still missing |
+| Generic Greek locomotion/melee/hit/death | GENERATED PLACEHOLDER | shared KayKit controller candidate; Chapter I runtime now dispatches weapon-role presentation triggers instead of routing all attacks through generic `Attack`; final authored weapon-specific clips/QA remain |
+| Greek bow attack | GENERATED PLACEHOLDER + SOURCE ONLY bow geometry | Chapter I archers now exercise `Draw`/`Release` hooks during real attack events; final authored draw/release clips, weapon/hand rig and timing QA still missing |
+| Greek/Trojan spear melee | GENERATED PLACEHOLDER + SOURCE ONLY spear geometry | Chapter I spear infantry, Heavy Hoplite, Shield Bearer, Hector basic attacks and Trojan Guard attacks now exercise `Poke`/spear hooks; final authored thrust/brace/formation clips and grip/orientation QA still missing |
+| Shield block / brace | GENERATED PLACEHOLDER + authored static shield candidates | Aegean round and figure-eight/tower shield meshes exist; Trojan Guard reservation already exercises the `Block` hook; final hand pose, authored block animation, materials and gameplay-camera QA still missing |
+| Armor deformation / clearance | GENERATED PLACEHOLDER + authored static armor candidates | Dendra-inspired cuirass and boar-tusk-inspired helmet now rigidly follow resolved torso/head bones while preserving the rest pose; meshes are still unskinned and require deformation/clipping QA and final rigged integration |
+| Hector locomotion/downed | GENERATED PLACEHOLDER | basic melee now uses spear presentation hook; hero-specific final locomotion/attack/downed clips still missing |
+| Hector Q/E/R/F | PROCEDURAL VFX + gameplay | ability-specific Animator hooks are driven by the actual gameplay events; authored hero body animations still missing |
+| Menelaus combat/death | GENERATED PLACEHOLDER | commander animation hook is tied to real reinforcement calls; final boss-specific combat/command/death clips missing |
+| Trojan Guard block/melee | GENERATED PLACEHOLDER + SOURCE ONLY spear / authored shield/armor candidates | runtime reservation/attack events exercise `Block` and spear `Poke` hooks; final formation/block/melee authored clips still missing |
 | Ballista mechanism | MISSING | reload/tension/fire/recoil animation |
 | Battering Ram cycle | MISSING | push/impact/recover animation |
 | Siege Tower movement | MISSING | wheel/movement/assault animation |
@@ -136,14 +136,14 @@ This file is the source of truth for model/art completion. A generator, source p
 
 # Chapter I equipment source coverage
 
-- **Bow:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneWeaponSourceInstaller` verifies the exact FBX by size and Git blob SHA, and `ChapterOneProductionEquipmentBuilder` replaces only the recognized primitive bow hierarchy on Greek/Trojan archer candidates.
-- **Spear:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneSpearSourceInstaller` verifies the exact FBX by size and Git blob SHA. `ChapterOneProductionEquipmentBuilder` replaces only the recognized `Spear` + `Shaft` + `BronzeTip` hierarchy on `Enemy_Infantry`, `Enemy_HeavyHoplite`, `Enemy_ShieldBearer`, `Trojan_Infantry`, `Trojan_Guard`, and `Hero_Hector`, while preserving the previous candidate local transform.
+- **Bow:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneWeaponSourceInstaller` verifies the exact FBX by size and Git blob SHA, and `ChapterOneProductionEquipmentBuilder` replaces only the recognized primitive bow hierarchy on Greek/Trojan archer candidates. Chapter I enemy runtime now prepares the bow and routes archer attacks through `Release` followed by a redraw hook when those Animator parameters exist.
+- **Spear:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneSpearSourceInstaller` verifies the exact FBX by size and Git blob SHA. `ChapterOneProductionEquipmentBuilder` replaces only the recognized `Spear` + `Shaft` + `BronzeTip` hierarchy on `Enemy_Infantry`, `Enemy_HeavyHoplite`, `Enemy_ShieldBearer`, `Trojan_Infantry`, `Trojan_Guard`, and `Hero_Hector`, while preserving the previous candidate local transform. Chapter I infantry-family runtime, Hector basic attacks and Trojan Guard attacks now route presentation through the spear `Poke` hook with generic `Attack` fallback.
 - **Shields:** two project-authored static mesh candidates exist under `Assets/Game/Art/Characters/Equipment`: `AegeanRoundShield.obj` and `FigureEightTowerShield.obj`. `ChapterOneShieldCandidateBuilder` replaces only recognized generated `Gear_shield_*` hierarchies and preserves the old candidate pose. This intentionally avoids using a classical hoplite aspis as the generic Chapter I solution because the project targets a Late Bronze Age / Mycenaean visual direction rather than Classical Greek/Spartan styling.
-- **Cuirass / helmet:** two project-authored static mesh candidates exist: `DendraCuirassCandidate.obj` and `BoarTuskHelmetCandidate.obj`. They are stylized Dendra/boar-tusk-inspired silhouettes authored for this project, **not archaeological scans and not claimed as exact reconstructions**. `ChapterOneArmorCandidateBuilder` replaces only the procedural `BronzeCuirass`, shoulder-bronze, `BronzeHelmet`, and cheek-piece parts while intentionally retaining `LeatherBelt` and `FactionCloth` for faction readability. Targets are Chapter I Infantry, Heavy Hoplite, Shield Bearer, Enemy Boss/Menelaus representation, Trojan Infantry, Trojan Guard, Hector, and Hero Menelaus representation.
+- **Cuirass / helmet:** two project-authored static mesh candidates exist: `DendraCuirassCandidate.obj` and `BoarTuskHelmetCandidate.obj`. They are stylized Dendra/boar-tusk-inspired silhouettes authored for this project, **not archaeological scans and not claimed as exact reconstructions**. `ChapterOneArmorCandidateBuilder` replaces only the procedural `BronzeCuirass`, shoulder-bronze, `BronzeHelmet`, and cheek-piece parts while intentionally retaining `LeatherBelt` and `FactionCloth` for faction readability. It resolves humanoid torso/head bones first, falls back to deterministic rig-name hints, and reparents the static candidates with rest-world pose preserved. If a bone cannot be resolved, it deliberately retains root-space placement and emits a warning. This is rigid bone-follow attachment, **not skinning**. Targets are Chapter I Infantry, Heavy Hoplite, Shield Bearer, Enemy Boss/Menelaus representation, Trojan Infantry, Trojan Guard, Hector, and Hero Menelaus representation.
 - **Faction cloth / hero crest / cape:** still procedural/kitbashed candidate geometry unless the underlying item comes from the KayKit source pack.
 - **Swords / dagger / quiver:** current candidate pipeline uses available KayKit source accessories where present.
 
-The bow, spear, shield, cuirass and helmet candidates improve silhouette/source quality but are not final Troy-authored animation rigs or accepted production art. Imported orientation, scale, grip, materials, animation clearance, and gameplay-camera readability still require real Unity visual QA.
+The bow, spear, shield, cuirass and helmet candidates improve silhouette/source quality and now have stronger runtime/rig-follow integration, but are not final Troy-authored animation rigs or accepted production art. Imported orientation, scale, grip, materials, skin deformation, animation clearance, clip quality and gameplay-camera readability still require real Unity visual QA.
 
 ---
 
@@ -151,15 +151,16 @@ The bow, spear, shield, cuirass and helmet candidates improve silhouette/source 
 
 The campaign no longer has a major GDD roster item with no candidate at all. The remaining gaps are production-quality gaps rather than missing roster entries:
 
-1. final authored/rigged hero/enemy meshes, armor integration and materials;
-2. final authored Tower-Unit structures and L2/L3/specialization variants;
-3. final Ballista/Ram/Siege Tower mechanisms and animations;
-4. final chariot integration after real horse FBX import and visual QA;
-5. authored Greek ship variants/LOD;
-6. final civilian variants and evacuation animations;
-7. authored intact/damaged/destroyed/burning states for walls, gates, buildings, siege objects and key narrative props;
-8. final authored terrain/environment modules for all chapters;
-9. real gameplay-camera and Play Mode QA.
+1. final authored/rigged hero/enemy meshes, skinned armor integration and materials;
+2. final authored weapon-specific combat clips and hero/boss animation sets;
+3. final authored Tower-Unit structures and L2/L3/specialization variants;
+4. final Ballista/Ram/Siege Tower mechanisms and animations;
+5. final chariot integration after real horse FBX import and visual QA;
+6. authored Greek ship variants/LOD;
+7. final civilian variants and evacuation animations;
+8. authored intact/damaged/destroyed/burning states for walls, gates, buildings, siege objects and key narrative props;
+9. final authored terrain/environment modules for all chapters;
+10. real gameplay-camera and Play Mode QA.
 
 ---
 
@@ -171,7 +172,7 @@ Current candidate pipeline includes:
 - `ChapterOneWeaponSourceInstaller` — pinned/integrity-checked Quaternius CC0 wooden bow source installer;
 - `ChapterOneSpearSourceInstaller` — pinned/integrity-checked Quaternius CC0 spear source installer;
 - `ChapterOneShieldCandidateBuilder` — binds project-authored Aegean round and figure-eight/tower shield meshes to recognized Chapter I generated shield poses;
-- `ChapterOneArmorCandidateBuilder` — replaces only procedural bronze armor/helmet pieces with project-authored Dendra-inspired cuirass and boar-tusk-inspired helmet static mesh candidates;
+- `ChapterOneArmorCandidateBuilder` — replaces only procedural bronze armor/helmet pieces with project-authored Dendra-inspired cuirass and boar-tusk-inspired helmet static mesh candidates and rigidly attaches them to resolved torso/head bones while preserving rest pose;
 - `ChapterOneProductionEquipmentBuilder` — applies bow, spear, shield and armor candidate replacement after Chapter I character generation;
 - `ChapterOneCharacterAnimationBuilder` — shared character Animator candidate;
 - `CampaignArtCandidateBuilder` — later Greek/Trojan/heroes/chariot/siege/Trojan Horse candidates;

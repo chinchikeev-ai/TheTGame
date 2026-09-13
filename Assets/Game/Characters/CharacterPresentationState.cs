@@ -1,36 +1,43 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CharacterPresentationState : MonoBehaviour
 {
+    readonly Dictionary<int, AnimatorControllerParameterType> parameterTypes = new Dictionary<int, AnimatorControllerParameterType>();
+
     Animator animator;
+    RuntimeAnimatorController cachedController;
     Vector3 baseScale;
     Coroutine fallbackRoutine;
+    Coroutine bowRoutine;
     bool dead;
 
     void Awake()
     {
         animator = GetComponentInChildren<Animator>();
         baseScale = transform.localScale;
+        RefreshParameterCache();
     }
 
     public void SetMoving(bool moving)
     {
         if (dead || animator == null) return;
         if (HasParameter("Speed", AnimatorControllerParameterType.Float))
-            animator.SetFloat("Speed", moving ? 1f : 0f, .08f, Time.deltaTime);
+            animator.SetFloat(Animator.StringToHash("Speed"), moving ? 1f : 0f, .08f, Time.deltaTime);
         else if (HasParameter("Moving", AnimatorControllerParameterType.Bool))
-            animator.SetBool("Moving", moving);
+            animator.SetBool(Animator.StringToHash("Moving"), moving);
     }
 
     public void PlayAttack() => Trigger("Attack");
+    public void PlaySpearAttack() => Trigger("Poke", "Attack");
     public void PlayCommand() => Trigger("Command", "Attack");
     public void PlayAbilityQ() => Trigger("AbilityQ", "Attack");
     public void PlayAbilityE() => Trigger("AbilityE", "Attack");
     public void PlayAbilityR() => Trigger("AbilityR", "Attack");
     public void PlayAbilityF() => Trigger("AbilityF", "Attack");
     public void PlayBlock() => Trigger("Block", "Attack");
-    public void PlayPoke() => Trigger("Poke", "Attack");
+    public void PlayPoke() => PlaySpearAttack();
     public void PlayDraw() => Trigger("Draw", "Attack");
     public void PlayRelease() => Trigger("Release", "Attack");
     public void PlayReload() => Trigger("Reload", "Attack");
@@ -41,12 +48,28 @@ public class CharacterPresentationState : MonoBehaviour
     public void PlayStoke() => Trigger("Stoke", "Attack");
     public void PlayThrow() => Trigger("Throw", "Attack");
 
+    public void PrepareBow()
+    {
+        Trigger("Draw");
+    }
+
+    public void PlayBowShot(float redrawDelay = .18f)
+    {
+        if (dead || animator == null) return;
+
+        Trigger("Release", "Attack");
+        if (!HasParameter("Draw", AnimatorControllerParameterType.Trigger)) return;
+
+        if (bowRoutine != null) StopCoroutine(bowRoutine);
+        bowRoutine = StartCoroutine(RedrawBow(Mathf.Max(.01f, redrawDelay)));
+    }
+
     public void PlayHit()
     {
         if (dead) return;
         if (animator != null && HasParameter("Hit", AnimatorControllerParameterType.Trigger))
         {
-            animator.SetTrigger("Hit");
+            animator.SetTrigger(Animator.StringToHash("Hit"));
             return;
         }
 
@@ -57,7 +80,7 @@ public class CharacterPresentationState : MonoBehaviour
     public void SetDowned(bool downed)
     {
         if (animator != null && HasParameter("IsDowned", AnimatorControllerParameterType.Bool))
-            animator.SetBool("IsDowned", downed);
+            animator.SetBool(Animator.StringToHash("IsDowned"), downed);
     }
 
     public float PlayDeath(bool boss)
@@ -66,17 +89,23 @@ public class CharacterPresentationState : MonoBehaviour
         SetMoving(false);
         dead = true;
 
+        if (bowRoutine != null)
+        {
+            StopCoroutine(bowRoutine);
+            bowRoutine = null;
+        }
+
         float duration = boss ? 1.25f : .70f;
         if (animator != null)
         {
             if (HasParameter("Die", AnimatorControllerParameterType.Trigger))
             {
-                animator.SetTrigger("Die");
+                animator.SetTrigger(Animator.StringToHash("Die"));
                 return duration;
             }
             if (HasParameter("IsDead", AnimatorControllerParameterType.Bool))
             {
-                animator.SetBool("IsDead", true);
+                animator.SetBool(Animator.StringToHash("IsDead"), true);
                 return duration;
             }
         }
@@ -89,18 +118,27 @@ public class CharacterPresentationState : MonoBehaviour
     void Trigger(string parameter, string fallback = null)
     {
         if (dead || animator == null) return;
-        if (HasParameter(parameter, AnimatorControllerParameterType.Trigger))
+
+        int parameterHash = Animator.StringToHash(parameter);
+        if (HasParameter(parameterHash, AnimatorControllerParameterType.Trigger))
         {
-            animator.ResetTrigger(parameter);
-            animator.SetTrigger(parameter);
+            animator.ResetTrigger(parameterHash);
+            animator.SetTrigger(parameterHash);
             return;
         }
 
-        if (!string.IsNullOrEmpty(fallback) && HasParameter(fallback, AnimatorControllerParameterType.Trigger))
-        {
-            animator.ResetTrigger(fallback);
-            animator.SetTrigger(fallback);
-        }
+        if (string.IsNullOrEmpty(fallback)) return;
+        int fallbackHash = Animator.StringToHash(fallback);
+        if (!HasParameter(fallbackHash, AnimatorControllerParameterType.Trigger)) return;
+        animator.ResetTrigger(fallbackHash);
+        animator.SetTrigger(fallbackHash);
+    }
+
+    IEnumerator RedrawBow(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Trigger("Draw");
+        bowRoutine = null;
     }
 
     IEnumerator HitPulse()
@@ -146,9 +184,30 @@ public class CharacterPresentationState : MonoBehaviour
 
     bool HasParameter(string parameterName, AnimatorControllerParameterType type)
     {
-        if (animator == null) return false;
+        return HasParameter(Animator.StringToHash(parameterName), type);
+    }
+
+    bool HasParameter(int parameterHash, AnimatorControllerParameterType type)
+    {
+        RefreshParameterCache();
+        return parameterTypes.TryGetValue(parameterHash, out AnimatorControllerParameterType actualType) && actualType == type;
+    }
+
+    void RefreshParameterCache()
+    {
+        if (animator == null)
+        {
+            parameterTypes.Clear();
+            cachedController = null;
+            return;
+        }
+
+        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
+        if (controller == cachedController && parameterTypes.Count > 0) return;
+
+        cachedController = controller;
+        parameterTypes.Clear();
         foreach (AnimatorControllerParameter parameter in animator.parameters)
-            if (parameter.name == parameterName && parameter.type == type) return true;
-        return false;
+            parameterTypes[Animator.StringToHash(parameter.name)] = parameter.type;
     }
 }

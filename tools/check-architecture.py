@@ -175,9 +175,51 @@ if ARMOR.exists():
         '"BronzeHelmet"',
         '"HelmetCheekLeft"',
         '"HelmetCheekRight"',
+        "HumanBodyBones.UpperChest",
+        "HumanBodyBones.Head",
+        "ResolveTorsoBone",
+        "ResolveHeadBone",
+        "item.transform.SetParent(bone, true)",
     ):
         if token not in armor_text:
             errors.append(f"Chapter I armor candidate contract missing token: {token}")
+
+PRESENTATION = ROOT / "Assets" / "Game" / "Characters" / "CharacterPresentationState.cs"
+if PRESENTATION.exists():
+    presentation_text = PRESENTATION.read_text(encoding="utf-8")
+    for token in (
+        'PlaySpearAttack() => Trigger("Poke", "Attack")',
+        "public void PrepareBow()",
+        "public void PlayBowShot(float redrawDelay = .18f)",
+        'Trigger("Release", "Attack")',
+        'Trigger("Draw")',
+    ):
+        if token not in presentation_text:
+            errors.append(f"Chapter I character presentation contract missing token: {token}")
+
+ENEMY = ROOT / "Assets" / "Game" / "Enemies" / "Enemy.cs"
+if ENEMY.exists():
+    enemy_text = ENEMY.read_text(encoding="utf-8")
+    for token in (
+        "if (Archetype == EnemyArchetype.Archer) presentation.PrepareBow();",
+        "void PlayCombatAttack()",
+        "case EnemyArchetype.Infantry:",
+        "case EnemyArchetype.HeavyHoplite:",
+        "case EnemyArchetype.ShieldBearer:",
+        "presentation.PlaySpearAttack();",
+        "case EnemyArchetype.Archer:",
+        "presentation.PlayBowShot();",
+    ):
+        if token not in enemy_text:
+            errors.append(f"Chapter I enemy animation dispatch contract missing token: {token}")
+
+HECTOR_PRESENTATION = ROOT / "Assets" / "Game" / "Heroes" / "Hector" / "HectorPresentationBridge.cs"
+if HECTOR_PRESENTATION.exists() and "characterPresentation?.PlaySpearAttack();" not in HECTOR_PRESENTATION.read_text(encoding="utf-8"):
+    errors.append("Hector basic attack must use the spear presentation trigger")
+
+TROJAN_GUARD = ROOT / "Assets" / "Game" / "Towers" / "TrojanGuardSquad.cs"
+if TROJAN_GUARD.exists() and "presentation?.PlaySpearAttack();" not in TROJAN_GUARD.read_text(encoding="utf-8"):
+    errors.append("Trojan Guard attack must use the spear presentation trigger")
 
 MODEL_GAP = ROOT / "Assets" / "Editor" / "ModelGapClosureBuilder.cs"
 if MODEL_GAP.exists() and "ChapterOneProductionEquipmentBuilder.Build();" not in MODEL_GAP.read_text(encoding="utf-8"):

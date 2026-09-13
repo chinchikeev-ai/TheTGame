@@ -88,7 +88,7 @@ public class TrojanGuardSquad : MonoBehaviour
         {
             nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate * rallyRate);
             ownerTower?.crewAnimation?.PlayGuardPoke();
-            presentation?.PlayAttack();
+            presentation?.PlaySpearAttack();
             attackTarget.ReceiveDamage(new DamagePacket(damage * rallyDamage, DamageType.Physical, TowerType.TrojanGuard));
             CombatImpactPresentation.MeleeHit(attackTarget.transform.position + Vector3.up * .55f, TowerType.TrojanGuard);
             Vector3 shotPoint = transform.position + Vector3.up * .8f;
