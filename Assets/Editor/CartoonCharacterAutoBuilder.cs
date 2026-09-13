@@ -5,7 +5,7 @@ using UnityEngine;
 public static class CartoonCharacterAutoBuilder
 {
     const string SourceRoot = "Assets/ThirdParty/KayKitAdventurers";
-    const string ProbePrefab = "Assets/Resources/TroyCharacters/Factions/Greek/Enemy_Infantry.prefab";
+    const string ProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Greek/Enemy_Infantry.prefab";
     const string SessionKey = "TheTroyGame.CartoonCharacters.AutoBuildAttempted";
 
     static CartoonCharacterAutoBuilder()
@@ -20,13 +20,13 @@ public static class CartoonCharacterAutoBuilder
 
         if (!AssetDatabase.IsValidFolder(SourceRoot))
         {
-            Debug.LogWarning("Troy characters: KayKit submodule is not checked out. Using procedural warrior visuals until assets are available.");
+            Debug.LogWarning("Troy characters: KayKit submodule is not checked out. Using runtime fallback visuals until production candidates can be generated.");
             return;
         }
 
         if (AssetDatabase.LoadAssetAtPath<GameObject>(ProbePrefab) != null) return;
 
-        Debug.Log("Troy characters: KayKit source found, generating character prefabs automatically.");
+        Debug.Log("Troy characters: KayKit source found, generating Chapter I production candidates automatically.");
         CartoonCharacterPrefabBuilder.BuildAll();
     }
 }
