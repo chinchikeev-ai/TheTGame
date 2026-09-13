@@ -17,6 +17,9 @@ public static class ChapterOneCharacterAnimationBuilder
     const string SkirmisherControllerPath = AnimationRoot + "/ChapterOne_Skirmisher.controller";
     const string HectorControllerPath = AnimationRoot + "/ChapterOne_Hector.controller";
     const string MenelausControllerPath = AnimationRoot + "/ChapterOne_Menelaus.controller";
+    const string BallistaControllerPath = AnimationRoot + "/ChapterOne_BallistaCrew.controller";
+    const string PriestControllerPath = AnimationRoot + "/ChapterOne_PriestApollo.controller";
+    const string FireKeeperControllerPath = AnimationRoot + "/ChapterOne_FireKeeper.controller";
 
     [MenuItem("The Troy Game/Characters/Build Chapter I Animation Controller")]
     public static void BuildAll()
@@ -37,7 +40,10 @@ public static class ChapterOneCharacterAnimationBuilder
             { "archer", BuildController(ArcherControllerPath, clips, "archer", new[] { "bow", "shoot", "arrow", "ranged" }, false, false) },
             { "skirmisher", BuildController(SkirmisherControllerPath, clips, "skirmisher", new[] { "dagger", "knife", "slash", "swing" }, false, false) },
             { "hector", BuildController(HectorControllerPath, clips, "hector", new[] { "spear", "thrust", "stab", "hero" }, true, false) },
-            { "menelaus", BuildController(MenelausControllerPath, clips, "menelaus", new[] { "sword", "slash", "heavy", "attack" }, false, true) }
+            { "menelaus", BuildController(MenelausControllerPath, clips, "menelaus", new[] { "sword", "slash", "heavy", "attack" }, false, true) },
+            { "ballista", BuildController(BallistaControllerPath, clips, "ballista", new[] { "interact", "work", "pull", "attack" }, false, false) },
+            { "priest", BuildController(PriestControllerPath, clips, "priest", new[] { "cast", "spell", "magic", "chant" }, false, false) },
+            { "firekeeper", BuildController(FireKeeperControllerPath, clips, "firekeeper", new[] { "throw", "attack", "work", "interact" }, false, false) }
         };
 
         int assigned = AssignControllers(controllers);
@@ -70,14 +76,14 @@ public static class ChapterOneCharacterAnimationBuilder
     {
         AnimationClip idle = Pick(clips, "idle", "stand");
         AnimationClip move = Pick(clips, "run", "walk", "move");
-        AnimationClip attack = PickAction(clips, roleTokens, "attack", "slash", "swing", "stab", "thrust", "shoot", "fire", "melee");
+        AnimationClip attack = PickAction(clips, roleTokens, "attack", "slash", "swing", "stab", "thrust", "shoot", "fire", "melee", "interact");
         AnimationClip hit = Pick(clips, "hit", "hurt", "damage", "impact");
         AnimationClip death = Pick(clips, "death", "die", "defeat", "dead");
         AnimationClip downed = Pick(clips, "down", "knockdown", "fall");
 
         if (idle == null) idle = clips[0];
         if (move == null) move = idle;
-        if (attack == null) attack = Pick(clips, "attack", "slash", "swing", "melee", "punch");
+        if (attack == null) attack = Pick(clips, "attack", "slash", "swing", "melee", "punch", "interact");
         if (downed == null) downed = death;
 
         AssetDatabase.DeleteAsset(path);
@@ -122,6 +128,32 @@ public static class ChapterOneCharacterAnimationBuilder
             AnimationClip release = PickAction(clips, new[] { "bow", "archer", "arrow" }, "release", "shoot", "fire", "attack");
             AddAction(controller, machine, idleState, "Draw", draw != null ? draw : attack, .86f);
             AddAction(controller, machine, idleState, "Release", release != null ? release : attack, .82f);
+        }
+
+        if (string.Equals(profileName, "ballista", StringComparison.Ordinal))
+        {
+            AnimationClip reload = Pick(clips, "reload", "interact", "work", "pickup", "pull");
+            AnimationClip tension = Pick(clips, "pull", "charge", "ready", "interact", "work");
+            AnimationClip fire = Pick(clips, "attack", "push", "interact", "work");
+            AddAction(controller, machine, idleState, "Reload", reload != null ? reload : attack, .88f);
+            AddAction(controller, machine, idleState, "Tension", tension != null ? tension : attack, .88f);
+            AddAction(controller, machine, idleState, "Fire", fire != null ? fire : attack, .82f);
+        }
+
+        if (string.Equals(profileName, "priest", StringComparison.Ordinal))
+        {
+            AnimationClip cast = Pick(clips, "cast", "spell", "magic", "attack", "interact");
+            AnimationClip channel = Pick(clips, "chant", "cast", "spell", "idle", "interact");
+            AddAction(controller, machine, idleState, "Cast", cast != null ? cast : attack, .88f);
+            AddAction(controller, machine, idleState, "Channel", channel != null ? channel : idle, .92f);
+        }
+
+        if (string.Equals(profileName, "firekeeper", StringComparison.Ordinal))
+        {
+            AnimationClip stoke = Pick(clips, "interact", "work", "pickup", "attack");
+            AnimationClip throwClip = Pick(clips, "throw", "attack", "swing", "interact");
+            AddAction(controller, machine, idleState, "Stoke", stoke != null ? stoke : attack, .88f);
+            AddAction(controller, machine, idleState, "Throw", throwClip != null ? throwClip : attack, .84f);
         }
 
         if (commanderAction)
@@ -233,6 +265,9 @@ public static class ChapterOneCharacterAnimationBuilder
         string id = identity.characterId ?? string.Empty;
         if (id.Equals("Hector", StringComparison.OrdinalIgnoreCase)) return "hector";
         if (id.Equals("Menelaus", StringComparison.OrdinalIgnoreCase) || identity.role == TroyVisualRole.Commander) return "menelaus";
+        if (id.Equals("Trojan_BallistaCrew", StringComparison.OrdinalIgnoreCase)) return "ballista";
+        if (id.Equals("Trojan_PriestApollo", StringComparison.OrdinalIgnoreCase)) return "priest";
+        if (id.Equals("Trojan_FireKeeper", StringComparison.OrdinalIgnoreCase)) return "firekeeper";
         if (identity.role == TroyVisualRole.Archer) return "archer";
         if (identity.role == TroyVisualRole.Runner) return "skirmisher";
         if (identity.role == TroyVisualRole.Infantry || identity.role == TroyVisualRole.Heavy || identity.role == TroyVisualRole.ShieldBearer) return "spear";
