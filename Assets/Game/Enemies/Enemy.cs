@@ -71,6 +71,7 @@ public class Enemy : MonoBehaviour
         dying = false;
         presentation = GetComponent<CharacterPresentationState>();
         if (presentation == null) presentation = gameObject.AddComponent<CharacterPresentationState>();
+        if (Archetype == EnemyArchetype.Archer) presentation.PrepareBow();
         healthBar = gameObject.AddComponent<EnemyHealthBar>();
         HeavyEnemyGroundVfx.Attach(this);
     }
@@ -158,7 +159,7 @@ public class Enemy : MonoBehaviour
         if (Time.time >= nextAttack)
         {
             nextAttack = Time.time + attackInterval;
-            presentation?.PlayAttack();
+            PlayCombatAttack();
             blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * statuses.DamageMultiplier));
         }
         return true;
@@ -178,7 +179,7 @@ public class Enemy : MonoBehaviour
         if (Time.time >= nextAttack)
         {
             nextAttack = Time.time + attackInterval;
-            presentation?.PlayAttack();
+            PlayCombatAttack();
             hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * statuses.DamageMultiplier));
         }
         return true;
@@ -195,12 +196,32 @@ public class Enemy : MonoBehaviour
         if (Time.time >= nextAttack)
         {
             nextAttack = Time.time + attackInterval;
-            presentation?.PlayAttack();
+            PlayCombatAttack();
             GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier)));
             RuntimeEffects.Instance?.PlayHitSound(false);
             CombatImpactPresentation.GateHit(finalTarget.position, false);
         }
         return true;
+    }
+
+    void PlayCombatAttack()
+    {
+        if (presentation == null) return;
+
+        switch (Archetype)
+        {
+            case EnemyArchetype.Infantry:
+            case EnemyArchetype.HeavyHoplite:
+            case EnemyArchetype.ShieldBearer:
+                presentation.PlaySpearAttack();
+                break;
+            case EnemyArchetype.Archer:
+                presentation.PlayBowShot();
+                break;
+            default:
+                presentation.PlayAttack();
+                break;
+        }
     }
 
     void MoveAlongPath()
@@ -303,7 +324,7 @@ public class Enemy : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.GameEnded || Time.time < nextAttack) return;
 
         nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
-        presentation?.PlayAttack();
+        PlayCombatAttack();
         int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
         GameManager.Instance.BossReachedGate(damage);
         RuntimeEffects.Instance?.PlayHitSound(true);
