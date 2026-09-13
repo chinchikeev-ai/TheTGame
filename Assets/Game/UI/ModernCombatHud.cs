@@ -15,6 +15,12 @@ public sealed class ModernCombatHud : MonoBehaviour
     Button upgradeButton, sellButton, priorityButton, startWaveButton;
     Text buildSelectionText;
 
+    GameObject buildTooltip;
+    Image tooltipAccent;
+    Text tooltipTitle, tooltipRole, tooltipStats, tooltipTags, tooltipMatchup;
+    TowerType hoveredBuildType;
+    bool buildTooltipVisible;
+
     readonly TowerType[] buildTypes =
     {
         TowerType.SpearThrower,
@@ -56,7 +62,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         CanvasScaler scaler = root.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.screenMatchMode = CanvasScaler.ScaleMode.ScaleWithScreenSize == scaler.uiScaleMode ? CanvasScaler.ScreenMatchMode.MatchWidthOrHeight : CanvasScaler.ScreenMatchMode.Expand;
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         scaler.matchWidthOrHeight = .5f;
         root.AddComponent<GraphicRaycaster>();
         group = root.AddComponent<CanvasGroup>();
@@ -64,6 +70,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         BuildTopBar(root.transform);
         BuildWaveBar(root.transform);
         BuildDock(root.transform);
+        BuildBuildTooltip(root.transform);
         BuildSelectedCard(root.transform);
         BuildPcHints(root.transform);
     }
@@ -96,7 +103,66 @@ public sealed class ModernCombatHud : MonoBehaviour
             TowerType type = buildTypes[i];
             float x = -430 + i * 174;
             buildButtons[i] = Button(dock.transform, BuildLabel(type, buildHotkeys[i]), new Vector2(x, -18), new Vector2(158, 82), () => SelectBuild(type), false);
+            BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
+            relay.Initialize(() => ShowBuildTooltip(type), HideBuildTooltip);
         }
+    }
+
+    void BuildBuildTooltip(Transform parent)
+    {
+        buildTooltip = Panel(parent, "BuildHoverTooltip", new Vector2(0, 344), new Vector2(520, 174), new Color(.028f, .018f, .014f, .985f), new Vector2(.5f, 0), new Vector2(.5f, 0));
+        buildTooltip.GetComponent<Image>().raycastTarget = false;
+
+        GameObject accentObject = new GameObject("Accent");
+        accentObject.transform.SetParent(buildTooltip.transform, false);
+        tooltipAccent = accentObject.AddComponent<Image>();
+        tooltipAccent.raycastTarget = false;
+        RectTransform accentRt = tooltipAccent.rectTransform;
+        accentRt.anchorMin = accentRt.anchorMax = accentRt.pivot = new Vector2(0f, .5f);
+        accentRt.anchoredPosition = new Vector2(8f, 0f);
+        accentRt.sizeDelta = new Vector2(8f, 154f);
+
+        BuildTooltipSilhouette(buildTooltip.transform);
+        tooltipTitle = Text(buildTooltip.transform, "", new Vector2(-116, 55), new Vector2(300, 30), 20, new Color(1f, .76f, .31f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        tooltipRole = Text(buildTooltip.transform, "", new Vector2(-116, 26), new Vector2(300, 28), 13, new Color(.78f, .70f, .61f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        tooltipStats = Text(buildTooltip.transform, "", new Vector2(-116, -10), new Vector2(300, 38), 13, new Color(.93f, .87f, .79f, 1f), TextAnchor.MiddleLeft, FontStyle.Normal);
+        tooltipTags = Text(buildTooltip.transform, "", new Vector2(-116, -47), new Vector2(300, 28), 13, new Color(.96f, .63f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        tooltipMatchup = Text(buildTooltip.transform, "", new Vector2(126, -2), new Vector2(220, 112), 13, new Color(.78f, .91f, .70f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        buildTooltip.SetActive(false);
+    }
+
+    void BuildTooltipSilhouette(Transform parent)
+    {
+        GameObject head = new GameObject("SilhouetteHead");
+        head.transform.SetParent(parent, false);
+        Image headImage = head.AddComponent<Image>();
+        headImage.color = new Color(.74f, .42f, .14f, .92f);
+        headImage.raycastTarget = false;
+        RectTransform headRt = headImage.rectTransform;
+        headRt.anchorMin = headRt.anchorMax = headRt.pivot = new Vector2(.5f, .5f);
+        headRt.anchoredPosition = new Vector2(-214, 36);
+        headRt.sizeDelta = new Vector2(34, 34);
+
+        GameObject body = new GameObject("SilhouetteBody");
+        body.transform.SetParent(parent, false);
+        Image bodyImage = body.AddComponent<Image>();
+        bodyImage.color = new Color(.56f, .25f, .09f, .92f);
+        bodyImage.raycastTarget = false;
+        RectTransform bodyRt = bodyImage.rectTransform;
+        bodyRt.anchorMin = bodyRt.anchorMax = bodyRt.pivot = new Vector2(.5f, .5f);
+        bodyRt.anchoredPosition = new Vector2(-214, -20);
+        bodyRt.sizeDelta = new Vector2(54, 74);
+
+        GameObject weapon = new GameObject("SilhouetteWeapon");
+        weapon.transform.SetParent(parent, false);
+        Image weaponImage = weapon.AddComponent<Image>();
+        weaponImage.color = new Color(.91f, .68f, .25f, .92f);
+        weaponImage.raycastTarget = false;
+        RectTransform weaponRt = weaponImage.rectTransform;
+        weaponRt.anchorMin = weaponRt.anchorMax = weaponRt.pivot = new Vector2(.5f, .5f);
+        weaponRt.anchoredPosition = new Vector2(-182, -2);
+        weaponRt.sizeDelta = new Vector2(10, 104);
+        weaponRt.localRotation = Quaternion.Euler(0f, 0f, -18f);
     }
 
     void BuildSelectedCard(Transform parent)
@@ -130,12 +196,17 @@ public sealed class ModernCombatHud : MonoBehaviour
             group.interactable = !blocked;
             group.blocksRaycasts = !blocked;
         }
-        if (blocked || GameManager.Instance == null) return;
+        if (blocked || GameManager.Instance == null)
+        {
+            HideBuildTooltip();
+            return;
+        }
 
         UpdateResources();
         UpdateWave();
         UpdateBuildDock();
         UpdateSelected();
+        if (buildTooltipVisible) RefreshBuildTooltip();
         HandlePcHotkeys();
     }
 
@@ -223,14 +294,164 @@ public sealed class ModernCombatHud : MonoBehaviour
     {
         if (placement == null) return;
         int cost = TowerFactory.GetCost(placement.SelectedBuildType);
-        buildSelectionText.text = $"{L("SELECTED", "ВЫБРАНО")}: {TowerName(placement.SelectedBuildType)}   •   {cost} {L("GOLD", "ЗОЛОТА")}";
+        TowerType recommended = RecommendedDefense();
+        buildSelectionText.text = $"{L("SELECTED", "ВЫБРАНО")}: {TowerName(placement.SelectedBuildType)}   •   {cost} {L("GOLD", "ЗОЛОТА")}   •   {L("RECOMMENDED", "РЕКОМЕНДАЦИЯ")}: {TowerName(recommended)}";
+
         for (int i = 0; i < buildButtons.Length; i++)
         {
             if (buildButtons[i] == null) continue;
             Image image = buildButtons[i].GetComponent<Image>();
             bool selected = buildTypes[i] == placement.SelectedBuildType;
+            bool recommendedButton = buildTypes[i] == recommended;
             bool affordable = GameManager.Instance != null && GameManager.Instance.Money >= TowerFactory.GetCost(buildTypes[i]);
-            image.color = selected ? new Color(.58f, .11f, .045f, .98f) : affordable ? new Color(.24f, .14f, .08f, .96f) : new Color(.11f, .085f, .07f, .88f);
+
+            if (selected) image.color = new Color(.58f, .11f, .045f, .98f);
+            else if (recommendedButton && affordable) image.color = new Color(.48f, .30f, .07f, .98f);
+            else if (recommendedButton) image.color = new Color(.29f, .20f, .08f, .92f);
+            else image.color = affordable ? new Color(.24f, .14f, .08f, .96f) : new Color(.11f, .085f, .07f, .88f);
+        }
+    }
+
+    TowerType RecommendedDefense()
+    {
+        if (spawner == null) return TowerType.MachineGun;
+
+        float best = float.MinValue;
+        TowerType winner = TowerType.MachineGun;
+        for (int i = 0; i < buildTypes.Length; i++)
+        {
+            TowerType type = buildTypes[i];
+            float score = RecommendationScore(type);
+            if (score > best)
+            {
+                best = score;
+                winner = type;
+            }
+        }
+        return winner;
+    }
+
+    float RecommendationScore(TowerType type)
+    {
+        if (spawner == null) return 0f;
+        float inf = spawner.NextWaveInfantryCount;
+        float run = spawner.NextWaveRunnerCount;
+        float heavy = spawner.NextWaveHeavyCount;
+        float shield = spawner.NextWaveShieldCount;
+        float arch = spawner.NextWaveArcherCount;
+        float boss = spawner.NextWaveBossCount;
+        float total = Mathf.Max(1f, inf + run + heavy + shield + arch + boss);
+
+        switch (type)
+        {
+            case TowerType.MachineGun: return inf * 1.35f + run * 2.1f + arch * 1.1f;
+            case TowerType.SpearThrower: return heavy * 2.35f + shield * 2.0f + boss * 1.25f;
+            case TowerType.Cannon: return boss * 4.2f + heavy * 1.65f + shield * 1.25f;
+            case TowerType.Slow: return run * 1.75f + total * .28f;
+            case TowerType.FireTower: return inf * 1.55f + run * 1.25f + arch * 1.0f + total * .22f;
+            case TowerType.TrojanGuard: return heavy * .9f + shield * .7f + total * .18f;
+            default: return 0f;
+        }
+    }
+
+    void ShowBuildTooltip(TowerType type)
+    {
+        hoveredBuildType = type;
+        buildTooltipVisible = true;
+        if (buildTooltip != null) buildTooltip.SetActive(true);
+        RefreshBuildTooltip();
+    }
+
+    void HideBuildTooltip()
+    {
+        buildTooltipVisible = false;
+        if (buildTooltip != null) buildTooltip.SetActive(false);
+    }
+
+    void RefreshBuildTooltip()
+    {
+        if (!buildTooltipVisible || buildTooltip == null) return;
+        TowerData data = BalanceCatalog.GetTower(hoveredBuildType);
+        if (data == null) return;
+
+        bool recommended = hoveredBuildType == RecommendedDefense();
+        bool affordable = GameManager.Instance != null && GameManager.Instance.Money >= data.cost;
+        tooltipAccent.color = recommended ? new Color(1f, .68f, .16f, 1f) : affordable ? new Color(.30f, .82f, .36f, 1f) : new Color(.82f, .18f, .08f, 1f);
+        tooltipTitle.text = TowerDisplayName(hoveredBuildType) + (recommended ? "   •   " + L("RECOMMENDED", "РЕКОМЕНДУЕТСЯ") : "");
+        tooltipRole.text = TowerRole(hoveredBuildType);
+        float dps = data.damage * Mathf.Max(.01f, data.attacksPerSecond);
+        tooltipStats.text = $"{L("DMG", "УРОН")} {data.damage:0.#}   •   DPS {dps:0.#}   •   {L("RNG", "ДАЛЬН")} {data.range:0.0}   •   {data.cost} {L("GOLD", "ЗОЛОТА")}";
+        tooltipTags.text = TowerTags(hoveredBuildType);
+        tooltipMatchup.text = $"+ {L("STRONG", "СИЛЁН")}\n{StrongAgainst(hoveredBuildType)}\n\n− {L("WEAK", "СЛАБ")}\n{WeakAgainst(hoveredBuildType)}";
+    }
+
+    string TowerDisplayName(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.MachineGun: return L("TROJAN ARCHERS", "ТРОЯНСКИЕ ЛУЧНИКИ");
+            case TowerType.SpearThrower: return L("SPEAR THROWERS", "МЕТАТЕЛИ КОПИЙ");
+            case TowerType.Cannon: return L("BALLISTA CREW", "РАСЧЁТ БАЛЛИСТЫ");
+            case TowerType.Slow: return L("PRIESTS OF APOLLO", "ЖРЕЦЫ АПОЛЛОНА");
+            case TowerType.FireTower: return L("FIRE CREW", "ОГНЕННЫЙ РАСЧЁТ");
+            case TowerType.TrojanGuard: return L("SHIELD GUARD", "ЩИТОВАЯ ГВАРДИЯ");
+            default: return type.ToString().ToUpperInvariant();
+        }
+    }
+
+    string TowerRole(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.MachineGun: return L("RANGED DPS • ANTI-LIGHT", "ДАЛЬНИЙ БОЙ • ПРОТИВ ЛЁГКИХ");
+            case TowerType.SpearThrower: return L("ARMOR PIERCE • ANTI-HEAVY", "БРОНЕБОЙНЫЙ • ПРОТИВ ТЯЖЁЛЫХ");
+            case TowerType.Cannon: return L("HEAVY SINGLE TARGET • ANTI-SIEGE", "ТЯЖЁЛЫЙ УРОН • ПРОТИВ ОСАДЫ");
+            case TowerType.Slow: return L("SUPPORT • CONTROL", "ПОДДЕРЖКА • КОНТРОЛЬ");
+            case TowerType.FireTower: return L("AOE • BURN • AREA DENIAL", "AOE • ГОРЕНИЕ • КОНТРОЛЬ ЗОНЫ");
+            case TowerType.TrojanGuard: return L("BLOCKER • FRONTLINE", "БЛОКИРОВКА • ПЕРЕДОВАЯ");
+            default: return "";
+        }
+    }
+
+    string TowerTags(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.MachineGun: return "[RANGED]   [LIGHT]";
+            case TowerType.SpearThrower: return "[ARMOR]   [HEAVY]";
+            case TowerType.Cannon: return "[SIEGE]   [BOSS]   [PIERCE]";
+            case TowerType.Slow: return "[SLOW]   [SUPPORT]";
+            case TowerType.FireTower: return "[AOE]   [BURN]   [ZONE]";
+            case TowerType.TrojanGuard: return "[BLOCK]   [FRONTLINE]";
+            default: return "";
+        }
+    }
+
+    string StrongAgainst(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.MachineGun: return L("Runners • Infantry", "Бегуны • Пехота");
+            case TowerType.SpearThrower: return L("Heavy • Shields", "Тяжёлые • Щитоносцы");
+            case TowerType.Cannon: return L("Boss • Siege • Heavy", "Босс • Осада • Тяжёлые");
+            case TowerType.Slow: return L("Fast groups", "Быстрые группы");
+            case TowerType.FireTower: return L("Dense groups", "Плотные группы");
+            case TowerType.TrojanGuard: return L("Holding lanes", "Удержание линии");
+            default: return "—";
+        }
+    }
+
+    string WeakAgainst(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.MachineGun: return L("Heavy armor", "Тяжёлая броня");
+            case TowerType.SpearThrower: return L("Light swarms", "Толпы лёгких");
+            case TowerType.Cannon: return L("Fast swarms", "Быстрые толпы");
+            case TowerType.Slow: return L("Damage races", "Чистый урон");
+            case TowerType.FireTower: return L("Single heavy", "Одиночные тяжёлые");
+            case TowerType.TrojanGuard: return L("Ranged pressure", "Дальний обстрел");
+            default: return "—";
         }
     }
 
