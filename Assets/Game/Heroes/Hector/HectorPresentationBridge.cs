@@ -49,7 +49,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
     public void PlayWarCry(float radius) => abilityPresentation?.PlayWarCry(radius);
 
-    public void PlayShieldWall(ShieldWallZone zone) => abilityPresentation?.PlayShieldWall(zone);
+    public void PlayShieldWall(Vector3 center) => abilityPresentation?.PlayShieldWall(center, transform.rotation);
 
     public void PlaySpearImpact(Vector3 point) => abilityPresentation?.PlaySpearImpact(point);
 
