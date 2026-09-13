@@ -2,10 +2,15 @@ using UnityEngine;
 
 public class BuildPoint : MonoBehaviour
 {
+    const float IdleCoreScale = .23f;
+    const float IdleRimScale = .34f;
+    const float HoverCoreScale = .29f;
+    const float HoverRimScale = .40f;
+
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
-    static readonly Color IdleColor = new Color(.78f,.58f,.20f);
-    static readonly Color RimColor = new Color(.30f,.22f,.10f);
+    static readonly Color IdleColor = new Color(.43f,.34f,.20f);
+    static readonly Color RimColor = new Color(.24f,.20f,.14f);
     static readonly Color ValidColor = new Color(.22f,.82f,.34f);
     static readonly Color InvalidColor = new Color(.90f,.16f,.10f);
     static readonly Color OccupiedColor = new Color(.16f,.16f,.14f);
@@ -30,7 +35,7 @@ public class BuildPoint : MonoBehaviour
         rimObj.name = "BuildMarkerRim";
         rimObj.transform.SetParent(transform);
         rimObj.transform.localPosition = new Vector3(0f, .02f, 0f);
-        rimObj.transform.localScale = new Vector3(.40f, .012f, .40f);
+        rimObj.transform.localScale = new Vector3(IdleRimScale, .012f, IdleRimScale);
         Object.Destroy(rimObj.GetComponent<Collider>());
         rim = rimObj.GetComponent<Renderer>();
         TowerFactory.SetColor(rimObj, RimColor);
@@ -39,7 +44,7 @@ public class BuildPoint : MonoBehaviour
         markerObj.name = "BuildMarkerCore";
         markerObj.transform.SetParent(transform);
         markerObj.transform.localPosition = new Vector3(0f, .035f, 0f);
-        markerObj.transform.localScale = new Vector3(.29f, .014f, .29f);
+        markerObj.transform.localScale = new Vector3(IdleCoreScale, .014f, IdleCoreScale);
         Object.Destroy(markerObj.GetComponent<Collider>());
         marker = markerObj.GetComponent<Renderer>();
         TowerFactory.SetColor(markerObj, IdleColor);
@@ -49,8 +54,8 @@ public class BuildPoint : MonoBehaviour
     {
         if (!hovered || marker == null || rim == null || Occupied) return;
         float pulse = 1f + Mathf.Sin(Time.unscaledTime * 7f) * .10f;
-        marker.transform.localScale = new Vector3(.29f * pulse, .014f, .29f * pulse);
-        rim.transform.localScale = new Vector3(.40f * 1.03f, .012f, .40f * 1.03f);
+        marker.transform.localScale = new Vector3(HoverCoreScale * pulse, .014f, HoverCoreScale * pulse);
+        rim.transform.localScale = new Vector3(HoverRimScale * 1.03f, .012f, HoverRimScale * 1.03f);
     }
 
     public bool TryBuild(TowerType type)
@@ -96,6 +101,11 @@ public class BuildPoint : MonoBehaviour
             return;
         }
 
+        float coreScale = value ? HoverCoreScale : IdleCoreScale;
+        float rimScale = value ? HoverRimScale : IdleRimScale;
+        marker.transform.localScale = new Vector3(coreScale, .014f, coreScale);
+        rim.transform.localScale = new Vector3(rimScale, .012f, rimScale);
+
         Color core = value ? (valid ? ValidColor : InvalidColor) : IdleColor;
         Color edge = value ? (valid ? ValidRimColor : InvalidRimColor) : RimColor;
         SetRendererColor(marker, core);
@@ -106,8 +116,8 @@ public class BuildPoint : MonoBehaviour
     {
         if (marker == null || rim == null) return;
         hovered = false;
-        marker.transform.localScale = new Vector3(.29f, .014f, .29f);
-        rim.transform.localScale = new Vector3(.40f, .012f, .40f);
+        marker.transform.localScale = new Vector3(IdleCoreScale, .014f, IdleCoreScale);
+        rim.transform.localScale = new Vector3(IdleRimScale, .012f, IdleRimScale);
         SetRendererColor(marker, Occupied ? OccupiedColor : IdleColor);
         SetRendererColor(rim, Occupied ? OccupiedColor : RimColor);
         marker.gameObject.SetActive(!Occupied);
