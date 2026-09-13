@@ -1,40 +1,96 @@
 # Character Art Direction
 
-## Factions
+Last reviewed: 2026-09-14
+
+This document defines the visual language and silhouette rules for characters. Implementation status belongs in `MODEL_ART_INVENTORY.md`; generation details belong in `CARTOON_CHARACTER_PIPELINE.md`.
+
+## Historical / visual target
+
+Chapter I should read as stylized **Late Bronze Age / Mycenaean-inspired warfare**, not Classical Spartan and not medieval fantasy.
+
+Preferred language:
+- bronze and leather armor;
+- spears and large shields;
+- simple crested helmets;
+- strong faction cloth accents;
+- readable bows/quivers for archers;
+- exaggerated but believable silhouettes at the gameplay camera distance.
+
+## Faction identity
 
 ### Greeks / Achaeans
-- Cooler bronze presentation with blue accents.
-- Cleaner military silhouettes.
-- Heavy hoplites and bosses read as disciplined invading forces.
-- Chapter I production candidates are generated under `Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Greek`.
-- Archers use a bow silhouette; avoid generic medieval crossbows in the Chapter I baseline.
+- cooler bronze and muted blue accents;
+- disciplined, cleaner military silhouettes;
+- heavy units read wider and more armored than regular infantry;
+- commanders use stronger crest/cape/shield hierarchy.
 
 ### Trojans
-- Warmer bronze, red and gold accents.
-- More regal silhouettes for guards and heroes.
-- Chapter I reference/production candidates are generated under `Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Trojan`.
+- warmer bronze, dark red and gold accents;
+- more regal guard/hero silhouettes;
+- defensive formations should visually read as an organized city garrison rather than generic fantasy troops.
 
-## Heroes
+## Chapter I silhouette contract
 
-Hero prefab slots:
-- `Hero_Hector` — Trojan, warm bronze/red/gold, long spear, large shield, hero cape.
-- `Hero_Achilles` — Greek, brighter heroic bronze/gold; later-campaign candidate.
-- `Hero_Menelaus` — Greek commander, colder blue/bronze accent, one-handed command sword, royal shield, commander cape.
+### Greek attackers
+- **Infantry:** spear + round shield.
+- **Runner:** light body, smaller weapon, visibly faster silhouette.
+- **Heavy Hoplite:** heavier armor + large shield + spear.
+- **Shield Bearer:** shield-dominant silhouette + spear.
+- **Archer:** bow + quiver; no generic crossbow presentation.
+- **Menelaus:** commander crest/cape, royal shield, one-handed command weapon.
 
-Generated candidates live under:
+### Trojan defenders
+- **Trojan Infantry:** spear + round shield.
+- **Trojan Guard:** large shield + spear, formation-oriented silhouette.
+- **Trojan Archer:** bow + quiver.
+- **Ballista Crew:** work/tool silhouette rather than frontline infantry.
+- **Priest of Apollo:** robe + sun staff/disc.
+- **Fire Keeper:** pitch/fire handling equipment.
 
-`Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Heroes`
+### Heroes
+- **Hector:** long spear, large Trojan shield, red/gold hero crest and cape.
+- **Menelaus:** colder bronze/blue commander treatment.
+- **Achilles:** brighter heroic Greek treatment for later campaign use.
 
-## Build workflow
+## Equipment sources
 
-1. Run `git submodule update --init --recursive`.
-2. Open Unity.
-3. Run `The Troy Game > Characters > Build Chapter I Production Candidates`.
-4. Play the game and verify Hector, enemy archetypes, Trojan defenders and Menelaus at gameplay camera distance.
-5. Promote an asset to `DONE` only after the acceptance gate in `docs/MODEL_ART_INVENTORY.md` is satisfied.
+The current candidate pipeline can use:
+- pinned Quaternius CC0 bow source;
+- pinned Quaternius CC0 spear source;
+- project-authored Aegean round shield candidate;
+- project-authored figure-eight/tower shield candidate;
+- project-authored Dendra-inspired cuirass candidate;
+- project-authored boar-tusk-inspired helmet candidate;
+- KayKit accessories where appropriate.
 
-The runtime retains older generated and procedural fallbacks, so missing production candidates do not break gameplay.
+These are **candidate/source assets**, not automatic final art.
 
-## Historical direction
+## Production paths
 
-Chapter I should read as stylized Late Bronze Age / Mycenaean-inspired warfare rather than Classical Spartan or medieval fantasy. Prefer spears, bronze cuirasses, large shields, simple crested helmets, cloth faction accents and bow silhouettes. Final authored art may replace all current kitbash geometry while preserving these role silhouettes.
+Generated/promoted character candidates live under:
+
+`Assets/Game/Art/Characters/Resources/TroyProduction/Characters`
+
+with faction/role subfolders for Greek, Trojan and Heroes.
+
+Final art remains subject to the `DONE` gate in `MODEL_ART_INVENTORY.md`.
+
+## Runtime readability rules
+
+1. Role must be identifiable primarily by silhouette/equipment, not color alone.
+2. Faction tint is secondary to silhouette.
+3. Decorative equipment must not alter gameplay colliders.
+4. Imported weapons must maintain sensible hand grip/orientation during combat animation.
+5. Armor must be checked for clipping/deformation in locomotion, attack, hit and death states.
+6. Hero and boss silhouettes must remain readable at normal gameplay zoom.
+
+## Build / QA workflow
+
+1. `git submodule update --init --recursive`
+2. Build Chapter I candidates in Unity.
+3. Run the Chapter I equipment/source pass.
+4. Build role-specific Animator profiles.
+5. Inspect in real Play Mode at gameplay camera distance.
+6. Only then promote status in `MODEL_ART_INVENTORY.md`.
+
+The runtime may retain generated/procedural fallbacks while final production art is replaced incrementally.
