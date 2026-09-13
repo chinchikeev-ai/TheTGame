@@ -19,6 +19,13 @@ public class EnemySpawner : MonoBehaviour
     public bool NextWaveHasHeavy { get; private set; }
     public bool NextWaveHasBoss { get; private set; }
 
+    public int NextWaveInfantryCount { get; private set; }
+    public int NextWaveRunnerCount { get; private set; }
+    public int NextWaveHeavyCount { get; private set; }
+    public int NextWaveShieldCount { get; private set; }
+    public int NextWaveArcherCount { get; private set; }
+    public int NextWaveBossCount { get; private set; }
+
     bool running;
     bool requestStart;
     float waveStartedAt;
@@ -115,6 +122,32 @@ public class EnemySpawner : MonoBehaviour
         NextWaveHasBoss = preparedWave.hasBoss;
         TargetWaveDuration = preparedWave.targetDuration;
         InterWaveCountdown = preparedWave.preparationTime;
+        BuildPreparedWaveComposition(wave);
+    }
+
+    void BuildPreparedWaveComposition(int wave)
+    {
+        NextWaveInfantryCount = 0;
+        NextWaveRunnerCount = 0;
+        NextWaveHeavyCount = 0;
+        NextWaveShieldCount = 0;
+        NextWaveArcherCount = 0;
+        NextWaveBossCount = 0;
+
+        for (int i = 0; i < effectiveEnemyCount; i++)
+        {
+            bool boss = preparedWave.hasBoss && i == effectiveEnemyCount - 1;
+            EnemyArchetype archetype = BalanceCatalog.GetEnemyForWave(wave, i, effectiveEnemyCount, boss).archetype;
+            switch (archetype)
+            {
+                case EnemyArchetype.Runner: NextWaveRunnerCount++; break;
+                case EnemyArchetype.HeavyHoplite: NextWaveHeavyCount++; break;
+                case EnemyArchetype.ShieldBearer: NextWaveShieldCount++; break;
+                case EnemyArchetype.Archer: NextWaveArcherCount++; break;
+                case EnemyArchetype.Boss: NextWaveBossCount++; break;
+                default: NextWaveInfantryCount++; break;
+            }
+        }
     }
 
     void SpawnEnemy(int wave, int index, bool boss)
