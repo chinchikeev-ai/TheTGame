@@ -11,56 +11,88 @@ public class GameBootstrap : MonoBehaviour
 
     void Start()
     {
-        if (FindFirstObjectByType<GameManager>() != null) return;
-
         Camera cam = SetupLightingAndCamera();
 
-        CampaignController campaign = new GameObject("CampaignController").AddComponent<CampaignController>();
-        ChapterController chapters = new GameObject("ChapterController").AddComponent<ChapterController>();
-        chapters.LoadChapter(1);
+        CampaignController campaign = EnsureComponent<CampaignController>("CampaignController");
+        ChapterController chapters = EnsureComponent<ChapterController>("ChapterController");
+        if (chapters.ActiveChapter == null) chapters.LoadChapter(1);
 
-        new GameObject("GameManager").AddComponent<GameManager>();
-        new GameObject("GameState").AddComponent<GameStateController>();
-        new GameObject("RuntimeEffects").AddComponent<RuntimeEffects>();
-        new GameObject("AncientMusic").AddComponent<AncientMusicController>();
+        EnsureComponent<GameManager>("GameManager");
+        EnsureComponent<GameStateController>("GameState");
+        EnsureComponent<RuntimeEffects>("RuntimeEffects");
+        EnsureComponent<AncientMusicController>("AncientMusic");
 
-        MapBuilder mapBuilder = new GameObject("MapBuilder").AddComponent<MapBuilder>();
-        mapBuilder.BuildMap();
-        ChapterOneVisualEnhancer.Enhance();
-        TroyGateHeroBuilder.Build();
-        ChapterOneWallLife.Build();
-        new GameObject("ChapterOneAtmosphere").AddComponent<ChapterOneAtmosphereController>();
+        MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
+        bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
+        if (worldNeedsBuild)
+        {
+            bool hadRuntimeWorld = GameObject.Find("Route_A") != null || GameObject.Find("Chapter01_Roads") != null;
+            mapBuilder.BuildMap();
+            if (!hadRuntimeWorld)
+            {
+                ChapterOneVisualEnhancer.Enhance();
+                TroyGateHeroBuilder.Build();
+                ChapterOneWallLife.Build();
+            }
+        }
 
-        EnemySpawner spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
-        spawner.Initialize(mapBuilder.Paths);
-        new GameObject("ChapterOnePlaythroughReporter").AddComponent<ChapterOnePlaythroughReporter>();
+        EnsureComponent<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
 
-        TowerPlacement placement = new GameObject("TowerPlacement").AddComponent<TowerPlacement>();
-        placement.gameCamera = cam;
+        EnemySpawner spawner = EnsureComponent<EnemySpawner>("EnemySpawner");
+        if ((spawner.paths == null || spawner.paths.Length == 0) && mapBuilder.Paths != null && mapBuilder.Paths.Length > 0)
+            spawner.Initialize(mapBuilder.Paths);
 
-        CreateHector(cam);
-        new GameObject("LandingPresentation").AddComponent<LandingPresentation>();
-        ChapterOneCinematicCamera cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
-        cinematic.Initialize(cam);
+        EnsureComponent<ChapterOnePlaythroughReporter>("ChapterOnePlaythroughReporter");
 
-        new GameObject("ModernCombatHUD").AddComponent<ModernCombatHud>();
-        new GameObject("ChapterOneGuidance").AddComponent<ChapterOneGuidancePresentation>();
-        new GameObject("GameMenu").AddComponent<GameMenuController>();
-        new GameObject("GameMenuUX").AddComponent<GameMenuUxEnhancer>();
-        new GameObject("GameMenuProgress").AddComponent<MenuProgressPresentation>();
-        new GameObject("CampaignMapPresentation").AddComponent<CampaignMapPresentation>();
-        new GameObject("MainMenuAmbientPresentation").AddComponent<MainMenuAmbientPresentation>();
-        new GameObject("ResultScreenPresentation").AddComponent<ResultScreenPresentation>();
-        new GameObject("ModernSettingsPresentation").AddComponent<ModernSettingsPresentation>();
+        TowerPlacement placement = EnsureComponent<TowerPlacement>("TowerPlacement");
+        if (placement.gameCamera == null) placement.gameCamera = cam;
+
+        EnsureHector(cam);
+        EnsureComponent<LandingPresentation>("LandingPresentation");
+
+        ChapterOneCinematicCamera cinematic = FindFirstObjectByType<ChapterOneCinematicCamera>();
+        if (cinematic == null)
+        {
+            cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
+            cinematic.Initialize(cam);
+        }
+
+        EnsureComponent<ModernCombatHud>("ModernCombatHUD");
+        EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
+        EnsureComponent<GameMenuController>("GameMenu");
+        EnsureComponent<GameMenuUxEnhancer>("GameMenuUX");
+        EnsureComponent<MenuProgressPresentation>("GameMenuProgress");
+        EnsureComponent<CampaignMapPresentation>("CampaignMapPresentation");
+        EnsureComponent<MainMenuAmbientPresentation>("MainMenuAmbientPresentation");
+        EnsureComponent<ResultScreenPresentation>("ResultScreenPresentation");
+        EnsureComponent<ModernSettingsPresentation>("ModernSettingsPresentation");
 
         RuntimeFileLogger.Event("BOOT", $"Runtime graph ready. unlockedChapter={campaign.UnlockedChapter}, activeChapter={(chapters.ActiveChapter != null ? chapters.ActiveChapter.chapterId : "none")}");
     }
 
-    void CreateHector(Camera cam)
+    static T EnsureComponent<T>(string objectName) where T : Component
     {
-        GameObject hector = HeroVisualFactory.Create(TroyHeroId.Hector);
-        hector.name = "Hector";
-        hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
+        T existing = FindFirstObjectByType<T>();
+        return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
+    }
+
+    void EnsureHector(Camera cam)
+    {
+        HectorController controller = FindFirstObjectByType<HectorController>();
+        GameObject hector;
+
+        if (controller == null)
+        {
+            hector = HeroVisualFactory.Create(TroyHeroId.Hector);
+            hector.name = "Hector";
+            hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
+            controller = hector.AddComponent<HectorController>();
+        }
+        else
+        {
+            hector = controller.gameObject;
+        }
+
         if (hector.GetComponentInChildren<Collider>() == null)
         {
             CapsuleCollider collider = hector.AddComponent<CapsuleCollider>();
@@ -69,10 +101,12 @@ public class GameBootstrap : MonoBehaviour
             collider.radius = .35f;
         }
 
-        HectorController controller = hector.AddComponent<HectorController>();
-        HectorPresentationBridge presentation = hector.AddComponent<HectorPresentationBridge>();
+        HectorPresentationBridge presentation = hector.GetComponent<HectorPresentationBridge>();
+        if (presentation == null) presentation = hector.AddComponent<HectorPresentationBridge>();
         presentation.Initialize(controller);
-        HectorInputDriver input = hector.AddComponent<HectorInputDriver>();
+
+        HectorInputDriver input = hector.GetComponent<HectorInputDriver>();
+        if (input == null) input = hector.AddComponent<HectorInputDriver>();
         input.Initialize(controller, cam);
     }
 
@@ -91,7 +125,7 @@ public class GameBootstrap : MonoBehaviour
         cam.transform.position = new Vector3(-1.2f, 27.5f, -5.2f);
         cam.transform.rotation = Quaternion.Euler(74f, 0f, 0f);
         cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(.22f,.31f,.34f);
+        cam.backgroundColor = new Color(.22f, .31f, .34f);
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
@@ -106,7 +140,7 @@ public class GameBootstrap : MonoBehaviour
             Light lightComp = l.AddComponent<Light>();
             lightComp.type = LightType.Directional;
             lightComp.intensity = 1.35f;
-            lightComp.color = new Color(1f,.84f,.60f);
+            lightComp.color = new Color(1f, .84f, .60f);
             lightComp.shadows = LightShadows.Soft;
             lightComp.shadowStrength = .72f;
             l.transform.rotation = Quaternion.Euler(52f, -38f, 0f);

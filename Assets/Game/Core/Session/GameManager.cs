@@ -64,6 +64,11 @@ public class GameManager : MonoBehaviour
         RuntimeFileLogger.Event("GAME", $"GameManager ready. Map={MapNumber}, startGold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, maxWaves={MaxWaves}, chapter={(Chapter != null ? Chapter.chapterId : "runtime")}, difficulty={difficulty}");
     }
 
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     public void BeginRun()
     {
         if (runStarted) return;
