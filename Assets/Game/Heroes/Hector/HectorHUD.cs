@@ -116,7 +116,7 @@ public class HectorHUD : MonoBehaviour
         }
 
         float[] remain = { h.WarCryCooldownRemaining, h.ShieldWallCooldownRemaining, h.SpearThrowCooldownRemaining, h.UltimateCooldownRemaining };
-        float[] total = { 18f, 20f, 8f, 45f };
+        float[] total = { h.warCryCooldown, h.shieldWallCooldown, h.spearThrowCooldown, h.ultimateCooldown };
         for(int i=0;i<4;i++)
         {
             float ratio = total[i] > 0f ? Mathf.Clamp01(remain[i]/total[i]) : 0f;
