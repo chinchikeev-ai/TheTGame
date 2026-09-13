@@ -10,85 +10,85 @@ public static class ChapterOneCharacterAnimationBuilder
     const string ThirdPartyRoot = "Assets/ThirdParty/KayKitAdventurers";
     const string CandidateRoot = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters";
     const string AnimationRoot = "Assets/Game/Art/Characters/Animation";
-    const string ControllerPath = AnimationRoot + "/ChapterOneCharacter.controller";
+
+    const string GenericControllerPath = AnimationRoot + "/ChapterOneCharacter.controller";
+    const string SpearControllerPath = AnimationRoot + "/ChapterOne_Spear.controller";
+    const string ArcherControllerPath = AnimationRoot + "/ChapterOne_Archer.controller";
+    const string SkirmisherControllerPath = AnimationRoot + "/ChapterOne_Skirmisher.controller";
+    const string HectorControllerPath = AnimationRoot + "/ChapterOne_Hector.controller";
+    const string MenelausControllerPath = AnimationRoot + "/ChapterOne_Menelaus.controller";
 
     [MenuItem("The Troy Game/Characters/Build Chapter I Animation Controller")]
     public static void BuildAll()
     {
-        string sourcePath = FindAnimationSource();
-        if (string.IsNullOrEmpty(sourcePath))
-        {
-            Debug.LogWarning("Chapter I animation build skipped: no KayKit character FBX with embedded clips was found.");
-            return;
-        }
-
-        AnimationClip[] clips = LoadClips(sourcePath);
+        AnimationClip[] clips = LoadAllSourceClips();
         if (clips.Length == 0)
         {
-            Debug.LogWarning("Chapter I animation build skipped: source FBX contains no imported AnimationClip sub-assets.");
+            Debug.LogWarning("Chapter I animation build skipped: no imported KayKit animation clips were found.");
             return;
         }
 
         EnsureFolder(AnimationRoot);
-        AnimatorController controller = BuildController(clips);
-        if (controller == null) return;
 
-        int assigned = AssignController(controller);
+        var controllers = new Dictionary<string, RuntimeAnimatorController>
+        {
+            { "generic", BuildController(GenericControllerPath, clips, "generic", null, false, false) },
+            { "spear", BuildController(SpearControllerPath, clips, "spear", new[] { "spear", "thrust", "stab" }, false, false) },
+            { "archer", BuildController(ArcherControllerPath, clips, "archer", new[] { "bow", "shoot", "arrow", "ranged" }, false, false) },
+            { "skirmisher", BuildController(SkirmisherControllerPath, clips, "skirmisher", new[] { "dagger", "knife", "slash", "swing" }, false, false) },
+            { "hector", BuildController(HectorControllerPath, clips, "hector", new[] { "spear", "thrust", "stab", "hero" }, true, false) },
+            { "menelaus", BuildController(MenelausControllerPath, clips, "menelaus", new[] { "sword", "slash", "heavy", "attack" }, false, true) }
+        };
+
+        int assigned = AssignControllers(controllers);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log($"Chapter I character animation controller built from {Path.GetFileName(sourcePath)} and assigned to {assigned} production candidates.");
+        Debug.Log($"Chapter I role animation profiles built from {clips.Length} imported clips and assigned to {assigned} production candidates.");
     }
 
-    static string FindAnimationSource()
+    static AnimationClip[] LoadAllSourceClips()
     {
-        string[] guids = AssetDatabase.FindAssets("t:GameObject", new[] { ThirdPartyRoot });
-        string fallback = null;
+        var result = new List<AnimationClip>();
+        var seen = new HashSet<int>();
+        string[] guids = AssetDatabase.FindAssets("", new[] { ThirdPartyRoot });
         foreach (string guid in guids)
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
             if (!path.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase)) continue;
-            if (!path.Contains("/Characters/")) continue;
-            if (fallback == null) fallback = path;
-            if (Path.GetFileNameWithoutExtension(path).Equals("Knight", StringComparison.OrdinalIgnoreCase))
-                return path;
-        }
-        return fallback;
-    }
 
-    static AnimationClip[] LoadClips(string sourcePath)
-    {
-        var result = new List<AnimationClip>();
-        foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetsAtPath(sourcePath))
-        {
-            AnimationClip clip = asset as AnimationClip;
-            if (clip == null || clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase) || clip.length <= .05f) continue;
-            result.Add(clip);
+            foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetsAtPath(path))
+            {
+                AnimationClip clip = asset as AnimationClip;
+                if (clip == null || clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase) || clip.length <= .05f) continue;
+                if (seen.Add(clip.GetInstanceID())) result.Add(clip);
+            }
         }
         return result.ToArray();
     }
 
-    static AnimatorController BuildController(AnimationClip[] clips)
+    static AnimatorController BuildController(string path, AnimationClip[] clips, string profileName, string[] roleTokens, bool hectorAbilities, bool commanderAction)
     {
         AnimationClip idle = Pick(clips, "idle", "stand");
-        AnimationClip move = Pick(clips, "walk", "run", "move");
-        AnimationClip attack = Pick(clips, "attack", "slash", "melee", "swing", "punch");
+        AnimationClip move = Pick(clips, "run", "walk", "move");
+        AnimationClip attack = PickAction(clips, roleTokens, "attack", "slash", "swing", "stab", "thrust", "shoot", "fire", "melee");
         AnimationClip hit = Pick(clips, "hit", "hurt", "damage", "impact");
         AnimationClip death = Pick(clips, "death", "die", "defeat", "dead");
         AnimationClip downed = Pick(clips, "down", "knockdown", "fall");
-        if (downed == null) downed = death;
+
         if (idle == null) idle = clips[0];
         if (move == null) move = idle;
+        if (attack == null) attack = Pick(clips, "attack", "slash", "swing", "melee", "punch");
+        if (downed == null) downed = death;
 
-        AssetDatabase.DeleteAsset(ControllerPath);
-        AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+        AssetDatabase.DeleteAsset(path);
+        AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(path);
         if (controller == null)
         {
-            Debug.LogError("Failed to create Chapter I AnimatorController.");
+            Debug.LogError($"Failed to create Chapter I AnimatorController profile={profileName} path={path}");
             return null;
         }
 
-        AnimatorControllerLayer layer = controller.layers[0];
-        AnimatorStateMachine machine = layer.stateMachine;
+        AnimatorStateMachine machine = controller.layers[0].stateMachine;
         AnimatorState idleState = machine.AddState("Idle");
         idleState.motion = idle;
         machine.defaultState = idleState;
@@ -105,16 +105,28 @@ public static class ChapterOneCharacterAnimationBuilder
         toIdle.duration = .10f;
         toIdle.AddCondition(AnimatorConditionMode.Less, .10f, "Speed");
 
-        if (attack != null)
+        AddAction(controller, machine, idleState, "Attack", attack, .86f);
+        AddAction(controller, machine, idleState, "Hit", hit, .78f);
+
+        if (commanderAction)
         {
-            controller.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
-            AddTriggeredState(machine, idleState, "Attack", attack, "Attack", .88f);
+            AnimationClip command = Pick(clips, "taunt", "cheer", "cast", "spell", "shout", "attack");
+            if (command == null) command = attack;
+            AddAction(controller, machine, idleState, "Command", command, .88f);
         }
-        if (hit != null)
+
+        if (hectorAbilities)
         {
-            controller.AddParameter("Hit", AnimatorControllerParameterType.Trigger);
-            AddTriggeredState(machine, idleState, "Hit", hit, "Hit", .82f);
+            AnimationClip q = Pick(clips, "taunt", "cheer", "shout", "cast");
+            AnimationClip e = PickAction(clips, new[] { "shield", "block", "defend" }, "block", "defend", "guard", "attack");
+            AnimationClip r = PickAction(clips, new[] { "spear", "thrust", "stab" }, "attack", "stab", "thrust", "throw");
+            AnimationClip f = Pick(clips, "heavy", "attack", "slash", "swing", "cast");
+            AddAction(controller, machine, idleState, "AbilityQ", q != null ? q : attack, .90f);
+            AddAction(controller, machine, idleState, "AbilityE", e != null ? e : attack, .90f);
+            AddAction(controller, machine, idleState, "AbilityR", r != null ? r : attack, .88f);
+            AddAction(controller, machine, idleState, "AbilityF", f != null ? f : attack, .92f);
         }
+
         if (death != null)
         {
             controller.AddParameter("Die", AnimatorControllerParameterType.Trigger);
@@ -125,6 +137,7 @@ public static class ChapterOneCharacterAnimationBuilder
             transition.duration = .06f;
             transition.AddCondition(AnimatorConditionMode.If, 0f, "Die");
         }
+
         if (downed != null)
         {
             controller.AddParameter("IsDowned", AnimatorControllerParameterType.Bool);
@@ -142,13 +155,15 @@ public static class ChapterOneCharacterAnimationBuilder
         }
 
         EditorUtility.SetDirty(controller);
-        Debug.Log($"Chapter I animation clips selected: idle={Name(idle)}, move={Name(move)}, attack={Name(attack)}, hit={Name(hit)}, death={Name(death)}, downed={Name(downed)}");
+        Debug.Log($"Chapter I animation profile={profileName}: idle={Name(idle)}, move={Name(move)}, attack={Name(attack)}, hit={Name(hit)}, death={Name(death)}, downed={Name(downed)}");
         return controller;
     }
 
-    static void AddTriggeredState(AnimatorStateMachine machine, AnimatorState idleState, string stateName, AnimationClip clip, string parameter, float exitTime)
+    static void AddAction(AnimatorController controller, AnimatorStateMachine machine, AnimatorState idleState, string parameter, AnimationClip clip, float exitTime)
     {
-        AnimatorState state = machine.AddState(stateName);
+        if (clip == null) return;
+        controller.AddParameter(parameter, AnimatorControllerParameterType.Trigger);
+        AnimatorState state = machine.AddState(parameter);
         state.motion = clip;
         AnimatorStateTransition enter = machine.AddAnyStateTransition(state);
         enter.hasExitTime = false;
@@ -161,7 +176,7 @@ public static class ChapterOneCharacterAnimationBuilder
         exit.duration = .08f;
     }
 
-    static int AssignController(AnimatorController controller)
+    static int AssignControllers(Dictionary<string, RuntimeAnimatorController> controllers)
     {
         if (!AssetDatabase.IsValidFolder(CandidateRoot)) return 0;
         int assigned = 0;
@@ -174,6 +189,15 @@ public static class ChapterOneCharacterAnimationBuilder
             {
                 Animator animator = root.GetComponentInChildren<Animator>(true);
                 if (animator == null) continue;
+
+                CharacterVisualIdentity identity = root.GetComponent<CharacterVisualIdentity>();
+                if (identity == null) identity = root.GetComponentInChildren<CharacterVisualIdentity>(true);
+                string profile = ResolveProfile(identity);
+                RuntimeAnimatorController controller;
+                if (!controllers.TryGetValue(profile, out controller) || controller == null)
+                    controller = controllers["generic"];
+                if (controller == null) continue;
+
                 animator.runtimeAnimatorController = controller;
                 animator.applyRootMotion = false;
                 PrefabUtility.SaveAsPrefabAsset(root, path);
@@ -187,17 +211,48 @@ public static class ChapterOneCharacterAnimationBuilder
         return assigned;
     }
 
-    static AnimationClip Pick(AnimationClip[] clips, params string[] tokens)
+    static string ResolveProfile(CharacterVisualIdentity identity)
     {
-        foreach (string token in tokens)
+        if (identity == null) return "generic";
+        string id = identity.characterId ?? string.Empty;
+        if (id.Equals("Hector", StringComparison.OrdinalIgnoreCase)) return "hector";
+        if (id.Equals("Menelaus", StringComparison.OrdinalIgnoreCase) || identity.role == TroyVisualRole.Commander) return "menelaus";
+        if (identity.role == TroyVisualRole.Archer) return "archer";
+        if (identity.role == TroyVisualRole.Runner) return "skirmisher";
+        if (identity.role == TroyVisualRole.Infantry || identity.role == TroyVisualRole.Heavy || identity.role == TroyVisualRole.ShieldBearer) return "spear";
+        return "generic";
+    }
+
+    static AnimationClip PickAction(AnimationClip[] clips, string[] roleTokens, params string[] actionTokens)
+    {
+        if (roleTokens != null && roleTokens.Length > 0)
         {
             foreach (AnimationClip clip in clips)
             {
                 string name = clip.name.ToLowerInvariant();
-                if (name.Contains(token.ToLowerInvariant())) return clip;
+                if (ContainsAny(name, roleTokens) && ContainsAny(name, actionTokens)) return clip;
             }
         }
+        return Pick(clips, actionTokens);
+    }
+
+    static AnimationClip Pick(AnimationClip[] clips, params string[] tokens)
+    {
+        foreach (string token in tokens)
+        {
+            string wanted = token.ToLowerInvariant();
+            foreach (AnimationClip clip in clips)
+                if (clip.name.ToLowerInvariant().Contains(wanted)) return clip;
+        }
         return null;
+    }
+
+    static bool ContainsAny(string value, string[] tokens)
+    {
+        if (tokens == null) return false;
+        foreach (string token in tokens)
+            if (value.Contains(token.ToLowerInvariant())) return true;
+        return false;
     }
 
     static string Name(AnimationClip clip) => clip != null ? clip.name : "none";
