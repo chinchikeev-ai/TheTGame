@@ -37,23 +37,41 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
     public void PlayAttackImpact(Vector3 point)
     {
+        characterPresentation?.PlayAttack();
         CombatImpactPresentation.MeleeHit(point, TowerType.TrojanGuard);
         RuntimeEffects.Instance?.PlayHitSound(false);
     }
 
     public void PlayDamageImpact(float damage)
     {
+        characterPresentation?.PlayHit();
         RuntimeEffects.Instance?.PlayHitSound(damage >= 25f);
         CombatImpactPresentation.HeroHit(transform.position + Vector3.up * .7f, damage >= 25f);
     }
 
-    public void PlayWarCry(float radius) => abilityPresentation?.PlayWarCry(radius);
+    public void PlayWarCry(float radius)
+    {
+        characterPresentation?.PlayAbilityQ();
+        abilityPresentation?.PlayWarCry(radius);
+    }
 
-    public void PlayShieldWall(Vector3 center) => abilityPresentation?.PlayShieldWall(center, transform.rotation);
+    public void PlayShieldWall(Vector3 center)
+    {
+        characterPresentation?.PlayAbilityE();
+        abilityPresentation?.PlayShieldWall(center, transform.rotation);
+    }
 
-    public void PlaySpearImpact(Vector3 point) => abilityPresentation?.PlaySpearImpact(point);
+    public void PlaySpearImpact(Vector3 point)
+    {
+        characterPresentation?.PlayAbilityR();
+        abilityPresentation?.PlaySpearImpact(point);
+    }
 
-    public void PlayUltimate(float radius) => abilityPresentation?.PlayUltimate(radius);
+    public void PlayUltimate(float radius)
+    {
+        characterPresentation?.PlayAbilityF();
+        abilityPresentation?.PlayUltimate(radius);
+    }
 
     void LateUpdate()
     {
