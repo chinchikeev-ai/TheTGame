@@ -22,6 +22,7 @@ REQUIRED = [
     "Assets/Editor/CampaignModelAuditValidator.cs",
     "Assets/Editor/CampaignModelAuditValidator.cs.meta",
     "Assets/Editor/ModelGapClosureBuilder.cs",
+    "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json",
     "Assets/Tests/EditMode/TheTroyGame.EditModeTests.asmdef",
     "Assets/Tests/PlayMode/TheTroyGame.PlayModeTests.asmdef",
 ]
@@ -41,6 +42,8 @@ if AUDIT.exists():
         "CampaignModelAudit.json",
         "CampaignModelAudit.md",
         "ModelGapClosureBuilder.BuildAll()",
+        "PRODUCTION_ACCEPTANCE.json",
+        "accepted.Contains(spec.path)",
     ):
         if token not in audit_text:
             errors.append(f"campaign model audit contract missing token: {token}")
