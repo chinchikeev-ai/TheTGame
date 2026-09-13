@@ -14,6 +14,8 @@ public class MapBuilder : MonoBehaviour
 
     public Transform[] BuildMap()
     {
+        if (TryAdoptExistingPaths()) return Paths[0];
+
         DefineLayout();
         CoastEnvironmentBuilder.Build();
         CreateGrid();
@@ -21,6 +23,28 @@ public class MapBuilder : MonoBehaviour
         CreateBuildPoints();
         Paths = CreatePaths();
         return Paths[0];
+    }
+
+    bool TryAdoptExistingPaths()
+    {
+        GameObject routeA = GameObject.Find("Route_A");
+        GameObject routeB = GameObject.Find("Route_B");
+        if (routeA == null || routeB == null) return false;
+
+        Transform[] a = ReadPath(routeA.transform);
+        Transform[] b = ReadPath(routeB.transform);
+        if (a.Length == 0 || b.Length == 0) return false;
+
+        DefineLayout();
+        Paths = new[] { a, b };
+        return true;
+    }
+
+    static Transform[] ReadPath(Transform root)
+    {
+        Transform[] path = new Transform[root.childCount];
+        for (int i = 0; i < root.childCount; i++) path[i] = root.GetChild(i);
+        return path;
     }
 
     void DefineLayout()
