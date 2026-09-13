@@ -32,6 +32,12 @@ REQUIRED = [
     "Assets/Editor/ChapterOneSpearSourceInstaller.cs.meta",
     "Assets/Editor/ChapterOneProductionEquipmentBuilder.cs",
     "Assets/Editor/ChapterOneProductionEquipmentBuilder.cs.meta",
+    "Assets/Editor/ChapterOneArmorCandidateBuilder.cs",
+    "Assets/Editor/ChapterOneArmorCandidateBuilder.cs.meta",
+    "Assets/Game/Art/Characters/Equipment/DendraCuirassCandidate.obj",
+    "Assets/Game/Art/Characters/Equipment/DendraCuirassCandidate.obj.meta",
+    "Assets/Game/Art/Characters/Equipment/BoarTuskHelmetCandidate.obj",
+    "Assets/Game/Art/Characters/Equipment/BoarTuskHelmetCandidate.obj.meta",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json.meta",
     "Assets/Game/Art/CHAPTER_I_FREEZE_ACCEPTANCE.json",
@@ -144,9 +150,34 @@ if EQUIPMENT.exists():
         "FindProceduralSpear",
         'HasChild(transform, "Shaft")',
         'HasChild(transform, "BronzeTip")',
+        "ChapterOneArmorCandidateBuilder.Build();",
     ):
         if token not in equipment_text:
             errors.append(f"Chapter I production equipment contract missing token: {token}")
+
+ARMOR = ROOT / "Assets" / "Editor" / "ChapterOneArmorCandidateBuilder.cs"
+if ARMOR.exists():
+    armor_text = ARMOR.read_text(encoding="utf-8")
+    for token in (
+        "DendraCuirassCandidate.obj",
+        "BoarTuskHelmetCandidate.obj",
+        "SourceArmor_DendraCandidate",
+        "SourceHelmet_BoarTuskCandidate",
+        "Enemy_Infantry.prefab",
+        "Enemy_HeavyHoplite.prefab",
+        "Enemy_ShieldBearer.prefab",
+        "Enemy_Boss.prefab",
+        "Trojan_Infantry.prefab",
+        "Trojan_Guard.prefab",
+        "Hero_Hector.prefab",
+        "Hero_Menelaus.prefab",
+        '"BronzeCuirass"',
+        '"BronzeHelmet"',
+        '"HelmetCheekLeft"',
+        '"HelmetCheekRight"',
+    ):
+        if token not in armor_text:
+            errors.append(f"Chapter I armor candidate contract missing token: {token}")
 
 MODEL_GAP = ROOT / "Assets" / "Editor" / "ModelGapClosureBuilder.cs"
 if MODEL_GAP.exists() and "ChapterOneProductionEquipmentBuilder.Build();" not in MODEL_GAP.read_text(encoding="utf-8"):
