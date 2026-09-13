@@ -26,6 +26,64 @@ public static class CombatImpactPresentation
         }
     }
 
+    public static void ShotFlash(Vector3 point, TowerType sourceType)
+    {
+        Color color = new Color(1f,.68f,.18f);
+        float size = .28f;
+        switch (sourceType)
+        {
+            case TowerType.Cannon: color = new Color(1f,.42f,.08f); size = .48f; break;
+            case TowerType.Slow: color = new Color(.30f,.70f,1f); size = .34f; break;
+            case TowerType.SpearThrower: color = new Color(.92f,.78f,.36f); size = .24f; break;
+            case TowerType.FireTower: color = new Color(1f,.18f,.02f); size = .52f; break;
+            case TowerType.TrojanGuard: color = new Color(.76f,.38f,.12f); size = .26f; break;
+        }
+
+        CombatVfxPool.Spawn(
+            PrimitiveType.Sphere,
+            point,
+            Vector3.one * size,
+            Vector3.one * (size * .20f),
+            color,
+            .07f,
+            Vector3.zero);
+    }
+
+    public static void Pulse(Vector3 point, Color color, float radius, float duration)
+    {
+        GroundPulse(point, color, radius, duration);
+    }
+
+    public static void GenericHit(Vector3 point, bool heavy)
+    {
+        float size = heavy ? .75f : .34f;
+        Color color = heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Sphere,
+            point,
+            Vector3.one * .10f,
+            Vector3.one * size,
+            color,
+            .18f,
+            Vector3.up * .06f);
+    }
+
+    public static void GenericDeath(Vector3 point, bool boss)
+    {
+        float size = boss ? 2.2f : .88f;
+        Color color = boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Sphere,
+            point,
+            Vector3.one * .10f,
+            Vector3.one * size,
+            color,
+            .18f,
+            Vector3.up * .06f);
+
+        if (boss) GroundPulse(point, new Color(.95f,.62f,.12f), 3.8f, .5f);
+    }
+
     public static void MeleeHit(Vector3 point, TowerType sourceType)
     {
         Color color = sourceType == TowerType.TrojanGuard
