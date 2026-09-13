@@ -28,7 +28,6 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
     }
 
     public void OnPointerExit(PointerEventData eventData) => onExit?.Invoke();
-
     void OnDisable() => onExit?.Invoke();
 
     void ApplyTacticalVisuals()
@@ -38,7 +37,7 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
         if (tooltip == null) return;
 
         int slot = InferSlot();
-        ConfigureSilhouette(tooltip, slot);
+        ConfigurePortrait(tooltip, slot);
         BuildBadges(tooltip, slot);
         HideLegacyTagLine(tooltip);
     }
@@ -51,86 +50,48 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
         return 0;
     }
 
-    void ConfigureSilhouette(Transform tooltip, int slot)
+    void ConfigurePortrait(Transform tooltip, int slot)
     {
-        RectTransform head = FindRect(tooltip, "SilhouetteHead");
-        RectTransform body = FindRect(tooltip, "SilhouetteBody");
-        RectTransform weapon = FindRect(tooltip, "SilhouetteWeapon");
-        if (head == null || body == null || weapon == null) return;
+        HideOldSilhouette(tooltip);
+        Transform existing = tooltip.Find("TowerArtPortrait");
+        Image image;
+        if (existing == null)
+        {
+            GameObject portrait = new GameObject("TowerArtPortrait");
+            portrait.transform.SetParent(tooltip, false);
+            image = portrait.AddComponent<Image>();
+            image.raycastTarget = false;
+            RectTransform rt = image.rectTransform;
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
+            rt.anchoredPosition = new Vector2(-205f, 0f);
+            rt.sizeDelta = new Vector2(96f, 96f);
+        }
+        else image = existing.GetComponent<Image>();
+        image.sprite = TroyHudArt.Tower(TowerForSlot(slot));
+        image.color = Color.white;
+    }
 
-        Image headImage = head.GetComponent<Image>();
-        Image bodyImage = body.GetComponent<Image>();
-        Image weaponImage = weapon.GetComponent<Image>();
-        if (headImage == null || bodyImage == null || weaponImage == null) return;
-
-        head.anchoredPosition = new Vector2(-214f, 36f);
-        head.sizeDelta = new Vector2(34f, 34f);
-        head.localRotation = Quaternion.identity;
-        body.anchoredPosition = new Vector2(-214f, -20f);
-        body.sizeDelta = new Vector2(54f, 74f);
-        body.localRotation = Quaternion.identity;
-        weapon.anchoredPosition = new Vector2(-182f, -2f);
-        weapon.sizeDelta = new Vector2(10f, 104f);
-        weapon.localRotation = Quaternion.Euler(0f, 0f, -18f);
-
-        headImage.color = new Color(.74f, .42f, .14f, .94f);
-        bodyImage.color = new Color(.56f, .25f, .09f, .94f);
-        weaponImage.color = gold;
-
+    TowerType TowerForSlot(int slot)
+    {
         switch (slot)
         {
-            case 1: // Spear Throwers
-                head.sizeDelta = new Vector2(31f, 31f);
-                body.sizeDelta = new Vector2(48f, 72f);
-                weapon.anchoredPosition = new Vector2(-176f, -2f);
-                weapon.sizeDelta = new Vector2(7f, 124f);
-                weapon.localRotation = Quaternion.Euler(0f, 0f, -12f);
-                weaponImage.color = new Color(.92f, .74f, .34f, .98f);
-                break;
-            case 2: // Archers
-                body.sizeDelta = new Vector2(46f, 68f);
-                weapon.anchoredPosition = new Vector2(-178f, 3f);
-                weapon.sizeDelta = new Vector2(8f, 86f);
-                weapon.localRotation = Quaternion.Euler(0f, 0f, 35f);
-                weaponImage.color = new Color(.82f, .54f, .22f, .98f);
-                break;
-            case 3: // Ballista
-                head.anchoredPosition = new Vector2(-220f, 25f);
-                head.sizeDelta = new Vector2(27f, 27f);
-                body.anchoredPosition = new Vector2(-219f, -23f);
-                body.sizeDelta = new Vector2(42f, 58f);
-                weapon.anchoredPosition = new Vector2(-184f, -15f);
-                weapon.sizeDelta = new Vector2(72f, 18f);
-                weapon.localRotation = Quaternion.Euler(0f, 0f, 0f);
-                weaponImage.color = new Color(.72f, .50f, .20f, .98f);
-                break;
-            case 4: // Apollo
-                head.sizeDelta = new Vector2(36f, 36f);
-                body.sizeDelta = new Vector2(50f, 76f);
-                bodyImage.color = new Color(.54f, .40f, .13f, .96f);
-                weapon.anchoredPosition = new Vector2(-174f, -5f);
-                weapon.sizeDelta = new Vector2(9f, 110f);
-                weapon.localRotation = Quaternion.Euler(0f, 0f, 4f);
-                weaponImage.color = new Color(1f, .87f, .36f, .98f);
-                break;
-            case 5: // Fire Crew
-                head.sizeDelta = new Vector2(32f, 32f);
-                body.sizeDelta = new Vector2(58f, 72f);
-                bodyImage.color = new Color(.65f, .20f, .07f, .96f);
-                weapon.anchoredPosition = new Vector2(-180f, -8f);
-                weapon.sizeDelta = new Vector2(30f, 60f);
-                weapon.localRotation = Quaternion.Euler(0f, 0f, -28f);
-                weaponImage.color = new Color(1f, .30f, .05f, .98f);
-                break;
-            case 6: // Shield Guard
-                head.sizeDelta = new Vector2(36f, 36f);
-                body.sizeDelta = new Vector2(62f, 78f);
-                bodyImage.color = new Color(.48f, .20f, .08f, .98f);
-                weapon.anchoredPosition = new Vector2(-178f, -8f);
-                weapon.sizeDelta = new Vector2(44f, 66f);
-                weapon.localRotation = Quaternion.identity;
-                weaponImage.color = new Color(.75f, .45f, .14f, .98f);
-                break;
+            case 1: return TowerType.SpearThrower;
+            case 2: return TowerType.MachineGun;
+            case 3: return TowerType.Cannon;
+            case 4: return TowerType.Slow;
+            case 5: return TowerType.FireTower;
+            case 6: return TowerType.TrojanGuard;
+            default: return TowerType.MachineGun;
+        }
+    }
+
+    void HideOldSilhouette(Transform tooltip)
+    {
+        string[] names = { "SilhouetteHead", "SilhouetteBody", "SilhouetteWeapon" };
+        for (int i = 0; i < names.Length; i++)
+        {
+            Transform t = tooltip.Find(names[i]);
+            if (t != null) t.gameObject.SetActive(false);
         }
     }
 
@@ -194,7 +155,9 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
         GameObject badge = new GameObject("Badge_" + label);
         badge.transform.SetParent(parent, false);
         Image background = badge.AddComponent<Image>();
-        background.color = new Color(.08f, .05f, .035f, .97f);
+        background.sprite = TroyHudArt.Panel();
+        background.type = Image.Type.Sliced;
+        background.color = new Color(.22f, .11f, .045f, .98f);
         background.raycastTarget = false;
 
         RectTransform rt = background.rectTransform;
@@ -245,11 +208,5 @@ public sealed class BuildButtonHoverRelay : MonoBehaviour, IPointerEnterHandler,
                 return;
             }
         }
-    }
-
-    RectTransform FindRect(Transform parent, string name)
-    {
-        Transform t = parent.Find(name);
-        return t != null ? t.GetComponent<RectTransform>() : null;
     }
 }
