@@ -1,18 +1,34 @@
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RuntimeEffects : MonoBehaviour
 {
     public static RuntimeEffects Instance { get; private set; }
+
+    readonly Dictionary<Vector3Int, AudioClip> toneCache = new Dictionary<Vector3Int, AudioClip>();
     AudioSource source;
 
     void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
         source.spatialBlend = 0f;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance != this) return;
+        foreach (AudioClip clip in toneCache.Values)
+            if (clip != null) Destroy(clip);
+        toneCache.Clear();
+        Instance = null;
     }
 
     public void PlayShot(TowerType type, Vector3 position)
@@ -32,46 +48,54 @@ public class RuntimeEffects : MonoBehaviour
             case TowerType.TrojanGuard: freq=260f; dur=.08f; flash=new Color(.76f,.38f,.12f); size=.26f; break;
         }
 
-        source.PlayOneShot(MakeTone(freq,dur,volume));
-        StartCoroutine(Flash(position,flash,size));
+        source.PlayOneShot(GetTone(freq,dur,volume));
+        Flash(position, flash, size);
     }
 
     public void PlayHit(Vector3 position, bool heavy = false)
     {
-        source.PlayOneShot(MakeTone(heavy ? 90f : 240f, 0.06f, 0.10f));
-        StartCoroutine(Burst(position, heavy ? .75f : .34f, heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f)));
+        source.PlayOneShot(GetTone(heavy ? 90f : 240f, .06f, .10f));
+        Burst(position, heavy ? .75f : .34f, heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f));
     }
 
     public void PlayDeath(Vector3 position, bool boss = false)
     {
-        source.PlayOneShot(MakeTone(boss ? 70f : 150f, boss ? 0.35f : 0.16f, boss ? 0.32f : 0.16f));
-        StartCoroutine(Burst(position, boss ? 2.2f : .88f, boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f)));
-        if(boss) StartCoroutine(BossShockwave(position));
+        source.PlayOneShot(GetTone(boss ? 70f : 150f, boss ? .35f : .16f, boss ? .32f : .16f));
+        Burst(position, boss ? 2.2f : .88f, boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f));
+        if (boss) BossShockwave(position);
     }
 
     public void PlayHeroPulse(Vector3 position, Color color, float radius = 2.8f, float duration = .42f)
     {
-        source.PlayOneShot(MakeTone(330f, .12f, .16f));
-        StartCoroutine(GroundPulse(position, color, radius, duration));
+        source.PlayOneShot(GetTone(330f, .12f, .16f));
+        GroundPulse(position, color, radius, duration);
     }
 
     public void PlayBuildSuccess(Vector3 position, bool upgrade)
     {
-        source.PlayOneShot(MakeTone(upgrade ? 620f : 510f, upgrade ? .16f : .12f, .18f));
-        source.PlayOneShot(MakeTone(upgrade ? 880f : 720f, .08f, .10f));
-        StartCoroutine(GroundPulse(position, upgrade ? new Color(1f,.68f,.18f) : new Color(.24f,.88f,.34f), upgrade ? 1.45f : 1.15f, .32f));
-        StartCoroutine(BuildBurst(position, upgrade));
+        source.PlayOneShot(GetTone(upgrade ? 620f : 510f, upgrade ? .16f : .12f, .18f));
+        source.PlayOneShot(GetTone(upgrade ? 880f : 720f, .08f, .10f));
+        GroundPulse(position, upgrade ? new Color(1f,.68f,.18f) : new Color(.24f,.88f,.34f), upgrade ? 1.45f : 1.15f, .32f);
+        BuildBurst(position, upgrade);
     }
 
     public void PlayBuildDenied(Vector3 position)
     {
-        source.PlayOneShot(MakeTone(115f, .12f, .18f));
-        StartCoroutine(GroundPulse(position, new Color(.95f,.12f,.08f), .8f, .22f));
+        source.PlayOneShot(GetTone(115f, .12f, .18f));
+        GroundPulse(position, new Color(.95f,.12f,.08f), .8f, .22f);
     }
 
-    AudioClip MakeTone(float frequency, float duration, float volume)
+    AudioClip GetTone(float frequency, float duration, float volume)
     {
-        int rate = 44100;
+        Vector3Int key = new Vector3Int(
+            Mathf.RoundToInt(frequency * 10f),
+            Mathf.RoundToInt(duration * 1000f),
+            Mathf.RoundToInt(volume * 1000f));
+
+        if (toneCache.TryGetValue(key, out AudioClip cached) && cached != null)
+            return cached;
+
+        const int rate = 44100;
         int samples = Mathf.Max(1, Mathf.RoundToInt(rate * duration));
         float[] data = new float[samples];
         for (int i = 0; i < samples; i++)
@@ -80,110 +104,75 @@ public class RuntimeEffects : MonoBehaviour
             float envelope = 1f - i / (float)samples;
             data[i] = Mathf.Sin(2f * Mathf.PI * frequency * t) * envelope * volume;
         }
-        AudioClip clip = AudioClip.Create("RuntimeTone", samples, 1, rate, false);
+
+        AudioClip clip = AudioClip.Create($"RuntimeTone_{key.x}_{key.y}_{key.z}", samples, 1, rate, false);
         clip.SetData(data, 0);
+        toneCache[key] = clip;
         return clip;
     }
 
-    IEnumerator Flash(Vector3 position, Color color, float size)
+    static void Flash(Vector3 position, Color color, float size)
     {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        go.name = "MuzzleFlash";
-        go.transform.position = position;
-        go.transform.localScale = Vector3.one * size;
-        Destroy(go.GetComponent<Collider>());
-        TowerFactory.SetColor(go, color);
-        yield return new WaitForSeconds(.05f);
-        if (go != null) Destroy(go);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Sphere,
+            position,
+            Vector3.one * size,
+            Vector3.one * (size * .20f),
+            color,
+            .07f,
+            Vector3.zero);
     }
 
-    IEnumerator Burst(Vector3 position, float size, Color color)
+    static void Burst(Vector3 position, float size, Color color)
     {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        go.name = "ImpactFX";
-        go.transform.position = position;
-        go.transform.localScale = Vector3.one * .1f;
-        Destroy(go.GetComponent<Collider>());
-        TowerFactory.SetColor(go, color);
-        float t = 0f;
-        while (t < .18f && go != null)
-        {
-            t += Time.deltaTime;
-            go.transform.localScale = Vector3.one * Mathf.Lerp(.1f, size, t / .18f);
-            yield return null;
-        }
-        if (go != null) Destroy(go);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Sphere,
+            position,
+            Vector3.one * .10f,
+            Vector3.one * size,
+            color,
+            .18f,
+            Vector3.up * .06f);
     }
 
-    IEnumerator BuildBurst(Vector3 position, bool upgrade)
+    static void BuildBurst(Vector3 position, bool upgrade)
     {
         Color color = upgrade ? new Color(1f,.65f,.16f) : new Color(.30f,.92f,.38f);
         for (int i = 0; i < 5; i++)
         {
-            GameObject spark = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            spark.name = upgrade ? "UpgradeSpark" : "BuildSpark";
-            Destroy(spark.GetComponent<Collider>());
-            spark.transform.position = position + new Vector3((i - 2) * .18f, .12f + (i % 2) * .08f, ((i * 3) % 5 - 2) * .12f);
-            spark.transform.localScale = Vector3.one * .08f;
-            TowerFactory.SetColor(spark, color);
-            StartCoroutine(FloatSpark(spark, .28f + i * .025f));
+            Vector3 start = position + new Vector3((i - 2) * .18f, .12f + (i % 2) * .08f, ((i * 3) % 5 - 2) * .12f);
+            CombatVfxPool.Spawn(
+                PrimitiveType.Sphere,
+                start,
+                Vector3.one * .08f,
+                Vector3.one * .015f,
+                color,
+                .28f + i * .025f,
+                Vector3.up * .8f);
         }
-        yield return null;
     }
 
-    IEnumerator FloatSpark(GameObject spark, float duration)
+    static void BossShockwave(Vector3 position)
     {
-        float t = 0f;
-        Vector3 start = spark.transform.position;
-        while (t < duration && spark != null)
-        {
-            t += Time.deltaTime;
-            float u = Mathf.Clamp01(t / duration);
-            spark.transform.position = start + Vector3.up * Mathf.Lerp(0f, .8f, u);
-            spark.transform.localScale = Vector3.one * Mathf.Lerp(.08f, .015f, u);
-            yield return null;
-        }
-        if (spark != null) Destroy(spark);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Cylinder,
+            position + Vector3.up * .04f,
+            new Vector3(.2f,.02f,.2f),
+            new Vector3(3.8f,.02f,3.8f),
+            new Color(.95f,.62f,.12f),
+            .5f,
+            Vector3.zero);
     }
 
-    IEnumerator BossShockwave(Vector3 position)
+    static void GroundPulse(Vector3 position, Color color, float radius, float duration)
     {
-        GameObject ring=GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        ring.name="BossDeathShockwave";
-        ring.transform.position=position+Vector3.up*.04f;
-        ring.transform.localScale=new Vector3(.2f,.02f,.2f);
-        Destroy(ring.GetComponent<Collider>());
-        TowerFactory.SetColor(ring,new Color(.95f,.62f,.12f));
-        float t=0f;
-        while(t<.5f && ring!=null)
-        {
-            t+=Time.deltaTime;
-            float s=Mathf.Lerp(.2f,3.8f,t/.5f);
-            ring.transform.localScale=new Vector3(s,.02f,s);
-            yield return null;
-        }
-        if(ring!=null) Destroy(ring);
-    }
-
-    IEnumerator GroundPulse(Vector3 position, Color color, float radius, float duration)
-    {
-        GameObject ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        ring.name = "GroundPulse";
-        ring.transform.position = position + Vector3.up * .045f;
-        ring.transform.localScale = new Vector3(.22f,.018f,.22f);
-        Destroy(ring.GetComponent<Collider>());
-        TowerFactory.SetColor(ring,color);
-
-        float t = 0f;
-        while (t < duration && ring != null)
-        {
-            t += Time.deltaTime;
-            float u = Mathf.Clamp01(t / duration);
-            float s = Mathf.Lerp(.22f, radius, u);
-            ring.transform.localScale = new Vector3(s,.018f,s);
-            ring.transform.Rotate(0f, 120f * Time.deltaTime, 0f, Space.Self);
-            yield return null;
-        }
-        if (ring != null) Destroy(ring);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Cylinder,
+            position + Vector3.up * .045f,
+            new Vector3(.22f,.018f,.22f),
+            new Vector3(radius,.018f,radius),
+            color,
+            duration,
+            Vector3.zero);
     }
 }
