@@ -44,6 +44,7 @@ public class GameBootstrap : MonoBehaviour
 
         new GameObject("GameUI").AddComponent<GameUIController>();
         new GameObject("ModernCombatHUD").AddComponent<ModernCombatHud>();
+        new GameObject("BuildDefenseInfoPresentation").AddComponent<BuildDefenseInfoPresentation>();
         new GameObject("GameMenu").AddComponent<GameMenuController>();
         new GameObject("GameMenuUX").AddComponent<GameMenuUxEnhancer>();
         new GameObject("GameMenuProgress").AddComponent<MenuProgressPresentation>();
