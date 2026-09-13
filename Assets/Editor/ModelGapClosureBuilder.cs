@@ -7,6 +7,7 @@ public static class ModelGapClosureBuilder
     public static void BuildAll()
     {
         CampaignArtCandidateBuilder.BuildAll();
+        ChapterOneProductionEquipmentBuilder.Build();
         MythicAndSupportArtCandidateBuilder.BuildAll();
         CampaignEnvironmentCandidateBuilder.BuildAll();
         CampaignCivilianVariantBuilder.BuildAll();
