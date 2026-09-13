@@ -44,6 +44,26 @@ public static class CombatImpactPresentation
             heavy ? .34f : .18f);
     }
 
+    public static void GateHit(Vector3 point, bool heavy)
+    {
+        Color color = heavy ? new Color(.84f,.28f,.06f) : new Color(.92f,.58f,.18f);
+        Burst(point + Vector3.up * .12f, color, heavy ? 4 : 2, heavy ? .15f : .09f, heavy ? .48f : .24f);
+        if (heavy) GroundPulse(point, new Color(.72f,.30f,.08f), 1.35f, .24f);
+    }
+
+    public static void EnemyBreach(Vector3 point, EnemyArchetype archetype)
+    {
+        bool heavy = archetype == EnemyArchetype.HeavyHoplite ||
+                     archetype == EnemyArchetype.ShieldBearer ||
+                     archetype == EnemyArchetype.BatteringRam;
+        Burst(
+            point + Vector3.up * .12f,
+            heavy ? new Color(.54f,.40f,.27f) : new Color(.74f,.56f,.32f),
+            heavy ? 3 : 1,
+            heavy ? .14f : .08f,
+            heavy ? .42f : .20f);
+    }
+
     public static void BurnStatus(Vector3 point)
     {
         for (int i = 0; i < 2; i++)

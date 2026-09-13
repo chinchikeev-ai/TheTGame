@@ -19,9 +19,8 @@ public class Enemy : MonoBehaviour
         get
         {
             if (waypoints == null || waypoints.Length == 0) return 0f;
-            float segment = Mathf.Clamp01((float)waypointIndex / waypoints.Length);
             if (waypointIndex >= waypoints.Length) return 1f;
-            return segment;
+            return Mathf.Clamp01((float)waypointIndex / waypoints.Length);
         }
     }
 
@@ -74,6 +73,7 @@ public class Enemy : MonoBehaviour
             attackRange = Mathf.Max(0f, data.attackRange);
             attackInterval = Mathf.Max(.25f, data.attackInterval);
         }
+
         baseSpeed = speed;
         Health = maxHealth;
         waypointIndex = 0;
@@ -123,14 +123,17 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         if (dying || GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
+
         TickStatuses();
         if (Health <= 0f) return;
+
         if (attackingGate)
         {
             presentation?.SetMoving(false);
             AttackGateOverTime();
             return;
         }
+
         if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length)
         {
             presentation?.SetMoving(false);
@@ -145,78 +148,92 @@ public class Enemy : MonoBehaviour
         }
         speed = baseSpeed * slowMultiplier * commanderSpeedMultiplier;
 
-        if (blockingGuard != null)
+        if (TryHandleGuardCombat()) return;
+        if (TryHandleHectorCombat()) return;
+        if (TryHandleRangedGateCombat()) return;
+
+        MoveAlongPath();
+    }
+
+    bool TryHandleGuardCombat()
+    {
+        if (blockingGuard == null) return false;
+
+        float releaseRadius = blockingGuard.blockRadius * 1.35f;
+        bool reservationValid = blockingGuard.IsAlive &&
+                                blockingGuard.OwnsReservation(this) &&
+                                (transform.position - blockingGuard.transform.position).sqrMagnitude <= releaseRadius * releaseRadius;
+        if (!reservationValid)
         {
-            bool reservationValid = blockingGuard.IsAlive && blockingGuard.OwnsReservation(this) &&
-                                    Vector3.Distance(transform.position, blockingGuard.transform.position) <= blockingGuard.blockRadius * 1.35f;
-            if (!reservationValid)
-            {
-                ReleaseGuardReservation();
-            }
-            else
-            {
-                presentation?.SetMoving(false);
-                if (Time.time >= nextAttack)
-                {
-                    nextAttack = Time.time + attackInterval;
-                    presentation?.PlayAttack();
-                    blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * commanderDamageMultiplier));
-                }
-                return;
-            }
+            ReleaseGuardReservation();
+            return false;
         }
 
-        HectorController hector = HectorController.Instance;
-        if (hector != null && !hector.IsDowned)
+        presentation?.SetMoving(false);
+        if (Time.time >= nextAttack)
         {
-            float distanceToHector = Vector3.Distance(transform.position, hector.transform.position);
-            float meleeRange = 1.35f + transform.localScale.x * .25f;
-            bool canAttackHector = distanceToHector <= meleeRange || (Archetype == EnemyArchetype.Archer && attackRange > 0f && distanceToHector <= attackRange);
-            if (canAttackHector)
-            {
-                presentation?.SetMoving(false);
-                if (Time.time >= nextAttack)
-                {
-                    nextAttack = Time.time + attackInterval;
-                    presentation?.PlayAttack();
-                    hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * commanderDamageMultiplier));
-                }
-                return;
-            }
+            nextAttack = Time.time + attackInterval;
+            presentation?.PlayAttack();
+            blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * commanderDamageMultiplier));
         }
+        return true;
+    }
+
+    bool TryHandleHectorCombat()
+    {
+        HectorController hector = HectorController.Instance;
+        if (hector == null || hector.IsDowned) return false;
+
+        float meleeRange = 1.35f + transform.localScale.x * .25f;
+        float rangedRange = Archetype == EnemyArchetype.Archer && attackRange > 0f ? attackRange : 0f;
+        float allowedRange = Mathf.Max(meleeRange, rangedRange);
+        if ((transform.position - hector.transform.position).sqrMagnitude > allowedRange * allowedRange) return false;
+
+        presentation?.SetMoving(false);
+        if (Time.time >= nextAttack)
+        {
+            nextAttack = Time.time + attackInterval;
+            presentation?.PlayAttack();
+            hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * commanderDamageMultiplier));
+        }
+        return true;
+    }
+
+    bool TryHandleRangedGateCombat()
+    {
+        if (Archetype != EnemyArchetype.Archer || attackRange <= 0f) return false;
 
         Transform finalTarget = waypoints[waypoints.Length - 1];
-        if (Archetype == EnemyArchetype.Archer && attackRange > 0f)
-        {
-            float gateDistance = Vector3.Distance(transform.position, finalTarget.position);
-            if (gateDistance <= attackRange)
-            {
-                presentation?.SetMoving(false);
-                if (Time.time >= nextAttack)
-                {
-                    nextAttack = Time.time + attackInterval;
-                    presentation?.PlayAttack();
-                    GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier)));
-                    if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(finalTarget.position, false);
-                }
-                return;
-            }
-        }
+        if ((transform.position - finalTarget.position).sqrMagnitude > attackRange * attackRange) return false;
 
+        presentation?.SetMoving(false);
+        if (Time.time >= nextAttack)
+        {
+            nextAttack = Time.time + attackInterval;
+            presentation?.PlayAttack();
+            GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier)));
+            RuntimeEffects.Instance?.PlayHitSound(false);
+            CombatImpactPresentation.GateHit(finalTarget.position, false);
+        }
+        return true;
+    }
+
+    void MoveAlongPath()
+    {
         Transform target = waypoints[waypointIndex];
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
         bool moving = direction.sqrMagnitude > .001f;
         presentation?.SetMoving(moving);
+
         if (moving)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 10f * Time.deltaTime);
-        transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, target.position) < .15f)
-        {
-            waypointIndex++;
-            if (waypointIndex >= waypoints.Length) ReachBase();
-        }
+        transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
+        if ((transform.position - target.position).sqrMagnitude > .0225f) return;
+
+        waypointIndex++;
+        if (waypointIndex >= waypoints.Length) ReachBase();
     }
 
     void TickStatuses()
@@ -247,31 +264,14 @@ public class Enemy : MonoBehaviour
     public void ReceiveDamage(DamagePacket packet)
     {
         if (!IsAlive) return;
+
         float currentArmor = armor;
-        if (Time.time < armorBreakUntil) currentArmor = Mathf.Max(0f, currentArmor - armorBreakAmount);
+        if (Time.time < armorBreakUntil)
+            currentArmor = Mathf.Max(0f, currentArmor - armorBreakAmount);
 
-        float armorFactor;
-        switch (packet.type)
-        {
-            case DamageType.Piercing: armorFactor = currentArmor * .45f; break;
-            case DamageType.Fire: armorFactor = currentArmor * .20f; break;
-            case DamageType.Hero: armorFactor = currentArmor * .15f; break;
-            default: armorFactor = currentArmor; break;
-        }
-
-        float bonus = 1f;
-        if (packet.towerSource.HasValue && packet.towerSource.Value == TowerType.SpearThrower &&
-            (Archetype == EnemyArchetype.HeavyHoplite || Archetype == EnemyArchetype.ShieldBearer || Archetype == EnemyArchetype.BatteringRam)) bonus = 1.5f;
-        if (packet.towerSource.HasValue && packet.towerSource.Value == TowerType.TrojanGuard &&
-            (Archetype == EnemyArchetype.Infantry || Archetype == EnemyArchetype.Runner)) bonus = 1.25f;
-
-        float finalDamage = packet.amount * bonus * (1f - Mathf.Clamp01(armorFactor));
-        if (packet.towerSource.HasValue && packet.towerSource.Value == TowerType.MachineGun)
-            finalDamage *= 1f - arrowResistance;
-
-        Health -= Mathf.Max(1f, finalDamage);
+        Health -= EnemyDamageResolver.Resolve(packet, Archetype, currentArmor, arrowResistance);
         presentation?.PlayHit();
-        if (healthBar != null) healthBar.Refresh();
+        healthBar?.Refresh();
         if (Health <= 0f) Die();
     }
 
@@ -330,6 +330,7 @@ public class Enemy : MonoBehaviour
     {
         ReleaseGuardReservation();
         presentation?.SetMoving(false);
+
         if (GameManager.Instance != null)
         {
             int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
@@ -338,27 +339,29 @@ public class Enemy : MonoBehaviour
                 attackingGate = true;
                 waypointIndex = waypoints != null ? waypoints.Length : waypointIndex;
                 GameManager.Instance.BossReachedGate(damage);
-                RuntimeEffects.Instance?.PlayHit(transform.position, true);
+                RuntimeEffects.Instance?.PlayHitSound(true);
+                CombatImpactPresentation.GateHit(transform.position, true);
                 return;
             }
-            else
-            {
-                GameManager.Instance.RecordLeak();
-                GameManager.Instance.DamageBase(damage);
-            }
+
+            GameManager.Instance.RecordLeak();
+            GameManager.Instance.DamageBase(damage);
         }
-        if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss || Archetype == EnemyArchetype.BatteringRam);
+
+        RuntimeEffects.Instance?.PlayDeathSound(Archetype == EnemyArchetype.BatteringRam);
+        CombatImpactPresentation.EnemyBreach(transform.position, Archetype);
         Destroy(gameObject);
     }
 
     void AttackGateOverTime()
     {
-        if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
-        if (Time.time < nextAttack) return;
+        if (GameManager.Instance == null || GameManager.Instance.GameEnded || Time.time < nextAttack) return;
+
         nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
         presentation?.PlayAttack();
         int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
         GameManager.Instance.BossReachedGate(damage);
-        RuntimeEffects.Instance?.PlayHit(transform.position, true);
+        RuntimeEffects.Instance?.PlayHitSound(true);
+        CombatImpactPresentation.GateHit(transform.position, true);
     }
 }
