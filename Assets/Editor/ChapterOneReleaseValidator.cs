@@ -20,6 +20,7 @@ public static class ChapterOneReleaseValidator
         "Assets/Game/Characters/CharacterPresentationState.cs",
         "Assets/Game/Heroes/Hector/HectorPresentationBridge.cs",
         "Assets/Game/Towers/TowerCrewAnimationBridge.cs",
+        "Assets/Game/Towers/TowerSupportMechanismPresentation.cs",
         "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs"
     };
 
@@ -164,26 +165,18 @@ public static class ChapterOneReleaseValidator
             "Chapter I animation builder must own the shared candidate controller path.",
             ref errors, log);
 
-        CheckSourceContains(
-            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
-            "\"Block\"",
-            "Spear animation profile must retain the Guard Block hook.",
-            ref errors, log);
-        CheckSourceContains(
-            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
-            "\"Poke\"",
-            "Spear animation profile must retain the Spear Wall/Guard Poke hook.",
-            ref errors, log);
-        CheckSourceContains(
-            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
-            "\"Draw\"",
-            "Archer animation profile must retain the Draw hook.",
-            ref errors, log);
-        CheckSourceContains(
-            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
-            "\"Release\"",
-            "Archer animation profile must retain the Release hook.",
-            ref errors, log);
+        string animationBuilder = "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs";
+        CheckSourceContains(animationBuilder, "\"Block\"", "Spear animation profile must retain the Guard Block hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Poke\"", "Spear animation profile must retain the Spear Wall/Guard Poke hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Draw\"", "Archer animation profile must retain the Draw hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Release\"", "Archer animation profile must retain the Release hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Reload\"", "Ballista animation profile must retain the Reload hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Tension\"", "Ballista animation profile must retain the Tension hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Fire\"", "Ballista animation profile must retain the Fire hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Cast\"", "Apollo Priest animation profile must retain the Cast hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Channel\"", "Apollo Priest animation profile must retain the Channel hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Stoke\"", "Fire Keeper animation profile must retain the Stoke hook.", ref errors, log);
+        CheckSourceContains(animationBuilder, "\"Throw\"", "Fire Keeper animation profile must retain the Throw hook.", ref errors, log);
 
         CheckSourceContains(
             "Assets/Game/Towers/Tower.cs",
@@ -199,6 +192,21 @@ public static class ChapterOneReleaseValidator
             "Assets/Game/Towers/TrojanGuardSquad.cs",
             "PlayGuardPoke()",
             "Trojan Guard attacks must drive the Poke presentation hook.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Game/Towers/TowerFactory.cs",
+            "TowerSupportMechanismPresentation",
+            "Tower factory must wire support-tower mechanism presentation.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Game/Towers/TowerProductionArtBinder.cs",
+            "RefreshCrew()",
+            "Production crew replacement must refresh tower animation bindings.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Editor/MythicAndSupportArtCandidateBuilder.cs",
+            "ChapterOneCharacterAnimationBuilder.BuildAll()",
+            "Support candidate build must refresh role-specific Chapter I animation profiles.",
             ref errors, log);
     }
 
