@@ -12,6 +12,7 @@ public static class HectorShieldWallFactory
         for (int i = -1; i <= 1; i++)
             CreateShield(root.transform, i * 1.05f);
 
+        Object.Destroy(root, zone.duration + .1f);
         return zone;
     }
 
