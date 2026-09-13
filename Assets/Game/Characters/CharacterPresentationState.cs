@@ -23,12 +23,12 @@ public class CharacterPresentationState : MonoBehaviour
             animator.SetBool("Moving", moving);
     }
 
-    public void PlayAttack()
-    {
-        if (dead) return;
-        if (animator != null && HasParameter("Attack", AnimatorControllerParameterType.Trigger))
-            animator.SetTrigger("Attack");
-    }
+    public void PlayAttack() => Trigger("Attack");
+    public void PlayCommand() => Trigger("Command", "Attack");
+    public void PlayAbilityQ() => Trigger("AbilityQ", "Attack");
+    public void PlayAbilityE() => Trigger("AbilityE", "Attack");
+    public void PlayAbilityR() => Trigger("AbilityR", "Attack");
+    public void PlayAbilityF() => Trigger("AbilityF", "Attack");
 
     public void PlayHit()
     {
@@ -73,6 +73,23 @@ public class CharacterPresentationState : MonoBehaviour
         if (fallbackRoutine != null) StopCoroutine(fallbackRoutine);
         fallbackRoutine = StartCoroutine(FallbackDeath(duration));
         return duration;
+    }
+
+    void Trigger(string parameter, string fallback = null)
+    {
+        if (dead || animator == null) return;
+        if (HasParameter(parameter, AnimatorControllerParameterType.Trigger))
+        {
+            animator.ResetTrigger(parameter);
+            animator.SetTrigger(parameter);
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(fallback) && HasParameter(fallback, AnimatorControllerParameterType.Trigger))
+        {
+            animator.ResetTrigger(fallback);
+            animator.SetTrigger(fallback);
+        }
     }
 
     IEnumerator HitPulse()
