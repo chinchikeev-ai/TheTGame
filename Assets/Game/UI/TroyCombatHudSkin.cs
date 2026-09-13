@@ -47,9 +47,9 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         Transform top = hud.Find("TopResources");
         if (top != null)
         {
-            EnsureIcon(top,"ArtGold",new Vector2(36,0),38,TroyHudArt.Icon("gold"));
-            EnsureIcon(top,"ArtGate",new Vector2(178,0),38,TroyHudArt.Icon("gate"));
-            EnsureIcon(top,"ArtEnemy",new Vector2(340,0),38,TroyHudArt.Icon("enemy"));
+            EnsureIcon(top,"ArtGold",new Vector2(36,0),42,TroyHudArt.Icon("gold"));
+            EnsureIcon(top,"ArtGate",new Vector2(178,0),42,TroyHudArt.Icon("gate"));
+            EnsureIcon(top,"ArtEnemy",new Vector2(340,0),42,TroyHudArt.Icon("enemy"));
             Text[] texts = top.GetComponentsInChildren<Text>(true);
             for (int i=0;i<texts.Length;i++)
             {
@@ -62,13 +62,13 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         }
 
         Transform wave = hud.Find("WaveStatus");
-        if (wave != null) EnsureIcon(wave,"WaveCrest",new Vector2(-334,0),52,TroyHudArt.Icon("sword"));
+        if (wave != null) EnsureIcon(wave,"WaveCrest",new Vector2(-334,0),56,TroyHudArt.Icon("sword"));
 
         Transform actions = hud.Find("CombatActions");
         if (actions != null)
         {
-            EnsureIcon(actions,"MagicIcon",new Vector2(54,28),34,TroyHudArt.Icon("magic"));
-            EnsureIcon(actions,"GiftIcon",new Vector2(54,-42),32,TroyHudArt.Icon("gift"));
+            EnsureIcon(actions,"MagicIcon",new Vector2(54,28),42,TroyHudArt.Ability("magic"));
+            EnsureIcon(actions,"GiftIcon",new Vector2(54,-42),40,TroyHudArt.Ability("gift"));
         }
 
         Transform dock = hud.Find("BuildDock");
@@ -82,9 +82,9 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
                 if (buttons[i].transform.parent != dock) continue;
                 Image img = buttons[i].GetComponent<Image>();
                 if(img!=null){img.sprite=TroyHudArt.Panel();img.type=Image.Type.Sliced;}
-                EnsureIcon(buttons[i].transform,"TowerPortrait",new Vector2(0,16),34,TroyHudArt.Tower(types[towerIndex]));
+                EnsureIcon(buttons[i].transform,"TowerPortrait",new Vector2(0,15),42,TroyHudArt.Tower(types[towerIndex]));
                 Text txt = buttons[i].GetComponentInChildren<Text>();
-                if(txt!=null){txt.rectTransform.anchoredPosition=new Vector2(0,-20);txt.fontSize=12;}
+                if(txt!=null){txt.rectTransform.anchoredPosition=new Vector2(0,-22);txt.fontSize=11;}
                 towerIndex++;
             }
         }
@@ -92,7 +92,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         Transform selected = hud.Find("SelectedTowerCard");
         if(selected!=null)
         {
-            selectedTowerIcon = EnsureIcon(selected,"SelectedTowerCrest",new Vector2(-178,166),48,TroyHudArt.Icon("shield"));
+            selectedTowerIcon = EnsureIcon(selected,"SelectedTowerCrest",new Vector2(-178,166),60,TroyHudArt.Tower(TowerType.TrojanGuard));
             Text[] texts=selected.GetComponentsInChildren<Text>(true);
             for(int i=0;i<texts.Length;i++) if(texts[i].fontSize>20) texts[i].fontSize=20;
         }
@@ -130,7 +130,12 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
     Image EnsureIcon(Transform parent,string name,Vector2 pos,float size,Sprite sprite)
     {
         Transform existing = parent.Find(name);
-        if(existing != null) return existing.GetComponent<Image>();
+        if(existing != null)
+        {
+            Image existingImage = existing.GetComponent<Image>();
+            if (existingImage != null) existingImage.sprite = sprite;
+            return existingImage;
+        }
         GameObject go=new GameObject(name);
         go.transform.SetParent(parent,false);
         Image image=go.AddComponent<Image>();
