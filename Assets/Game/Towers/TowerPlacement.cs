@@ -10,12 +10,17 @@ public class TowerPlacement : MonoBehaviour
 
     BuildPoint hoveredPoint;
     TowerRangeIndicator rangeIndicator;
+    TowerPlacementPreview placementPreview;
 
     void Start()
     {
         rangeIndicator = FindFirstObjectByType<TowerRangeIndicator>();
         if (rangeIndicator == null)
             rangeIndicator = new GameObject("TowerRangeIndicatorController").AddComponent<TowerRangeIndicator>();
+
+        placementPreview = FindFirstObjectByType<TowerPlacementPreview>();
+        if (placementPreview == null)
+            placementPreview = new GameObject("TowerPlacementPreview").AddComponent<TowerPlacementPreview>();
     }
 
     public void SelectBuildType(TowerType type)
@@ -26,7 +31,10 @@ public class TowerPlacement : MonoBehaviour
 
     public void UpgradeSelected()
     {
-        if (SelectedTower != null) SelectedTower.Upgrade();
+        if (SelectedTower == null) return;
+        Vector3 position = SelectedTower.transform.position;
+        if (SelectedTower.Upgrade())
+            RuntimeEffects.Instance?.PlayBuildSuccess(position, true);
     }
 
     public void SellSelected()
@@ -54,7 +62,8 @@ public class TowerPlacement : MonoBehaviour
         bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         if (overUI)
         {
-            if (hoveredPoint != null) { hoveredPoint.SetHovered(false); hoveredPoint = null; }
+            ClearHoveredPoint();
+            placementPreview?.Hide();
             if (SelectedTower != null) rangeIndicator.Show(SelectedTower); else rangeIndicator.Hide();
             return;
         }
@@ -75,12 +84,28 @@ public class TowerPlacement : MonoBehaviour
         {
             if (hoveredPoint != null) hoveredPoint.SetHovered(false);
             hoveredPoint = newPoint;
-            if (hoveredPoint != null) hoveredPoint.SetHovered(true);
         }
 
-        if (hoveredTower != null) rangeIndicator.Show(hoveredTower);
-        else if (SelectedTower != null) rangeIndicator.Show(SelectedTower);
-        else rangeIndicator.Hide();
+        bool validPlacement = hoveredPoint != null && !hoveredPoint.Occupied && CanAffordSelected();
+        if (hoveredPoint != null)
+            hoveredPoint.SetPlacementState(true, validPlacement);
+
+        if (hoveredTower != null)
+        {
+            placementPreview?.Hide();
+            rangeIndicator.Show(hoveredTower);
+        }
+        else if (hoveredPoint != null && !hoveredPoint.Occupied)
+        {
+            placementPreview?.Show(hoveredPoint, SelectedBuildType, validPlacement);
+            float previewRange = BalanceCatalog.GetTower(SelectedBuildType).range;
+            rangeIndicator.ShowPreview(hoveredPoint.transform.position, previewRange, validPlacement);
+        }
+        else
+        {
+            placementPreview?.Hide();
+            if (SelectedTower != null) rangeIndicator.Show(SelectedTower); else rangeIndicator.Hide();
+        }
 
         if (!GameInput.PrimaryPressed()) return;
 
@@ -94,7 +119,16 @@ public class TowerPlacement : MonoBehaviour
         if (hoveredPoint != null && !hoveredPoint.Occupied)
         {
             if (hoveredPoint.TryBuild(SelectedBuildType))
+            {
                 SelectedTower = hoveredPoint.Tower;
+                placementPreview?.Hide();
+                RuntimeEffects.Instance?.PlayBuildSuccess(hoveredPoint.transform.position + Vector3.up * .5f, false);
+                rangeIndicator.Show(SelectedTower);
+            }
+            else
+            {
+                RuntimeEffects.Instance?.PlayBuildDenied(hoveredPoint.transform.position + Vector3.up * .2f);
+            }
         }
         else
         {
@@ -102,9 +136,22 @@ public class TowerPlacement : MonoBehaviour
         }
     }
 
+    bool CanAffordSelected()
+    {
+        return GameManager.Instance != null && GameManager.Instance.Money >= TowerFactory.GetCost(SelectedBuildType);
+    }
+
+    void ClearHoveredPoint()
+    {
+        if (hoveredPoint == null) return;
+        hoveredPoint.SetHovered(false);
+        hoveredPoint = null;
+    }
+
     void OnDisable()
     {
-        if (hoveredPoint != null) hoveredPoint.SetHovered(false);
+        ClearHoveredPoint();
+        placementPreview?.Hide();
         if (rangeIndicator != null) rangeIndicator.Hide();
     }
 }
