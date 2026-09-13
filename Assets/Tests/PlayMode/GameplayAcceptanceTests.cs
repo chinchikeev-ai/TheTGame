@@ -179,6 +179,93 @@ public class GameplayAcceptanceTests
     }
 
     [UnityTest]
+    public IEnumerator Hector_RemainsInsidePlayableBounds()
+    {
+        HectorController hector = Object.FindFirstObjectByType<HectorController>();
+        Assert.NotNull(hector);
+
+        hector.transform.position = new Vector3(999f, hector.transform.position.y, -999f);
+        yield return null;
+
+        Vector3 min = MapBuilder.CellToWorld(new Vector2Int(0, 0));
+        Vector3 max = MapBuilder.CellToWorld(new Vector2Int(MapBuilder.GridWidth - 1, MapBuilder.GridHeight - 1));
+        Assert.GreaterOrEqual(hector.transform.position.x, min.x + hector.battlefieldMargin - .01f);
+        Assert.LessOrEqual(hector.transform.position.x, max.x - hector.battlefieldMargin + .01f);
+        Assert.GreaterOrEqual(hector.transform.position.z, min.z + hector.battlefieldMargin - .01f);
+        Assert.LessOrEqual(hector.transform.position.z, max.z - hector.battlefieldMargin + .01f);
+    }
+
+    [UnityTest]
+    public IEnumerator TrojanGuard_BlockCapacityNeverExceedsThree_AndRefills()
+    {
+        Assert.NotNull(GameManager.Instance);
+        GameManager.Instance.BeginRun();
+
+        GameObject guardObject = new GameObject("Acceptance Trojan Guard");
+        TrojanGuardSquad guard = guardObject.AddComponent<TrojanGuardSquad>();
+        guard.transform.position = Vector3.zero;
+        guard.blockCapacity = 3;
+        guard.blockRadius = 2f;
+        guard.Initialize(null);
+
+        List<Enemy> enemies = new List<Enemy>();
+        for (int i = 0; i < 7; i++)
+        {
+            GameObject enemyObject = new GameObject($"Acceptance Enemy {i}");
+            enemyObject.transform.position = new Vector3((i - 3) * .18f, 0f, .35f);
+            Enemy enemy = enemyObject.AddComponent<Enemy>();
+            enemy.InitFromData(new Transform[0], null, 1f, 1f);
+            enemies.Add(enemy);
+        }
+
+        yield return null;
+        yield return null;
+
+        int blocked = 0;
+        Enemy firstBlocked = null;
+        foreach (Enemy enemy in enemies)
+        {
+            if (enemy == null || !enemy.IsBlockedByGuard) continue;
+            blocked++;
+            if (firstBlocked == null) firstBlocked = enemy;
+        }
+        Assert.AreEqual(3, guard.BlockedCount);
+        Assert.AreEqual(3, blocked);
+
+        Assert.NotNull(firstBlocked);
+        Object.Destroy(firstBlocked.gameObject);
+        yield return null;
+        yield return null;
+
+        Assert.LessOrEqual(guard.BlockedCount, guard.blockCapacity);
+        Assert.AreEqual(3, guard.BlockedCount, "Guard should refill a released block slot from nearby enemies.");
+
+        foreach (Enemy enemy in enemies)
+            if (enemy != null) Object.Destroy(enemy.gameObject);
+        Object.Destroy(guardObject);
+    }
+
+    [UnityTest]
+    public IEnumerator EnemyDeath_UnregistersImmediately_ButKeepsBriefPresentation()
+    {
+        Assert.NotNull(GameManager.Instance);
+        GameManager.Instance.BeginRun();
+
+        GameObject enemyObject = new GameObject("Acceptance Death Enemy");
+        Enemy enemy = enemyObject.AddComponent<Enemy>();
+        enemy.InitFromData(new Transform[0], null, 1f, 1f);
+        int aliveBefore = EnemyRegistry.AliveCount;
+
+        enemy.TakeDamage(100000f);
+
+        Assert.AreEqual(aliveBefore - 1, EnemyRegistry.AliveCount, "Dying enemies must stop counting toward wave completion immediately.");
+        Assert.IsTrue(enemy != null, "Enemy should remain briefly for its death presentation.");
+
+        yield return new WaitForSeconds(.85f);
+        Assert.IsTrue(enemy == null, "Enemy should be destroyed after its short death presentation.");
+    }
+
+    [UnityTest]
     public IEnumerator FinalWaveData_ContainsMenelausBoss()
     {
         WaveData finalWave = BalanceCatalog.GetWave(5, 5);
