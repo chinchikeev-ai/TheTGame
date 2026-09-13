@@ -74,6 +74,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
     int maxAlive;
     int frameCount;
     float observedSeconds;
+    float nextCheckpointAt = 30f;
     bool reportWritten;
 
     void Start()
@@ -98,6 +99,12 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
         {
             frameCount++;
             observedSeconds += Time.unscaledDeltaTime;
+
+            if (game.RunTime >= nextCheckpointAt)
+            {
+                WriteCheckpoint();
+                nextCheckpointAt += 30f;
+            }
         }
 
         if (spawner.WaveActive)
@@ -119,6 +126,13 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
             if (activeWave > 0) FinishWave(false);
             WriteReport();
         }
+    }
+
+    void WriteCheckpoint()
+    {
+        RuntimeFileLogger.Event(
+            "RC_CHECKPOINT",
+            $"t={game.RunTime:0.0}s, wave={game.CurrentWave}/{game.MaxWaves}, waveActive={spawner.WaveActive}, alive={EnemyRegistry.AliveCount}, gold={game.Money}, earned={game.GoldEarned}, spent={game.GoldSpent}, gateHP={game.BaseHealth}/{game.MaxBaseHealth}, kills={game.Kills}, leaks={game.Leaks}, built={game.TowersBuilt}, sold={game.TowersSold}, bossDefeated={game.BossDefeated}, bossBreached={game.BossBreached}, pacing={game.PacingVerdict()}");
     }
 
     void BeginWave(int wave)
