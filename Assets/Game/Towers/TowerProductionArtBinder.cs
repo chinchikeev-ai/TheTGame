@@ -26,19 +26,22 @@ public sealed class TowerProductionArtBinder : MonoBehaviour
         if (tower.Type == TowerType.Cannon && Has("Trojan_BallistaCrew"))
         {
             HideNamed(art,"TowerCrew_Trojan_Infantry");
-            AddCrew(art,"Trojan_BallistaCrew",new Vector3(-.58f,.35f,-.40f),.58f,18f);
+            AddCrew(art,"Trojan_BallistaCrew","A",new Vector3(-.58f,.35f,-.40f),.58f,18f);
+            AddCrew(art,"Trojan_BallistaCrew","B",new Vector3(.58f,.35f,-.34f),.58f,-16f);
         }
         if (tower.Type == TowerType.Slow && Has("Trojan_PriestApollo"))
         {
             HideNamed(art,"PriestOfApollo");
-            AddCrew(art,"Trojan_PriestApollo",new Vector3(-.22f,.35f,.08f),.56f,-8f);
-            AddCrew(art,"Trojan_PriestApollo",new Vector3(.22f,.35f,-.02f),.56f,8f);
+            AddCrew(art,"Trojan_PriestApollo","Left",new Vector3(-.24f,.35f,.08f),.56f,-10f);
+            AddCrew(art,"Trojan_PriestApollo","Right",new Vector3(.24f,.35f,-.02f),.56f,10f);
         }
         if (tower.Type == TowerType.FireTower && Has("Trojan_FireKeeper"))
         {
             HideNamed(art,"FireKeeper");
-            AddCrew(art,"Trojan_FireKeeper",new Vector3(.52f,.26f,-.20f),.58f,0f);
+            AddCrew(art,"Trojan_FireKeeper","A",new Vector3(.52f,.26f,-.20f),.58f,0f);
         }
+
+        GetComponent<TowerCrewAnimationBridge>()?.RefreshCrew();
     }
 
     void ApplyLevel()
@@ -73,12 +76,13 @@ public sealed class TowerProductionArtBinder : MonoBehaviour
             if (child != root && child.name == objectName) child.gameObject.SetActive(false);
     }
 
-    static void AddCrew(Transform parent,string prefabName,Vector3 p,float scale,float yaw)
+    static void AddCrew(Transform parent,string prefabName,string slot,Vector3 p,float scale,float yaw)
     {
         GameObject prefab = Resources.Load<GameObject>(Root + prefabName);
-        if (prefab == null || parent.Find("TowerCrew_" + prefabName) != null) return;
+        string instanceName = "TowerCrew_" + prefabName + "_" + slot;
+        if (prefab == null || parent.Find(instanceName) != null) return;
         GameObject crew = Instantiate(prefab,parent);
-        crew.name = "TowerCrew_" + prefabName;
+        crew.name = instanceName;
         crew.transform.localPosition = p;
         crew.transform.localRotation = Quaternion.Euler(0f,yaw,0f);
         crew.transform.localScale = Vector3.one * scale;
