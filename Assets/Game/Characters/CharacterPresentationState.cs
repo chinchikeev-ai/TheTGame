@@ -33,6 +33,13 @@ public class CharacterPresentationState : MonoBehaviour
     public void PlayPoke() => Trigger("Poke", "Attack");
     public void PlayDraw() => Trigger("Draw", "Attack");
     public void PlayRelease() => Trigger("Release", "Attack");
+    public void PlayReload() => Trigger("Reload", "Attack");
+    public void PlayTension() => Trigger("Tension", "Attack");
+    public void PlayFire() => Trigger("Fire", "Attack");
+    public void PlayCast() => Trigger("Cast", "Attack");
+    public void PlayChannel() => Trigger("Channel", "Cast");
+    public void PlayStoke() => Trigger("Stoke", "Attack");
+    public void PlayThrow() => Trigger("Throw", "Attack");
 
     public void PlayHit()
     {
