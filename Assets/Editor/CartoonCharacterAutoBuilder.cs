@@ -6,7 +6,8 @@ public static class CartoonCharacterAutoBuilder
 {
     const string SourceRoot = "Assets/ThirdParty/KayKitAdventurers";
     const string ProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Greek/Enemy_Infantry.prefab";
-    const string AnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_Hector.controller";
+    const string SupportProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Trojan/Trojan_BallistaCrew.prefab";
+    const string AnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_BallistaCrew.controller";
     const string SessionKey = "TheTroyGame.CartoonCharacters.AutoBuildAttempted";
 
     static CartoonCharacterAutoBuilder()
@@ -29,6 +30,12 @@ public static class CartoonCharacterAutoBuilder
         {
             Debug.Log("Troy characters: KayKit source found, generating Chapter I production candidates automatically.");
             CartoonCharacterPrefabBuilder.BuildAll();
+        }
+
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(SupportProbePrefab) == null)
+        {
+            Debug.Log("Troy characters: generating Chapter I Trojan support candidates automatically.");
+            MythicAndSupportArtCandidateBuilder.BuildAll();
         }
 
         if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AnimationProfileProbe) == null)
