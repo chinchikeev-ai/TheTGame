@@ -67,7 +67,9 @@ public class GameBootstrap : MonoBehaviour
             collider.height = 1.8f;
             collider.radius = .35f;
         }
-        hector.AddComponent<HectorController>();
+        HectorController controller = hector.AddComponent<HectorController>();
+        HectorPresentationBridge presentation = hector.AddComponent<HectorPresentationBridge>();
+        presentation.Initialize(controller);
     }
 
     Camera SetupLightingAndCamera()

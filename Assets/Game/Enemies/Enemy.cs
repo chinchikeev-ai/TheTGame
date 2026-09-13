@@ -12,6 +12,8 @@ public class Enemy : MonoBehaviour
     public float Health01 => maxHealth <= 0f ? 0f : Mathf.Clamp01(Health / maxHealth);
     public float Armor => armor;
     public float ArrowResistance => arrowResistance;
+    public bool IsAlive => Health > 0f && !dying;
+    public bool IsBlockedByGuard => blockingGuard != null;
     public float RouteProgress
     {
         get
@@ -26,6 +28,7 @@ public class Enemy : MonoBehaviour
     Transform[] waypoints;
     int waypointIndex;
     EnemyHealthBar healthBar;
+    CharacterPresentationState presentation;
     float baseSpeed;
     float slowMultiplier = 1f;
     float slowUntil;
@@ -43,10 +46,16 @@ public class Enemy : MonoBehaviour
     float commanderSpeedMultiplier = 1f;
     float commanderDamageMultiplier = 1f;
     bool attackingGate;
+    bool dying;
     TrojanGuardSquad blockingGuard;
 
     void OnEnable() => EnemyRegistry.Register(this);
-    void OnDisable() => EnemyRegistry.Unregister(this);
+
+    void OnDisable()
+    {
+        ReleaseGuardReservation();
+        EnemyRegistry.Unregister(this);
+    }
 
     public void InitFromData(Transform[] path, EnemyData data, float waveHpMultiplier, float waveSpeedMultiplier)
     {
@@ -67,25 +76,64 @@ public class Enemy : MonoBehaviour
         baseSpeed = speed;
         Health = maxHealth;
         waypointIndex = 0;
+        dying = false;
+        presentation = GetComponent<CharacterPresentationState>();
+        if (presentation == null) presentation = gameObject.AddComponent<CharacterPresentationState>();
         healthBar = gameObject.AddComponent<EnemyHealthBar>();
     }
 
-    public void SetBlockedByGuard(TrojanGuardSquad guard)
+    public bool TrySetBlockedByGuard(TrojanGuardSquad guard)
     {
-        if (guard != null && guard.IsAlive) blockingGuard = guard;
+        if (!IsAlive || guard == null || !guard.IsAlive) return false;
+        if (blockingGuard == guard) return guard.TryReserve(this);
+
+        if (blockingGuard != null)
+        {
+            if (blockingGuard.IsAlive && blockingGuard.OwnsReservation(this)) return false;
+            blockingGuard.Release(this);
+            blockingGuard = null;
+        }
+
+        if (!guard.TryReserve(this)) return false;
+        blockingGuard = guard;
+        presentation?.SetMoving(false);
+        return true;
+    }
+
+    public void SetBlockedByGuard(TrojanGuardSquad guard) => TrySetBlockedByGuard(guard);
+
+    public void ClearBlockedByGuard(TrojanGuardSquad guard)
+    {
+        if (blockingGuard != guard) return;
+        TrojanGuardSquad previous = blockingGuard;
+        blockingGuard = null;
+        previous?.Release(this);
+    }
+
+    void ReleaseGuardReservation()
+    {
+        if (blockingGuard == null) return;
+        TrojanGuardSquad previous = blockingGuard;
+        blockingGuard = null;
+        previous.Release(this);
     }
 
     void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
+        if (dying || GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
         TickStatuses();
         if (Health <= 0f) return;
         if (attackingGate)
         {
+            presentation?.SetMoving(false);
             AttackGateOverTime();
             return;
         }
-        if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length) return;
+        if (waypoints == null || waypoints.Length == 0 || waypointIndex >= waypoints.Length)
+        {
+            presentation?.SetMoving(false);
+            return;
+        }
 
         if (Time.time >= slowUntil) slowMultiplier = 1f;
         if (Time.time >= commanderUntil)
@@ -97,13 +145,19 @@ public class Enemy : MonoBehaviour
 
         if (blockingGuard != null)
         {
-            if (!blockingGuard.IsAlive || Vector3.Distance(transform.position, blockingGuard.transform.position) > blockingGuard.blockRadius * 1.35f)
-                blockingGuard = null;
+            bool reservationValid = blockingGuard.IsAlive && blockingGuard.OwnsReservation(this) &&
+                                    Vector3.Distance(transform.position, blockingGuard.transform.position) <= blockingGuard.blockRadius * 1.35f;
+            if (!reservationValid)
+            {
+                ReleaseGuardReservation();
+            }
             else
             {
+                presentation?.SetMoving(false);
                 if (Time.time >= nextAttack)
                 {
                     nextAttack = Time.time + attackInterval;
+                    presentation?.PlayAttack();
                     blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * commanderDamageMultiplier));
                 }
                 return;
@@ -118,9 +172,11 @@ public class Enemy : MonoBehaviour
             bool canAttackHector = distanceToHector <= meleeRange || (Archetype == EnemyArchetype.Archer && attackRange > 0f && distanceToHector <= attackRange);
             if (canAttackHector)
             {
+                presentation?.SetMoving(false);
                 if (Time.time >= nextAttack)
                 {
                     nextAttack = Time.time + attackInterval;
+                    presentation?.PlayAttack();
                     hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * commanderDamageMultiplier));
                 }
                 return;
@@ -133,9 +189,11 @@ public class Enemy : MonoBehaviour
             float gateDistance = Vector3.Distance(transform.position, finalTarget.position);
             if (gateDistance <= attackRange)
             {
+                presentation?.SetMoving(false);
                 if (Time.time >= nextAttack)
                 {
                     nextAttack = Time.time + attackInterval;
+                    presentation?.PlayAttack();
                     GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier)));
                     if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(finalTarget.position, false);
                 }
@@ -146,7 +204,9 @@ public class Enemy : MonoBehaviour
         Transform target = waypoints[waypointIndex];
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
-        if (direction.sqrMagnitude > .001f)
+        bool moving = direction.sqrMagnitude > .001f;
+        presentation?.SetMoving(moving);
+        if (moving)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 10f * Time.deltaTime);
         transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
@@ -172,7 +232,7 @@ public class Enemy : MonoBehaviour
 
     public void ReceiveDamage(DamagePacket packet)
     {
-        if (Health <= 0f) return;
+        if (!IsAlive) return;
         float currentArmor = armor;
         if (Time.time < armorBreakUntil) currentArmor = Mathf.Max(0f, currentArmor - armorBreakAmount);
 
@@ -196,6 +256,7 @@ public class Enemy : MonoBehaviour
             finalDamage *= 1f - arrowResistance;
 
         Health -= Mathf.Max(1f, finalDamage);
+        presentation?.PlayHit();
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayHit(transform.position, packet.type == DamageType.Fire || baseDamage > 1);
         if (healthBar != null) healthBar.Refresh();
         if (Health <= 0f) Die();
@@ -230,18 +291,30 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
+        if (dying) return;
+        dying = true;
+        Health = 0f;
+        ReleaseGuardReservation();
+        EnemyRegistry.Unregister(this);
+
         if (GameManager.Instance != null)
         {
             if (Archetype == EnemyArchetype.Boss) GameManager.Instance.RecordBossDefeated();
             GameManager.Instance.RecordKill();
             GameManager.Instance.AddMoney(GameManager.Instance.RewardFor(reward));
         }
+
+        if (healthBar != null) healthBar.enabled = false;
+        foreach (Collider collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
         if (RuntimeEffects.Instance != null) RuntimeEffects.Instance.PlayDeath(transform.position, Archetype == EnemyArchetype.Boss);
-        Destroy(gameObject);
+        float presentationDelay = presentation != null ? presentation.PlayDeath(Archetype == EnemyArchetype.Boss) : .1f;
+        Destroy(gameObject, Mathf.Max(.08f, presentationDelay));
     }
 
     void ReachBase()
     {
+        ReleaseGuardReservation();
+        presentation?.SetMoving(false);
         if (GameManager.Instance != null)
         {
             int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
@@ -268,6 +341,7 @@ public class Enemy : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
         if (Time.time < nextAttack) return;
         nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
+        presentation?.PlayAttack();
         int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * commanderDamageMultiplier));
         GameManager.Instance.BossReachedGate(damage);
         RuntimeEffects.Instance?.PlayHit(transform.position, true);
