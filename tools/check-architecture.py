@@ -24,11 +24,18 @@ REQUIRED = [
     "Assets/Editor/CampaignModelAuditCommand.cs",
     "Assets/Editor/CampaignModelAuditCommand.cs.meta",
     "Assets/Editor/ModelGapClosureBuilder.cs",
+    "Assets/Editor/ChapterOneArtFreezeValidator.cs",
+    "Assets/Editor/ChapterOneArtFreezeValidator.cs.meta",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json.meta",
+    "Assets/Game/Art/CHAPTER_I_FREEZE_ACCEPTANCE.json",
+    "Assets/Game/Art/CHAPTER_I_FREEZE_ACCEPTANCE.json.meta",
     "docs/CAMPAIGN_MODEL_AUDIT.md",
+    "docs/CHAPTER_I_ART_FREEZE.md",
     "tools/audit-models.sh",
     "tools/audit-models.ps1",
+    "tools/audit-chapter1-art.sh",
+    "tools/audit-chapter1-art.ps1",
     "Assets/Tests/EditMode/TheTroyGame.EditModeTests.asmdef",
     "Assets/Tests/PlayMode/TheTroyGame.PlayModeTests.asmdef",
 ]
@@ -53,6 +60,33 @@ if AUDIT.exists():
     ):
         if token not in audit_text:
             errors.append(f"campaign model audit contract missing token: {token}")
+
+FREEZE = ROOT / "Assets" / "Editor" / "ChapterOneArtFreezeValidator.cs"
+if FREEZE.exists():
+    freeze_text = FREEZE.read_text(encoding="utf-8")
+    for token in (
+        "Audit Chapter I Art Freeze",
+        "Build Chapter I Candidates + Audit Art Freeze",
+        "PRODUCTION_ACCEPTANCE.json",
+        "CHAPTER_I_FREEZE_ACCEPTANCE.json",
+        "ChapterOneReleaseValidator.Validate(false)",
+        "readyForFreeze = report.blocked == 0 && report.broken == 0",
+        "ChapterOneArtFreeze.json",
+        "ChapterOneArtFreeze.md",
+        "playModeVisualQa",
+        "englishFramingQa",
+        "russianFramingQa",
+        "towerUnitVisualQa",
+        "environmentVisualQa",
+        "animationVisualQa",
+        "AnimatorControllerParameterType.Trigger",
+        "UpgradeVisual_L2",
+        "UpgradeVisual_L3",
+        'Add(rows,"BLOCKED"',
+        'Add(rows,"BROKEN"',
+    ):
+        if token not in freeze_text:
+            errors.append(f"Chapter I art freeze contract missing token: {token}")
 
 if (ROOT / "Assets" / "Scripts").exists():
     errors.append("legacy Assets/Scripts must not exist")
