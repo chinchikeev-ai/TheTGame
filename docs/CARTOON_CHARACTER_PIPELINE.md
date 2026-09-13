@@ -14,17 +14,17 @@ Initialize it after cloning:
 git submodule update --init --recursive
 ```
 
-## Build prefabs
+## Build Chapter I production candidates
 
 Open Unity and run:
 
-`The Troy Game -> Characters -> Build Cartoon Enemy Prefabs`
+`The Troy Game -> Characters -> Build Chapter I Production Candidates`
 
-The editor tool scans the KayKit submodule for rigged/skinned character assets and creates runtime prefabs under:
+The editor tool scans the KayKit submodule for rigged/skinned character assets, applies faction tint/equipment plus a Late Bronze Age kitbash layer, and writes prefabs under:
 
-`Assets/Resources/TroyCharacters`
+`Assets/Game/Art/Characters/Resources/TroyProduction/Characters`
 
-Generated names:
+Generated Chapter I names include:
 
 - `Enemy_Infantry`
 - `Enemy_Runner`
@@ -32,13 +32,31 @@ Generated names:
 - `Enemy_ShieldBearer`
 - `Enemy_Archer`
 - `Enemy_Boss`
+- `Trojan_Infantry`
+- `Trojan_Guard`
+- `Trojan_Archer`
+- `Hero_Hector`
+- `Hero_Menelaus`
 
-`BatteringRam` deliberately keeps the existing fallback visual until a dedicated siege model is assigned.
+`Hero_Achilles` is also generated as a later-campaign candidate.
+
+`BatteringRam` remains intentionally excluded until a dedicated siege model is authored.
+
+## Visual corrections in the production candidate pass
+
+- Achaean and Trojan characters receive distinct bronze/cloth faction treatment.
+- Heavy infantry gets a heavier cuirass/helmet silhouette.
+- Archers use a bow silhouette instead of the previous generic crossbow presentation.
+- Hector and Menelaus receive commander/hero capes and stronger armor silhouettes.
+- Heavy Hoplite uses spear + heavy shield rather than a two-handed sword + shield combination.
+- Menelaus uses a one-handed command sword + royal shield.
 
 ## Runtime behavior
 
-`EnemyVisualFactory` loads a prefab by archetype from `Resources/TroyCharacters`. If no generated prefab exists, the game falls back to the previous capsule/cube primitive, so missing art cannot break gameplay.
+`EnemyVisualFactory` and `HeroVisualFactory` first load `TroyProduction/...` resources. If a production candidate is absent, they fall back to the older generated `TroyCharacters/...` path and then to runtime procedural visuals.
 
-## Next art pass
+This preserves gameplay while production art is replaced incrementally.
 
-The generated prefabs are placeholders for faction-specific production variants. The recommended next step is to duplicate them into Greek and Trojan variants, then add helmets, shields, spears, bows, faction colors, hero silhouettes, and retargeted locomotion/combat animations.
+## Status rule
+
+These generated prefabs remain `GENERATED PLACEHOLDER` in `MODEL_ART_INVENTORY.md` until final authored assets are committed, connected to final animation/materials, and pass visual QA. Merely living under `Assets/Game/Art` does not make them `DONE`.

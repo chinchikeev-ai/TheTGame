@@ -2,6 +2,7 @@ using UnityEngine;
 
 public static class EnemyVisualFactory
 {
+    const string ProductionRoot = "TroyProduction/Characters/Greek/";
     const string GreekResourceRoot = "TroyCharacters/Factions/Greek/";
     const string LegacyResourceRoot = "TroyCharacters/";
 
@@ -9,9 +10,9 @@ public static class EnemyVisualFactory
     {
         EnemyArchetype archetype = data != null ? data.archetype : EnemyArchetype.Infantry;
         string prefabName = GetPrefabName(archetype);
-        GameObject prefab = Resources.Load<GameObject>(GreekResourceRoot + prefabName);
-        if (prefab == null)
-            prefab = Resources.Load<GameObject>(LegacyResourceRoot + prefabName);
+        GameObject prefab = Resources.Load<GameObject>(ProductionRoot + prefabName);
+        if (prefab == null) prefab = Resources.Load<GameObject>(GreekResourceRoot + prefabName);
+        if (prefab == null) prefab = Resources.Load<GameObject>(LegacyResourceRoot + prefabName);
 
         GameObject instance;
         if (prefab != null)
