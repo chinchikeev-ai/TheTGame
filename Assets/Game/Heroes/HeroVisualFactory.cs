@@ -9,12 +9,15 @@ public enum TroyHeroId
 
 public static class HeroVisualFactory
 {
-    const string ResourceRoot = "TroyCharacters/Heroes/";
+    const string ProductionResourceRoot = "TroyProduction/Characters/Heroes/";
+    const string GeneratedResourceRoot = "TroyCharacters/Heroes/";
 
     public static GameObject Create(TroyHeroId heroId)
     {
         string prefabName = GetPrefabName(heroId);
-        GameObject prefab = Resources.Load<GameObject>(ResourceRoot + prefabName);
+        GameObject prefab = Resources.Load<GameObject>(ProductionResourceRoot + prefabName);
+        if (prefab == null)
+            prefab = Resources.Load<GameObject>(GeneratedResourceRoot + prefabName);
         if (prefab != null)
             return Object.Instantiate(prefab);
 
