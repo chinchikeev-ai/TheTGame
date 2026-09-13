@@ -19,6 +19,16 @@ REQUIRED = [
     "Assets/Game/UI/GameMenuController.cs",
     "Assets/Game/TheTroyGame.Runtime.asmdef",
     "Assets/Editor/TheTroyGame.Editor.asmdef",
+    "Assets/Editor/CampaignModelAuditValidator.cs",
+    "Assets/Editor/CampaignModelAuditValidator.cs.meta",
+    "Assets/Editor/CampaignModelAuditCommand.cs",
+    "Assets/Editor/CampaignModelAuditCommand.cs.meta",
+    "Assets/Editor/ModelGapClosureBuilder.cs",
+    "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json",
+    "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json.meta",
+    "docs/CAMPAIGN_MODEL_AUDIT.md",
+    "tools/audit-models.sh",
+    "tools/audit-models.ps1",
     "Assets/Tests/EditMode/TheTroyGame.EditModeTests.asmdef",
     "Assets/Tests/PlayMode/TheTroyGame.PlayModeTests.asmdef",
 ]
@@ -27,6 +37,22 @@ errors = []
 for rel in REQUIRED:
     if not (ROOT / rel).exists():
         errors.append(f"missing required path: {rel}")
+
+AUDIT = ROOT / "Assets" / "Editor" / "CampaignModelAuditValidator.cs"
+if AUDIT.exists():
+    audit_text = AUDIT.read_text(encoding="utf-8")
+    for token in (
+        "AuditStatus { Done, Candidate, Missing, Broken }",
+        "Build Candidates + Audit Campaign Models",
+        "BuildAndRunBatchmode",
+        "CampaignModelAudit.json",
+        "CampaignModelAudit.md",
+        "ModelGapClosureBuilder.BuildAll()",
+        "PRODUCTION_ACCEPTANCE.json",
+        "accepted.Contains(spec.path)",
+    ):
+        if token not in audit_text:
+            errors.append(f"campaign model audit contract missing token: {token}")
 
 if (ROOT / "Assets" / "Scripts").exists():
     errors.append("legacy Assets/Scripts must not exist")
