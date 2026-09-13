@@ -18,12 +18,14 @@ public static class HeroVisualFactory
         GameObject prefab = Resources.Load<GameObject>(ProductionResourceRoot + prefabName);
         if (prefab == null)
             prefab = Resources.Load<GameObject>(GeneratedResourceRoot + prefabName);
-        if (prefab != null)
-            return Object.Instantiate(prefab);
 
-        GameObject fallback = RuntimeWarriorVisualFactory.CreateHeroFallback(heroId);
-        fallback.name = prefabName;
-        return fallback;
+        GameObject result = prefab != null
+            ? Object.Instantiate(prefab)
+            : RuntimeWarriorVisualFactory.CreateHeroFallback(heroId);
+
+        result.name = prefabName;
+        HeroSignatureArt.Enhance(result, heroId);
+        return result;
     }
 
     public static string GetPrefabName(TroyHeroId heroId)
