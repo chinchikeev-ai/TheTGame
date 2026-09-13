@@ -45,7 +45,11 @@ public sealed class TroyGateDamagePresentation : MonoBehaviour
         {
             nextPulse = Time.unscaledTime + (stage >= 3 ? 1.6f : 2.8f);
             float gateX = MapBuilder.CellToWorld(new Vector2Int(17,6)).x;
-            RuntimeEffects.Instance?.PlayHeroPulse(new Vector3(gateX-.45f,.55f,Random.Range(-1.1f,1.1f)),new Color(1f,.26f,.04f),1.5f,.22f);
+            CombatImpactPresentation.Pulse(
+                new Vector3(gateX-.45f,.55f,Random.Range(-1.1f,1.1f)),
+                new Color(1f,.26f,.04f),
+                1.5f,
+                .22f);
         }
     }
 
@@ -53,7 +57,10 @@ public sealed class TroyGateDamagePresentation : MonoBehaviour
     {
         float gateX = MapBuilder.CellToWorld(new Vector2Int(17,6)).x;
         Vector3 p = new Vector3(gateX-.45f,.75f,Random.Range(-1.2f,1.2f));
-        RuntimeEffects.Instance?.PlayHeroPulse(p,new Color(.95f,.43f,.10f),1.8f,.24f);
+        bool heavy = damage >= 2;
+        RuntimeEffects.Instance?.PlayHitSound(heavy);
+        CombatImpactPresentation.GateHit(p, heavy);
+
         for(int i=0;i<4;i++)
         {
             GameObject chip = Primitive("Gate Impact Chip",PrimitiveType.Cube,p+new Vector3(Random.Range(-.18f,.18f),Random.Range(-.05f,.25f),Random.Range(-.18f,.18f)),new Vector3(.08f,.05f,.06f),new Color(.36f,.27f,.16f));
