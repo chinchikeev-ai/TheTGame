@@ -18,7 +18,8 @@ public static class ChapterOneReleaseValidator
         "Assets/Game/UI/BossHUD.cs",
         "Assets/Game/UI/ChapterFlowUI.cs",
         "Assets/Game/Characters/CharacterPresentationState.cs",
-        "Assets/Game/Heroes/Hector/HectorPresentationBridge.cs"
+        "Assets/Game/Heroes/Hector/HectorPresentationBridge.cs",
+        "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs"
     };
 
     static readonly string[] RequiredBootstrapTokens =
@@ -48,6 +49,7 @@ public static class ChapterOneReleaseValidator
         ValidateFinalWave(ref errors, log);
         ValidatePresentationFiles(ref errors, log);
         ValidateBootstrapWiring(ref errors, log);
+        ValidateProductionArtWiring(ref errors, log);
         ValidateLegacyPlaceholderFallbacks(ref errors, log);
         return errors;
     }
@@ -123,6 +125,45 @@ public static class ChapterOneReleaseValidator
             Check(source.Contains(token), $"Chapter I presentation is not wired in GameBootstrap: {token}", ref errors, log);
     }
 
+    static void ValidateProductionArtWiring(ref int errors, bool log)
+    {
+        CheckSourceContains(
+            "Assets/Game/Enemies/EnemyVisualFactory.cs",
+            "TroyProduction/Characters/Greek/",
+            "Enemy visuals must prefer the Chapter I production-character resource path.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Game/Heroes/HeroVisualFactory.cs",
+            "TroyProduction/Characters/Heroes/",
+            "Hero visuals must prefer the Chapter I production-character resource path.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Game/World/LandingPresentation.cs",
+            "ProductionGreekRoot",
+            "Landing presentation must use production-first Greek decorative characters.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Game/World/LandingPresentation.cs",
+            "collider.enabled = false",
+            "Decorative landing characters must explicitly disable gameplay colliders.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Editor/CartoonCharacterAutoBuilder.cs",
+            "ChapterOneCharacterAnimationBuilder.BuildAll()",
+            "Character auto-build must create/assign the Chapter I animation controller.",
+            ref errors, log);
+
+        CheckSourceContains(
+            "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs",
+            "ChapterOneCharacter.controller",
+            "Chapter I animation builder must own the shared candidate controller path.",
+            ref errors, log);
+    }
+
     static void ValidateLegacyPlaceholderFallbacks(ref int errors, bool log)
     {
         CheckSourceDoesNotContain(
@@ -142,6 +183,17 @@ public static class ChapterOneReleaseValidator
             "Landing Greek Silhouette",
             "Landing presentation must not restore capsule soldier silhouettes.",
             ref errors, log);
+    }
+
+    static void CheckSourceContains(string path, string token, string message, ref int errors, bool log)
+    {
+        if (!File.Exists(path))
+        {
+            Fail($"Required source missing: {path}", ref errors, log);
+            return;
+        }
+        string source = File.ReadAllText(path);
+        Check(source.Contains(token), message, ref errors, log);
     }
 
     static void CheckSourceDoesNotContain(string path, string token, string message, ref int errors, bool log)
