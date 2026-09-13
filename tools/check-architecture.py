@@ -26,12 +26,17 @@ REQUIRED = [
     "Assets/Editor/ModelGapClosureBuilder.cs",
     "Assets/Editor/ChapterOneArtFreezeValidator.cs",
     "Assets/Editor/ChapterOneArtFreezeValidator.cs.meta",
+    "Assets/Editor/ChapterOneWeaponSourceInstaller.cs",
+    "Assets/Editor/ChapterOneWeaponSourceInstaller.cs.meta",
+    "Assets/Editor/ChapterOneProductionEquipmentBuilder.cs",
+    "Assets/Editor/ChapterOneProductionEquipmentBuilder.cs.meta",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json",
     "Assets/Game/Art/PRODUCTION_ACCEPTANCE.json.meta",
     "Assets/Game/Art/CHAPTER_I_FREEZE_ACCEPTANCE.json",
     "Assets/Game/Art/CHAPTER_I_FREEZE_ACCEPTANCE.json.meta",
     "docs/CAMPAIGN_MODEL_AUDIT.md",
     "docs/CHAPTER_I_ART_FREEZE.md",
+    "docs/third_party/QUATERNIUS_MEDIEVAL_WEAPONS.md",
     "tools/audit-models.sh",
     "tools/audit-models.ps1",
     "tools/audit-chapter1-art.sh",
@@ -70,6 +75,7 @@ if FREEZE.exists():
         "PRODUCTION_ACCEPTANCE.json",
         "CHAPTER_I_FREEZE_ACCEPTANCE.json",
         "ChapterOneReleaseValidator.Validate(false)",
+        "ChapterOneProductionEquipmentBuilder.Build();",
         "readyForFreeze = report.blocked == 0 && report.broken == 0",
         "ChapterOneArtFreeze.json",
         "ChapterOneArtFreeze.md",
@@ -87,6 +93,37 @@ if FREEZE.exists():
     ):
         if token not in freeze_text:
             errors.append(f"Chapter I art freeze contract missing token: {token}")
+
+WEAPON_SOURCE = ROOT / "Assets" / "Editor" / "ChapterOneWeaponSourceInstaller.cs"
+if WEAPON_SOURCE.exists():
+    source_text = WEAPON_SOURCE.read_text(encoding="utf-8")
+    for token in (
+        "jameskane05/three-game/571253b6098f269956f0137125d0920cc9cda4da",
+        'ExpectedGitBlobSha = "a836e493f3dbebc75a619e5aa99118f34f700718"',
+        "ExpectedSize = 28540",
+        "Quaternius/MedievalWeapons/Bow.fbx",
+        "GitBlobSha(bytes)",
+    ):
+        if token not in source_text:
+            errors.append(f"Chapter I bow source contract missing token: {token}")
+
+EQUIPMENT = ROOT / "Assets" / "Editor" / "ChapterOneProductionEquipmentBuilder.cs"
+if EQUIPMENT.exists():
+    equipment_text = EQUIPMENT.read_text(encoding="utf-8")
+    for token in (
+        "ChapterOneWeaponSourceInstaller.Install();",
+        "ChapterOneWeaponSourceInstaller.LoadBow()",
+        "Enemy_Archer.prefab",
+        "Trojan_Archer.prefab",
+        "SourceBow_Quaternius_MedievalWeapons",
+        "RemoveProceduralBow",
+    ):
+        if token not in equipment_text:
+            errors.append(f"Chapter I production equipment contract missing token: {token}")
+
+MODEL_GAP = ROOT / "Assets" / "Editor" / "ModelGapClosureBuilder.cs"
+if MODEL_GAP.exists() and "ChapterOneProductionEquipmentBuilder.Build();" not in MODEL_GAP.read_text(encoding="utf-8"):
+    errors.append("full campaign model build must include the Chapter I production equipment source pass")
 
 if (ROOT / "Assets" / "Scripts").exists():
     errors.append("legacy Assets/Scripts must not exist")
