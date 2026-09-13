@@ -93,6 +93,7 @@ public static class ChapterOneArtFreezeValidator
     public static void BuildAndRunMenu()
     {
         CartoonCharacterPrefabBuilder.BuildAll();
+        ChapterOneProductionEquipmentBuilder.Build();
         MythicAndSupportArtCandidateBuilder.BuildAll();
         ChapterOneCharacterAnimationBuilder.BuildAll();
         Run(true);
