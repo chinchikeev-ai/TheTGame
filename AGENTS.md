@@ -6,12 +6,13 @@ This is the mandatory entrypoint for AI-assisted development.
 1. `AGENTS.md`
 2. `docs/AI_PIPELINE.md`
 3. `docs/PROJECT_STATUS.md`
-4. `docs/ARCHITECTURE.md`
-5. `docs/MODULE_MAP.md`
-6. `docs/DATA_CATALOG.md`
-7. `docs/RUNTIME_GRAPH.md`
-8. `docs/NAMESPACE_POLICY.md`
-9. relevant GDD/roadmap/chapter document
+4. `docs/MODEL_ART_INVENTORY.md`
+5. `docs/ARCHITECTURE.md`
+6. `docs/MODULE_MAP.md`
+7. `docs/DATA_CATALOG.md`
+8. `docs/RUNTIME_GRAPH.md`
+9. `docs/NAMESPACE_POLICY.md`
+10. relevant GDD/roadmap/chapter document
 
 For non-trivial work, use `docs/tasks/TASK_TEMPLATE.md`.
 
@@ -42,6 +43,20 @@ Authored ScriptableObject assets are the runtime source of truth.
 - Missing authored runtime data is a validation failure, never a silent fallback
 
 See `docs/DATA_CATALOG.md`.
+
+## Art/model source of truth
+`docs/MODEL_ART_INVENTORY.md` is authoritative for production-art completion status.
+
+Do not mark or describe a model as finished merely because:
+- KayKit or another source pack contains a usable base;
+- an editor tool can generate a prefab;
+- runtime fallback/procedural geometry renders a recognizable object;
+- the GDD or Art Bible specifies the target;
+- presentation code builds the silhouette from Unity primitives.
+
+Use the inventory statuses exactly: `DONE`, `GENERATED PLACEHOLDER`, `PROCEDURAL`, `MISSING`, `SOURCE ONLY`.
+
+A production model becomes `DONE` only after the final derivative is committed under `Assets/Game/Art/...`, runtime uses it instead of the fallback/procedural representation, and Play Mode visual QA has been performed. Update `docs/MODEL_ART_INVENTORY.md` in the same change that promotes an asset.
 
 ## Architecture rules
 - `GameBootstrap` composes runtime systems only
@@ -80,14 +95,15 @@ Keep runtime classes in the global namespace for now. Do not introduce `namespac
 
 ## Required change workflow
 1. Identify owner module/system using `docs/MODULE_MAP.md`.
-2. Read the relevant data contract and current status.
+2. Read the relevant data contract, current status, and model/art inventory when visual assets are involved.
 3. For non-trivial work define acceptance criteria from `docs/tasks/TASK_TEMPLATE.md`.
 4. Make the smallest coherent change.
 5. Preserve public APIs when practical.
 6. Update `docs/PROJECT_STATUS.md` for meaningful status changes.
-7. Add/update EditMode or PlayMode tests.
-8. Run `python tools/check-architecture.py`.
-9. When Unity is available, run full validation before claiming completion.
+7. Update `docs/MODEL_ART_INVENTORY.md` when asset status changes.
+8. Add/update EditMode or PlayMode tests.
+9. Run `python tools/check-architecture.py`.
+10. When Unity is available, run full validation before claiming completion.
 
 ## Full validation
 Windows: `./tools/validate-project.ps1`
