@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class LandingPresentation : MonoBehaviour
 {
+    const string ProductionGreekRoot = "TroyProduction/Characters/Greek/";
+    const string GeneratedGreekRoot = "TroyCharacters/Factions/Greek/";
+
     bool played;
 
     void Update()
@@ -45,6 +48,7 @@ public class LandingPresentation : MonoBehaviour
             yield return null;
         }
 
+        CreateLandingDebris(root.transform);
         RuntimeEffects.Instance?.PlayHeroPulse(new Vector3(-13.6f,.12f,0f), new Color(.72f,.55f,.28f), 6.5f, .55f);
         yield return StartCoroutine(DeployLandingParty(root.transform));
 
@@ -63,7 +67,7 @@ public class LandingPresentation : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             EnemyArchetype archetype = i % 6 == 0 ? EnemyArchetype.ShieldBearer : i % 4 == 0 ? EnemyArchetype.Archer : EnemyArchetype.Infantry;
-            GameObject soldier = RuntimeWarriorVisualFactory.CreateEnemyFallback(archetype, new Color(.42f,.52f,.68f));
+            GameObject soldier = CreateDecorativeGreek(archetype);
             soldier.name = "Landing Greek Warrior";
             soldier.transform.SetParent(parent);
             int lane = i % 4;
@@ -93,6 +97,52 @@ public class LandingPresentation : MonoBehaviour
             }
             yield return null;
         }
+    }
+
+    GameObject CreateDecorativeGreek(EnemyArchetype archetype)
+    {
+        string prefabName = EnemyVisualFactory.GetPrefabName(archetype);
+        GameObject prefab = Resources.Load<GameObject>(ProductionGreekRoot + prefabName);
+        if (prefab == null) prefab = Resources.Load<GameObject>(GeneratedGreekRoot + prefabName);
+
+        GameObject soldier = prefab != null
+            ? Instantiate(prefab)
+            : RuntimeWarriorVisualFactory.CreateEnemyFallback(archetype, new Color(.42f,.52f,.68f));
+
+        foreach (Collider collider in soldier.GetComponentsInChildren<Collider>(true))
+        {
+            collider.enabled = false;
+            Destroy(collider);
+        }
+
+        foreach (Rigidbody body in soldier.GetComponentsInChildren<Rigidbody>(true))
+        {
+            body.detectCollisions = false;
+            body.isKinematic = true;
+        }
+
+        return soldier;
+    }
+
+    void CreateLandingDebris(Transform parent)
+    {
+        Color wood = new Color(.30f,.17f,.075f);
+        Color bronze = new Color(.62f,.42f,.18f);
+        Color cloth = new Color(.30f,.39f,.55f);
+
+        for (int i = 0; i < 5; i++)
+        {
+            float z = -5.8f + i * 2.8f;
+            DecorPrimitive(parent,"Landing Crate",PrimitiveType.Cube,new Vector3(-12.45f,.18f,z),new Vector3(.40f,.36f,.46f),wood,Quaternion.Euler(0f,8f*i,0f));
+
+            GameObject shield = DecorPrimitive(parent,"Discarded Greek Shield",PrimitiveType.Cylinder,new Vector3(-11.95f,.16f,z+.48f),new Vector3(.24f,.045f,.24f),bronze,Quaternion.Euler(82f,0f,18f));
+            shield.transform.localRotation = Quaternion.Euler(82f,0f,18f+i*7f);
+
+            DecorPrimitive(parent,"Landing Oar",PrimitiveType.Cylinder,new Vector3(-12.10f,.12f,z-.55f),new Vector3(.025f,.72f,.025f),wood,Quaternion.Euler(82f,0f,28f));
+        }
+
+        DecorPrimitive(parent,"Greek Beach Standard",PrimitiveType.Cylinder,new Vector3(-11.35f,.72f,4.8f),new Vector3(.025f,.72f,.025f),wood);
+        DecorPrimitive(parent,"Greek Standard Cloth",PrimitiveType.Cube,new Vector3(-11.18f,1.17f,4.8f),new Vector3(.32f,.28f,.035f),cloth);
     }
 
     GameObject CreateTitleCard()
@@ -158,57 +208,56 @@ public class LandingPresentation : MonoBehaviour
 
     GameObject CreateBoat(Transform parent, Vector3 position)
     {
-        GameObject root = new GameObject("Incoming Landing Boat");
+        GameObject root = new GameObject("Incoming Achaean Galley");
         root.transform.SetParent(parent);
         root.transform.position = position;
 
-        GameObject hull = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        hull.transform.SetParent(root.transform, false);
-        hull.transform.localScale = new Vector3(2.5f, .28f, .78f);
-        Object.Destroy(hull.GetComponent<Collider>());
-        TowerFactory.SetColor(hull, new Color(.25f, .13f, .065f));
+        Color darkWood = new Color(.25f,.13f,.065f);
+        Color warmWood = new Color(.42f,.20f,.08f);
+        Color bronze = new Color(.56f,.31f,.10f);
+        Color sailColor = new Color(.72f,.64f,.50f);
 
-        GameObject prow = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        prow.transform.SetParent(root.transform, false);
-        prow.transform.localPosition = new Vector3(1.45f,.22f,0f);
-        prow.transform.localScale = new Vector3(.68f,.42f,.58f);
-        prow.transform.localRotation = Quaternion.Euler(0f,0f,-23f);
-        Object.Destroy(prow.GetComponent<Collider>());
-        TowerFactory.SetColor(prow,new Color(.42f,.20f,.08f));
+        DecorPrimitive(root.transform,"Lower Hull",PrimitiveType.Cube,Vector3.zero,new Vector3(2.5f,.28f,.78f),darkWood);
+        DecorPrimitive(root.transform,"Deck",PrimitiveType.Cube,new Vector3(-.05f,.28f,0f),new Vector3(2.15f,.10f,.66f),warmWood);
+        DecorPrimitive(root.transform,"Port Gunwale",PrimitiveType.Cube,new Vector3(-.05f,.48f,-.43f),new Vector3(2.18f,.12f,.08f),warmWood);
+        DecorPrimitive(root.transform,"Starboard Gunwale",PrimitiveType.Cube,new Vector3(-.05f,.48f,.43f),new Vector3(2.18f,.12f,.08f),warmWood);
+        DecorPrimitive(root.transform,"Keel",PrimitiveType.Cube,new Vector3(-.10f,-.22f,0f),new Vector3(2.18f,.08f,.12f),bronze);
 
-        GameObject stern = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        stern.transform.SetParent(root.transform,false);
-        stern.transform.localPosition = new Vector3(-1.35f,.24f,0f);
-        stern.transform.localScale = new Vector3(.45f,.50f,.62f);
-        stern.transform.localRotation = Quaternion.Euler(0f,0f,18f);
-        Object.Destroy(stern.GetComponent<Collider>());
-        TowerFactory.SetColor(stern,new Color(.36f,.17f,.07f));
+        DecorPrimitive(root.transform,"Prow",PrimitiveType.Cube,new Vector3(1.45f,.22f,0f),new Vector3(.68f,.42f,.58f),warmWood,Quaternion.Euler(0f,0f,-23f));
+        DecorPrimitive(root.transform,"Prow Horn",PrimitiveType.Cube,new Vector3(1.88f,.35f,0f),new Vector3(.44f,.09f,.09f),bronze,Quaternion.Euler(0f,0f,-17f));
+        DecorPrimitive(root.transform,"Stern",PrimitiveType.Cube,new Vector3(-1.35f,.24f,0f),new Vector3(.45f,.50f,.62f),new Color(.36f,.17f,.07f),Quaternion.Euler(0f,0f,18f));
 
-        GameObject mast = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        mast.transform.SetParent(root.transform,false);
-        mast.transform.localPosition = new Vector3(-.05f,1.02f,0f);
-        mast.transform.localScale = new Vector3(.045f,.95f,.045f);
-        Object.Destroy(mast.GetComponent<Collider>());
-        TowerFactory.SetColor(mast,new Color(.32f,.18f,.08f));
-
-        GameObject sail = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        sail.transform.SetParent(root.transform,false);
-        sail.transform.localPosition = new Vector3(-.05f,1.12f,0f);
-        sail.transform.localScale = new Vector3(.05f,.78f,.92f);
-        Object.Destroy(sail.GetComponent<Collider>());
-        TowerFactory.SetColor(sail,new Color(.72f,.64f,.50f));
+        DecorPrimitive(root.transform,"Mast",PrimitiveType.Cylinder,new Vector3(-.05f,1.02f,0f),new Vector3(.045f,.95f,.045f),new Color(.32f,.18f,.08f));
+        DecorPrimitive(root.transform,"Yard",PrimitiveType.Cylinder,new Vector3(-.05f,1.55f,0f),new Vector3(.035f,.62f,.035f),warmWood,Quaternion.Euler(90f,0f,0f));
+        DecorPrimitive(root.transform,"Square Sail",PrimitiveType.Cube,new Vector3(-.05f,1.12f,0f),new Vector3(.05f,.78f,.92f),sailColor);
+        DecorPrimitive(root.transform,"Sail Stripe",PrimitiveType.Cube,new Vector3(-.085f,1.12f,0f),new Vector3(.012f,.13f,.94f),new Color(.34f,.40f,.50f));
 
         for (int i = -3; i <= 3; i++)
         {
-            GameObject shield = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            shield.transform.SetParent(root.transform,false);
-            shield.transform.localPosition = new Vector3(i*.34f,.38f,-.43f);
+            float x = i * .34f;
+            DecorPrimitive(root.transform,"Bench",PrimitiveType.Cube,new Vector3(x,.39f,0f),new Vector3(.11f,.045f,.62f),warmWood);
+
+            GameObject oar = DecorPrimitive(root.transform,"Oar",PrimitiveType.Cylinder,new Vector3(x,.31f,0f),new Vector3(.022f,.88f,.022f),warmWood,Quaternion.Euler(90f,0f,0f));
+            oar.transform.localRotation = Quaternion.Euler(90f,0f,i%2==0 ? 7f : -7f);
+
+            GameObject shield = DecorPrimitive(root.transform,"Hull Shield",PrimitiveType.Cylinder,new Vector3(x,.48f,-.48f),new Vector3(.17f,.04f,.17f),i % 2 == 0 ? bronze : new Color(.52f,.43f,.25f),Quaternion.Euler(90f,0f,0f));
             shield.transform.localRotation = Quaternion.Euler(90f,0f,0f);
-            shield.transform.localScale = new Vector3(.17f,.04f,.17f);
-            Object.Destroy(shield.GetComponent<Collider>());
-            TowerFactory.SetColor(shield, i % 2 == 0 ? new Color(.55f,.25f,.08f) : new Color(.52f,.43f,.25f));
         }
 
         return root;
+    }
+
+    GameObject DecorPrimitive(Transform parent, string name, PrimitiveType type, Vector3 localPosition, Vector3 localScale, Color color, Quaternion? localRotation = null)
+    {
+        GameObject go = GameObject.CreatePrimitive(type);
+        go.name = name;
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = localPosition;
+        go.transform.localScale = localScale;
+        if (localRotation.HasValue) go.transform.localRotation = localRotation.Value;
+        Collider collider = go.GetComponent<Collider>();
+        if (collider != null) Destroy(collider);
+        TowerFactory.SetColor(go, color);
+        return go;
     }
 }
