@@ -22,7 +22,27 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Runtime combat HUD | `ModernCombatHud` | Legacy `GameUIController` |
+| Main combat HUD, controls, wave strip, build details | `ModernCombatHud` | Legacy combat/build canvases |
+| Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Legacy `ChapterFlowUI` canvas |
+| Hector health and ability HUD | `HectorHUD` | Main combat resources/build UI |
+| Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
+| Wave intro/boss warning card | `ChapterOneWavePresentation` | Persistent wave status bar |
+| Visual next-wave enemy cards | `VisualWavePreviewPresentation` | General combat HUD |
+| Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card |
+| End-of-battle menu/result shell | `GameMenuController` | Extra result canvases |
+| Detailed end-of-battle metrics | `ResultScreenPresentation` | Independent result screen |
+
+## Compatibility-only UI
+
+These classes must not create visual canvases. They remain only so older serialized references or shared state do not break:
+
+- `GameUIController`
+- `ChapterFlowUI`
+- `CampaignProgressUI`
+- `BuildDefenseInfoPresentation`
+- `CombatControlsUI` — speed state/actions only; graphics belong to `ModernCombatHud`.
+
+`ExtendedBalanceUI` is dormant and is not auto-created; its enemy-hover inspector is a separate optional diagnostic surface, not part of the canonical combat HUD.
 
 ## Character visual resolution order
 
