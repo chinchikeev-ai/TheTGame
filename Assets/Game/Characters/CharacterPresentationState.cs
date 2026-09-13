@@ -52,8 +52,8 @@ public class CharacterPresentationState : MonoBehaviour
     public float PlayDeath(bool boss)
     {
         if (dead) return 0f;
-        dead = true;
         SetMoving(false);
+        dead = true;
 
         float duration = boss ? 1.25f : .70f;
         if (animator != null)
