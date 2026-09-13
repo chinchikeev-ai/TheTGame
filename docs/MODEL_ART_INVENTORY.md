@@ -24,13 +24,13 @@ This file is the source of truth for model/art completion. A generator, source p
 
 | Asset | First use | Status | Current candidate |
 |---|---:|---|---|
-| Infantry | I | GENERATED PLACEHOLDER | `Enemy_Infantry` |
+| Infantry | I | GENERATED PLACEHOLDER + SOURCE ONLY | `Enemy_Infantry`; pinned integrity-checked Quaternius CC0 spear source can replace the procedural spear after candidate build |
 | Archer | I | GENERATED PLACEHOLDER + SOURCE ONLY | `Enemy_Archer`; pinned integrity-checked Quaternius CC0 wooden bow source can replace the procedural bow after candidate build; quiver remains KayKit-based |
-| Spearman | I/II | GENERATED PLACEHOLDER | `Enemy_Spearman` |
+| Spearman | I/II | GENERATED PLACEHOLDER | `Enemy_Spearman`; campaign variant is still generated before the Chapter I source-equipment pass and is not claimed source-upgraded |
 | Light Swordsman | II | GENERATED PLACEHOLDER | `Enemy_LightSwordsman` |
-| Shield Bearer | I | GENERATED PLACEHOLDER | `Enemy_ShieldBearer` |
+| Shield Bearer | I | GENERATED PLACEHOLDER + SOURCE ONLY | `Enemy_ShieldBearer`; pinned CC0 spear source + current shield candidate |
 | Hoplite | II | GENERATED PLACEHOLDER | `Enemy_Hoplite` |
-| Heavy Hoplite | I | GENERATED PLACEHOLDER | `Enemy_HeavyHoplite`, procedural spear + heavy shield |
+| Heavy Hoplite | I | GENERATED PLACEHOLDER + SOURCE ONLY | `Enemy_HeavyHoplite`; pinned CC0 spear source + heavy shield candidate |
 | Scout | II | GENERATED PLACEHOLDER | `Enemy_Scout` |
 | Runner | I/II | GENERATED PLACEHOLDER | `Enemy_Runner` |
 | Chariot | II | PROCEDURAL + SOURCE ONLY | `Vehicle_Chariot`; pinned animated CC0 horse FBX installer + chariot horse builder exist; generated result still requires Unity import/QA |
@@ -49,10 +49,10 @@ This file is the source of truth for model/art completion. A generator, source p
 
 | Asset | Status | Current candidate |
 |---|---|---|
-| Trojan Infantry | GENERATED PLACEHOLDER | `Trojan_Infantry`; spear remains procedural candidate geometry |
-| Trojan Guard | GENERATED PLACEHOLDER | `Trojan_Guard`; spear remains procedural candidate geometry |
+| Trojan Infantry | GENERATED PLACEHOLDER + SOURCE ONLY | `Trojan_Infantry`; pinned integrity-checked Quaternius CC0 spear source can replace the procedural spear after candidate build |
+| Trojan Guard | GENERATED PLACEHOLDER + SOURCE ONLY | `Trojan_Guard`; pinned integrity-checked Quaternius CC0 spear source can replace the procedural spear after candidate build |
 | Trojan Archer | GENERATED PLACEHOLDER + SOURCE ONLY | `Trojan_Archer`; pinned integrity-checked Quaternius CC0 wooden bow source can replace the procedural bow after candidate build |
-| Spear Wall soldiers | GENERATED PLACEHOLDER + PROCEDURAL | Trojan infantry crew + procedural post |
+| Spear Wall soldiers | GENERATED PLACEHOLDER + PROCEDURAL + SOURCE ONLY spear | Trojan infantry crew + procedural post; source spear available after Chapter I equipment pass |
 | Ballista crew | GENERATED PLACEHOLDER | `Trojan_BallistaCrew`; production candidate preferred when generated |
 | Priests of Apollo | GENERATED PLACEHOLDER + PROCEDURAL | `Trojan_PriestApollo` + procedural shrine |
 | Fire Tower crew | GENERATED PLACEHOLDER + PROCEDURAL | `Trojan_FireKeeper` + procedural fire defense |
@@ -62,7 +62,7 @@ This file is the source of truth for model/art completion. A generator, source p
 
 | Character | Chapter | Status | Current candidate |
 |---|---:|---|---|
-| Hector | I–VII | GENERATED PLACEHOLDER | Bronze Age hero candidate + shared Animator candidate; spear remains procedural |
+| Hector | I–VII | GENERATED PLACEHOLDER + SOURCE ONLY | Bronze Age hero candidate + shared Animator candidate; pinned integrity-checked Quaternius CC0 spear source can replace the procedural spear after Chapter I candidate build |
 | Menelaus | I | GENERATED PLACEHOLDER | commander/boss candidate |
 | Achilles | IV/V | GENERATED PLACEHOLDER | hero candidate |
 | Ajax | IV | GENERATED PLACEHOLDER | oversized-shield hero candidate |
@@ -84,9 +84,9 @@ This file is the source of truth for model/art completion. A generator, source p
 | Archer Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY bow | wood/bronze post + Trojan Archers; pinned CC0 source bow is available through the Chapter I equipment pass | Authored structure, final archer/bow rig, draw/release animations, final materials |
 | Ballista | PROCEDURAL + GENERATED PLACEHOLDER crew | readable mechanism + `Trojan_BallistaCrew` candidate | Authored mechanism/string/bolt/reload/fire cycle |
 | Priests of Apollo | PROCEDURAL + GENERATED PLACEHOLDER crew | shrine + `Trojan_PriestApollo` candidates | Final shrine/priests/support animation/VFX |
-| Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew | spear defense + infantry crew | Final formation/poke/block art |
+| Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | spear defense + Trojan infantry crew; pinned source spear available on generated crew after the equipment pass | Final formation/poke/block art, final authored structure/materials |
 | Fire Tower | PROCEDURAL + GENERATED PLACEHOLDER crew | brazier/pitch/flame + `Trojan_FireKeeper` | Final tower/props/keeper animation |
-| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew | platform/banners + Guards | Final station/shield-wall animation |
+| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | platform/banners + Guards; pinned source spear available on generated Guard prefab after the equipment pass | Final station/shield-wall animation and authored station/materials |
 | Level 2/3 differentiation | PROCEDURAL | runtime upgrade visual markers via `TowerProductionArtBinder` | Authored per-tower L2/L3 meshes and specialization variants |
 
 **Tower-Unit DONE count: 0.**
@@ -120,10 +120,11 @@ This file is the source of truth for model/art completion. A generator, source p
 |---|---|---|
 | Generic Greek locomotion/melee/hit/death | GENERATED PLACEHOLDER | shared KayKit controller candidate; final weapon-specific clips/QA |
 | Greek bow attack | GENERATED PLACEHOLDER + SOURCE ONLY bow geometry | pinned CC0 bow mesh can replace primitive bow geometry; final draw/release animation and weapon rig still missing |
+| Greek/Trojan spear melee | GENERATED PLACEHOLDER + SOURCE ONLY spear geometry | pinned CC0 spear mesh can replace primitive spear on Chapter I base prefabs; final thrust/brace/formation animation and grip/orientation QA still missing |
 | Hector locomotion/downed | GENERATED PLACEHOLDER | hero-specific final clips |
 | Hector Q/E/R/F | PROCEDURAL VFX + gameplay | authored body animations |
 | Menelaus combat/death | GENERATED PLACEHOLDER | boss-specific clips |
-| Trojan Guard block/melee | GENERATED PLACEHOLDER / hook | final formation/block/melee clips |
+| Trojan Guard block/melee | GENERATED PLACEHOLDER + SOURCE ONLY spear / hook | source spear available; final formation/block/melee clips still missing |
 | Ballista mechanism | MISSING | reload/tension/fire/recoil animation |
 | Battering Ram cycle | MISSING | push/impact/recover animation |
 | Siege Tower movement | MISSING | wheel/movement/assault animation |
@@ -133,12 +134,12 @@ This file is the source of truth for model/art completion. A generator, source p
 
 # Chapter I equipment source coverage
 
-- **Bow:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneWeaponSourceInstaller` verifies the exact FBX by size and Git blob SHA, and `ChapterOneProductionEquipmentBuilder` replaces only the known primitive bow hierarchy on Greek/Trojan archer candidates.
-- **Spear:** still procedural candidate geometry. No source asset is claimed or substituted.
+- **Bow:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneWeaponSourceInstaller` verifies the exact FBX by size and Git blob SHA, and `ChapterOneProductionEquipmentBuilder` replaces only the recognized primitive bow hierarchy on Greek/Trojan archer candidates.
+- **Spear:** pinned Quaternius Medieval Weapons CC0 source exists. `ChapterOneSpearSourceInstaller` verifies the exact FBX by size and Git blob SHA. `ChapterOneProductionEquipmentBuilder` replaces only the recognized `Spear` + `Shaft` + `BronzeTip` hierarchy on `Enemy_Infantry`, `Enemy_HeavyHoplite`, `Enemy_ShieldBearer`, `Trojan_Infantry`, `Trojan_Guard`, and `Hero_Hector`, while preserving the previous candidate local transform.
 - **Bronze Age cuirass / helmet / faction cloth / hero crest / cape:** still procedural/kitbashed candidate geometry unless the underlying item comes from the KayKit source pack.
 - **Shields / swords / dagger / quiver:** current candidate pipeline uses available KayKit source accessories where present.
 
-The source bow is an improvement over primitive geometry, not a final Troy-authored weapon or animation rig.
+The source bow and spear are improvements over primitive geometry, not final Troy-authored weapons or animation rigs. Imported orientation, scale, grip, materials, and gameplay-camera readability still require real Unity visual QA.
 
 ---
 
@@ -164,7 +165,8 @@ Current candidate pipeline includes:
 
 - `CartoonCharacterPrefabBuilder` — Chapter I character candidates;
 - `ChapterOneWeaponSourceInstaller` — pinned/integrity-checked Quaternius CC0 wooden bow source installer;
-- `ChapterOneProductionEquipmentBuilder` — replaces the known procedural Greek/Trojan archer bow hierarchy with the pinned source bow after candidate generation;
+- `ChapterOneSpearSourceInstaller` — pinned/integrity-checked Quaternius CC0 spear source installer;
+- `ChapterOneProductionEquipmentBuilder` — replaces the recognized procedural Chapter I bow/spear hierarchies with pinned CC0 source meshes after candidate generation;
 - `ChapterOneCharacterAnimationBuilder` — shared character Animator candidate;
 - `CampaignArtCandidateBuilder` — later Greek/Trojan/heroes/chariot/siege/Trojan Horse candidates;
 - `MythicAndSupportArtCandidateBuilder` — Priest, Fire Keeper, Ballista Crew, Cyclops;
