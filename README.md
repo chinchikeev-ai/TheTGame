@@ -1,22 +1,19 @@
 # TheTroyGame
 
-Story-driven Tower Defence about the defense and fall of Troy. Unity 6 + URP + C#.
+Story-driven Tower Defence about the defense and fall of Troy.
 
-## AI-assisted development
-Read in this order:
-1. `AGENTS.md`
-2. `docs/AI_PIPELINE.md`
-3. `docs/PROJECT_STATUS.md`
-4. `docs/ARCHITECTURE.md`
-5. `docs/MODULE_MAP.md`
-6. `docs/DATA_CATALOG.md`
-7. `docs/RUNTIME_GRAPH.md`
-8. `docs/NAMESPACE_POLICY.md`
-9. relevant GDD / roadmap / chapter docs
+**Engine:** Unity 6 + URP + C#  
+**Campaign target:** ~120 minutes, 7 chapters, ~40 major combat events  
+**Current production focus:** Chapter I — gameplay RC + production-art freeze
 
-For non-trivial work use `docs/tasks/TASK_TEMPLATE.md`.
+## Documentation
+
+Start with [`docs/README.md`](docs/README.md).
+
+For AI-assisted development, `AGENTS.md` is mandatory. The current implementation state is always tracked in `docs/PROJECT_STATUS.md`.
 
 ## Canonical runtime structure
+
 ```text
 Assets/Game/
 ├── Core/
@@ -31,29 +28,43 @@ Assets/Game/
 └── VFX/
 ```
 
-Legacy `Assets/Scripts` must not be recreated.
+Runtime code belongs under `Assets/Game`. Legacy `Assets/Scripts` must not be recreated.
 
 ## Data source of truth
-Authored ScriptableObject assets under `Assets/Resources` are the runtime source of truth for tower/enemy/wave/chapter configuration. The default-data generator creates missing assets only and must never overwrite existing authored data.
 
-## Assemblies
-- `TheTroyGame.Runtime`
-- `TheTroyGame.Editor`
-- `TheTroyGame.EditModeTests`
-- `TheTroyGame.PlayModeTests`
+Authored ScriptableObject assets under `Assets/Resources` are the runtime source of truth for tower, enemy, wave and chapter configuration. Default-data tooling may create missing assets only and must never overwrite authored data.
 
 ## Validation
+
 Fast architecture guard:
-`python tools/check-architecture.py`
+
+```bash
+python tools/check-architecture.py
+```
 
 Full Windows validation:
-`./tools/validate-project.ps1`
+
+```powershell
+./tools/validate-project.ps1
+```
 
 Full Unix validation:
-`UNITY_EDITOR=/path/to/Unity ./tools/validate-project.sh`
 
-Full pipeline: architecture checks -> EditMode tests -> PlayMode acceptance tests -> Windows build.
+```bash
+UNITY_EDITOR=/path/to/Unity ./tools/validate-project.sh
+```
 
-CI: `.github/workflows/unity-ci.yml`. Unity CI jobs require repository Unity activation configuration in GitHub Actions settings.
+Full validation means architecture checks → Unity smoke validation → EditMode → PlayMode → build. GitHub Actions Unity jobs require repository Unity activation configuration; static architecture success alone is not a Unity compile/test/build pass.
 
-The current Chapter I target is five combat events and approximately 11-13 minutes of real playtime. See `docs/PROJECT_STATUS.md` for implementation status.
+## Chapter I target
+
+- 5 combat events
+- approximately 11–13 minutes at 1x
+- Hector Q/E/R/F
+- six defensive unit/tower roles
+- Menelaus final encounter
+- EN/RU UI
+- real playthrough telemetry + RC analyzer
+- production art promoted only after Play Mode visual QA
+
+See `docs/PROJECT_STATUS.md`, `docs/CHAPTER_I_RC_PLAYTEST.md`, and `docs/MODEL_ART_INVENTORY.md` for the current gate.
