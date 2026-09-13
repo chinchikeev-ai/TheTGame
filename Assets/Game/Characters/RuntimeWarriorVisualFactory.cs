@@ -33,6 +33,7 @@ public static class RuntimeWarriorVisualFactory
 
         if (heavy || boss) AddHelmet(root.transform, boss ? new Color(.78f,.57f,.20f) : new Color(.48f,.40f,.28f), boss);
         if (boss) AddCape(root.transform, new Color(.52f,.05f,.04f));
+        WarriorArtDirector.EnhanceEnemy(root, archetype);
         return root;
     }
 
