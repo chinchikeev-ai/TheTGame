@@ -19,6 +19,7 @@ public class Tower : MonoBehaviour
     public float slowDuration;
     public Transform head;
     public Transform muzzle;
+    public TowerCrewAnimationBridge crewAnimation;
 
     float nextFireTime;
     float sellRatio = .65f;
@@ -45,6 +46,7 @@ public class Tower : MonoBehaviour
         slowMultiplier = data.slowMultiplier;
         slowDuration = data.slowDuration;
         sellRatio = data.sellRatio;
+        if (crewAnimation == null) crewAnimation = GetComponent<TowerCrewAnimationBridge>();
 
         if (Type == TowerType.TrojanGuard)
         {
@@ -174,6 +176,7 @@ public class Tower : MonoBehaviour
         Vector3 start = muzzle != null ? muzzle.position : transform.position + Vector3.up;
         RuntimeEffects.Instance?.PlayShotSound(Type);
         CombatImpactPresentation.ShotFlash(start, Type);
+        crewAnimation?.PlayTowerAttack(Type);
         if (head != null && !recoiling) StartCoroutine(RecoilHead());
 
         if (Type == TowerType.SpearThrower)
