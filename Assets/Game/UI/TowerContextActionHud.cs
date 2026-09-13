@@ -14,6 +14,19 @@ public sealed class TowerContextActionHud : MonoBehaviour
     Button sellButton;
     Button priorityButton;
 
+    Transform buildDock;
+    Text buildSelection;
+    Button[] buildDockButtons;
+    readonly TowerType[] buildTypes =
+    {
+        TowerType.SpearThrower,
+        TowerType.MachineGun,
+        TowerType.Cannon,
+        TowerType.Slow,
+        TowerType.FireTower,
+        TowerType.TrojanGuard
+    };
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
     {
@@ -95,12 +108,57 @@ public sealed class TowerContextActionHud : MonoBehaviour
             priorityButton.GetComponentInChildren<Text>().text = $"{GameLanguage.T("TARGET", "ЦЕЛЬ")}\n{tower.Priority}";
     }
 
+    void LateUpdate()
+    {
+        SyncBuildModeHud();
+    }
+
     void HideLegacySelectedCard()
     {
         if (oldSelectedCard == null)
             oldSelectedCard = GameObject.Find("SelectedTowerCard");
         if (oldSelectedCard != null && oldSelectedCard.activeSelf)
             oldSelectedCard.SetActive(false);
+    }
+
+    void SyncBuildModeHud()
+    {
+        if (placement == null) return;
+        if (buildDock == null)
+        {
+            GameObject dockObject = GameObject.Find("BuildDock");
+            if (dockObject == null) return;
+            buildDock = dockObject.transform;
+            buildDockButtons = buildDock.GetComponentsInChildren<Button>(true);
+
+            Text[] texts = buildDock.GetComponentsInChildren<Text>(true);
+            float bestX = float.MinValue;
+            foreach (Text candidate in texts)
+            {
+                if (candidate.transform.parent != buildDock) continue;
+                float x = candidate.rectTransform.anchoredPosition.x;
+                if (x <= bestX) continue;
+                bestX = x;
+                buildSelection = candidate;
+            }
+        }
+
+        if (placement.BuildModeActive) return;
+
+        if (buildSelection != null)
+            buildSelection.text = GameLanguage.T("SELECT A DEFENSE TO PLACE", "ВЫБЕРИТЕ ЗАЩИТУ ДЛЯ УСТАНОВКИ");
+
+        if (buildDockButtons == null) return;
+        int count = Mathf.Min(buildTypes.Length, buildDockButtons.Length);
+        for (int i = 0; i < count; i++)
+        {
+            Button button = buildDockButtons[i];
+            if (button == null) continue;
+            Image image = button.GetComponent<Image>();
+            if (image == null) continue;
+            bool affordable = GameManager.Instance != null && GameManager.Instance.Money >= TowerFactory.GetCost(buildTypes[i]);
+            image.color = affordable ? new Color(.24f, .14f, .08f, .96f) : new Color(.11f, .085f, .07f, .88f);
+        }
     }
 
     void PositionAroundTower(Vector3 screenPoint)
