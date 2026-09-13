@@ -10,16 +10,22 @@ public sealed class CampaignMapPresentation : MonoBehaviour
 
     void Start()
     {
-        canvas = FindFirstObjectByType<Canvas>();
+        canvas = FindMenuCanvas();
         if (canvas == null) return;
         Build();
     }
 
     public void Refresh()
     {
-        if (canvas == null) canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) canvas = FindMenuCanvas();
         if (canvas == null) return;
         Build();
+    }
+
+    Canvas FindMenuCanvas()
+    {
+        GameObject menuCanvas = GameObject.Find("MenuCanvas");
+        return menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
     }
 
     void Build()

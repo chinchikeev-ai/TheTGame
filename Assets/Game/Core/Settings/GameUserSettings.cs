@@ -36,7 +36,8 @@ public static class GameUserSettings
         set
         {
             PlayerPrefs.SetInt(FullscreenKey, value ? 1 : 0);
-            Screen.fullScreen = value;
+            ApplyResolution(ResolutionWidth, ResolutionHeight);
+            Save();
         }
     }
 
@@ -73,7 +74,7 @@ public static class GameUserSettings
         int width = ResolutionWidth;
         int height = ResolutionHeight;
         if (width > 0 && height > 0)
-            Screen.SetResolution(width, height, Fullscreen);
+            ApplyResolution(width, height);
 
         ApplyAudio();
     }
@@ -83,7 +84,8 @@ public static class GameUserSettings
         if (width <= 0 || height <= 0) return;
         PlayerPrefs.SetInt(ResolutionWidthKey, width);
         PlayerPrefs.SetInt(ResolutionHeightKey, height);
-        Screen.SetResolution(width, height, Fullscreen);
+        ApplyResolution(width, height);
+        Save();
     }
 
     public static void Save() => PlayerPrefs.Save();
@@ -106,5 +108,11 @@ public static class GameUserSettings
         AudioListener.volume = MasterVolume;
         if (AncientMusicController.Instance != null)
             AncientMusicController.Instance.SetVolume(MusicVolume);
+    }
+
+    static void ApplyResolution(int width, int height)
+    {
+        FullScreenMode mode = Fullscreen ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
+        Screen.SetResolution(width, height, mode);
     }
 }

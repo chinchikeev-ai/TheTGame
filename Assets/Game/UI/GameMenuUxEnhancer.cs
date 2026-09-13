@@ -22,7 +22,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
     {
         yield return null;
         menu = FindFirstObjectByType<GameMenuController>();
-        canvas = FindFirstObjectByType<Canvas>();
+        canvas = FindMenuCanvas();
         if (menu == null || canvas == null) yield break;
 
         EnsureEventSystem();
@@ -93,7 +93,7 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
             FindButton("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"),
             L("RESTART CHAPTER?", "ПЕРЕЗАПУСТИТЬ ГЛАВУ?"),
             L("Current battle progress will be lost.", "Текущий прогресс битвы будет потерян."),
-            "RestartScene");
+            "RestartChapter");
 
         ReplaceWithConfirmation(
             FindButton("MAIN MENU", "ГЛАВНОЕ МЕНЮ"),
@@ -111,6 +111,12 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
     bool HasCampaignProgress()
     {
         return CampaignController.Instance != null && CampaignController.Instance.HasProgress;
+    }
+
+    Canvas FindMenuCanvas()
+    {
+        GameObject menuCanvas = GameObject.Find("MenuCanvas");
+        return menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
     }
 
     void RequestNewCampaign()

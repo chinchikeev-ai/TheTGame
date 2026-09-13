@@ -90,8 +90,8 @@ public class GameBootstrap : MonoBehaviour
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
-        controller.xBounds = new Vector2(-4f, 4f);
-        controller.zBounds = new Vector2(-2.5f, 2.5f);
+        controller.xBounds = new Vector2(-6f, 6f);
+        controller.zBounds = new Vector2(-7.5f, 4f);
         controller.minOrthoSize = 7f;
         controller.maxOrthoSize = 13f;
 

@@ -248,8 +248,6 @@ public class GameMenuController : MonoBehaviour
     void ToggleFullscreen()
     {
         GameUserSettings.Fullscreen = !GameUserSettings.Fullscreen;
-        Vector2 resolution = SupportedResolutions[Mathf.Clamp(resolutionIndex, 0, SupportedResolutions.Length - 1)];
-        Screen.SetResolution((int)resolution.x, (int)resolution.y, GameUserSettings.Fullscreen);
         RefreshSettingsLabels();
     }
 
@@ -586,13 +584,13 @@ public class GameMenuController : MonoBehaviour
         Scene scene = SceneManager.GetActiveScene();
         RuntimeFileLogger.Event("MENU", $"Reloading scene buildIndex={scene.buildIndex}, name={scene.name}");
         Time.timeScale = 1f;
+        paused = false;
 
         foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
             button.interactable = false;
 
-        AsyncOperation operation = scene.buildIndex >= 0
-            ? SceneManager.LoadSceneAsync(scene.buildIndex)
-            : SceneManager.LoadSceneAsync(scene.name);
+        int buildIndex = scene.buildIndex >= 0 ? scene.buildIndex : 0;
+        AsyncOperation operation = SceneManager.LoadSceneAsync(buildIndex);
 
         if (operation == null)
         {
