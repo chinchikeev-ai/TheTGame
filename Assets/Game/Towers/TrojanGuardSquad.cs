@@ -60,6 +60,7 @@ public class TrojanGuardSquad : MonoBehaviour
         if (blockedEnemies.Contains(enemy)) return true;
         if (blockedEnemies.Count >= Mathf.Max(0, blockCapacity)) return false;
         blockedEnemies.Add(enemy);
+        ownerTower?.crewAnimation?.PlayGuardBlock();
         return true;
     }
 
@@ -86,6 +87,7 @@ public class TrojanGuardSquad : MonoBehaviour
         if (attackTarget != null && Time.time >= nextAttack)
         {
             nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate * rallyRate);
+            ownerTower?.crewAnimation?.PlayGuardPoke();
             presentation?.PlayAttack();
             attackTarget.ReceiveDamage(new DamagePacket(damage * rallyDamage, DamageType.Physical, TowerType.TrojanGuard));
             CombatImpactPresentation.MeleeHit(attackTarget.transform.position + Vector3.up * .55f, TowerType.TrojanGuard);
