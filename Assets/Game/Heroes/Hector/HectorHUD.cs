@@ -41,10 +41,9 @@ public class HectorHUD : MonoBehaviour
         pr.anchoredPosition = new Vector2(-24f,-188f);
         pr.sizeDelta = new Vector2(360f,214f);
 
-        Image portrait = AddImage(root.transform,"HectorPortrait",new Vector2(-138,54),new Vector2(74,74),TroyHudArt.Icon("hector"));
-        portrait.color = Color.white;
-        nameText = AddText(root.transform,"HECTOR",new Vector2(-50,70),new Vector2(180,30),20,new Color(1f,.72f,.28f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
-        hpText = AddText(root.transform,"",new Vector2(-50,40),new Vector2(180,24),14,new Color(.94f,.86f,.72f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        AddImage(root.transform,"HectorPortrait",new Vector2(-138,54),new Vector2(82,82),TroyHudArt.Portrait("hector"));
+        nameText = AddText(root.transform,"HECTOR",new Vector2(-46,70),new Vector2(188,30),19,new Color(1f,.72f,.28f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        hpText = AddText(root.transform,"",new Vector2(-46,40),new Vector2(188,24),14,new Color(.94f,.86f,.72f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
 
         GameObject track = new GameObject("HealthTrack");
         track.transform.SetParent(root.transform,false);
@@ -65,7 +64,7 @@ public class HectorHUD : MonoBehaviour
 
         string[] keys = { "Q", "E", "R", "F" };
         string[] names = { GameLanguage.T("WAR CRY","КЛИЧ"), GameLanguage.T("SHIELD","ЩИТЫ"), GameLanguage.T("SPEAR","КОПЬЁ"), GameLanguage.T("FOR TROY!","ЗА ТРОЮ!") };
-        string[] icons = { "sword", "shield", "spear", "fire" };
+        string[] art = { "warcry", "shieldwall", "spear", "ultimate" };
         for (int i=0;i<4;i++)
         {
             float x = -126 + i*84;
@@ -77,12 +76,12 @@ public class HectorHUD : MonoBehaviour
             sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(.5f,.5f);
             sr.anchoredPosition = new Vector2(x,-62);
             sr.sizeDelta = new Vector2(76,82);
-            AddImage(slot.transform,"Icon",new Vector2(0,12),new Vector2(38,38),TroyHudArt.Icon(icons[i]));
-            abilityTexts[i] = AddText(slot.transform,keys[i]+"  "+names[i],new Vector2(0,-27),new Vector2(70,24),10,new Color(.96f,.86f,.70f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
+            AddImage(slot.transform,"Icon",new Vector2(0,12),new Vector2(44,44),TroyHudArt.Ability(art[i]));
+            abilityTexts[i] = AddText(slot.transform,keys[i]+"  "+names[i],new Vector2(0,-28),new Vector2(70,22),9,new Color(.96f,.86f,.70f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
             GameObject cd = new GameObject("Cooldown");
             cd.transform.SetParent(slot.transform,false);
             cooldownFills[i] = cd.AddComponent<Image>();
-            cooldownFills[i].color = new Color(.02f,.015f,.01f,.70f);
+            cooldownFills[i].color = new Color(.02f,.015f,.01f,.72f);
             cooldownFills[i].type = Image.Type.Filled;
             cooldownFills[i].fillMethod = Image.FillMethod.Radial360;
             cooldownFills[i].fillOrigin = 2;
