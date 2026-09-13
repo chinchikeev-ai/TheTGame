@@ -121,16 +121,16 @@ public class GameBootstrap : MonoBehaviour
         }
 
         cam.orthographic = true;
-        cam.orthographicSize = 10.2f;
-        cam.transform.position = new Vector3(-1.2f, 27.5f, -5.2f);
-        cam.transform.rotation = Quaternion.Euler(74f, 0f, 0f);
+        cam.orthographicSize = 10.6f;
+        cam.transform.position = new Vector3(.35f, 28.2f, -4.8f);
+        cam.transform.rotation = Quaternion.Euler(73f, -1.5f, 0f);
         cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(.22f, .31f, .34f);
+        cam.backgroundColor = new Color(.18f, .27f, .30f);
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
-        controller.xBounds = new Vector2(-7.5f, 7.5f);
-        controller.zBounds = new Vector2(-12f, 5f);
+        controller.xBounds = new Vector2(-8.0f, 8.0f);
+        controller.zBounds = new Vector2(-11.5f, 5.5f);
         controller.minOrthoSize = 7f;
         controller.maxOrthoSize = 13f;
 
@@ -139,11 +139,11 @@ public class GameBootstrap : MonoBehaviour
             GameObject l = new GameObject("Directional Light");
             Light lightComp = l.AddComponent<Light>();
             lightComp.type = LightType.Directional;
-            lightComp.intensity = 1.35f;
-            lightComp.color = new Color(1f, .84f, .60f);
+            lightComp.intensity = 1.28f;
+            lightComp.color = new Color(1f, .77f, .54f);
             lightComp.shadows = LightShadows.Soft;
-            lightComp.shadowStrength = .72f;
-            l.transform.rotation = Quaternion.Euler(52f, -38f, 0f);
+            lightComp.shadowStrength = .76f;
+            l.transform.rotation = Quaternion.Euler(51f, -34f, 0f);
         }
         return cam;
     }
