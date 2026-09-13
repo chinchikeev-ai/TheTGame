@@ -6,9 +6,9 @@ using UnityEngine;
 public static class CartoonCharacterPrefabBuilder
 {
     const string ThirdPartyRoot = "Assets/ThirdParty/KayKitAdventurers";
-    const string BaseOutputRoot = "Assets/Resources/TroyCharacters";
-    const string GreekOutputRoot = BaseOutputRoot + "/Factions/Greek";
-    const string TrojanOutputRoot = BaseOutputRoot + "/Factions/Trojan";
+    const string BaseOutputRoot = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters";
+    const string GreekOutputRoot = BaseOutputRoot + "/Greek";
+    const string TrojanOutputRoot = BaseOutputRoot + "/Trojan";
     const string HeroOutputRoot = BaseOutputRoot + "/Heroes";
 
     static readonly Dictionary<EnemyArchetype, string[]> Hints = new Dictionary<EnemyArchetype, string[]>
@@ -21,7 +21,7 @@ public static class CartoonCharacterPrefabBuilder
         { EnemyArchetype.Boss, new[] { "knight", "barbarian", "warrior" } },
     };
 
-    [MenuItem("The Troy Game/Characters/Build All Cartoon Prefabs")]
+    [MenuItem("The Troy Game/Characters/Build Chapter I Production Candidates")]
     public static void BuildAll()
     {
         if (!ValidateSource()) return;
@@ -42,10 +42,10 @@ public static class CartoonCharacterPrefabBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Built faction-specific cartoon prefabs with modular silhouettes and hero equipment.");
+        Debug.Log("Built Chapter I production character candidates under Assets/Game/Art/Characters with Late Bronze Age silhouettes.");
     }
 
-    [MenuItem("The Troy Game/Characters/Build Cartoon Enemy Prefabs")]
+    [MenuItem("The Troy Game/Characters/Build Chapter I Greek Production Candidates")]
     public static void BuildEnemiesOnly()
     {
         if (!ValidateSource()) return;
@@ -87,37 +87,44 @@ public static class CartoonCharacterPrefabBuilder
             {
                 case EnemyArchetype.Runner:
                     AttachAccessory(root, "dagger", Hand(root, true), Vector3.zero, Quaternion.identity, .9f);
+                    AddLateBronzeAgeKit(root, TroyFaction.Greek, false, false);
                     identity.primaryWeapon = "dagger";
                     break;
                 case EnemyArchetype.HeavyHoplite:
-                    AttachAccessory(root, "sword_2handed", Hand(root, true), Vector3.zero, Quaternion.identity, 1f);
-                    AttachAccessory(root, "shield_badge", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.08f);
-                    identity.primaryWeapon = "two-handed sword";
-                    identity.offhandItem = "badge shield";
+                    AttachProceduralSpear(root, Hand(root, true), 1.12f);
+                    AttachAccessory(root, "shield_badge", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.16f);
+                    AddLateBronzeAgeKit(root, TroyFaction.Greek, true, false);
+                    identity.primaryWeapon = "heavy spear";
+                    identity.offhandItem = "heavy shield";
                     break;
                 case EnemyArchetype.ShieldBearer:
                     AttachProceduralSpear(root, Hand(root, true), 1.15f);
-                    AttachAccessory(root, "shield_round", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.12f);
+                    AttachAccessory(root, "shield_round", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.18f);
+                    AddLateBronzeAgeKit(root, TroyFaction.Greek, true, false);
                     identity.primaryWeapon = "spear";
                     identity.offhandItem = "round shield";
                     break;
                 case EnemyArchetype.Archer:
-                    AttachAccessory(root, "crossbow_2handed", Hand(root, true), Vector3.zero, Quaternion.identity, .95f);
+                    AttachProceduralBow(root, Hand(root, true), .95f);
                     AttachAccessory(root, "quiver", FindTorso(root), new Vector3(-.18f, .08f, -.12f), Quaternion.Euler(0f, 15f, 12f), .9f);
-                    identity.primaryWeapon = "ranged weapon";
+                    AddLateBronzeAgeKit(root, TroyFaction.Greek, false, true);
+                    identity.primaryWeapon = "bow";
                     identity.offhandItem = "quiver";
                     break;
                 case EnemyArchetype.Boss:
-                    AttachAccessory(root, "sword_2handed_color", Hand(root, true), Vector3.zero, Quaternion.identity, 1.08f);
-                    AttachAccessory(root, "shield_spikes_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.18f);
+                    AttachAccessory(root, "sword_1handed", Hand(root, true), Vector3.zero, Quaternion.identity, 1.08f);
+                    AttachAccessory(root, "shield_badge_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.20f);
                     AddHeroCrest(root, new Color(.34f, .48f, .78f));
+                    AddLateBronzeAgeKit(root, TroyFaction.Greek, true, false);
+                    AddCape(root, new Color(.20f, .31f, .55f));
                     identity.role = TroyVisualRole.Commander;
-                    identity.primaryWeapon = "hero sword";
-                    identity.offhandItem = "spiked shield";
+                    identity.primaryWeapon = "command sword";
+                    identity.offhandItem = "royal shield";
                     break;
                 default:
                     AttachProceduralSpear(root, Hand(root, true), 1.05f);
                     AttachAccessory(root, "shield_round_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1f);
+                    AddLateBronzeAgeKit(root, TroyFaction.Greek, false, false);
                     identity.primaryWeapon = "spear";
                     identity.offhandItem = "round shield";
                     break;
@@ -137,21 +144,24 @@ public static class CartoonCharacterPrefabBuilder
             AddIdentity(trojanInfantry, TroyFaction.Trojan, TroyVisualRole.Infantry, "Trojan_Infantry", "spear", "round shield");
             AttachProceduralSpear(trojanInfantry, Hand(trojanInfantry, true), 1.05f);
             AttachAccessory(trojanInfantry, "shield_round_barbarian", Hand(trojanInfantry, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.02f);
+            AddLateBronzeAgeKit(trojanInfantry, TroyFaction.Trojan, false, false);
             SaveRoot(trojanInfantry, TrojanOutputRoot);
 
             GameObject trojanGuard = CreateCharacterRoot(infantry, "Trojan_Guard", new Color(.82f, .56f, .20f), 1.08f, 1.92f, .39f);
-            AddIdentity(trojanGuard, TroyFaction.Trojan, TroyVisualRole.ShieldBearer, "Trojan_Guard", "sword", "square shield");
-            AttachAccessory(trojanGuard, "sword_1handed", Hand(trojanGuard, true), Vector3.zero, Quaternion.identity, 1f);
-            AttachAccessory(trojanGuard, "shield_square_color", Hand(trojanGuard, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.12f);
+            AddIdentity(trojanGuard, TroyFaction.Trojan, TroyVisualRole.ShieldBearer, "Trojan_Guard", "spear", "tower shield");
+            AttachProceduralSpear(trojanGuard, Hand(trojanGuard, true), 1.12f);
+            AttachAccessory(trojanGuard, "shield_square_color", Hand(trojanGuard, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.18f);
             AddHeroCrest(trojanGuard, new Color(.75f, .22f, .12f));
+            AddLateBronzeAgeKit(trojanGuard, TroyFaction.Trojan, true, false);
             SaveRoot(trojanGuard, TrojanOutputRoot);
         }
         if (archer != null)
         {
             GameObject trojanArcher = CreateCharacterRoot(archer, "Trojan_Archer", new Color(.66f, .34f, .16f), .98f, 1.8f, .35f);
-            AddIdentity(trojanArcher, TroyFaction.Trojan, TroyVisualRole.Archer, "Trojan_Archer", "ranged weapon", "quiver");
-            AttachAccessory(trojanArcher, "crossbow_2handed", Hand(trojanArcher, true), Vector3.zero, Quaternion.identity, .92f);
+            AddIdentity(trojanArcher, TroyFaction.Trojan, TroyVisualRole.Archer, "Trojan_Archer", "bow", "quiver");
+            AttachProceduralBow(trojanArcher, Hand(trojanArcher, true), .92f);
             AttachAccessory(trojanArcher, "quiver", FindTorso(trojanArcher), new Vector3(-.18f, .08f, -.12f), Quaternion.Euler(0f, 15f, 12f), .9f);
+            AddLateBronzeAgeKit(trojanArcher, TroyFaction.Trojan, false, true);
             SaveRoot(trojanArcher, TrojanOutputRoot);
         }
     }
@@ -170,8 +180,10 @@ public static class CartoonCharacterPrefabBuilder
         {
             case TroyHeroId.Hector:
                 AttachProceduralSpear(root, Hand(root, true), 1.20f);
-                AttachAccessory(root, "shield_square_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.12f);
+                AttachAccessory(root, "shield_square_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.16f);
                 AddHeroCrest(root, new Color(.72f, .18f, .12f));
+                AddLateBronzeAgeKit(root, TroyFaction.Trojan, true, false);
+                AddCape(root, new Color(.48f, .055f, .04f));
                 identity.primaryWeapon = "long spear";
                 identity.offhandItem = "Trojan shield";
                 break;
@@ -179,13 +191,17 @@ public static class CartoonCharacterPrefabBuilder
                 AttachAccessory(root, "sword_1handed", Hand(root, true), Vector3.zero, Quaternion.identity, 1.08f);
                 AttachAccessory(root, "shield_round_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.08f);
                 AddHeroCrest(root, new Color(.86f, .63f, .18f));
+                AddLateBronzeAgeKit(root, TroyFaction.Greek, true, false);
+                AddCape(root, new Color(.62f, .45f, .12f));
                 identity.primaryWeapon = "hero sword";
                 identity.offhandItem = "round shield";
                 break;
             case TroyHeroId.Menelaus:
-                AttachAccessory(root, "sword_2handed", Hand(root, true), Vector3.zero, Quaternion.identity, 1.05f);
-                AttachAccessory(root, "shield_badge_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.10f);
+                AttachAccessory(root, "sword_1handed", Hand(root, true), Vector3.zero, Quaternion.identity, 1.05f);
+                AttachAccessory(root, "shield_badge_color", Hand(root, false), Vector3.zero, Quaternion.Euler(0f, 90f, 0f), 1.14f);
                 AddHeroCrest(root, new Color(.28f, .42f, .72f));
+                AddLateBronzeAgeKit(root, TroyFaction.Greek, true, false);
+                AddCape(root, new Color(.18f, .28f, .52f));
                 identity.primaryWeapon = "command sword";
                 identity.offhandItem = "royal shield";
                 break;
@@ -262,6 +278,70 @@ public static class CartoonCharacterPrefabBuilder
         tip.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
         DestroyCollider(tip);
         TowerFactory.SetColor(tip, new Color(.72f, .50f, .20f));
+    }
+
+    static void AttachProceduralBow(GameObject root, Transform parent, float scale)
+    {
+        if (parent == null) parent = root.transform;
+        GameObject bow = new GameObject("Bow");
+        bow.transform.SetParent(parent, false);
+        bow.transform.localPosition = new Vector3(.03f, .02f, .05f);
+        bow.transform.localRotation = Quaternion.Euler(4f, 8f, 88f);
+        bow.transform.localScale = Vector3.one * scale;
+
+        Color wood = new Color(.34f, .19f, .08f);
+        Color stringColor = new Color(.76f, .70f, .55f);
+        GameObject upper = PrimitivePart(bow.transform, "UpperLimb", PrimitiveType.Cylinder, new Vector3(0f, .28f, 0f), new Vector3(.025f, .34f, .025f), wood);
+        upper.transform.localRotation = Quaternion.Euler(0f, 0f, -18f);
+        GameObject lower = PrimitivePart(bow.transform, "LowerLimb", PrimitiveType.Cylinder, new Vector3(0f, -.28f, 0f), new Vector3(.025f, .34f, .025f), wood);
+        lower.transform.localRotation = Quaternion.Euler(0f, 0f, 18f);
+        PrimitivePart(bow.transform, "BowString", PrimitiveType.Cylinder, new Vector3(-.10f, 0f, 0f), new Vector3(.007f, .61f, .007f), stringColor);
+    }
+
+    static void AddLateBronzeAgeKit(GameObject root, TroyFaction faction, bool heavy, bool light)
+    {
+        Transform kit = new GameObject("LateBronzeAgeKit").transform;
+        kit.SetParent(root.transform, false);
+
+        Color bronze = heavy ? new Color(.66f, .43f, .17f) : new Color(.73f, .50f, .22f);
+        Color cloth = faction == TroyFaction.Trojan ? new Color(.54f, .07f, .04f) : new Color(.20f, .32f, .52f);
+        Color leather = new Color(.25f, .12f, .055f);
+
+        Vector3 chestScale = heavy ? new Vector3(.46f, .35f, .23f) : new Vector3(.40f, .29f, .20f);
+        PrimitivePart(kit, "BronzeCuirass", PrimitiveType.Cube, new Vector3(0f, 1.10f, .01f), chestScale, bronze);
+        PrimitivePart(kit, "LeatherBelt", PrimitiveType.Cube, new Vector3(0f, .82f, .01f), new Vector3(.40f, .07f, .22f), leather);
+        PrimitivePart(kit, "FactionCloth", PrimitiveType.Cube, new Vector3(0f, .67f, .015f), new Vector3(.34f, .22f, .20f), cloth);
+
+        if (!light)
+        {
+            PrimitivePart(kit, "LeftShoulderBronze", PrimitiveType.Sphere, new Vector3(-.30f, 1.24f, 0f), new Vector3(.13f, .10f, .15f), bronze);
+            PrimitivePart(kit, "RightShoulderBronze", PrimitiveType.Sphere, new Vector3(.30f, 1.24f, 0f), new Vector3(.13f, .10f, .15f), bronze);
+        }
+
+        PrimitivePart(kit, "BronzeHelmet", PrimitiveType.Sphere, new Vector3(0f, 1.70f, 0f), new Vector3(.27f, .18f, .27f), bronze);
+        if (heavy)
+        {
+            PrimitivePart(kit, "HelmetCheekLeft", PrimitiveType.Cube, new Vector3(-.18f, 1.59f, .02f), new Vector3(.055f, .16f, .16f), bronze);
+            PrimitivePart(kit, "HelmetCheekRight", PrimitiveType.Cube, new Vector3(.18f, 1.59f, .02f), new Vector3(.055f, .16f, .16f), bronze);
+        }
+    }
+
+    static void AddCape(GameObject root, Color color)
+    {
+        GameObject cape = PrimitivePart(root.transform, "HeroCape", PrimitiveType.Cube, new Vector3(0f, 1.05f, -.20f), new Vector3(.42f, .58f, .035f), color);
+        cape.transform.localRotation = Quaternion.Euler(8f, 0f, 0f);
+    }
+
+    static GameObject PrimitivePart(Transform parent, string name, PrimitiveType type, Vector3 localPosition, Vector3 localScale, Color color)
+    {
+        GameObject part = GameObject.CreatePrimitive(type);
+        part.name = name;
+        part.transform.SetParent(parent, false);
+        part.transform.localPosition = localPosition;
+        part.transform.localScale = localScale;
+        DestroyCollider(part);
+        TowerFactory.SetColor(part, color);
+        return part;
     }
 
     static void AddHeroCrest(GameObject root, Color color)
@@ -366,9 +446,7 @@ public static class CartoonCharacterPrefabBuilder
 
     static void EnsureFolders()
     {
-        EnsureFolder("Assets/Resources");
         EnsureFolder(BaseOutputRoot);
-        EnsureFolder(BaseOutputRoot + "/Factions");
         EnsureFolder(GreekOutputRoot);
         EnsureFolder(TrojanOutputRoot);
         EnsureFolder(HeroOutputRoot);
