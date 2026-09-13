@@ -36,6 +36,7 @@ public static class TowerFactory
         tower.head = headObject.transform;
         tower.muzzle = muzzle.transform;
         tower.Configure(type, data.cost);
+        root.AddComponent<TowerProductionArtBinder>();
         return root;
     }
 
