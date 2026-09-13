@@ -11,9 +11,11 @@ public sealed class ModernCombatHud : MonoBehaviour
     Canvas menuCanvas;
 
     Text goldText, gateText, aliveText, waveText, threatText, wavePreviewText;
+    Text speedText, magicText, giftText;
     Text selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview;
-    Button upgradeButton, sellButton, priorityButton, startWaveButton;
+    Button upgradeButton, sellButton, priorityButton, startWaveButton, magicButton, giftButton;
     Text buildSelectionText;
+    static Sprite coinSprite;
 
     GameObject buildTooltip;
     Image tooltipAccent;
@@ -68,6 +70,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         group = root.AddComponent<CanvasGroup>();
 
         BuildTopBar(root.transform);
+        BuildActionPanel(root.transform);
         BuildWaveBar(root.transform);
         BuildDock(root.transform);
         BuildBuildTooltip(root.transform);
@@ -78,9 +81,23 @@ public sealed class ModernCombatHud : MonoBehaviour
     void BuildTopBar(Transform parent)
     {
         GameObject bar = Panel(parent, "TopResources", new Vector2(24, -24), new Vector2(660, 74), new Color(.035f, .022f, .016f, .92f), new Vector2(0, 1), new Vector2(0, 1));
-        goldText = Text(bar.transform, "GOLD", new Vector2(22, 0), new Vector2(190, 60), 22, new Color(1f, .73f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(34, 0), new Vector2(38, 38), CoinSprite());
+        coin.color = Color.white;
+        goldText = Text(bar.transform, "0", new Vector2(82, 0), new Vector2(110, 60), 24, new Color(1f, .73f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         gateText = Text(bar.transform, "GATE", new Vector2(220, 0), new Vector2(190, 60), 20, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         aliveText = Text(bar.transform, "ALIVE", new Vector2(425, 0), new Vector2(200, 60), 20, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+    }
+
+    void BuildActionPanel(Transform parent)
+    {
+        GameObject panel = Panel(parent, "CombatActions", new Vector2(-24, -24), new Vector2(430, 190), new Color(.035f, .022f, .016f, .92f), new Vector2(1, 1), new Vector2(1, 1));
+        Button(panel.transform, "-", new Vector2(-178, -32), new Vector2(54, 54), DecreaseSpeed, false);
+        Button(panel.transform, "+", new Vector2(-58, -32), new Vector2(54, 54), IncreaseSpeed, false);
+        speedText = Text(panel.transform, "1x", new Vector2(-118, -32), new Vector2(82, 54), 18, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        magicButton = Button(panel.transform, "", new Vector2(110, -32), new Vector2(180, 54), () => GameManager.Instance?.UseMagic(), true);
+        magicText = magicButton.GetComponentInChildren<Text>();
+        giftButton = Button(panel.transform, "", new Vector2(110, -100), new Vector2(300, 50), () => GameManager.Instance?.UseGift(), false);
+        giftText = giftButton.GetComponentInChildren<Text>();
     }
 
     void BuildWaveBar(Transform parent)
@@ -204,6 +221,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
         UpdateResources();
         UpdateWave();
+        UpdateActions();
         UpdateBuildDock();
         UpdateSelected();
         if (buildTooltipVisible) RefreshBuildTooltip();
@@ -225,9 +243,27 @@ public sealed class ModernCombatHud : MonoBehaviour
     void UpdateResources()
     {
         GameManager gm = GameManager.Instance;
-        goldText.text = $"{L("GOLD", "ЗОЛОТО")}   {gm.Money}";
+        goldText.text = gm.Money.ToString();
         gateText.text = $"{L("GATE", "ВОРОТА")}   {gm.BaseHealth}/{gm.MaxBaseHealth}";
         aliveText.text = $"{L("ENEMIES", "ВРАГИ")}   {EnemyRegistry.AliveCount}";
+    }
+
+    void UpdateActions()
+    {
+        GameManager gm = GameManager.Instance;
+        float speed = CombatControlsUI.CurrentSpeed;
+        speedText.text = $"{speed:0}x";
+
+        float cooldown = gm != null ? gm.MagicCooldownRemaining : 0f;
+        magicText.text = cooldown > 0f
+            ? L("MAGIC ", "МАГИЯ ") + Mathf.CeilToInt(cooldown) + L("s", "с")
+            : L("MAGIC READY", "МАГИЯ ГОТОВА");
+        magicButton.interactable = gm != null && cooldown <= 0f && !gm.GameEnded;
+
+        giftText.text = gm != null && gm.GiftAvailable
+            ? L("GIFT +100 / +2", "ДАР +100 / +2")
+            : L("GIFT USED", "ДАР ИСПОЛЬЗОВАН");
+        giftButton.interactable = gm != null && gm.GiftAvailable && !gm.GameEnded;
     }
 
     void UpdateWave()
@@ -507,6 +543,16 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void SelectBuild(TowerType type) => placement?.SelectBuildType(type);
 
+    void IncreaseSpeed()
+    {
+        CombatControlsUI.IncreaseSpeed();
+    }
+
+    void DecreaseSpeed()
+    {
+        CombatControlsUI.DecreaseSpeed();
+    }
+
     string BuildLabel(TowerType type, string key) => $"[{key}]  {TowerName(type)}\n{TowerFactory.GetCost(type)} {L("GOLD", "ЗОЛОТА")}";
 
     string TowerName(TowerType type)
@@ -538,6 +584,20 @@ public sealed class ModernCombatHud : MonoBehaviour
         outline.effectColor = new Color(.67f, .36f, .13f, .42f);
         outline.effectDistance = new Vector2(1.5f, -1.5f);
         return go;
+    }
+
+    Image Icon(Transform parent, string name, Vector2 pos, Vector2 size, Sprite sprite)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>();
+        image.sprite = sprite;
+        image.raycastTarget = false;
+        RectTransform rt = image.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = size;
+        return image;
     }
 
     Button Button(Transform parent, string label, Vector2 pos, Vector2 size, UnityEngine.Events.UnityAction action, bool primary)
@@ -577,5 +637,31 @@ public sealed class ModernCombatHud : MonoBehaviour
         rt.anchoredPosition = pos;
         rt.sizeDelta = size;
         return t;
+    }
+
+    static Sprite CoinSprite()
+    {
+        if (coinSprite != null) return coinSprite;
+        const int size = 64;
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        Color clear = new Color(0f, 0f, 0f, 0f);
+        Color edge = new Color(.74f, .38f, .06f, 1f);
+        Color gold = new Color(1f, .72f, .18f, 1f);
+        Color shine = new Color(1f, .92f, .48f, 1f);
+        Vector2 center = new Vector2((size - 1) * .5f, (size - 1) * .5f);
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), center);
+                Color c = clear;
+                if (d < 29f) c = d > 24f ? edge : gold;
+                if (d < 17f && x < 30 && y > 33) c = shine;
+                texture.SetPixel(x, y, c);
+            }
+        }
+        texture.Apply();
+        coinSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(.5f, .5f));
+        return coinSprite;
     }
 }

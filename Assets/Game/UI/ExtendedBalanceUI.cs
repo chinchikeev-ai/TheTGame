@@ -14,8 +14,7 @@ public class ExtendedBalanceUI : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
     {
-        if (FindFirstObjectByType<ExtendedBalanceUI>() == null)
-            new GameObject("ExtendedBalanceUI").AddComponent<ExtendedBalanceUI>();
+        // ModernCombatHud owns the in-game balance and wave presentation.
     }
 
     void Start()

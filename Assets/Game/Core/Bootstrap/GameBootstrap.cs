@@ -42,9 +42,7 @@ public class GameBootstrap : MonoBehaviour
         ChapterOneCinematicCamera cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
         cinematic.Initialize(cam);
 
-        new GameObject("GameUI").AddComponent<GameUIController>();
         new GameObject("ModernCombatHUD").AddComponent<ModernCombatHud>();
-        new GameObject("BuildDefenseInfoPresentation").AddComponent<BuildDefenseInfoPresentation>();
         new GameObject("GameMenu").AddComponent<GameMenuController>();
         new GameObject("GameMenuUX").AddComponent<GameMenuUxEnhancer>();
         new GameObject("GameMenuProgress").AddComponent<MenuProgressPresentation>();
@@ -90,8 +88,8 @@ public class GameBootstrap : MonoBehaviour
 
         CameraController controller = cam.GetComponent<CameraController>();
         if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
-        controller.xBounds = new Vector2(-6f, 6f);
-        controller.zBounds = new Vector2(-7.5f, 4f);
+        controller.xBounds = new Vector2(-7.5f, 7.5f);
+        controller.zBounds = new Vector2(-12f, 5f);
         controller.minOrthoSize = 7f;
         controller.maxOrthoSize = 13f;
 

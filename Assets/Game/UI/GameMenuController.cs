@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -169,34 +168,6 @@ public class GameMenuController : MonoBehaviour
     void BuildSettingsMenu()
     {
         settingsMenu = MakeScreen("Settings", new Color(.02f, .015f, .012f, .97f));
-        GameObject panel = MakePanel(settingsMenu.transform, "SettingsPanel", new Vector2(.5f, .5f), new Vector2(1320, 920), new Color(.065f, .035f, .022f, .98f));
-
-        AddTitle(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, 392), 52, MenuTextStyle.Logo);
-        AddTitle(panel.transform, L("Tune the experience without leaving Troy", "Настройте игру под себя"), new Vector2(0, 342), 19, MenuTextStyle.Muted);
-        AddDivider(panel.transform, new Vector2(0, 306), 1040);
-
-        AddSectionLabel(panel.transform, L("AUDIO", "ЗВУК"), new Vector2(-395, 258));
-        masterVolumeSlider = AddSliderRow(panel.transform, L("Master Volume", "Общая громкость"), new Vector2(-345, 195), GameUserSettings.MasterVolume, OnMasterVolumeChanged, out masterVolumeValue);
-        musicVolumeSlider = AddSliderRow(panel.transform, L("Music", "Музыка"), new Vector2(-345, 95), GameUserSettings.MusicVolume, OnMusicVolumeChanged, out musicVolumeValue);
-
-        AddSectionLabel(panel.transform, L("DISPLAY", "ЭКРАН"), new Vector2(305, 258));
-        fullscreenValue = AddSelectorRow(panel.transform, L("Window Mode", "Режим экрана"), new Vector2(360, 205), ToggleFullscreen);
-        resolutionValue = AddSelectorRow(panel.transform, L("Resolution", "Разрешение"), new Vector2(360, 125), CycleResolution);
-        vsyncValue = AddSelectorRow(panel.transform, "VSync", new Vector2(360, 45), ToggleVSync);
-        fpsValue = AddSelectorRow(panel.transform, L("FPS Limit", "Лимит FPS"), new Vector2(360, -35), CycleFpsLimit);
-        qualityValue = AddSelectorRow(panel.transform, L("Graphics Quality", "Качество графики"), new Vector2(360, -115), CycleQuality);
-
-        AddSectionLabel(panel.transform, L("GAME", "ИГРА"), new Vector2(-395, -25));
-        languageValue = AddSelectorRow(panel.transform, L("Language", "Язык"), new Vector2(-345, -95), ToggleLanguage);
-        Button difficultyButton = AddButton(panel.transform, "", new Vector2(-345, -192), CycleDifficulty, new Vector2(470, 62), MenuButtonStyle.Stone);
-        difficultyLabel = difficultyButton.GetComponentInChildren<Text>();
-        AddButton(panel.transform, L("RESET DEFAULTS", "СБРОСИТЬ"), new Vector2(360, -215), ResetSettings, new Vector2(470, 60), MenuButtonStyle.Ghost);
-
-        AddDivider(panel.transform, new Vector2(0, -304), 1040);
-        AddButton(panel.transform, L("APPLY", "ПРИМЕНИТЬ"), new Vector2(-155, -370), ApplySettingsAndBack, new Vector2(290, 64), MenuButtonStyle.Highlight);
-        AddButton(panel.transform, L("BACK", "НАЗАД"), new Vector2(175, -370), BackFromSettings, new Vector2(290, 64), MenuButtonStyle.Ghost);
-
-        RefreshDifficultyLabel();
     }
 
     void BuildPauseMenu()
@@ -566,20 +537,9 @@ public class GameMenuController : MonoBehaviour
         endMenu.SetActive(true);
     }
 
-    void RestartScene()
+    public void RestartScene()
     {
         if (reloading) return;
-        StartCoroutine(ReloadSceneRoutine());
-    }
-
-    void RestartChapter()
-    {
-        startLevelAfterReload = true;
-        RestartScene();
-    }
-
-    IEnumerator ReloadSceneRoutine()
-    {
         reloading = true;
         Scene scene = SceneManager.GetActiveScene();
         RuntimeFileLogger.Event("MENU", $"Reloading scene buildIndex={scene.buildIndex}, name={scene.name}");
@@ -590,16 +550,13 @@ public class GameMenuController : MonoBehaviour
             button.interactable = false;
 
         int buildIndex = scene.buildIndex >= 0 ? scene.buildIndex : 0;
-        AsyncOperation operation = SceneManager.LoadSceneAsync(buildIndex);
+        SceneManager.LoadScene(buildIndex, LoadSceneMode.Single);
+    }
 
-        if (operation == null)
-        {
-            RuntimeFileLogger.Event("MENU", "Scene reload failed to start");
-            reloading = false;
-            yield break;
-        }
-
-        while (!operation.isDone) yield return null;
+    public void RestartChapter()
+    {
+        startLevelAfterReload = true;
+        RestartScene();
     }
 
     void QuitGame()

@@ -15,8 +15,7 @@ public class CombatControlsUI : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
     {
-        if (FindFirstObjectByType<CombatControlsUI>() == null)
-            new GameObject("CombatControlsUI").AddComponent<CombatControlsUI>();
+        // Controls are rendered by ModernCombatHud.
     }
 
     public static float CurrentSpeed => Speeds[Mathf.Clamp(speedIndex, 0, Speeds.Length - 1)];
@@ -125,13 +124,13 @@ public class CombatControlsUI : MonoBehaviour
         text.text = label;
     }
 
-    void IncreaseSpeed()
+    public static void IncreaseSpeed()
     {
         speedIndex = Mathf.Min(speedIndex + 1, Speeds.Length - 1);
         Time.timeScale = CurrentSpeed;
     }
 
-    void DecreaseSpeed()
+    public static void DecreaseSpeed()
     {
         speedIndex = Mathf.Max(speedIndex - 1, 0);
         Time.timeScale = CurrentSpeed;
