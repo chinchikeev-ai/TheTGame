@@ -23,7 +23,8 @@ public static class MythicAndSupportArtCandidateBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Built Trojan support and Cyclops art candidates.");
+        ChapterOneCharacterAnimationBuilder.BuildAll();
+        Debug.Log("Built Trojan support and Cyclops art candidates and refreshed Chapter I animation profiles.");
     }
 
     static void EnsureBaseCharacters()
@@ -40,8 +41,11 @@ public static class MythicAndSupportArtCandidateBuilder
             Tint(root, new Color(.88f,.76f,.48f), .38f);
             Part(root.transform,"Priest White Robe",PrimitiveType.Cylinder,new Vector3(0f,.86f,0f),new Vector3(.31f,.52f,.31f),new Color(.88f,.82f,.66f));
             Part(root.transform,"Priest Gold Belt",PrimitiveType.Cylinder,new Vector3(0f,.72f,0f),new Vector3(.32f,.045f,.32f),new Color(.86f,.62f,.16f));
+            Part(root.transform,"Apollo Stole Left",PrimitiveType.Cube,new Vector3(-.18f,1.02f,-.20f),new Vector3(.07f,.48f,.035f),new Color(.92f,.69f,.20f),Quaternion.Euler(4f,0f,4f));
+            Part(root.transform,"Apollo Stole Right",PrimitiveType.Cube,new Vector3(.18f,1.02f,-.20f),new Vector3(.07f,.48f,.035f),new Color(.92f,.69f,.20f),Quaternion.Euler(4f,0f,-4f));
             Part(root.transform,"Sun Staff",PrimitiveType.Cylinder,new Vector3(.32f,.88f,.04f),new Vector3(.025f,.74f,.025f),new Color(.62f,.40f,.13f));
             Part(root.transform,"Sun Disc",PrimitiveType.Cylinder,new Vector3(.32f,1.62f,.04f),new Vector3(.18f,.035f,.18f),new Color(.95f,.72f,.18f),Quaternion.Euler(90f,0f,0f));
+            Part(root.transform,"Solar Crown",PrimitiveType.Cube,new Vector3(0f,1.90f,0f),new Vector3(.30f,.045f,.05f),new Color(.92f,.66f,.16f));
             SetIdentity(root,TroyFaction.Trojan,TroyVisualRole.Hero,"Trojan_PriestApollo","sun staff","ritual robes");
         });
     }
@@ -54,7 +58,9 @@ public static class MythicAndSupportArtCandidateBuilder
             Tint(root, new Color(.55f,.16f,.06f), .32f);
             Part(root.transform,"Fire Keeper Tunic",PrimitiveType.Cylinder,new Vector3(0f,.82f,0f),new Vector3(.30f,.48f,.30f),new Color(.50f,.09f,.035f));
             Part(root.transform,"Leather Apron",PrimitiveType.Cube,new Vector3(0f,.78f,-.24f),new Vector3(.34f,.46f,.035f),new Color(.24f,.13f,.07f));
+            Part(root.transform,"Heat Guard",PrimitiveType.Cube,new Vector3(0f,1.18f,-.24f),new Vector3(.40f,.18f,.04f),new Color(.62f,.39f,.14f));
             Part(root.transform,"Pitch Pot",PrimitiveType.Cylinder,new Vector3(-.38f,.52f,.12f),new Vector3(.16f,.22f,.16f),new Color(.17f,.10f,.055f));
+            Part(root.transform,"Pitch Ladle",PrimitiveType.Cylinder,new Vector3(-.24f,.85f,.10f),new Vector3(.022f,.38f,.022f),new Color(.38f,.22f,.09f),Quaternion.Euler(0f,0f,-26f));
             Part(root.transform,"Torch",PrimitiveType.Cylinder,new Vector3(.34f,.74f,.08f),new Vector3(.025f,.52f,.025f),new Color(.34f,.19f,.08f));
             Part(root.transform,"Torch Flame",PrimitiveType.Sphere,new Vector3(.34f,1.28f,.08f),new Vector3(.11f,.20f,.11f),new Color(1f,.32f,.035f));
             SetIdentity(root,TroyFaction.Trojan,TroyVisualRole.Infantry,"Trojan_FireKeeper","torch","pitch pot");
@@ -67,7 +73,9 @@ public static class MythicAndSupportArtCandidateBuilder
         {
             StripCombatGear(root);
             Tint(root,new Color(.64f,.38f,.17f),.22f);
+            Part(root.transform,"Crew Leather Harness",PrimitiveType.Cube,new Vector3(0f,1.05f,-.22f),new Vector3(.38f,.08f,.035f),new Color(.30f,.18f,.08f),Quaternion.Euler(0f,0f,-12f));
             Part(root.transform,"Crew Tool",PrimitiveType.Cube,new Vector3(.32f,.70f,.08f),new Vector3(.08f,.42f,.08f),new Color(.30f,.18f,.08f),Quaternion.Euler(0f,0f,-30f));
+            Part(root.transform,"Winch Handle",PrimitiveType.Cylinder,new Vector3(.38f,.64f,-.08f),new Vector3(.025f,.28f,.025f),new Color(.58f,.38f,.14f),Quaternion.Euler(0f,0f,58f));
             Part(root.transform,"Bolt Bundle",PrimitiveType.Cylinder,new Vector3(-.34f,.70f,-.12f),new Vector3(.10f,.34f,.10f),new Color(.52f,.32f,.12f),Quaternion.Euler(8f,0f,12f));
             SetIdentity(root,TroyFaction.Trojan,TroyVisualRole.Infantry,"Trojan_BallistaCrew","winch tool","bolt bundle");
         });
