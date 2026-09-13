@@ -11,7 +11,8 @@ public sealed class HectorAbilityPresentation : MonoBehaviour
 
     public void PlayWarCry(float radius)
     {
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, WarCryColor, radius * 1.35f, .55f);
+        RuntimeEffects.Instance?.PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(transform.position, WarCryColor, radius * 1.35f, .55f);
     }
 
     public void PlayShieldWall(Vector3 center, Quaternion rotation)
@@ -23,18 +24,21 @@ public sealed class HectorAbilityPresentation : MonoBehaviour
         for (int i = -1; i <= 1; i++)
             CreateShield(root.transform, i * 1.05f);
 
-        RuntimeEffects.Instance?.PlayHeroPulse(center, ShieldWallColor, 3.8f, .48f);
+        RuntimeEffects.Instance?.PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(center, ShieldWallColor, 3.8f, .48f);
         Destroy(root, ShieldVisualLifetime);
     }
 
     public void PlaySpearImpact(Vector3 point)
     {
-        RuntimeEffects.Instance?.PlayHeroPulse(point, SpearColor, 2.2f, .32f);
+        RuntimeEffects.Instance?.PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(point, SpearColor, 2.2f, .32f);
     }
 
     public void PlayUltimate(float radius)
     {
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, UltimateColor, radius * 1.15f, .72f);
+        RuntimeEffects.Instance?.PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(transform.position, UltimateColor, radius * 1.15f, .72f);
     }
 
     static void CreateShield(Transform parent, float localX)
