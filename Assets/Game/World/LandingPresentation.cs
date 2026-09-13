@@ -26,7 +26,7 @@ public class LandingPresentation : MonoBehaviour
         GameObject[] boats = new GameObject[4];
         float[] z = { 7.2f, 2.4f, -2.4f, -7.0f };
         for (int i = 0; i < boats.Length; i++)
-            boats[i] = CreateBoat(root.transform, new Vector3(-19.2f - i * .55f, .12f, z[i]));
+            boats[i] = GreekLandingShipVisualFactory.Create(root.transform, new Vector3(-19.2f - i * .55f, .12f, z[i]), "Incoming Achaean Galley");
 
         float duration = 5.2f;
         float elapsed = 0f;
@@ -120,7 +120,6 @@ public class LandingPresentation : MonoBehaviour
             body.detectCollisions = false;
             body.isKinematic = true;
         }
-
         return soldier;
     }
 
@@ -134,10 +133,7 @@ public class LandingPresentation : MonoBehaviour
         {
             float z = -5.8f + i * 2.8f;
             DecorPrimitive(parent,"Landing Crate",PrimitiveType.Cube,new Vector3(-12.45f,.18f,z),new Vector3(.40f,.36f,.46f),wood,Quaternion.Euler(0f,8f*i,0f));
-
-            GameObject shield = DecorPrimitive(parent,"Discarded Greek Shield",PrimitiveType.Cylinder,new Vector3(-11.95f,.16f,z+.48f),new Vector3(.24f,.045f,.24f),bronze,Quaternion.Euler(82f,0f,18f));
-            shield.transform.localRotation = Quaternion.Euler(82f,0f,18f+i*7f);
-
+            DecorPrimitive(parent,"Discarded Greek Shield",PrimitiveType.Cylinder,new Vector3(-11.95f,.16f,z+.48f),new Vector3(.24f,.045f,.24f),bronze,Quaternion.Euler(82f,0f,18f+i*7f));
             DecorPrimitive(parent,"Landing Oar",PrimitiveType.Cylinder,new Vector3(-12.10f,.12f,z-.55f),new Vector3(.025f,.72f,.025f),wood,Quaternion.Euler(82f,0f,28f));
         }
 
@@ -204,47 +200,6 @@ public class LandingPresentation : MonoBehaviour
         text.color = Color.white;
         text.alignment = alignment;
         return text;
-    }
-
-    GameObject CreateBoat(Transform parent, Vector3 position)
-    {
-        GameObject root = new GameObject("Incoming Achaean Galley");
-        root.transform.SetParent(parent);
-        root.transform.position = position;
-
-        Color darkWood = new Color(.25f,.13f,.065f);
-        Color warmWood = new Color(.42f,.20f,.08f);
-        Color bronze = new Color(.56f,.31f,.10f);
-        Color sailColor = new Color(.72f,.64f,.50f);
-
-        DecorPrimitive(root.transform,"Lower Hull",PrimitiveType.Cube,Vector3.zero,new Vector3(2.5f,.28f,.78f),darkWood);
-        DecorPrimitive(root.transform,"Deck",PrimitiveType.Cube,new Vector3(-.05f,.28f,0f),new Vector3(2.15f,.10f,.66f),warmWood);
-        DecorPrimitive(root.transform,"Port Gunwale",PrimitiveType.Cube,new Vector3(-.05f,.48f,-.43f),new Vector3(2.18f,.12f,.08f),warmWood);
-        DecorPrimitive(root.transform,"Starboard Gunwale",PrimitiveType.Cube,new Vector3(-.05f,.48f,.43f),new Vector3(2.18f,.12f,.08f),warmWood);
-        DecorPrimitive(root.transform,"Keel",PrimitiveType.Cube,new Vector3(-.10f,-.22f,0f),new Vector3(2.18f,.08f,.12f),bronze);
-
-        DecorPrimitive(root.transform,"Prow",PrimitiveType.Cube,new Vector3(1.45f,.22f,0f),new Vector3(.68f,.42f,.58f),warmWood,Quaternion.Euler(0f,0f,-23f));
-        DecorPrimitive(root.transform,"Prow Horn",PrimitiveType.Cube,new Vector3(1.88f,.35f,0f),new Vector3(.44f,.09f,.09f),bronze,Quaternion.Euler(0f,0f,-17f));
-        DecorPrimitive(root.transform,"Stern",PrimitiveType.Cube,new Vector3(-1.35f,.24f,0f),new Vector3(.45f,.50f,.62f),new Color(.36f,.17f,.07f),Quaternion.Euler(0f,0f,18f));
-
-        DecorPrimitive(root.transform,"Mast",PrimitiveType.Cylinder,new Vector3(-.05f,1.02f,0f),new Vector3(.045f,.95f,.045f),new Color(.32f,.18f,.08f));
-        DecorPrimitive(root.transform,"Yard",PrimitiveType.Cylinder,new Vector3(-.05f,1.55f,0f),new Vector3(.035f,.62f,.035f),warmWood,Quaternion.Euler(90f,0f,0f));
-        DecorPrimitive(root.transform,"Square Sail",PrimitiveType.Cube,new Vector3(-.05f,1.12f,0f),new Vector3(.05f,.78f,.92f),sailColor);
-        DecorPrimitive(root.transform,"Sail Stripe",PrimitiveType.Cube,new Vector3(-.085f,1.12f,0f),new Vector3(.012f,.13f,.94f),new Color(.34f,.40f,.50f));
-
-        for (int i = -3; i <= 3; i++)
-        {
-            float x = i * .34f;
-            DecorPrimitive(root.transform,"Bench",PrimitiveType.Cube,new Vector3(x,.39f,0f),new Vector3(.11f,.045f,.62f),warmWood);
-
-            GameObject oar = DecorPrimitive(root.transform,"Oar",PrimitiveType.Cylinder,new Vector3(x,.31f,0f),new Vector3(.022f,.88f,.022f),warmWood,Quaternion.Euler(90f,0f,0f));
-            oar.transform.localRotation = Quaternion.Euler(90f,0f,i%2==0 ? 7f : -7f);
-
-            GameObject shield = DecorPrimitive(root.transform,"Hull Shield",PrimitiveType.Cylinder,new Vector3(x,.48f,-.48f),new Vector3(.17f,.04f,.17f),i % 2 == 0 ? bronze : new Color(.52f,.43f,.25f),Quaternion.Euler(90f,0f,0f));
-            shield.transform.localRotation = Quaternion.Euler(90f,0f,0f);
-        }
-
-        return root;
     }
 
     GameObject DecorPrimitive(Transform parent, string name, PrimitiveType type, Vector3 localPosition, Vector3 localScale, Color color, Quaternion? localRotation = null)

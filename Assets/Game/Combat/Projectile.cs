@@ -22,30 +22,15 @@ public class Projectile : MonoBehaviour
     MaterialPropertyBlock propertyBlock;
     bool inPool;
 
-    public static void Spawn(
-        Vector3 start,
-        Enemy newTarget,
-        float newDamage,
-        float newSpeed,
-        float newSplashRadius,
-        float newSlowMultiplier,
-        float newSlowDuration,
-        TowerType newSourceType,
-        string displayName)
+    public static void Spawn(Vector3 start, Enemy newTarget, float newDamage, float newSpeed, float newSplashRadius,
+        float newSlowMultiplier, float newSlowDuration, TowerType newSourceType, string displayName)
     {
         Projectile projectile = Acquire();
         projectile.gameObject.name = displayName + " Projectile";
         projectile.transform.position = start;
         projectile.transform.rotation = Quaternion.identity;
         projectile.gameObject.SetActive(true);
-        projectile.Init(
-            newTarget,
-            newDamage,
-            newSpeed,
-            newSplashRadius,
-            newSlowMultiplier,
-            newSlowDuration,
-            newSourceType);
+        projectile.Init(newTarget,newDamage,newSpeed,newSplashRadius,newSlowMultiplier,newSlowDuration,newSourceType);
     }
 
     static Projectile Acquire()
@@ -70,14 +55,8 @@ public class Projectile : MonoBehaviour
         return projectile;
     }
 
-    public void Init(
-        Enemy newTarget,
-        float newDamage,
-        float newSpeed,
-        float newSplashRadius = 0f,
-        float newSlowMultiplier = 1f,
-        float newSlowDuration = 0f,
-        TowerType newSourceType = TowerType.MachineGun)
+    public void Init(Enemy newTarget, float newDamage, float newSpeed, float newSplashRadius = 0f,
+        float newSlowMultiplier = 1f, float newSlowDuration = 0f, TowerType newSourceType = TowerType.MachineGun)
     {
         target = newTarget;
         damage = newDamage;
@@ -116,8 +95,8 @@ public class Projectile : MonoBehaviour
 
     void Impact(Vector3 point)
     {
-        if (RuntimeEffects.Instance != null)
-            RuntimeEffects.Instance.PlayHit(point + Vector3.up * .4f, splashRadius > .01f);
+        // One visual owner for projectile impacts. RuntimeEffects contributes audio only.
+        RuntimeEffects.Instance?.PlayHitSound(splashRadius > .01f);
         CombatImpactPresentation.ProjectileHit(point + Vector3.up * .15f, sourceType);
 
         if (splashRadius > .01f)
@@ -138,15 +117,9 @@ public class Projectile : MonoBehaviour
     void Apply(Enemy enemy)
     {
         enemy.ReceiveDamage(new DamagePacket(damage, DamageRules.ForTower(sourceType), sourceType));
-
-        if (slowMultiplier < .999f && slowDuration > 0f)
-            enemy.ApplySlow(slowMultiplier, slowDuration);
-
-        if (sourceType == TowerType.FireTower)
-            enemy.ApplyBurn(Mathf.Max(6f, damage * .35f), 4f);
-
-        if (sourceType == TowerType.Slow)
-            enemy.ApplyArmorBreak(.18f, 4f);
+        if (slowMultiplier < .999f && slowDuration > 0f) enemy.ApplySlow(slowMultiplier, slowDuration);
+        if (sourceType == TowerType.FireTower) enemy.ApplyBurn(Mathf.Max(6f, damage * .35f), 4f);
+        if (sourceType == TowerType.Slow) enemy.ApplyArmorBreak(.18f, 4f);
     }
 
     void ConfigureVisuals()
@@ -182,13 +155,11 @@ public class Projectile : MonoBehaviour
     {
         if (coreRenderer == null) coreRenderer = GetComponent<Renderer>();
         if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
-
         if (trail == null)
         {
             trail = GetComponent<TrailRenderer>();
             if (trail == null) trail = gameObject.AddComponent<TrailRenderer>();
         }
-
         if (pointLight == null)
         {
             pointLight = GetComponent<Light>();
@@ -250,7 +221,6 @@ public class Projectile : MonoBehaviour
     static Material GetTrailMaterial(TowerType type, Color color)
     {
         if (TrailMaterials.TryGetValue(type, out Material cached) && cached != null) return cached;
-
         Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
             ?? Shader.Find("Universal Render Pipeline/Unlit")
             ?? Shader.Find("Sprites/Default")

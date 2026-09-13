@@ -3,16 +3,14 @@ using UnityEngine;
 public static class EnemyVisualFactory
 {
     const string ProductionRoot = "TroyProduction/Characters/Greek/";
-    const string GreekResourceRoot = "TroyCharacters/Factions/Greek/";
-    const string LegacyResourceRoot = "TroyCharacters/";
+    const string GeneratedRoot = "TroyCharacters/Factions/Greek/";
 
     public static GameObject CreateEnemyObject(EnemyData data)
     {
         EnemyArchetype archetype = data != null ? data.archetype : EnemyArchetype.Infantry;
         string prefabName = GetPrefabName(archetype);
         GameObject prefab = Resources.Load<GameObject>(ProductionRoot + prefabName);
-        if (prefab == null) prefab = Resources.Load<GameObject>(GreekResourceRoot + prefabName);
-        if (prefab == null) prefab = Resources.Load<GameObject>(LegacyResourceRoot + prefabName);
+        if (prefab == null) prefab = Resources.Load<GameObject>(GeneratedRoot + prefabName);
 
         GameObject instance;
         if (prefab != null)
@@ -49,8 +47,8 @@ public static class EnemyVisualFactory
     {
         if (instance.GetComponentInChildren<Collider>() != null) return;
         CapsuleCollider collider = instance.AddComponent<CapsuleCollider>();
-        collider.center = new Vector3(0f, 0.9f, 0f);
+        collider.center = new Vector3(0f, .9f, 0f);
         collider.height = 1.8f;
-        collider.radius = 0.35f;
+        collider.radius = .35f;
     }
 }

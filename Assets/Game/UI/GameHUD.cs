@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Kept as a compatibility shim for scenes/components created before v0.5.
-// Runtime HUD is now provided by GameUIController on a Canvas.
+// Compatibility shim for scenes/components created before the ModernCombatHud cutover.
+// Runtime combat UI is owned exclusively by ModernCombatHud.
 public class GameHUD : MonoBehaviour
 {
 }

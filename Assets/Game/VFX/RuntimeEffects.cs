@@ -52,9 +52,15 @@ public class RuntimeEffects : MonoBehaviour
         Flash(position, flash, size);
     }
 
-    public void PlayHit(Vector3 position, bool heavy = false)
+    public void PlayHitSound(bool heavy = false)
     {
         source.PlayOneShot(GetTone(heavy ? 90f : 240f, .06f, .10f));
+    }
+
+    // Compatibility helper for callers that intentionally want generic hit visuals.
+    public void PlayHit(Vector3 position, bool heavy = false)
+    {
+        PlayHitSound(heavy);
         Burst(position, heavy ? .75f : .34f, heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f));
     }
 
@@ -113,26 +119,12 @@ public class RuntimeEffects : MonoBehaviour
 
     static void Flash(Vector3 position, Color color, float size)
     {
-        CombatVfxPool.Spawn(
-            PrimitiveType.Sphere,
-            position,
-            Vector3.one * size,
-            Vector3.one * (size * .20f),
-            color,
-            .07f,
-            Vector3.zero);
+        CombatVfxPool.Spawn(PrimitiveType.Sphere, position, Vector3.one * size, Vector3.one * (size * .20f), color, .07f, Vector3.zero);
     }
 
     static void Burst(Vector3 position, float size, Color color)
     {
-        CombatVfxPool.Spawn(
-            PrimitiveType.Sphere,
-            position,
-            Vector3.one * .10f,
-            Vector3.one * size,
-            color,
-            .18f,
-            Vector3.up * .06f);
+        CombatVfxPool.Spawn(PrimitiveType.Sphere, position, Vector3.one * .10f, Vector3.one * size, color, .18f, Vector3.up * .06f);
     }
 
     static void BuildBurst(Vector3 position, bool upgrade)
@@ -141,38 +133,17 @@ public class RuntimeEffects : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             Vector3 start = position + new Vector3((i - 2) * .18f, .12f + (i % 2) * .08f, ((i * 3) % 5 - 2) * .12f);
-            CombatVfxPool.Spawn(
-                PrimitiveType.Sphere,
-                start,
-                Vector3.one * .08f,
-                Vector3.one * .015f,
-                color,
-                .28f + i * .025f,
-                Vector3.up * .8f);
+            CombatVfxPool.Spawn(PrimitiveType.Sphere, start, Vector3.one * .08f, Vector3.one * .015f, color, .28f + i * .025f, Vector3.up * .8f);
         }
     }
 
     static void BossShockwave(Vector3 position)
     {
-        CombatVfxPool.Spawn(
-            PrimitiveType.Cylinder,
-            position + Vector3.up * .04f,
-            new Vector3(.2f,.02f,.2f),
-            new Vector3(3.8f,.02f,3.8f),
-            new Color(.95f,.62f,.12f),
-            .5f,
-            Vector3.zero);
+        CombatVfxPool.Spawn(PrimitiveType.Cylinder, position + Vector3.up * .04f, new Vector3(.2f,.02f,.2f), new Vector3(3.8f,.02f,3.8f), new Color(.95f,.62f,.12f), .5f, Vector3.zero);
     }
 
     static void GroundPulse(Vector3 position, Color color, float radius, float duration)
     {
-        CombatVfxPool.Spawn(
-            PrimitiveType.Cylinder,
-            position + Vector3.up * .045f,
-            new Vector3(.22f,.018f,.22f),
-            new Vector3(radius,.018f,radius),
-            color,
-            duration,
-            Vector3.zero);
+        CombatVfxPool.Spawn(PrimitiveType.Cylinder, position + Vector3.up * .045f, new Vector3(.22f,.018f,.22f), new Vector3(radius,.018f,radius), color, duration, Vector3.zero);
     }
 }
