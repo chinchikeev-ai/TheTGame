@@ -12,7 +12,6 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
     }
 
     static PendingNavigation pendingNavigation;
-    static bool bootstrapInstalled;
     bool navigating;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -20,14 +19,12 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
     {
         if (FindFirstObjectByType<MenuSceneNavigationFix>() != null) return;
         new GameObject("MenuSceneNavigationFix").AddComponent<MenuSceneNavigationFix>();
-        bootstrapInstalled = true;
     }
 
     IEnumerator Start()
     {
-        // GameMenuController builds its runtime canvas in Start and GameMenuUxEnhancer
-        // rewires buttons one frame later. Wait until both have finished, then install
-        // deterministic navigation handlers for the two critical scene actions.
+        // GameMenuController builds the runtime UI in Start and GameMenuUxEnhancer
+        // rewires buttons one frame later. Bind after both stages are complete.
         yield return null;
         yield return null;
         yield return null;
@@ -53,17 +50,33 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
             if (label == null) continue;
 
             string value = label.text != null ? label.text.Trim() : string.Empty;
-            if (value == "RESTART CHAPTER" || value == "ПЕРЕЗАПУСТИТЬ ГЛАВУ")
+            if (IsRestartLabel(value))
             {
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(RestartChapter);
             }
-            else if (value == "MAIN MENU" || value == "ГЛАВНОЕ МЕНЮ")
+            else if (IsMainMenuLabel(value))
             {
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(ReturnToMainMenu);
             }
         }
+    }
+
+    static bool IsRestartLabel(string value)
+    {
+        return value == "RESTART CHAPTER" ||
+               value == "ПЕРЕЗАПУСТИТЬ ГЛАВУ" ||
+               value == "RETRY" ||
+               value == "ПОВТОРИТЬ";
+    }
+
+    static bool IsMainMenuLabel(string value)
+    {
+        return value == "MAIN MENU" ||
+               value == "ГЛАВНОЕ МЕНЮ" ||
+               value == "CHAPTER SELECT" ||
+               value == "ВЫБОР ГЛАВЫ";
     }
 
     public void RestartChapter()
