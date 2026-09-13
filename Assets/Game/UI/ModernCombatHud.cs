@@ -43,6 +43,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     readonly Button[] buildButtons = new Button[6];
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
+    TowerType RecommendedDefense() => CombatHudRecommendationPolicy.Recommend(spawner, buildTypes);
 
     void Start()
     {
@@ -264,32 +265,10 @@ public sealed class ModernCombatHud : MonoBehaviour
         else
             threatText.text = $"{L("READY", "ГОТОВО")}   •   {spawner.NextWaveEnemyCount} {L("enemies", "врагов")}   •   {threat}";
 
-        wavePreviewText.text = BuildWavePreview();
+        wavePreviewText.text = CombatHudWaveFormatter.BuildPreview(spawner);
         bool canStart = spawner.WaitingForManualStart && !spawner.WaveActive && !gm.GameEnded;
         startWaveButton.gameObject.SetActive(canStart);
         startWaveButton.interactable = canStart;
-    }
-
-    string BuildWavePreview()
-    {
-        if (spawner == null) return "";
-        string preview = L("NEXT: ", "ДАЛЕЕ: ");
-        bool any = false;
-        any |= AppendWavePart(ref preview, L("INF", "ПЕХ"), spawner.NextWaveInfantryCount, any);
-        any |= AppendWavePart(ref preview, L("RUN", "БЕГ"), spawner.NextWaveRunnerCount, any);
-        any |= AppendWavePart(ref preview, L("HEAVY", "ТЯЖ"), spawner.NextWaveHeavyCount, any);
-        any |= AppendWavePart(ref preview, L("SHIELD", "ЩИТ"), spawner.NextWaveShieldCount, any);
-        any |= AppendWavePart(ref preview, L("ARCHER", "ЛУК"), spawner.NextWaveArcherCount, any);
-        any |= AppendWavePart(ref preview, L("MENELAUS", "МЕНЕЛАЙ"), spawner.NextWaveBossCount, any);
-        return any ? preview : L("NEXT WAVE DATA PREPARING", "ПОДГОТОВКА ДАННЫХ ВОЛНЫ");
-    }
-
-    bool AppendWavePart(ref string text, string label, int count, bool alreadyHas)
-    {
-        if (count <= 0) return false;
-        if (alreadyHas) text += "   •   ";
-        text += $"{label} ×{count}";
-        return true;
     }
 
     void StartWave()
@@ -316,46 +295,6 @@ public sealed class ModernCombatHud : MonoBehaviour
             else if (recommendedButton && affordable) image.color = new Color(.48f, .30f, .07f, .98f);
             else if (recommendedButton) image.color = new Color(.29f, .20f, .08f, .92f);
             else image.color = affordable ? new Color(.24f, .14f, .08f, .96f) : new Color(.11f, .085f, .07f, .88f);
-        }
-    }
-
-    TowerType RecommendedDefense()
-    {
-        if (spawner == null) return TowerType.MachineGun;
-
-        float best = float.MinValue;
-        TowerType winner = TowerType.MachineGun;
-        for (int i = 0; i < buildTypes.Length; i++)
-        {
-            TowerType type = buildTypes[i];
-            float score = RecommendationScore(type);
-            if (score <= best) continue;
-            best = score;
-            winner = type;
-        }
-        return winner;
-    }
-
-    float RecommendationScore(TowerType type)
-    {
-        if (spawner == null) return 0f;
-        float inf = spawner.NextWaveInfantryCount;
-        float run = spawner.NextWaveRunnerCount;
-        float heavy = spawner.NextWaveHeavyCount;
-        float shield = spawner.NextWaveShieldCount;
-        float arch = spawner.NextWaveArcherCount;
-        float boss = spawner.NextWaveBossCount;
-        float total = Mathf.Max(1f, inf + run + heavy + shield + arch + boss);
-
-        switch (type)
-        {
-            case TowerType.MachineGun: return inf * 1.35f + run * 2.1f + arch * 1.1f;
-            case TowerType.SpearThrower: return heavy * 2.35f + shield * 2.0f + boss * 1.25f;
-            case TowerType.Cannon: return boss * 4.2f + heavy * 1.65f + shield * 1.25f;
-            case TowerType.Slow: return run * 1.75f + total * .28f;
-            case TowerType.FireTower: return inf * 1.55f + run * 1.25f + arch * 1.0f + total * .22f;
-            case TowerType.TrojanGuard: return heavy * .9f + shield * .7f + total * .18f;
-            default: return 0f;
         }
     }
 
