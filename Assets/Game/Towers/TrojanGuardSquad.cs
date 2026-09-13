@@ -49,7 +49,8 @@ public class TrojanGuardSquad : MonoBehaviour
         rallyUntil = Mathf.Max(rallyUntil, Time.time + duration);
         rallyDamage = Mathf.Max(rallyDamage, damageMultiplier);
         rallyRate = Mathf.Max(rallyRate, rateMultiplier);
-        RuntimeEffects.Instance?.PlayHeroPulse(transform.position, new Color(1f,.55f,.10f), blockRadius * 2.2f, .30f);
+        RuntimeEffects.Instance?.PlayHeroAbilitySound();
+        CombatImpactPresentation.Pulse(transform.position, new Color(1f,.55f,.10f), blockRadius * 2.2f, .30f);
     }
 
     public bool TryReserve(Enemy enemy)
@@ -88,7 +89,9 @@ public class TrojanGuardSquad : MonoBehaviour
             presentation?.PlayAttack();
             attackTarget.ReceiveDamage(new DamagePacket(damage * rallyDamage, DamageType.Physical, TowerType.TrojanGuard));
             CombatImpactPresentation.MeleeHit(attackTarget.transform.position + Vector3.up * .55f, TowerType.TrojanGuard);
-            RuntimeEffects.Instance?.PlayShot(TowerType.TrojanGuard, transform.position + Vector3.up * .8f);
+            Vector3 shotPoint = transform.position + Vector3.up * .8f;
+            RuntimeEffects.Instance?.PlayShotSound(TowerType.TrojanGuard);
+            CombatImpactPresentation.ShotFlash(shotPoint, TowerType.TrojanGuard);
         }
     }
 
