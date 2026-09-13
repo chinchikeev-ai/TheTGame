@@ -32,6 +32,7 @@ public static class TowerFactory
         interaction.center = new Vector3(0f,.55f,0f);
         interaction.size = new Vector3(1.35f,1.45f,1.35f);
 
+        root.AddComponent<TowerSupportMechanismPresentation>();
         TowerCrewAnimationBridge crewAnimation = root.AddComponent<TowerCrewAnimationBridge>();
         Tower tower = root.AddComponent<Tower>();
         tower.head = headObject.transform;
