@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public sealed class ModernSettingsPresentation : MonoBehaviour
@@ -182,7 +183,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         slider.onValueChanged.AddListener(v => { value.text=Mathf.RoundToInt(v*100)+"%"; onChanged(v); });
     }
 
-    void MakeSelectorRow(string label, float y, Func<string> value, Action action)
+    void MakeSelectorRow(string label, float y, Func<string> value, UnityAction action)
     {
         AddText(contentRoot.transform,label,new Vector2(-270,y),new Vector2(350,50),17,Color.white,TextAnchor.MiddleLeft,FontStyle.Bold);
         MakeButton(contentRoot.transform,value(),new Vector2(200,y),action,new Vector2(360,56),false);
@@ -217,6 +218,6 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
 
     GameObject MakePanel(Transform parent,string name,Vector2 pos,Vector2 size,Color color){ GameObject go=MakeRect(parent,name,pos,size,color); Outline o=go.AddComponent<Outline>(); o.effectColor=new Color(.68f,.37f,.14f,.42f); o.effectDistance=new Vector2(1.5f,-1.5f); return go; }
     GameObject MakeRect(Transform parent,string name,Vector2 pos,Vector2 size,Color color){ GameObject go=new GameObject(name); go.transform.SetParent(parent,false); Image im=go.AddComponent<Image>(); im.color=color; RectTransform rt=im.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=size; return go; }
-    Button MakeButton(Transform parent,string label,Vector2 pos,UnityEngine.Events.UnityAction action,Vector2 size,bool primary){ GameObject go=MakeRect(parent,label,pos,size,primary?new Color(.55f,.11f,.045f,.98f):new Color(.22f,.13f,.08f,.96f)); Button b=go.AddComponent<Button>(); b.targetGraphic=go.GetComponent<Image>(); b.onClick.AddListener(action); go.AddComponent<MenuButtonFeedback>(); go.AddComponent<MenuUiAudioFeedback>(); Navigation nav=b.navigation; nav.mode=Navigation.Mode.Automatic; b.navigation=nav; AddText(go.transform,label,Vector2.zero,size,17,primary?new Color(1f,.88f,.50f,1f):new Color(.92f,.82f,.69f,1f),TextAnchor.MiddleCenter,FontStyle.Bold); return b; }
+    Button MakeButton(Transform parent,string label,Vector2 pos,UnityAction action,Vector2 size,bool primary){ GameObject go=MakeRect(parent,label,pos,size,primary?new Color(.55f,.11f,.045f,.98f):new Color(.22f,.13f,.08f,.96f)); Button b=go.AddComponent<Button>(); b.targetGraphic=go.GetComponent<Image>(); b.onClick.AddListener(action); go.AddComponent<MenuButtonFeedback>(); go.AddComponent<MenuUiAudioFeedback>(); Navigation nav=b.navigation; nav.mode=Navigation.Mode.Automatic; b.navigation=nav; AddText(go.transform,label,Vector2.zero,size,17,primary?new Color(1f,.88f,.50f,1f):new Color(.92f,.82f,.69f,1f),TextAnchor.MiddleCenter,FontStyle.Bold); return b; }
     Text AddText(Transform parent,string value,Vector2 pos,Vector2 size,int fontSize,Color color,TextAnchor align,FontStyle style){ GameObject go=new GameObject("Text"); go.transform.SetParent(parent,false); Text t=go.AddComponent<Text>(); t.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.text=value; t.fontSize=fontSize; t.color=color; t.alignment=align; t.fontStyle=style; t.horizontalOverflow=HorizontalWrapMode.Wrap; RectTransform rt=t.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=size; return t; }
 }
