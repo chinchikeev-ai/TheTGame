@@ -31,21 +31,51 @@ public static class ChapterOneVisualEnhancer
     {
         float gateX=MapBuilder.CellToWorld(new Vector2Int(17,6)).x;
         Color stone = new Color(.58f,.47f,.30f);
+        Color paleStone = new Color(.68f,.56f,.37f);
         Color roof = new Color(.50f,.18f,.10f);
+        Color bronze = new Color(.68f,.46f,.17f);
+        Color red = new Color(.52f,.06f,.04f);
 
-        for (int i=-3;i<=3;i++)
+        // Dense stepped houses establish Troy as a city beyond the defensive gate.
+        for (int i=-4;i<=4;i++)
         {
-            float z=i*2.4f;
-            float x=gateX+3.0f+Mathf.Abs(i%2)*.8f;
+            float z=i*2.15f;
+            float x=gateX+3.0f+(Mathf.Abs(i)%3)*.72f;
             float h=1.0f+(Mathf.Abs(i)%3)*.25f;
-            Part(parent,"Troy House",PrimitiveType.Cube,new Vector3(x,h*.48f,z),new Vector3(1.45f,h,1.55f),stone*.92f);
-            GameObject roofObj=Part(parent,"Troy Roof",PrimitiveType.Cylinder,new Vector3(x,h+0.22f,z),new Vector3(.9f,.22f,.9f),roof);
+            Part(parent,"Troy House",PrimitiveType.Cube,new Vector3(x,h*.48f,z),new Vector3(1.40f,h,1.45f),stone*(.90f+(i%2)*.03f));
+            GameObject roofObj=Part(parent,"Troy Roof",PrimitiveType.Cylinder,new Vector3(x,h+0.22f,z),new Vector3(.88f,.22f,.88f),roof);
             roofObj.transform.rotation=Quaternion.Euler(0f,30f,0f);
+            if(i%2==0)
+                Part(parent,"House Banner",PrimitiveType.Cube,new Vector3(x-.78f,h*.82f,z),new Vector3(.06f,.36f,.28f),red);
         }
 
-        Part(parent,"Citadel Mass",PrimitiveType.Cube,new Vector3(gateX+5.0f,1.45f,0f),new Vector3(3.0f,2.9f,7.0f),stone*.82f);
+        // Lower terrace visually connects the houses to the citadel mass.
+        Part(parent,"Citadel Lower Terrace",PrimitiveType.Cube,new Vector3(gateX+4.85f,.42f,0f),new Vector3(4.25f,.84f,9.10f),stone*.72f);
+        Part(parent,"Citadel Middle Terrace",PrimitiveType.Cube,new Vector3(gateX+5.35f,1.02f,0f),new Vector3(3.65f,.62f,8.10f),stone*.78f);
+        Part(parent,"Citadel Mass",PrimitiveType.Cube,new Vector3(gateX+5.65f,1.92f,0f),new Vector3(3.10f,2.35f,7.15f),stone*.82f);
+
         for(int z=-2;z<=2;z+=2)
-            Part(parent,"Citadel Crown",PrimitiveType.Cube,new Vector3(gateX+4.55f,3.05f,z*1.25f),new Vector3(.85f,.45f,.85f),stone*1.08f);
+            Part(parent,"Citadel Crown",PrimitiveType.Cube,new Vector3(gateX+4.95f,3.22f,z*1.30f),new Vector3(.82f,.45f,.82f),paleStone);
+
+        // Temple / palace focus rises above the skyline and is visible behind the gate.
+        Vector3 temple = new Vector3(gateX+7.35f,2.45f,3.15f);
+        Part(parent,"Troy Temple Plinth",PrimitiveType.Cube,temple+new Vector3(0f,-1.48f,0f),new Vector3(2.35f,.36f,2.65f),paleStone*.92f);
+        for(int side=-1;side<=1;side+=2)
+        for(int depth=-1;depth<=1;depth+=2)
+            Part(parent,"Temple Column",PrimitiveType.Cylinder,temple+new Vector3(side*.72f,-.54f,depth*.78f),new Vector3(.12f,.88f,.12f),paleStone);
+        Part(parent,"Temple Entablature",PrimitiveType.Cube,temple+new Vector3(0f,.35f,0f),new Vector3(2.15f,.24f,2.35f),paleStone);
+        GameObject templeRoof=Part(parent,"Temple Roof",PrimitiveType.Cylinder,temple+new Vector3(0f,.68f,0f),new Vector3(1.35f,.30f,1.45f),roof);
+        templeRoof.transform.rotation=Quaternion.Euler(0f,30f,0f);
+        Part(parent,"Temple Sun Disc",PrimitiveType.Cylinder,temple+new Vector3(-1.10f,.72f,0f),new Vector3(.28f,.05f,.28f),bronze).transform.rotation=Quaternion.Euler(90f,0f,0f);
+
+        // Back wall silhouettes fill gaps at the top of the gameplay frame.
+        for(int i=-5;i<=5;i++)
+        {
+            float z=i*1.82f;
+            Part(parent,"Inner Troy Wall",PrimitiveType.Cube,new Vector3(gateX+7.85f,1.05f,z),new Vector3(.60f,2.10f,1.65f),stone*.70f);
+            if(i%2==0)
+                Part(parent,"Inner Wall Merlon",PrimitiveType.Cube,new Vector3(gateX+7.52f,2.28f,z),new Vector3(.42f,.52f,.42f),paleStone*.92f);
+        }
     }
 
     static void AddBattleDebris(Transform parent)
