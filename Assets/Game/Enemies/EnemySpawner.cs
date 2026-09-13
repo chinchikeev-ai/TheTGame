@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    static readonly WaitForSeconds ReinforcementDelay = new WaitForSeconds(.65f);
+
     public Transform[] spawnPoints;
     public Transform[][] paths;
     public int maxWaves = 5;
@@ -89,11 +91,12 @@ public class EnemySpawner : MonoBehaviour
             GameStateController.Instance?.SetState(GameState.WaveRunning);
             RuntimeFileLogger.Event("WAVE", $"Started wave={wave}/{maxWaves}");
 
+            WaitForSeconds spawnDelay = new WaitForSeconds(preparedWave.spawnInterval);
             for (int i = 0; i < effectiveEnemyCount; i++)
             {
                 bool boss = preparedWave.hasBoss && i == effectiveEnemyCount - 1;
                 SpawnEnemy(wave, i, boss);
-                yield return new WaitForSeconds(preparedWave.spawnInterval);
+                yield return spawnDelay;
             }
 
             while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0) yield return null;
@@ -118,11 +121,11 @@ public class EnemySpawner : MonoBehaviour
         NextWaveEnemyCount = effectiveEnemyCount;
         NextWaveHpMultiplier = effectiveHpMultiplier;
         NextWaveSpeedMultiplier = effectiveSpeedMultiplier;
-        NextWaveHasHeavy = wave >= 3;
         NextWaveHasBoss = preparedWave.hasBoss;
         TargetWaveDuration = preparedWave.targetDuration;
         InterWaveCountdown = preparedWave.preparationTime;
         BuildPreparedWaveComposition(wave);
+        NextWaveHasHeavy = NextWaveHeavyCount > 0 || NextWaveShieldCount > 0;
     }
 
     void BuildPreparedWaveComposition(int wave)
@@ -187,7 +190,7 @@ public class EnemySpawner : MonoBehaviour
             EnemyArchetype archetype = i % 3 == 2 ? EnemyArchetype.ShieldBearer : EnemyArchetype.Infantry;
             EnemyData data = BalanceCatalog.GetEnemy(archetype);
             SpawnConfiguredEnemy(data, route, Mathf.Max(1f, effectiveHpMultiplier * .85f), Mathf.Max(1f, effectiveSpeedMultiplier), false);
-            yield return new WaitForSeconds(.65f);
+            yield return ReinforcementDelay;
         }
     }
 }
