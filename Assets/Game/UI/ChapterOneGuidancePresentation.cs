@@ -11,6 +11,8 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     Text progressText;
     Text tutorialTitle;
     Text tutorialText;
+    Image objectiveIcon;
+    Image tutorialIcon;
     GameObject objectiveCard;
     GameObject tutorialCard;
     Canvas menuCanvas;
@@ -45,15 +47,15 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         group.blocksRaycasts = false;
 
         objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(0f, -178f), new Vector2(650f, 98f), new Vector2(.5f,1f), new Vector2(.5f,1f));
-        AddIcon(objectiveCard.transform,"ObjectiveIcon",new Vector2(-292,-48),42,TroyHudArt.Icon("gate"));
+        objectiveIcon = AddIcon(objectiveCard.transform,"ObjectiveIcon",new Vector2(-292,-48),46,TroyHudArt.Icon("gate"));
         chapterText = AddText(objectiveCard.transform, "", new Vector2(-248f, -18f), new Vector2(480f, 24f), 12, new Color(1f, .69f, .23f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         objectiveText = AddText(objectiveCard.transform, "", new Vector2(-248f, -42f), new Vector2(480f, 30f), 18, new Color(.96f, .88f, .75f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         progressText = AddText(objectiveCard.transform, "", new Vector2(-248f, -72f), new Vector2(560f, 22f), 12, new Color(.77f, .69f, .59f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
 
         tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, 84f), new Vector2(500f, 126f), new Vector2(0f,0f), new Vector2(0f,0f));
-        AddIcon(tutorialCard.transform,"TutorialIcon",new Vector2(38,63),44,TroyHudArt.Icon("shield"));
-        tutorialTitle = AddText(tutorialCard.transform, "", new Vector2(74f, 88f), new Vector2(400f, 24f), 13, new Color(1f, .70f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold, new Vector2(0f, 0f));
-        tutorialText = AddText(tutorialCard.transform, "", new Vector2(74f, 24f), new Vector2(400f, 58f), 14, new Color(.93f, .86f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 0f));
+        tutorialIcon = AddIcon(tutorialCard.transform,"TutorialIcon",new Vector2(42,63),52,TroyHudArt.Tower(TowerType.MachineGun));
+        tutorialTitle = AddText(tutorialCard.transform, "", new Vector2(78f, 88f), new Vector2(396f, 24f), 13, new Color(1f, .70f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold, new Vector2(0f, 0f));
+        tutorialText = AddText(tutorialCard.transform, "", new Vector2(78f, 24f), new Vector2(396f, 58f), 14, new Color(.93f, .86f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 0f));
         tutorialCard.SetActive(false);
     }
 
@@ -89,6 +91,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
 
         if (gm.BossDefeated)
         {
+            objectiveIcon.sprite = TroyHudArt.Icon("gate");
             objectiveText.text = L("OBJECTIVE COMPLETE", "ЦЕЛЬ ВЫПОЛНЕНА");
             progressText.text = L("Menelaus defeated • clear the battlefield", "Менелай повержен • зачистите поле боя");
             return;
@@ -96,11 +99,13 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
 
         if (spawner != null && (spawner.NextWaveHasBoss || gm.CurrentWave >= gm.MaxWaves))
         {
+            objectiveIcon.sprite = TroyHudArt.Portrait("menelaus");
             objectiveText.text = L("FINAL OBJECTIVE • DEFEAT MENELAUS", "ФИНАЛЬНАЯ ЦЕЛЬ • ПОБЕДИТЕ МЕНЕЛАЯ");
             progressText.text = L("Commander Aura • periodic reinforcements", "Аура командира • периодические подкрепления");
             return;
         }
 
+        objectiveIcon.sprite = TroyHudArt.Icon("gate");
         objectiveText.text = L("DEFEND THE GATE", "ЗАЩИТИТЕ ВОРОТА");
         int wave = Mathf.Clamp(gm.CurrentWave, 0, gm.MaxWaves);
         progressText.text = $"{L("WAVES", "ВОЛНЫ")} {wave}/{gm.MaxWaves}   •   {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
@@ -135,12 +140,34 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     {
         switch (stage)
         {
-            case 0: tutorialTitle.text=L("FIRST DEFENSE","ПЕРВАЯ ОБОРОНА"); tutorialText.text=L("Choose 1–6, hover for counters, then click a build point.","Выберите 1–6, наведите для контрмер и нажмите точку строительства."); break;
-            case 1: tutorialTitle.text=L("PREPARE THE LANDING","ПОДГОТОВЬТЕСЬ К ВЫСАДКЕ"); tutorialText.text=L("Read the next wave, build counters, then START WAVE.","Изучите следующую волну, постройте контрмеры и запустите её."); break;
-            case 2: tutorialTitle.text=L("HECTOR","ГЕКТОР"); tutorialText.text=L("RMB moves Hector • Q/E/R/F abilities reinforce weak lanes.","ПКМ двигает Гектора • Q/E/R/F усиливают слабые линии."); break;
-            case 3: tutorialTitle.text=L("ADAPT THE DEFENSE","АДАПТИРУЙТЕ ОБОРОНУ"); tutorialText.text=L("Select deployed units to upgrade, sell or change target priority.","Выбирайте оборону: улучшайте, продавайте и меняйте приоритет целей."); break;
-            case 4: tutorialTitle.text=L("BOSS • MENELAUS","БОСС • МЕНЕЛАЙ"); tutorialText.text=L("Aura buffs nearby Greeks. Focus Ballista/Spears and control his escort.","Аура усиливает греков рядом. Фокусируйте баллисты/копья и контролируйте сопровождение."); break;
-            default: tutorialCard.SetActive(false); break;
+            case 0:
+                tutorialIcon.sprite=TroyHudArt.Tower(TowerType.MachineGun);
+                tutorialTitle.text=L("FIRST DEFENSE","ПЕРВАЯ ОБОРОНА");
+                tutorialText.text=L("Choose 1–6, hover for counters, then click a build point.","Выберите 1–6, наведите для контрмер и нажмите точку строительства.");
+                break;
+            case 1:
+                tutorialIcon.sprite=TroyHudArt.Icon("enemy");
+                tutorialTitle.text=L("PREPARE THE LANDING","ПОДГОТОВЬТЕСЬ К ВЫСАДКЕ");
+                tutorialText.text=L("Read the next wave, build counters, then START WAVE.","Изучите следующую волну, постройте контрмеры и запустите её.");
+                break;
+            case 2:
+                tutorialIcon.sprite=TroyHudArt.Portrait("hector");
+                tutorialTitle.text=L("HECTOR","ГЕКТОР");
+                tutorialText.text=L("RMB moves Hector • Q/E/R/F abilities reinforce weak lanes.","ПКМ двигает Гектора • Q/E/R/F усиливают слабые линии.");
+                break;
+            case 3:
+                tutorialIcon.sprite=TroyHudArt.Tower(TowerType.Cannon);
+                tutorialTitle.text=L("ADAPT THE DEFENSE","АДАПТИРУЙТЕ ОБОРОНУ");
+                tutorialText.text=L("Select deployed units to upgrade, sell or change target priority.","Выбирайте оборону: улучшайте, продавайте и меняйте приоритет целей.");
+                break;
+            case 4:
+                tutorialIcon.sprite=TroyHudArt.Portrait("menelaus");
+                tutorialTitle.text=L("BOSS • MENELAUS","БОСС • МЕНЕЛАЙ");
+                tutorialText.text=L("Aura buffs nearby Greeks. Focus Ballista/Spears and control his escort.","Аура усиливает греков рядом. Фокусируйте баллисты/копья и контролируйте сопровождение.");
+                break;
+            default:
+                tutorialCard.SetActive(false);
+                break;
         }
     }
 
@@ -170,9 +197,9 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         RectTransform rt=image.rectTransform; rt.anchorMin=rt.anchorMax=anchor; rt.pivot=pivot; rt.anchoredPosition=pos; rt.sizeDelta=size; return go;
     }
 
-    void AddIcon(Transform parent,string name,Vector2 pos,float size,Sprite sprite)
+    Image AddIcon(Transform parent,string name,Vector2 pos,float size,Sprite sprite)
     {
-        GameObject go=new GameObject(name); go.transform.SetParent(parent,false); Image image=go.AddComponent<Image>(); image.sprite=sprite; image.raycastTarget=false; RectTransform rt=image.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(size,size);
+        GameObject go=new GameObject(name); go.transform.SetParent(parent,false); Image image=go.AddComponent<Image>(); image.sprite=sprite; image.raycastTarget=false; RectTransform rt=image.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(size,size); return image;
     }
 
     Text AddText(Transform parent, string value, Vector2 pos, Vector2 size, int fontSize, Color color, TextAnchor alignment, FontStyle style, Vector2 anchor)
