@@ -8,7 +8,8 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
     enum PendingNavigation
     {
         None,
-        RestartChapter
+        RestartChapter,
+        MainMenu
     }
 
     static PendingNavigation pendingNavigation;
@@ -23,19 +24,26 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
 
     IEnumerator Start()
     {
-        // GameMenuController builds the runtime UI in Start and GameMenuUxEnhancer
-        // rewires buttons one frame later. Bind after both stages are complete.
+        // Runtime UI is built from Start(), and the UX enhancer rewires it one frame later.
+        // Wait for the runtime graph before binding or restoring post-reload navigation.
         yield return null;
         yield return null;
         yield return null;
 
         RebindCriticalButtons();
 
-        if (pendingNavigation == PendingNavigation.RestartChapter)
+        PendingNavigation requested = pendingNavigation;
+        pendingNavigation = PendingNavigation.None;
+
+        if (requested == PendingNavigation.RestartChapter)
         {
-            pendingNavigation = PendingNavigation.None;
-            yield return null;
+            yield return RestoreUiIfNeeded();
             StartChapterOneFromLevelButton();
+        }
+        else if (requested == PendingNavigation.MainMenu)
+        {
+            yield return RestoreUiIfNeeded();
+            ForceShowMainMenu();
         }
     }
 
@@ -90,8 +98,8 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
     public void ReturnToMainMenu()
     {
         if (navigating) return;
-        pendingNavigation = PendingNavigation.None;
-        RuntimeFileLogger.Event("MENU", "Main Menu requested through direct navigation handler");
+        pendingNavigation = PendingNavigation.MainMenu;
+        RuntimeFileLogger.Event("MENU", "Main Menu requested; clean reload will explicitly restore MainMenu UI");
         ReloadCurrentScene();
     }
 
@@ -121,14 +129,69 @@ public sealed class MenuSceneNavigationFix : MonoBehaviour
             }
 
             RuntimeFileLogger.Event("MENU", $"Scene reload target unavailable; name={sceneName}, buildIndex={buildIndex}");
+            pendingNavigation = PendingNavigation.None;
             navigating = false;
         }
         catch (System.Exception ex)
         {
             RuntimeFileLogger.Event("MENU", $"Scene reload failed: {ex.GetType().Name}: {ex.Message}");
             Debug.LogException(ex);
+            pendingNavigation = PendingNavigation.None;
             navigating = false;
         }
+    }
+
+    IEnumerator RestoreUiIfNeeded()
+    {
+        // Give GameBootstrap enough frames to construct the menu graph. If another
+        // bootstrap component starts later in the same frame, this avoids racing it.
+        for (int frame = 0; frame < 30; frame++)
+        {
+            if (FindFirstObjectByType<GameMenuController>() != null && FindMenuCanvas() != null)
+                yield break;
+            yield return null;
+        }
+
+        GameMenuController menu = FindFirstObjectByType<GameMenuController>();
+        if (menu == null)
+        {
+            RuntimeFileLogger.Event("MENU", "Post-reload recovery: GameMenuController missing; recreating runtime menu controller");
+            new GameObject("GameMenuRecovery").AddComponent<GameMenuController>();
+            yield return null;
+            yield return null;
+        }
+
+        if (FindMenuCanvas() == null)
+            RuntimeFileLogger.Event("MENU", "Post-reload recovery failed: MenuCanvas is still missing");
+    }
+
+    void ForceShowMainMenu()
+    {
+        GameMenuController menu = FindFirstObjectByType<GameMenuController>();
+        Canvas menuCanvas = FindMenuCanvas();
+
+        if (menu == null || menuCanvas == null)
+        {
+            RuntimeFileLogger.Event("MENU", $"Main Menu restore failed. controller={(menu != null)}, canvas={(menuCanvas != null)}");
+            return;
+        }
+
+        // ShowMainMenu is intentionally owned by GameMenuController. SendMessage is
+        // used only as a post-reload recovery call; the button itself no longer relies
+        // on the old confirmation -> SendMessage navigation chain.
+        menu.SendMessage("ShowMainMenu", SendMessageOptions.RequireReceiver);
+
+        Transform mainMenu = menuCanvas.transform.Find("MainMenu");
+        bool visible = mainMenu != null && mainMenu.gameObject.activeSelf;
+        RuntimeFileLogger.Event("MENU", $"Main Menu explicitly restored after reload. visible={visible}");
+
+        if (!visible && mainMenu != null)
+        {
+            mainMenu.gameObject.SetActive(true);
+            RuntimeFileLogger.Event("MENU", "Main Menu recovery fallback activated MainMenu root directly");
+        }
+
+        RebindCriticalButtons();
     }
 
     void StartChapterOneFromLevelButton()
