@@ -10,7 +10,8 @@ public class BuildPoint : MonoBehaviour
     bool hovered;
     readonly Color idleColor = new Color(.78f,.58f,.20f);
     readonly Color rimColor = new Color(.30f,.22f,.10f);
-    readonly Color hoverColor = new Color(.22f,.82f,.34f);
+    readonly Color validColor = new Color(.22f,.82f,.34f);
+    readonly Color invalidColor = new Color(.90f,.16f,.10f);
     readonly Color occupiedColor = new Color(.16f,.16f,.14f);
 
     public void Initialize()
@@ -41,8 +42,9 @@ public class BuildPoint : MonoBehaviour
     void Update()
     {
         if (marker == null || rim == null || Occupied) return;
-        float pulse = hovered ? 1f + Mathf.Sin(Time.unscaledTime * 7f) * .08f : 1f;
+        float pulse = hovered ? 1f + Mathf.Sin(Time.unscaledTime * 7f) * .10f : 1f;
         marker.transform.localScale = new Vector3(.29f * pulse, .014f, .29f * pulse);
+        rim.transform.localScale = new Vector3(.40f * (hovered ? 1.03f : 1f), .012f, .40f * (hovered ? 1.03f : 1f));
     }
 
     public bool TryBuild(TowerType type)
@@ -74,9 +76,26 @@ public class BuildPoint : MonoBehaviour
     public void SetHovered(bool value)
     {
         hovered = value;
+        if (!value) RefreshVisual();
+    }
+
+    public void SetPlacementState(bool value, bool valid)
+    {
+        hovered = value;
         if (marker == null || rim == null) return;
-        SetRendererColor(marker, Occupied ? occupiedColor : hovered ? hoverColor : idleColor);
-        SetRendererColor(rim, Occupied ? occupiedColor : hovered ? new Color(.10f,.42f,.16f) : rimColor);
+        if (Occupied)
+        {
+            SetRendererColor(marker, occupiedColor);
+            SetRendererColor(rim, occupiedColor);
+            return;
+        }
+
+        Color core = value ? (valid ? validColor : invalidColor) : idleColor;
+        Color edge = value
+            ? (valid ? new Color(.08f,.48f,.16f) : new Color(.50f,.055f,.035f))
+            : rimColor;
+        SetRendererColor(marker, core);
+        SetRendererColor(rim, edge);
     }
 
     public void RefreshVisual()
