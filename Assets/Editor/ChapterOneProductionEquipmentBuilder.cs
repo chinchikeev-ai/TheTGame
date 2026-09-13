@@ -45,9 +45,11 @@ public static class ChapterOneProductionEquipmentBuilder
         foreach (string path in SpearBearerPaths)
             if (UpgradeSpearBearer(path, spearSource)) upgradedSpearBearers++;
 
+        ChapterOneShieldCandidateBuilder.Build();
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Chapter I CC0 equipment pass upgraded " + upgradedArchers + " archer prefab(s) and " + upgradedSpearBearers + " spear-bearer prefab(s). Bronze Age armor kit remains procedural candidate geometry; real Unity gameplay-camera QA is still required before production acceptance.");
+        Debug.Log("Chapter I equipment pass upgraded " + upgradedArchers + " archer prefab(s), " + upgradedSpearBearers + " spear-bearer prefab(s), and applied authored Late Bronze Age shield candidates. Bronze Age armor/helmet geometry still requires a separate authored replacement and real Unity gameplay-camera QA.");
     }
 
     static bool UpgradeArcher(string prefabPath, GameObject bowSource, float scale)
