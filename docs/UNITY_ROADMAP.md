@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-13
 
-This roadmap answers **what should be built next**. Current implementation truth lives in `PROJECT_STATUS.md`; game-design truth lives in `GDD_v0.1.md` (legacy filename, v0.2 content).
+This roadmap answers **what should be built next**. Current implementation truth lives in `PROJECT_STATUS.md`; game-design truth lives in `GDD.md`.
 
 ## Production principles
 
@@ -266,4 +266,4 @@ Definition of Done: finale is structurally different from Chapters I–V, Chapte
 
 ## Documentation gate
 
-Before v1.0, `PROJECT_STATUS.md`, `UNITY_ROADMAP.md`, `MODEL_ART_INVENTORY.md`, GDD, architecture and third-party provenance documents must agree with shipped behavior.
+Before v1.0, `PROJECT_STATUS.md`, `UNITY_ROADMAP.md`, `MODEL_ART_INVENTORY.md`, `GDD.md`, architecture and third-party provenance documents must agree with shipped behavior.
