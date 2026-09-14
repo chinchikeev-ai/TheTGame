@@ -22,7 +22,7 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Main combat HUD layout/content, controls, wave strip, build details | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
+| Main combat HUD layout/content, controls, wave strip, build details, corner magic controls | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
 | Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
 | Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Secondary tutorial/objective canvas |
 | Hector health and ability HUD | `HectorHUD` | Main combat resources/build UI |
@@ -41,11 +41,16 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 
 These components are still active or intentionally retained during a cutover. They are not canonical end-state owners and must not accumulate new responsibilities:
 
-- `CombatCornerControlsPresentation` currently mutates `ModernCombatHud` layout and creates a secondary magic control. Its intended layout must be absorbed into `ModernCombatHud`, then the component removed.
 - `HectorMotionFallbackAnimator` is a runtime animation safety net until Hector's production Animator is frozen. Authored animation wins when available.
 - Procedural character/environment visual factories remain fallback paths until production-art freeze; they are not the preferred production source.
 
-Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, or `ExtendedBalanceUI`.
+`CombatCornerControlsPresentation` has been removed. Its BuildDock placement, compact gift panel and corner magic UX are now owned directly by `ModernCombatHud`.
+
+Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, `ExtendedBalanceUI`, or `CombatCornerControlsPresentation`.
+
+## Editor art tooling
+
+Generated Chapter I art is explicit tooling, not an editor-startup side effect. Use `Tools/TheTroyGame/Art/Build Missing Chapter I Art` when generated candidates need to be rebuilt. Do not add hidden `[InitializeOnLoad]` art generation.
 
 ## Decorator rule
 
