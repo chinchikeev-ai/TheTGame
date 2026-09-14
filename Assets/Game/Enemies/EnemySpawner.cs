@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    const float FirstWavePreparationSeconds = 30f;
     static readonly WaitForSeconds ReinforcementDelay = new WaitForSeconds(.65f);
 
     public Transform[] spawnPoints;
@@ -70,9 +71,10 @@ public class EnemySpawner : MonoBehaviour
             WaitingForManualStart = true;
             GameStateController.Instance?.SetState(wave == 1 ? GameState.Preparing : GameState.BetweenWaves);
 
-            RuntimeFileLogger.Event("WAVE", $"Prepared wave={wave}/{maxWaves}, enemies={effectiveEnemyCount}, prep={preparedWave.preparationTime:0.0}s, target={preparedWave.targetDuration:0.0}s, spawnInterval={preparedWave.spawnInterval:0.00}s, hpMul={effectiveHpMultiplier:0.00}, speedMul={effectiveSpeedMultiplier:0.00}, boss={preparedWave.hasBoss}, difficulty={CampaignSave.Difficulty}");
+            float preparationSeconds = wave == 1 ? FirstWavePreparationSeconds : preparedWave.preparationTime;
+            RuntimeFileLogger.Event("WAVE", $"Prepared wave={wave}/{maxWaves}, enemies={effectiveEnemyCount}, prep={preparationSeconds:0.0}s, target={preparedWave.targetDuration:0.0}s, spawnInterval={preparedWave.spawnInterval:0.00}s, hpMul={effectiveHpMultiplier:0.00}, speedMul={effectiveSpeedMultiplier:0.00}, boss={preparedWave.hasBoss}, difficulty={CampaignSave.Difficulty}");
 
-            InterWaveCountdown = preparedWave.preparationTime;
+            InterWaveCountdown = preparationSeconds;
             while (InterWaveCountdown > 0f && !requestStart && !GameManager.Instance.GameEnded)
             {
                 InterWaveCountdown -= Time.deltaTime;
@@ -123,7 +125,7 @@ public class EnemySpawner : MonoBehaviour
         NextWaveSpeedMultiplier = effectiveSpeedMultiplier;
         NextWaveHasBoss = preparedWave.hasBoss;
         TargetWaveDuration = preparedWave.targetDuration;
-        InterWaveCountdown = preparedWave.preparationTime;
+        InterWaveCountdown = wave == 1 ? FirstWavePreparationSeconds : preparedWave.preparationTime;
         BuildPreparedWaveComposition(wave);
         NextWaveHasHeavy = NextWaveHeavyCount > 0 || NextWaveShieldCount > 0;
     }
