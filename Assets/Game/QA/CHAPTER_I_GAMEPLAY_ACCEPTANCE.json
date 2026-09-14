@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "storyBaseline": {
+    "sourceSessionId": "",
+    "sourceReportFile": "",
+    "sourceReportSha256": "",
+    "warningsReviewed": false,
+    "warningsDecisionNotes": "",
+    "humanAccepted": false,
+    "acceptedBy": "",
+    "acceptedUtc": ""
+  },
+  "difficultyPressure": {
+    "strategosReviewed": false,
+    "legendaryReviewed": false,
+    "notes": ""
+  },
+  "visualFit": {
+    "ru1920x1080": false,
+    "en1920x1080": false,
+    "ru1366or1376x768": false,
+    "en1366or1376x768": false,
+    "notes": ""
+  },
+  "gameplayFrozen": false,
+  "freezeNotes": "Do not set gameplayFrozen=true until the Story baseline, WARN review, Strategos/Legendary pressure review, and all four RU/EN visual-fit checks are complete."
+}
