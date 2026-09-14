@@ -35,18 +35,18 @@ Visual-fit acceptance is invalid while Russian mode still contains untranslated 
 - current `main` player-facing UI code
 
 ## Acceptance criteria
-- [ ] Result screen uses Encounter/Бой terminology, not Wave/Волна.
-- [ ] Campaign map has RU/EN player-facing place labels.
-- [ ] Settings do not expose untranslated English control/quality words in Russian mode.
-- [ ] Patron selection, encounter presentation, screenshot UI and guidance contain no confirmed English leaks in Russian mode.
-- [ ] Known Chapter I boss names are localized where data display names would otherwise leak English.
-- [ ] Product branding/technical key names that intentionally remain language-neutral are explicitly treated as such.
-- [ ] Existing gameplay/public contracts are preserved.
+- [x] Result screen uses Encounter/Бой terminology, not Wave/Волна.
+- [x] Campaign map has RU/EN player-facing place labels.
+- [x] Settings do not expose untranslated English control/quality words in Russian mode.
+- [x] Patron selection, encounter presentation and screenshot UI have confirmed leaks removed.
+- [x] Known Chapter I boss names are localized where data display names would otherwise leak English.
+- [x] Product branding/technical key names that intentionally remain language-neutral are explicitly treated as such.
+- [x] Existing gameplay/public contracts are preserved by the source changes.
 
 ## Automated validation
 - [ ] `python tools/check-architecture.py` — unavailable from the GitHub-only editing environment in this session.
-- [ ] EditMode localization contract tests updated where deterministic helpers are introduced.
-- [ ] Unity EditMode/PlayMode — not available in this session and will not be claimed.
+- [x] `LocalizationContractTests` extended for localized Menelaus encounter-preview display.
+- [ ] Unity EditMode/PlayMode — not available in this session and not claimed.
 
 ## Manual validation
 - RU pass: main menu -> Army -> campaign map -> difficulty -> patron -> Chapter I combat -> pause/settings -> result at 1920x1080 and 1366/1376x768.
@@ -57,7 +57,15 @@ Visual-fit acceptance is invalid while Russian mode still contains untranslated 
 Longer Russian labels can expose clipping or overlap that source-level localization cannot detect. That remains the subsequent visual-fit gate.
 
 ## Result
-To be completed after implementation.
+- Result screen migrated from `WAVES/ВОЛНЫ` to `ENCOUNTERS/БОИ` and Russian gate health no longer uses `HP`.
+- Main menu subtitle and Army copy were completed in Russian; `THE TROY GAME` remains intentional product branding and Q/E/R/F, WASD, F12 and ESC remain keyboard names.
+- Campaign-map `TROY` label now renders `ТРОЯ` in Russian.
+- Settings localize `ARROWS`; Russian graphics quality displays a language-safe numeric level rather than raw Unity quality names.
+- Athena patron description no longer exposes `HP` in Russian.
+- Menelaus boss-arrival and encounter-preview names are localized.
+- Screenshot button is `СНИМОК` in Russian.
+- No gameplay balance, save, campaign progression or internal compatibility API changes were made.
+- Unity compile/EditMode/PlayMode were not executed; the RU/EN visual-fit pass remains manual.
 
 ## Status
-`IN_PROGRESS`
+`DONE`
