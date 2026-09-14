@@ -59,8 +59,8 @@ public class EnemySpawner : MonoBehaviour
     public int NextWaveBossCount { get; private set; }
 
     readonly List<PreparedSpawn> preparedPlan = new List<PreparedSpawn>(64);
-    readonly List<PreparedSpawn> baseNonBossPlan = new List<PreparedSpawn>(64);
-    readonly List<PreparedSpawn> baseBossPlan = new List<PreparedSpawn>(4);
+    readonly List<PreparedSpawn> authoredNonBossPlan = new List<PreparedSpawn>(64);
+    readonly List<PreparedSpawn> authoredBossPlan = new List<PreparedSpawn>(4);
 
     bool running;
     bool requestStart;
@@ -178,17 +178,34 @@ public class EnemySpawner : MonoBehaviour
     void BuildPreparedPlan(float countMultiplier)
     {
         preparedPlan.Clear();
-        baseNonBossPlan.Clear();
-        baseBossPlan.Clear();
+        authoredNonBossPlan.Clear();
+        authoredBossPlan.Clear();
 
         EncounterSpawnGroup[] groups = preparedEncounter.spawnGroups;
         if (groups == null || groups.Length == 0)
             throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' has no authored spawn groups.");
 
+        int baseNonBossCount = 0;
+        int baseBossCount = 0;
+
         for (int g = 0; g < groups.Length; g++)
         {
             EncounterSpawnGroup group = groups[g];
             if (group == null || group.pattern == null || group.pattern.Length == 0) continue;
+
+            bool containsBoss = false;
+            bool containsNonBoss = false;
+            for (int p = 0; p < group.pattern.Length; p++)
+            {
+                if (group.pattern[p] == EnemyArchetype.Boss) containsBoss = true;
+                else containsNonBoss = true;
+            }
+            if (containsBoss && containsNonBoss)
+                throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' spawn group {g} mixes Boss and non-boss archetypes. Author the boss as a separate group.");
+
+            List<PreparedSpawn> destination = containsBoss ? authoredBossPlan : authoredNonBossPlan;
+            if (containsBoss) baseBossCount += group.BaseCount;
+            else baseNonBossCount += group.BaseCount;
 
             int repeats = Mathf.Max(1, group.repeats);
             bool firstInGroup = true;
@@ -196,7 +213,7 @@ public class EnemySpawner : MonoBehaviour
             {
                 for (int p = 0; p < group.pattern.Length; p++)
                 {
-                    PreparedSpawn spawn = new PreparedSpawn
+                    destination.Add(new PreparedSpawn
                     {
                         archetype = group.pattern[p],
                         route = group.route,
@@ -206,38 +223,41 @@ public class EnemySpawner : MonoBehaviour
                         hpMultiplier = Mathf.Max(.01f, group.hpMultiplier),
                         speedMultiplier = Mathf.Max(.01f, group.speedMultiplier),
                         behaviorId = group.behaviorId
-                    };
+                    });
                     firstInGroup = false;
-
-                    if (spawn.archetype == EnemyArchetype.Boss) baseBossPlan.Add(spawn);
-                    else baseNonBossPlan.Add(spawn);
                 }
             }
         }
 
-        int baseCount = baseNonBossPlan.Count + baseBossPlan.Count;
-        if (baseCount <= 0)
-            throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' resolves to zero enemies.");
+        int baseTotal = baseNonBossCount + baseBossCount;
+        if (baseTotal <= 0)
+            throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' resolves to zero base enemies.");
+        if (baseNonBossCount > 0 && authoredNonBossPlan.Count == 0)
+            throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' has a non-boss base count but no authored non-boss pattern.");
+        if (baseBossCount > 0 && authoredBossPlan.Count == 0)
+            throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' has a boss base count but no authored boss pattern.");
 
-        int targetTotal = Mathf.Max(1, Mathf.RoundToInt(baseCount * Mathf.Max(.01f, countMultiplier)));
-        if (baseBossPlan.Count > 0) targetTotal = Mathf.Max(baseBossPlan.Count, targetTotal);
-        int targetNonBoss = baseNonBossPlan.Count > 0 ? Mathf.Max(1, targetTotal - baseBossPlan.Count) : 0;
+        int targetTotal = Mathf.Max(1, Mathf.RoundToInt(baseTotal * Mathf.Max(.01f, countMultiplier)));
+        if (baseBossCount > 0) targetTotal = Mathf.Max(baseBossCount, targetTotal);
+        int targetNonBoss = baseNonBossCount > 0 ? Mathf.Max(1, targetTotal - baseBossCount) : 0;
 
-        if (targetNonBoss == baseNonBossPlan.Count)
+        AppendPrefix(authoredNonBossPlan, targetNonBoss, preparedPlan);
+        AppendPrefix(authoredBossPlan, baseBossCount, preparedPlan);
+    }
+
+    static void AppendPrefix(List<PreparedSpawn> source, int targetCount, List<PreparedSpawn> destination)
+    {
+        if (targetCount <= 0) return;
+        if (source == null || source.Count == 0)
+            throw new InvalidOperationException("Cannot scale an empty authored spawn pattern.");
+
+        for (int i = 0; i < targetCount; i++)
         {
-            for (int i = 0; i < baseNonBossPlan.Count; i++) preparedPlan.Add(baseNonBossPlan[i].Copy());
+            int sourceIndex = i % source.Count;
+            PreparedSpawn copy = source[sourceIndex].Copy();
+            if (i >= source.Count) copy.startDelay = 0f;
+            destination.Add(copy);
         }
-        else if (targetNonBoss > 0)
-        {
-            for (int i = 0; i < targetNonBoss; i++)
-            {
-                float position = (i + .5f) / targetNonBoss;
-                int sourceIndex = Mathf.Clamp(Mathf.FloorToInt(position * baseNonBossPlan.Count), 0, baseNonBossPlan.Count - 1);
-                preparedPlan.Add(baseNonBossPlan[sourceIndex].Copy());
-            }
-        }
-
-        for (int i = 0; i < baseBossPlan.Count; i++) preparedPlan.Add(baseBossPlan[i].Copy());
     }
 
     void BuildPreparedWaveComposition()
