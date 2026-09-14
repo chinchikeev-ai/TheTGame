@@ -80,6 +80,19 @@ Current runtime cues added/strengthened:
 - Menelaus = visibly larger Greek commander, cool-blue/bronze contrast, crest/cape/shield and aura;
 - Greek regular archetypes separated by shield/armor/weapon mass before color.
 
+Implementation status: **implemented in `HeroSignatureArt` and `WarriorArtDirector`; awaiting real Play Mode screenshot QA.**
+
+Current runtime cues added/strengthened:
+- Hector: larger red cape mass, broader bronze shoulders, stronger chest emblem, larger crest, fallback-safe round shield and long spear cues when source art does not already contain them.
+- Menelaus: larger blue royal cape, gold chest/shoulders, larger crest, command aura and fallback-safe royal shield cue.
+- Greek Infantry: explicit blue round shield + spear + blue crest.
+- Runner: lighter shoulder mass, short blue crest, sash and light blade.
+- Archer: large bow, quiver/arrow bundle, dark hood and blue scarf.
+- Heavy Hoplite: heavier armor mass and large dark shield.
+- Shield Bearer: deliberately oversized blue wall-shield and stronger plume.
+- Boss: larger blue/gold command mass, cape, shield, crest and aura.
+- Additions are presentation-only and do not intentionally alter combat balance or pathing.
+
 ### Pass D — materials and faction staging
 - introduce stronger sand/stone/wood/bronze/cloth separation;
 - warm Trojan gate/walls/banners/braziers;
@@ -110,4 +123,4 @@ Current runtime cues added/strengthened:
 - Production-art status remains governed by `MODEL_ART_INVENTORY.md`; passing this task does not automatically mean `DONE`.
 
 ## Status
-`IN_PROGRESS — PASS A + PASS B IMPLEMENTED, PLAY MODE QA PENDING`
+`IN_PROGRESS — PASS A + PASS B + PASS C IMPLEMENTED, PLAY MODE QA PENDING`
