@@ -7,20 +7,25 @@ public static class CombatImpactPresentation
         switch (sourceType)
         {
             case TowerType.Cannon:
+                ImpactBeat(point, new Color(1f,.34f,.05f), .95f, true);
                 Burst(point, new Color(1f,.34f,.05f), 4, .22f, .72f);
                 GroundPulse(point, new Color(1f,.26f,.03f), 1.5f, .20f);
                 break;
             case TowerType.FireTower:
+                ImpactBeat(point, new Color(1f,.24f,.02f), .78f, true);
                 Burst(point, new Color(1f,.18f,.02f), 4, .16f, .52f);
                 GroundPulse(point, new Color(1f,.42f,.04f), 1.2f, .18f);
                 break;
             case TowerType.SpearThrower:
+                ImpactBeat(point, new Color(.96f,.76f,.34f), .48f);
                 Burst(point, new Color(.92f,.70f,.27f), 2, .10f, .34f);
                 break;
             case TowerType.Slow:
+                ImpactBeat(point, new Color(.28f,.78f,1f), .52f);
                 Burst(point, new Color(.22f,.72f,1f), 3, .12f, .42f);
                 break;
             default:
+                ImpactBeat(point, new Color(1f,.82f,.32f), .36f);
                 Burst(point, new Color(1f,.76f,.20f), 1, .07f, .22f);
                 break;
         }
@@ -58,6 +63,7 @@ public static class CombatImpactPresentation
     {
         float size = heavy ? .75f : .34f;
         Color color = heavy ? new Color(1f,.24f,.05f) : new Color(1f,.62f,.18f);
+        ImpactBeat(point, color, heavy ? .90f : .42f, heavy);
         CombatVfxPool.Spawn(
             PrimitiveType.Sphere,
             point,
@@ -72,6 +78,7 @@ public static class CombatImpactPresentation
     {
         float size = boss ? 2.2f : .88f;
         Color color = boss ? new Color(.88f,.06f,.06f) : new Color(1f,.72f,.18f);
+        if (boss) ImpactBeat(point + Vector3.up * .12f, color, 1.35f, true);
         CombatVfxPool.Spawn(
             PrimitiveType.Sphere,
             point,
@@ -89,14 +96,17 @@ public static class CombatImpactPresentation
         Color color = sourceType == TowerType.TrojanGuard
             ? new Color(.86f,.42f,.13f)
             : new Color(.92f,.76f,.32f);
+        ImpactBeat(point, color, .44f);
         Burst(point, color, 2, .085f, .20f);
     }
 
     public static void HeroHit(Vector3 point, bool heavy)
     {
+        Color color = heavy ? new Color(.92f,.30f,.08f) : new Color(1f,.72f,.24f);
+        ImpactBeat(point, color, heavy ? .82f : .46f, heavy);
         Burst(
             point,
-            heavy ? new Color(.92f,.30f,.08f) : new Color(1f,.72f,.24f),
+            color,
             heavy ? 3 : 1,
             heavy ? .14f : .08f,
             heavy ? .34f : .18f);
@@ -105,6 +115,7 @@ public static class CombatImpactPresentation
     public static void GateHit(Vector3 point, bool heavy)
     {
         Color color = heavy ? new Color(.84f,.28f,.06f) : new Color(.92f,.58f,.18f);
+        ImpactBeat(point + Vector3.up * .12f, color, heavy ? 1.05f : .50f, heavy);
         Burst(point + Vector3.up * .12f, color, heavy ? 4 : 2, heavy ? .15f : .09f, heavy ? .48f : .24f);
         if (heavy) GroundPulse(point, new Color(.72f,.30f,.08f), 1.35f, .24f);
     }
@@ -114,9 +125,11 @@ public static class CombatImpactPresentation
         bool heavy = archetype == EnemyArchetype.HeavyHoplite ||
                      archetype == EnemyArchetype.ShieldBearer ||
                      archetype == EnemyArchetype.BatteringRam;
+        Color color = heavy ? new Color(.54f,.40f,.27f) : new Color(.74f,.56f,.32f);
+        if (heavy) ImpactBeat(point + Vector3.up * .12f, color, .78f, true);
         Burst(
             point + Vector3.up * .12f,
-            heavy ? new Color(.54f,.40f,.27f) : new Color(.74f,.56f,.32f),
+            color,
             heavy ? 3 : 1,
             heavy ? .14f : .08f,
             heavy ? .42f : .20f);
@@ -154,8 +167,41 @@ public static class CombatImpactPresentation
         float size = boss ? .24f : heavy ? .15f : .10f;
         float spread = boss ? .85f : heavy ? .52f : .30f;
 
+        if (boss) ImpactBeat(point + Vector3.up * .20f, color, 1.55f, true);
+        else if (heavy) ImpactBeat(point + Vector3.up * .15f, color, .82f, true);
         Burst(point + Vector3.up * .15f, color, count, size, spread);
         if (boss) GroundPulse(point, new Color(.95f,.62f,.12f), 3.8f, .5f);
+    }
+
+    static void ImpactBeat(Vector3 point, Color color, float size, bool heavy = false)
+    {
+        float coreSize = size * (heavy ? .42f : .34f);
+        CombatVfxPool.Spawn(
+            PrimitiveType.Sphere,
+            point + Vector3.up * .10f,
+            Vector3.one * (coreSize * .24f),
+            Vector3.one * coreSize,
+            color,
+            heavy ? .14f : .10f,
+            Vector3.up * .035f);
+
+        int shardCount = heavy ? 4 : 2;
+        float angleOffset = Random.Range(0f, 90f);
+        for (int i = 0; i < shardCount; i++)
+        {
+            float angle = angleOffset + 360f * i / shardCount + Random.Range(-14f, 14f);
+            Vector3 direction = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+            Vector3 startScale = new Vector3(size * .075f, size * .045f, size * .34f);
+            Vector3 endScale = new Vector3(size * .018f, size * .018f, size * .07f);
+            CombatVfxPool.Spawn(
+                PrimitiveType.Cube,
+                point + Vector3.up * .14f + direction * (size * .08f),
+                startScale,
+                endScale,
+                color,
+                heavy ? .20f : .14f,
+                direction * (size * (heavy ? .58f : .40f)) + Vector3.up * .08f);
+        }
     }
 
     static void Burst(Vector3 point, Color color, int count, float size, float spread)
