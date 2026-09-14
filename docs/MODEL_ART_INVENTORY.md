@@ -24,9 +24,9 @@ A builder succeeding does **not** promote an asset to `DONE`.
 | Shield Bearer | GENERATED PLACEHOLDER + SOURCE ONLY | spear + shield + armor candidates |
 | Greek Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow/quiver candidate; draw/release hooks exist; a visible procedural nocked-arrow candidate is shown while ready, hidden at Release, and restored on Draw; flight still uses the existing pooled procedural arrow |
 | Menelaus / Boss | GENERATED PLACEHOLDER | commander silhouette + command hook; final boss clips/materials pending |
-| Hector | GENERATED PLACEHOLDER + SOURCE ONLY | hero silhouette + spear/shield/armor candidates + explicit `Poke`/`Block` profile states + Q/E/R/F hooks; carried spear is hidden at R release, flies visibly, and is restored on arrival |
+| Hector | GENERATED PLACEHOLDER + SOURCE ONLY | hero silhouette + spear/shield/armor candidates + explicit `Poke`/`Block` profile states + Q/E/R/F hooks; carried spear is hidden at R release, flies visibly, and is restored on arrival; Shield Wall now maintains a timed defensive block-state and candidate mitigation window |
 | Trojan Infantry | GENERATED PLACEHOLDER + SOURCE ONLY | spear/shield/armor candidate pass |
-| Trojan Guard | GENERATED PLACEHOLDER + SOURCE ONLY | shield/spear/armor candidates + block/poke hooks |
+| Trojan Guard | GENERATED PLACEHOLDER + SOURCE ONLY | shield/spear/armor candidates + block/poke hooks; runtime keeps a persistent brace while enemies are reserved and faces the nearest reserved attacker |
 | Trojan Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow candidate + draw/release hooks |
 | Ballista Crew | GENERATED PLACEHOLDER | support candidate + fire/reload/tension hooks |
 | Priest of Apollo | GENERATED PLACEHOLDER | support candidate + cast/channel hooks |
@@ -40,8 +40,8 @@ A builder succeeding does **not** promote an asset to `DONE`.
 |---|---|---|
 | Bow | SOURCE ONLY + generated integration | pinned Quaternius CC0 source; candidate replacement pipeline creates `Socket_ArrowRelease`; runtime presentation adds a procedural nocked-arrow candidate and synchronizes hide/restore with Release/Draw |
 | Spear | SOURCE ONLY + generated integration | pinned Quaternius CC0 source; candidate replacement pipeline creates `Socket_SpearRelease`; Hector runtime presentation hides the carried spear during flight and restores it on arrival |
-| Aegean round shield | GENERATED PLACEHOLDER | project-authored static candidate |
-| Figure-eight/tower shield | GENERATED PLACEHOLDER | project-authored static candidate |
+| Aegean round shield | GENERATED PLACEHOLDER | project-authored static candidate; persistent brace/block runtime exists but authored grip/hold animation is still pending |
+| Figure-eight/tower shield | GENERATED PLACEHOLDER | project-authored static candidate; persistent brace/block runtime exists but authored grip/hold animation is still pending |
 | Dendra-inspired cuirass | GENERATED PLACEHOLDER | project-authored static candidate; currently rigid bone-follow, not final skinning |
 | Boar-tusk-inspired helmet | GENERATED PLACEHOLDER | project-authored static candidate |
 | Swords / dagger / quiver | GENERATED PLACEHOLDER / SOURCE | current KayKit accessories where available |
@@ -57,7 +57,7 @@ Final grip, nock/socket offsets, scale, materials, skin deformation, clipping an
 | Priests of Apollo | PROCEDURAL + GENERATED PLACEHOLDER crew | shrine + two priests + cast/channel + Apollo pulse | final shrine/priests/support animation/VFX/materials |
 | Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | shield/spear line + infantry crew + poke hook | final formation/structure/materials/authored clips |
 | Fire Tower | PROCEDURAL + GENERATED PLACEHOLDER crew | brazier/fire presentation + Fire Keeper + throw/stoke + flame pulse | final tower/props/keeper clips/materials |
-| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | shield-wall station + Guards + deterministic block/poke presentation; melee damage/VFX wait for the spear impact phase | final station/formation clips/materials and Play Mode timing QA |
+| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | shield-wall station + Guards + persistent reservation-driven brace, nearest-attacker facing, candidate damage mitigation, shield impact feedback and animation-phase spear damage | final station/formation, authored brace/hold/release clips/materials, mitigation balance and Play Mode timing QA |
 | Level 2/3 differentiation | PROCEDURAL | upgrade visual markers via `TowerProductionArtBinder` | authored per-tower L2/L3 meshes and specialization variants |
 
 **Chapter I Tower-Unit DONE count: 0.**
@@ -81,9 +81,9 @@ Final grip, nock/socket offsets, scale, materials, skin deformation, clipping an
 | Generic locomotion / hit / death | GENERATED PLACEHOLDER | role controllers exist; imported clips are selected deterministically by scored token matching; final authored clips/QA pending |
 | Spear combat | GENERATED PLACEHOLDER | `Poke` hooks wired to relevant runtime attacks; spear profiles use deterministic thrust/stab/poke candidate selection; enemy/Hector/Guard damage waits for the animation impact phase with a bounded fallback; final authored thrust/brace clips and timing QA pending |
 | Archer combat | GENERATED PLACEHOLDER + PROCEDURAL projectile/ammo presentation | `Draw` / `Release` wired; ranged attack waits for Release; `CharacterWeaponPresentation` hides the nocked-arrow candidate at release, pooled projectile flight starts from the resolved bow socket hierarchy, damage applies on arrival, and the nocked arrow returns on redraw; final arrow asset, string/nock alignment and timing pending |
-| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX/projectile | basic spear damage stays animation-phase synchronized; `R` hides the carried spear at release, launches the pooled procedural spear from the resolved release hierarchy, restores the carried spear on arrival, then applies arrival VFX/gameplay callback; spear melee presentation is suppressed while the spear is in flight; Q/E/F remain immediate gameplay hooks |
+| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX/projectile | basic spear damage stays animation-phase synchronized; `R` hides the carried spear at release, launches the pooled procedural spear from the resolved release hierarchy, restores the carried spear on arrival, then applies arrival VFX/gameplay callback; Shield Wall now synchronizes a 4-second candidate defensive pose/window with its zone; Q/F remain immediate gameplay hooks |
 | Character projectile flight | PROCEDURAL | `CombatFlightPresentation` provides pooled arrow/spear geometry, target tracking, oriented ballistic arc and arrival callbacks; `CharacterWeaponSocketResolver` resolves explicit release markers/source weapon/humanoid hand fallbacks; `CharacterWeaponPresentation` owns carried/nocked weapon visibility state; no projectile physics collider is used | replace procedural geometry/ammo presentation with production assets; tune hand grip, nock/release offsets, speed/arc/contact frames in real Play Mode |
-| Shield block | GENERATED PLACEHOLDER | `Block` wired for Trojan Guard and present in Hector's spear-bearing controller profile; final pose/clip pending |
+| Shield block | GENERATED PLACEHOLDER + PROCEDURAL feedback | `CharacterPresentationState.SetBlocking` provides a persistent logical defensive state while preserving the existing `Block` trigger fallback; Trojan Guard braces while reservations exist and turns toward its nearest reserved attacker; Hector Shield Wall holds defensive state for its gameplay duration; blocked hits use procedural bronze pulse/tone feedback | authored brace/hold/release and blocked-hit reaction clips, shield hand IK/grip, final VFX/audio, directional mitigation tuning and Play Mode QA |
 | Menelaus | GENERATED PLACEHOLDER | command hook tied to reinforcements; deterministic command candidate/fallback is logged; repeated gate attacks resolve damage at the attack impact phase; final boss-specific clips pending |
 | Ballista mechanism | PROCEDURAL | `TowerSupportMechanismPresentation` performs release/reload/tension feedback; final authored mechanism animation pending |
 | Apollo shrine mechanism | PROCEDURAL | cast pulse/disc motion exists; final authored support presentation pending |
@@ -92,7 +92,7 @@ Final grip, nock/socket offsets, scale, materials, skin deformation, clipping an
 | Siege Tower movement | MISSING | later chapter wheel/movement/assault animation |
 | Chariot horse locomotion | SOURCE ONLY + generator | pinned horse source + generator; real import/orientation/clip QA pending |
 
-The current Chapter I animation builder/runtime timing/projectile layer is an auditable candidate system, not final animation production. It uses normalized Animator-state phases where the expected state is available, bounded fallback timing otherwise, procedural pooled character projectiles, deterministic release-point resolution, and temporary runtime weapon/ammunition visibility synchronization. Exact hand grip, bow-string/nock alignment, release-socket offsets, flight arcs, contact frames, clip lengths, projectile meshes and pose quality still require real Unity Play Mode inspection before production acceptance.
+The current Chapter I animation builder/runtime timing/projectile/defensive layer is an auditable candidate system, not final animation production. It uses normalized Animator-state phases where the expected state is available, bounded fallback timing otherwise, procedural pooled character projectiles, deterministic release-point resolution, temporary runtime weapon/ammunition visibility synchronization, persistent logical block-state, reservation-driven Guard brace/facing and a timed Hector Shield Wall mitigation window. Exact hand/shield grip, bow-string/nock alignment, release-socket offsets, flight arcs, contact frames, brace/hold clips, mitigation values, projectile meshes and pose quality still require real Unity Play Mode inspection before production acceptance.
 
 ## Later-campaign candidate coverage
 
@@ -158,8 +158,8 @@ Third-party provenance:
 ## Remaining genuine production gaps
 
 1. final authored/rigged hero and enemy meshes/materials;
-2. final skinned armor/weapon integration and authored hand grip;
-3. final weapon-specific combat clips and hero/boss animation sets;
+2. final skinned armor/weapon/shield integration and authored hand grip/IK;
+3. final weapon-specific combat clips, shield brace/hold/release clips and hero/boss animation sets;
 4. final authored arrow/spear projectile meshes plus nock/release/contact tuning;
 5. final authored six Chapter I Tower-Unit structures and L2/L3/specialization variants;
 6. final authored Ballista / Ram / Siege Tower mechanisms;
@@ -168,7 +168,7 @@ Third-party provenance:
 9. final civilians and evacuation animation;
 10. authored damaged/destroyed/burning states for key structures;
 11. final environment modules for the campaign;
-12. real gameplay-camera and Play Mode QA, including exact contact/release-frame, grip, nock and projectile-flight tuning.
+12. real gameplay-camera and Play Mode QA, including exact contact/release-frame, grip, block-state, mitigation and projectile-flight tuning.
 
 ## Acceptance gate for `DONE`
 

@@ -54,6 +54,12 @@ public class RuntimeEffects : MonoBehaviour
         source.PlayOneShot(GetTone(heavy ? 90f : 240f, .06f, .10f));
     }
 
+    public void PlayShieldBlockSound(bool heavy = false)
+    {
+        source.PlayOneShot(GetTone(heavy ? 155f : 205f, heavy ? .11f : .075f, heavy ? .20f : .14f));
+        source.PlayOneShot(GetTone(heavy ? 460f : 540f, .045f, heavy ? .10f : .07f));
+    }
+
     public void PlayDeathSound(bool boss = false)
     {
         source.PlayOneShot(GetTone(boss ? 70f : 150f, boss ? .35f : .16f, boss ? .32f : .16f));
