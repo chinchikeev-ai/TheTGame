@@ -44,12 +44,12 @@ public class HectorHUD : MonoBehaviour
         panel.color = Color.white;
         RectTransform pr = panel.rectTransform;
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(1f,1f);
-        pr.anchoredPosition = new Vector2(-24f,-188f);
-        pr.sizeDelta = new Vector2(360f,214f);
+        pr.anchoredPosition = new Vector2(-24f,-164f);
+        pr.sizeDelta = new Vector2(330f,204f);
 
-        AddImage(root.transform,"HectorPortrait",new Vector2(-138,54),new Vector2(82,82),TroyHudArt.Portrait("hector"));
-        nameText = AddText(root.transform,"HECTOR",new Vector2(-46,70),new Vector2(188,30),19,new Color(1f,.72f,.28f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
-        hpText = AddText(root.transform,"",new Vector2(-46,40),new Vector2(188,24),14,new Color(.94f,.86f,.72f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        AddImage(root.transform,"HectorPortrait",new Vector2(-124,50),new Vector2(74,74),TroyHudArt.Portrait("hector"));
+        nameText = AddText(root.transform,"HECTOR",new Vector2(-34,65),new Vector2(174,28),17,new Color(1f,.72f,.28f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        hpText = AddText(root.transform,"",new Vector2(-34,37),new Vector2(174,22),13,new Color(.94f,.86f,.72f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
 
         GameObject track = new GameObject("HealthTrack");
         track.transform.SetParent(root.transform,false);
@@ -57,8 +57,8 @@ public class HectorHUD : MonoBehaviour
         trackImage.color = new Color(.15f,.06f,.035f,.95f);
         RectTransform tr = trackImage.rectTransform;
         tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(.5f,.5f);
-        tr.anchoredPosition = new Vector2(36,13);
-        tr.sizeDelta = new Vector2(258,14);
+        tr.anchoredPosition = new Vector2(30,11);
+        tr.sizeDelta = new Vector2(232,13);
         GameObject fillObj = new GameObject("HealthFill");
         fillObj.transform.SetParent(track.transform,false);
         hpFill = fillObj.AddComponent<Image>();
@@ -73,17 +73,17 @@ public class HectorHUD : MonoBehaviour
         string[] art = { "warcry", "shieldwall", "spear", "ultimate" };
         for (int i=0;i<4;i++)
         {
-            float x = -126 + i*84;
+            float x = -111 + i*74;
             GameObject slot = new GameObject("Ability_"+keys[i]);
             slot.transform.SetParent(root.transform,false);
             Image bg = slot.AddComponent<Image>();
             bg.sprite = TroyHudArt.Panel(); bg.type = Image.Type.Sliced; bg.color = new Color(.42f,.22f,.08f,1f);
             RectTransform sr = bg.rectTransform;
             sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(.5f,.5f);
-            sr.anchoredPosition = new Vector2(x,-62);
-            sr.sizeDelta = new Vector2(76,82);
-            AddImage(slot.transform,"Icon",new Vector2(0,12),new Vector2(44,44),TroyHudArt.Ability(art[i]));
-            abilityTexts[i] = AddText(slot.transform,keys[i]+"  "+names[i],new Vector2(0,-28),new Vector2(70,22),9,new Color(.96f,.86f,.70f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
+            sr.anchoredPosition = new Vector2(x,-59);
+            sr.sizeDelta = new Vector2(68,76);
+            AddImage(slot.transform,"Icon",new Vector2(0,11),new Vector2(40,40),TroyHudArt.Ability(art[i]));
+            abilityTexts[i] = AddText(slot.transform,keys[i]+"  "+names[i],new Vector2(0,-25),new Vector2(64,20),8,new Color(.96f,.86f,.70f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
             GameObject cd = new GameObject("Cooldown");
             cd.transform.SetParent(slot.transform,false);
             cooldownFills[i] = cd.AddComponent<Image>();
