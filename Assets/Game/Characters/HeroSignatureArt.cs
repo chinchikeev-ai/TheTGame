@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public static class HeroSignatureArt
@@ -32,7 +33,8 @@ public static class HeroSignatureArt
         Part(art, "Hector Chest Sun", PrimitiveType.Cylinder, new Vector3(0f, 1.15f, .29f), new Vector3(.16f, .025f, .16f), bronze, Quaternion.Euler(90f, 0f, 0f));
         Part(art, "Hector Mantle L", PrimitiveType.Sphere, new Vector3(-.34f, 1.36f, -.03f), new Vector3(.15f, .09f, .15f), darkBronze);
         Part(art, "Hector Mantle R", PrimitiveType.Sphere, new Vector3(.34f, 1.36f, -.03f), new Vector3(.15f, .09f, .15f), darkBronze);
-        Part(art, "Hector Horsehair Crest", PrimitiveType.Cube, new Vector3(0f, 2.03f, -.02f), new Vector3(.09f, .34f, .44f), trojanRed, Quaternion.Euler(-8f, 0f, 0f));
+        if (!HasExistingCrest(art.parent, art))
+            Part(art, "Hector Horsehair Crest", PrimitiveType.Cube, new Vector3(0f, 2.03f, -.02f), new Vector3(.09f, .34f, .44f), trojanRed, Quaternion.Euler(-8f, 0f, 0f));
         Part(art, "Hector Belt Emblem", PrimitiveType.Cylinder, new Vector3(0f, .84f, .25f), new Vector3(.095f, .022f, .095f), bronze, Quaternion.Euler(90f, 0f, 0f));
     }
 
@@ -56,6 +58,17 @@ public static class HeroSignatureArt
         Color black = new Color(.10f, .09f, .08f);
         Part(art, "Achilles Chest Mark", PrimitiveType.Cylinder, new Vector3(0f, 1.17f, .29f), new Vector3(.14f, .025f, .14f), gold, Quaternion.Euler(90f, 0f, 0f));
         Part(art, "Achilles Crest", PrimitiveType.Cube, new Vector3(0f, 2.08f, -.02f), new Vector3(.10f, .40f, .48f), black);
+    }
+
+    static bool HasExistingCrest(Transform root, Transform generatedArt)
+    {
+        if (root == null) return false;
+        foreach (Transform transform in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (transform == null || transform == generatedArt || transform.IsChildOf(generatedArt)) continue;
+            if (transform.name.IndexOf("crest", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+        }
+        return false;
     }
 
     static GameObject Part(Transform parent, string name, PrimitiveType type, Vector3 position, Vector3 scale, Color color, Quaternion? rotation = null)
