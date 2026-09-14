@@ -76,9 +76,9 @@ public static class DifficultyRules
     {
         switch (difficulty)
         {
-            case CampaignDifficulty.Story: return "STORY";
-            case CampaignDifficulty.Legendary: return "LEGENDARY";
-            default: return "STRATEGOS";
+            case CampaignDifficulty.Story: return GameLanguage.T("STORY", "СЮЖЕТ");
+            case CampaignDifficulty.Legendary: return GameLanguage.T("LEGENDARY", "ЛЕГЕНДАРНАЯ");
+            default: return GameLanguage.T("STRATEGOS", "СТРАТЕГ");
         }
     }
 }
