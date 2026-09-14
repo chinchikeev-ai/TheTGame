@@ -12,6 +12,7 @@ public sealed class DivinePatronStartPresentation : MonoBehaviour
     Text giftButtonText;
     Button firstWaveButton;
     Text firstWaveButtonText;
+    EnemySpawner spawner;
     bool copyUpdated;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -47,14 +48,15 @@ public sealed class DivinePatronStartPresentation : MonoBehaviour
 
         firstWaveButton = prepObject.GetComponentInChildren<Button>(true);
         firstWaveButtonText = firstWaveButton != null ? firstWaveButton.GetComponentInChildren<Text>(true) : null;
+        spawner = FindFirstObjectByType<EnemySpawner>();
         UpdateChoiceCopy();
-        return overlay != null && giftButton != null && firstWaveButton != null;
+        return overlay != null && giftButton != null && firstWaveButton != null && spawner != null;
     }
 
     void LateUpdate()
     {
         GameManager gm = GameManager.Instance;
-        if (gm == null || overlay == null || giftButton == null || firstWaveButton == null) return;
+        if (gm == null || overlay == null || giftButton == null || firstWaveButton == null || spawner == null) return;
 
         if (!copyUpdated) UpdateChoiceCopy();
 
@@ -74,8 +76,7 @@ public sealed class DivinePatronStartPresentation : MonoBehaviour
                 giftButtonText.text = GameLanguage.T("PATRON: ", "ПОКРОВИТЕЛЬ: ") + PatronName(gm.SelectedGift);
         }
 
-        EnemySpawner spawner = FindSpawnerFromButton();
-        bool firstPreparation = spawner != null && gm.CurrentWave == 0 && !spawner.WaveActive;
+        bool firstPreparation = gm.CurrentWave == 0 && !spawner.WaveActive;
         if (firstPreparation)
         {
             firstWaveButton.interactable = false;
@@ -87,13 +88,6 @@ public sealed class DivinePatronStartPresentation : MonoBehaviour
                     : GameLanguage.T("CHOOSE A PATRON FIRST", "СНАЧАЛА ВЫБЕРИТЕ БОГА");
             }
         }
-    }
-
-    EnemySpawner FindSpawnerFromButton()
-    {
-        ModernCombatHud hud = firstWaveButton != null ? firstWaveButton.GetComponentInParent<ModernCombatHud>() : null;
-        if (hud != null) return hud.GetComponent<EnemySpawner>();
-        return FindFirstObjectByType<EnemySpawner>();
     }
 
     void UpdateChoiceCopy()
