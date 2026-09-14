@@ -16,6 +16,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     EnemySpawner spawner;
     Canvas legacyCanvas;
     Canvas menuCanvas;
+    Camera gameplayCamera;
 
     Text goldText, gateText, waveText, threatText, wavePreviewText, waveProgressText;
     Text speedText, giftText, magicToggleText, magicActionText;
@@ -33,6 +34,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     GameObject buildDock;
     GameObject buildTooltip;
     GameObject selectedCard;
+    RectTransform selectedCardRect;
     GameObject giftChoiceOverlay;
     GameObject magicFlyout;
     Image gateHealthFill;
@@ -63,6 +65,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     {
         placement = FindFirstObjectByType<TowerPlacement>();
         spawner = FindFirstObjectByType<EnemySpawner>();
+        gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
         FindCanvases();
         Build();
     }
@@ -107,19 +110,11 @@ public sealed class ModernCombatHud : MonoBehaviour
     void BuildTopBar(Transform parent)
     {
         GameObject bar = Panel(parent, "TopResources", new Vector2(24, -24), new Vector2(330, 132), new Color(.035f, .022f, .016f, .94f), new Vector2(0, 1), new Vector2(0, 1));
-
         Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-128, 34), new Vector2(34, 34), CoinSprite());
         coin.color = Color.white;
         goldText = Text(bar.transform, "0", new Vector2(-96, 34), new Vector2(190, 46), 25, new Color(1f, .73f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-
         gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(0, -4), new Vector2(278, 30), 14, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        gateHealthFill = ProgressBar(
-            bar.transform,
-            "GateHealthProgress",
-            new Vector2(0, -42),
-            new Vector2(278, 16),
-            new Color(.18f, .08f, .045f, 1f),
-            new Color(.79f, .22f, .08f, 1f));
+        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(0, -42), new Vector2(278, 16), new Color(.18f, .08f, .045f, 1f), new Color(.79f, .22f, .08f, 1f));
     }
 
     void BuildWaveBar(Transform parent)
@@ -129,14 +124,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         threatText = Text(waveBar.transform, "THREAT", new Vector2(0, 27), new Vector2(520, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
         wavePreviewText = Text(waveBar.transform, "", new Vector2(0, 2), new Vector2(500, 22), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         wavePreviewText.enabled = false;
-
-        waveProgressFill = ProgressBar(
-            waveBar.transform,
-            "WaveProgress",
-            new Vector2(0, -8),
-            new Vector2(500, 14),
-            new Color(.16f, .09f, .055f, 1f),
-            new Color(1f, .58f, .12f, 1f));
+        waveProgressFill = ProgressBar(waveBar.transform, "WaveProgress", new Vector2(0, -8), new Vector2(500, 14), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
         waveProgressText = Text(waveBar.transform, "0%", new Vector2(0, -27), new Vector2(220, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
 
         Button speedDown = Button(waveBar.transform, "<", new Vector2(-62, -55), new Vector2(46, 38), DecreaseSpeed, false);
@@ -145,7 +133,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         speedText.gameObject.name = "SpeedValue";
         Button speedUp = Button(waveBar.transform, ">", new Vector2(62, -55), new Vector2(46, 38), IncreaseSpeed, false);
         speedUp.gameObject.name = "SpeedNext";
-
         startWaveButton = Button(waveBar.transform, L("START", "СТАРТ"), new Vector2(310, -2), new Vector2(116, 76), StartWave, true);
     }
 
@@ -180,15 +167,7 @@ public sealed class ModernCombatHud : MonoBehaviour
             magicToggleText.resizeTextMaxSize = 11;
         }
 
-        magicFlyout = Panel(
-            container.transform,
-            "MagicFlyout",
-            new Vector2(-24f, 184f),
-            new Vector2(300f, 84f),
-            new Color(.035f, .022f, .016f, .97f),
-            new Vector2(1f, 0f),
-            new Vector2(1f, 0f));
-
+        magicFlyout = Panel(container.transform, "MagicFlyout", new Vector2(-24f, 184f), new Vector2(300f, 84f), new Color(.035f, .022f, .016f, .97f), new Vector2(1f, 0f), new Vector2(1f, 0f));
         magicAction = Button(magicFlyout.transform, "", Vector2.zero, new Vector2(268f, 54f), CastMagic, true);
         magicAction.gameObject.name = "Magic_Primary";
         magicActionText = magicAction.GetComponentInChildren<Text>();
@@ -234,19 +213,15 @@ public sealed class ModernCombatHud : MonoBehaviour
 
         GameObject panel = Panel(giftChoiceOverlay.transform, "DivineGiftChoicePanel", Vector2.zero, new Vector2(780, 350), new Color(.045f, .026f, .016f, .995f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
         Text(panel.transform, L("CHOOSE A DIVINE GIFT", "ВЫБЕРИТЕ ДАР БОГА"), new Vector2(0, 132), new Vector2(650, 44), 27, new Color(1f, .70f, .24f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        Text(panel.transform,
-            L("One blessing may be invoked during each wave.", "В каждой волне можно призвать одно благословение."),
-            new Vector2(0, 96), new Vector2(650, 30), 13, new Color(.78f, .69f, .60f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
-
-        Button ares = Button(panel.transform, L("ARES\n60 DAMAGE • ALL ENEMIES", "АРЕС\n60 УРОНА • ВСЕМ ВРАГАМ"), new Vector2(-190, 31), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Ares), true);
+        Text(panel.transform, L("Choose once. The blessing lasts for this map.", "Выберите один раз. Благословение действует всю карту."), new Vector2(0, 96), new Vector2(650, 30), 13, new Color(.78f, .69f, .60f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
+        Button ares = Button(panel.transform, L("ARES\n+10% PLAYER DAMAGE", "АРЕС\n+10% УРОНА ИГРОКА"), new Vector2(-190, 31), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Ares), true);
         ares.gameObject.name = "Gift_Ares";
         Button athena = Button(panel.transform, L("ATHENA\nGATE +2 HP", "АФИНА\nВОРОТА +2 HP"), new Vector2(190, 31), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Athena), false);
         athena.gameObject.name = "Gift_Athena";
         Button apollo = Button(panel.transform, L("APOLLO\n+100 GOLD", "АПОЛЛОН\n+100 ЗОЛОТА"), new Vector2(-190, -68), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Apollo), false);
         apollo.gameObject.name = "Gift_Apollo";
-        Button poseidon = Button(panel.transform, L("POSEIDON\n50% SLOW • 5s", "ПОСЕЙДОН\nЗАМЕДЛЕНИЕ 50% • 5с"), new Vector2(190, -68), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Poseidon), false);
+        Button poseidon = Button(panel.transform, L("POSEIDON\nENEMIES -10% SPEED", "ПОСЕЙДОН\nВРАГИ -10% СКОРОСТИ"), new Vector2(190, -68), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Poseidon), false);
         poseidon.gameObject.name = "Gift_Poseidon";
-
         Button close = Button(panel.transform, L("CANCEL", "ОТМЕНА"), new Vector2(0, -142), new Vector2(200, 40), CloseGiftChoice, false);
         close.gameObject.name = "GiftChoiceCancel";
         giftChoiceOverlay.SetActive(false);
@@ -268,7 +243,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         buildDock = Panel(parent, "BuildDock", new Vector2(-104f, 24f), new Vector2(1040, 148), new Color(.035f, .022f, .016f, .95f), new Vector2(1f, 0f), new Vector2(1f, 0f));
         Text(buildDock.transform, L("TROJAN DEFENSES", "ОБОРОНА ТРОИ"), new Vector2(-438, 52), new Vector2(240, 26), 13, new Color(.74f, .65f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         buildSelectionText = Text(buildDock.transform, "", new Vector2(310, 52), new Vector2(560, 26), 12, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleRight, FontStyle.Bold);
-
         for (int i = 0; i < buildTypes.Length; i++)
         {
             TowerType type = buildTypes[i];
@@ -277,7 +251,6 @@ public sealed class ModernCombatHud : MonoBehaviour
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
             relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
         }
-
         defenseDockOpen = false;
         buildDock.SetActive(false);
     }
@@ -312,7 +285,6 @@ public sealed class ModernCombatHud : MonoBehaviour
     {
         buildTooltip = Panel(parent, "BuildHoverTooltip", new Vector2(-104f, 190f), new Vector2(500, 166), new Color(.028f, .018f, .014f, .985f), new Vector2(1f, 0f), new Vector2(1f, 0f));
         buildTooltip.GetComponent<Image>().raycastTarget = false;
-
         GameObject accentObject = new GameObject("Accent");
         accentObject.transform.SetParent(buildTooltip.transform, false);
         tooltipAccent = accentObject.AddComponent<Image>();
@@ -321,7 +293,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         accentRt.anchorMin = accentRt.anchorMax = accentRt.pivot = new Vector2(0f, .5f);
         accentRt.anchoredPosition = new Vector2(8f, 0f);
         accentRt.sizeDelta = new Vector2(8f, 146f);
-
         tooltipTitle = Text(buildTooltip.transform, "", new Vector2(-108, 52), new Vector2(286, 28), 18, new Color(1f, .76f, .31f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipRole = Text(buildTooltip.transform, "", new Vector2(-108, 24), new Vector2(286, 26), 12, new Color(.78f, .70f, .61f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         tooltipStats = Text(buildTooltip.transform, "", new Vector2(-108, -10), new Vector2(286, 36), 12, new Color(.93f, .87f, .79f, 1f), TextAnchor.MiddleLeft, FontStyle.Normal);
@@ -331,7 +302,8 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildSelectedCard(Transform parent)
     {
-        selectedCard = Panel(parent, "SelectedTowerCard", new Vector2(-400, 24), new Vector2(340, 274), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 0), new Vector2(1, 0));
+        selectedCard = Panel(parent, "SelectedTowerCard", Vector2.zero, new Vector2(340, 274), new Color(.045f, .027f, .018f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedCardRect = selectedCard.transform as RectTransform;
         selectedTitle = Text(selectedCard.transform, "", new Vector2(0, 103), new Vector2(304, 34), 18, new Color(1f, .70f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         selectedStats = Text(selectedCard.transform, "", new Vector2(0, 45), new Vector2(304, 72), 13, new Color(.94f, .87f, .77f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
         selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -17), new Vector2(304, 44), 11, new Color(1f, .73f, .31f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
@@ -346,6 +318,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     {
         if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
         if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (gameplayCamera == null) gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
         if (menuCanvas == null) FindCanvases();
 
         bool blocked = IsMenuBlockingCombat();
@@ -391,8 +364,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         GameManager gm = GameManager.Instance;
         goldText.text = gm.Money.ToString();
         gateText.text = $"{L("GATE", "ВОРОТА")}   {gm.BaseHealth} / {gm.MaxBaseHealth}";
-        if (gateHealthFill != null)
-            gateHealthFill.fillAmount = gm.MaxBaseHealth > 0 ? Mathf.Clamp01(gm.BaseHealth / (float)gm.MaxBaseHealth) : 0f;
+        if (gateHealthFill != null) gateHealthFill.fillAmount = gm.MaxBaseHealth > 0 ? Mathf.Clamp01(gm.BaseHealth / (float)gm.MaxBaseHealth) : 0f;
     }
 
     void UpdateFirstWavePreparation()
@@ -402,36 +374,26 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (firstWavePrep != null) firstWavePrep.SetActive(visible);
         if (waveBar != null) waveBar.SetActive(!visible);
         if (!visible) return;
-
         int seconds = Mathf.Max(0, Mathf.CeilToInt(spawner.InterWaveCountdown));
         firstWavePrepTitle.text = L($"PREPARE FOR ATTACK — {seconds}", $"ПОДГОТОВКА К АТАКЕ — {seconds}");
         firstWavePrepObjective.text = L("OBJECTIVE • DEFEND THE GATE", "ЦЕЛЬ • ЗАЩИТИТЕ ВОРОТА");
         firstWavePrepComposition.text = CombatHudWaveFormatter.BuildPreview(spawner);
-        firstWavePrepStartButton.interactable = !gm.GameEnded;
+        firstWavePrepStartButton.interactable = false;
     }
 
     void UpdateActions()
     {
         GameManager gm = GameManager.Instance;
-        float speed = CombatControlsUI.CurrentSpeed;
-        speedText.text = $"{speed:0}x";
-
+        speedText.text = $"{CombatControlsUI.CurrentSpeed:0}x";
         float cooldown = gm != null ? gm.MagicCooldownRemaining : 0f;
         bool magicReady = gm != null && cooldown <= .01f && !gm.GameEnded && EnemyRegistry.AliveCount > 0;
-
-        if (magicToggleText != null)
-            magicToggleText.text = cooldown > .01f ? Mathf.CeilToInt(cooldown) + L("s", "с") : L("MAGIC", "МАГИЯ");
-        if (magicActionText != null)
-            magicActionText.text = cooldown > .01f
-                ? L("DIVINE POWER   ", "БОЖЕСТВЕННАЯ СИЛА   ") + Mathf.CeilToInt(cooldown) + L("s", "с")
-                : L("DIVINE POWER   READY", "БОЖЕСТВЕННАЯ СИЛА   ГОТОВА");
+        if (magicToggleText != null) magicToggleText.text = cooldown > .01f ? Mathf.CeilToInt(cooldown) + L("s", "с") : L("MAGIC", "МАГИЯ");
+        if (magicActionText != null) magicActionText.text = cooldown > .01f ? L("DIVINE POWER   ", "БОЖЕСТВЕННАЯ СИЛА   ") + Mathf.CeilToInt(cooldown) + L("s", "с") : L("DIVINE POWER   READY", "БОЖЕСТВЕННАЯ СИЛА   ГОТОВА");
         if (magicAction != null) magicAction.interactable = magicReady;
         if (magicToggle != null) magicToggle.interactable = gm != null && !gm.GameEnded;
         if (gm == null || gm.GameEnded) CloseMagicFlyout();
 
-        giftText.text = gm != null && gm.GiftAvailable
-            ? L("CHOOSE DIVINE GIFT", "ВЫБРАТЬ ДАР БОГА")
-            : L("GIFT USED THIS WAVE", "ДАР В ЭТОЙ ВОЛНЕ ИСПОЛЬЗОВАН");
+        giftText.text = gm != null && gm.GiftAvailable ? L("CHOOSE DIVINE GIFT", "ВЫБРАТЬ ДАР БОГА") : gm != null && gm.GiftSelected ? L("DIVINE GIFT SELECTED", "ДАР БОГА ВЫБРАН") : L("DIVINE GIFT", "ДАР БОГА");
         giftButton.interactable = gm != null && gm.GiftAvailable && !gm.GameEnded;
         if (gm == null || !gm.GiftAvailable) CloseGiftChoice();
     }
@@ -441,7 +403,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         GameManager gm = GameManager.Instance;
         int sec = spawner != null ? Mathf.RoundToInt(spawner.CurrentWaveElapsed) : 0;
         waveText.text = $"{L("WAVE", "ВОЛНА")} {gm.CurrentWave}/{gm.MaxWaves}   •   {sec / 60:00}:{sec % 60:00}";
-
         if (spawner == null)
         {
             threatText.text = "";
@@ -452,29 +413,14 @@ public sealed class ModernCombatHud : MonoBehaviour
             return;
         }
 
-        string threat = spawner.NextWaveHasBoss
-            ? L("BOSS APPROACHING: MENELAUS", "ПРИБЛИЖАЕТСЯ БОСС: МЕНЕЛАЙ")
-            : spawner.NextWaveHasHeavy
-                ? L("HEAVY FORMATION EXPECTED", "ОЖИДАЕТСЯ ТЯЖЁЛАЯ ФОРМАЦИЯ")
-                : L("STANDARD ENEMY FORMATION", "ОБЫЧНАЯ ВРАЖЕСКАЯ ФОРМАЦИЯ");
-
-        if (spawner.WaveActive)
-            threatText.text = $"{EnemyRegistry.AliveCount} {L("ENEMIES REMAIN", "ВРАГОВ В СТРОЮ")} • {threat}";
-        else if (spawner.InterWaveCountdown > 0)
-            threatText.text = $"{L("NEXT WAVE IN", "СЛЕДУЮЩАЯ ВОЛНА ЧЕРЕЗ")} {Mathf.CeilToInt(spawner.InterWaveCountdown)}{L("s", "с")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")}";
-        else
-            threatText.text = $"{L("READY", "ГОТОВО")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")} • {threat}";
+        string threat = spawner.NextWaveHasBoss ? L("BOSS APPROACHING: MENELAUS", "ПРИБЛИЖАЕТСЯ БОСС: МЕНЕЛАЙ") : spawner.NextWaveHasHeavy ? L("HEAVY FORMATION EXPECTED", "ОЖИДАЕТСЯ ТЯЖЁЛАЯ ФОРМАЦИЯ") : L("STANDARD ENEMY FORMATION", "ОБЫЧНАЯ ВРАЖЕСКАЯ ФОРМАЦИЯ");
+        if (spawner.WaveActive) threatText.text = $"{EnemyRegistry.AliveCount} {L("ENEMIES REMAIN", "ВРАГОВ В СТРОЮ")} • {threat}";
+        else if (spawner.InterWaveCountdown > 0) threatText.text = $"{L("NEXT WAVE IN", "СЛЕДУЮЩАЯ ВОЛНА ЧЕРЕЗ")} {Mathf.CeilToInt(spawner.InterWaveCountdown)}{L("s", "с")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")}";
+        else threatText.text = $"{L("READY", "ГОТОВО")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")} • {threat}";
 
         float progress = spawner.CurrentWaveProgress;
         if (waveProgressFill != null) waveProgressFill.fillAmount = progress;
-        if (waveProgressText != null)
-        {
-            if (spawner.WaveActive)
-                waveProgressText.text = $"{spawner.CurrentWaveResolvedEnemies} / {Mathf.Max(1, spawner.CurrentWaveTotalEnemies)}   •   {Mathf.RoundToInt(progress * 100f)}%";
-            else
-                waveProgressText.text = gm.CurrentWave > 0 ? "100%" : "0%";
-        }
-
+        if (waveProgressText != null) waveProgressText.text = spawner.WaveActive ? $"{spawner.CurrentWaveResolvedEnemies} / {Mathf.Max(1, spawner.CurrentWaveTotalEnemies)}   •   {Mathf.RoundToInt(progress * 100f)}%" : gm.CurrentWave > 0 ? "100%" : "0%";
         wavePreviewText.text = CombatHudWaveFormatter.BuildPreview(spawner);
         bool canStart = spawner.WaitingForManualStart && !spawner.WaveActive && !gm.GameEnded && gm.CurrentWave > 0;
         startWaveButton.gameObject.SetActive(canStart);
@@ -495,16 +441,8 @@ public sealed class ModernCombatHud : MonoBehaviour
         }
     }
 
-    void CloseGiftChoice()
-    {
-        if (giftChoiceOverlay != null) giftChoiceOverlay.SetActive(false);
-    }
-
-    void ChooseGift(DivineGiftType gift)
-    {
-        GameManager gm = GameManager.Instance;
-        if (gm != null && gm.UseGift(gift)) CloseGiftChoice();
-    }
+    void CloseGiftChoice() { if (giftChoiceOverlay != null) giftChoiceOverlay.SetActive(false); }
+    void ChooseGift(DivineGiftType gift) { GameManager gm = GameManager.Instance; if (gm != null && gm.UseGift(gift)) CloseGiftChoice(); }
 
     void StartWave()
     {
@@ -513,10 +451,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (spawner != null) spawner.StartWaveNow();
     }
 
-    void UpdateBuildDock()
-    {
-        CombatHudTowerPanelPresenter.RefreshBuildDock(placement, spawner, buildTypes, buildButtons, buildSelectionText);
-    }
+    void UpdateBuildDock() => CombatHudTowerPanelPresenter.RefreshBuildDock(placement, spawner, buildTypes, buildButtons, buildSelectionText);
 
     void ShowBuildTooltip(TowerType type)
     {
@@ -538,7 +473,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (!defenseDockOpen || !buildTooltipVisible || buildTooltip == null) return;
         TowerData data = BalanceCatalog.GetTower(hoveredBuildType);
         if (data == null) return;
-
         bool recommended = hoveredBuildType == RecommendedDefense();
         bool affordable = GameManager.Instance != null && GameManager.Instance.Money >= data.cost;
         tooltipAccent.color = recommended ? new Color(1f, .68f, .16f, 1f) : affordable ? new Color(.30f, .82f, .36f, 1f) : new Color(.82f, .18f, .08f, 1f);
@@ -552,30 +486,37 @@ public sealed class ModernCombatHud : MonoBehaviour
     void UpdateSelected()
     {
         Tower selected = placement != null ? placement.SelectedTower : null;
-        bool visible = selected != null
-            && !defenseDockOpen
-            && (giftChoiceOverlay == null || !giftChoiceOverlay.activeSelf)
-            && (magicFlyout == null || !magicFlyout.activeSelf);
+        bool visible = selected != null && !defenseDockOpen && (giftChoiceOverlay == null || !giftChoiceOverlay.activeSelf) && (magicFlyout == null || !magicFlyout.activeSelf);
         if (selectedCard != null) selectedCard.SetActive(visible);
         if (!visible) return;
+        PositionSelectedCard(selected);
+        CombatHudTowerPanelPresenter.RefreshSelected(placement, selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview, upgradeButton, sellButton, priorityButton);
+    }
 
-        CombatHudTowerPanelPresenter.RefreshSelected(
-            placement,
-            selectedTitle,
-            selectedStats,
-            selectedPriority,
-            selectedUpgradePreview,
-            upgradeButton,
-            sellButton,
-            priorityButton);
+    void PositionSelectedCard(Tower selected)
+    {
+        if (selected == null || selectedCardRect == null || canvas == null || gameplayCamera == null) return;
+        RectTransform canvasRect = canvas.transform as RectTransform;
+        if (canvasRect == null) return;
+
+        Vector3 screenPoint = gameplayCamera.WorldToScreenPoint(selected.transform.position + Vector3.up * 1.2f);
+        if (screenPoint.z <= 0f) return;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, null, out Vector2 localPoint)) return;
+
+        float direction = screenPoint.x < Screen.width * .5f ? 1f : -1f;
+        localPoint += new Vector2(direction * 205f, 55f);
+
+        float halfWidth = selectedCardRect.rect.width * .5f;
+        float halfHeight = selectedCardRect.rect.height * .5f;
+        const float margin = 18f;
+        localPoint.x = Mathf.Clamp(localPoint.x, canvasRect.rect.xMin + halfWidth + margin, canvasRect.rect.xMax - halfWidth - margin);
+        localPoint.y = Mathf.Clamp(localPoint.y, canvasRect.rect.yMin + halfHeight + margin, canvasRect.rect.yMax - halfHeight - margin);
+        selectedCardRect.anchoredPosition = localPoint;
     }
 
     void HandlePcHotkeys()
     {
-        if (placement == null
-            || (giftChoiceOverlay != null && giftChoiceOverlay.activeSelf)
-            || (magicFlyout != null && magicFlyout.activeSelf)) return;
-
+        if (placement == null || (giftChoiceOverlay != null && giftChoiceOverlay.activeSelf) || (magicFlyout != null && magicFlyout.activeSelf)) return;
         for (int i = 0; i < buildTypes.Length; i++)
         {
             if (!GameInput.BuildSlotPressed(i + 1)) continue;
@@ -595,7 +536,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         trackRect.anchorMin = trackRect.anchorMax = trackRect.pivot = new Vector2(.5f, .5f);
         trackRect.anchoredPosition = pos;
         trackRect.sizeDelta = size;
-
         GameObject fillObject = new GameObject("Fill");
         fillObject.transform.SetParent(track.transform, false);
         Image fill = fillObject.AddComponent<Image>();
@@ -614,7 +554,6 @@ public sealed class ModernCombatHud : MonoBehaviour
     }
 
     void SelectBuild(TowerType type) => placement?.SelectBuildType(type);
-
     void IncreaseSpeed() => CombatControlsUI.IncreaseSpeed();
     void DecreaseSpeed() => CombatControlsUI.DecreaseSpeed();
 }
