@@ -147,7 +147,7 @@ Implemented presentation work includes:
 - selected-defense contextual menu around the unit;
 - pre-map Patron God selection; the selected Patron cannot be changed after the map starts;
 - upper-right selected Patron portrait/commentary for Chapter I event feedback;
-- temporary `CombatHudLegacyCleanup` suppression of obsolete in-map Gift controls and remaining player-facing Wave copy until the dead code is physically removed from `ModernCombatHud`;
+- obsolete in-map `DivineGiftChoice` / `CombatActions` removed from `ModernCombatHud`; the combat HUD now uses direct `EncounterRuntime` state and Encounter/Бой player-facing copy without `CombatHudLegacyCleanup`;
 - tower hover/selection/range feedback;
 - projectile trails and type-specific hit feedback;
 - tower recoil;

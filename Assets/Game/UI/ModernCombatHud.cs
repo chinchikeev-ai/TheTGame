@@ -18,27 +18,26 @@ public sealed class ModernCombatHud : MonoBehaviour
     Canvas menuCanvas;
     Camera gameplayCamera;
 
-    Text goldText, gateText, waveText, threatText, wavePreviewText, waveProgressText;
-    Text speedText, giftText, magicToggleText, magicActionText;
+    Text goldText, gateText, encounterText, threatText, encounterPreviewText, encounterProgressText;
+    Text speedText, magicToggleText, magicActionText;
     Text selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview;
-    Text firstWavePrepTitle, firstWavePrepObjective, firstWavePrepComposition;
-    Button upgradeButton, sellButton, priorityButton, startWaveButton, giftButton;
+    Text firstEncounterPrepTitle, firstEncounterPrepObjective, firstEncounterPrepComposition;
+    Button upgradeButton, sellButton, priorityButton, startEncounterButton;
     Button magicToggle, magicAction;
-    Button firstWavePrepStartButton;
+    Button firstEncounterPrepStartButton;
     Button defenseToggleButton;
     Text defenseToggleText;
     Text buildSelectionText;
 
-    GameObject waveBar;
-    GameObject firstWavePrep;
+    GameObject encounterBar;
+    GameObject firstEncounterPrep;
     GameObject buildDock;
     GameObject buildTooltip;
     GameObject selectedCard;
     RectTransform selectedCardRect;
-    GameObject giftChoiceOverlay;
     GameObject magicFlyout;
     Image gateHealthFill;
-    Image waveProgressFill;
+    Image encounterProgressFill;
     Image tooltipAccent;
     Text tooltipTitle, tooltipRole, tooltipStats, tooltipMatchup;
     TowerType hoveredBuildType;
@@ -96,10 +95,8 @@ public sealed class ModernCombatHud : MonoBehaviour
         group = root.AddComponent<CanvasGroup>();
 
         BuildTopBar(root.transform);
-        BuildWaveBar(root.transform);
-        BuildActionPanel(root.transform);
-        BuildGiftChoice(root.transform);
-        BuildFirstWavePreparation(root.transform);
+        BuildEncounterBar(root.transform);
+        BuildFirstEncounterPreparation(root.transform);
         BuildDock(root.transform);
         BuildDefenseToggle(root.transform);
         BuildBuildTooltip(root.transform);
@@ -127,35 +124,28 @@ public sealed class ModernCombatHud : MonoBehaviour
         gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(44, -54), new Vector2(224, 18), new Color(.18f, .08f, .045f, 1f), new Color(.88f, .12f, .07f, 1f));
     }
 
-    void BuildWaveBar(Transform parent)
+    void BuildEncounterBar(Transform parent)
     {
-        waveBar = Panel(parent, "WaveStatus", new Vector2(0, -18), new Vector2(820, 138), new Color(.050f, .027f, .018f, .96f), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        Panel(waveBar.transform, "WaveBannerCloth", new Vector2(0, 30), new Vector2(680, 64), new Color(.48f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Icon(waveBar.transform, "WaveLeftLaurel", new Vector2(-310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
-        Icon(waveBar.transform, "WaveRightLaurel", new Vector2(310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
+        encounterBar = Panel(parent, "WaveStatus", new Vector2(0, -18), new Vector2(820, 138), new Color(.050f, .027f, .018f, .96f), new Vector2(.5f, 1), new Vector2(.5f, 1));
+        Panel(encounterBar.transform, "WaveBannerCloth", new Vector2(0, 30), new Vector2(680, 64), new Color(.48f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Icon(encounterBar.transform, "WaveLeftLaurel", new Vector2(-310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
+        Icon(encounterBar.transform, "WaveRightLaurel", new Vector2(310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
 
-        waveText = Text(waveBar.transform, "WAVE", new Vector2(0, 42), new Vector2(430, 38), 26, new Color(1f, .86f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        threatText = Text(waveBar.transform, "THREAT", new Vector2(0, 9), new Vector2(600, 22), 12, new Color(1f, .91f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        wavePreviewText = Text(waveBar.transform, "", new Vector2(0, -14), new Vector2(500, 20), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        wavePreviewText.enabled = false;
-        waveProgressFill = ProgressBar(waveBar.transform, "WaveProgress", new Vector2(0, -24), new Vector2(560, 16), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
-        waveProgressText = Text(waveBar.transform, "0%", new Vector2(0, -45), new Vector2(280, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        encounterText = Text(encounterBar.transform, "ENCOUNTER", new Vector2(0, 42), new Vector2(430, 38), 26, new Color(1f, .86f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        threatText = Text(encounterBar.transform, "THREAT", new Vector2(0, 9), new Vector2(600, 22), 12, new Color(1f, .91f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        encounterPreviewText = Text(encounterBar.transform, "", new Vector2(0, -14), new Vector2(500, 20), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        encounterPreviewText.enabled = false;
+        encounterProgressFill = ProgressBar(encounterBar.transform, "WaveProgress", new Vector2(0, -24), new Vector2(560, 16), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
+        encounterProgressText = Text(encounterBar.transform, "0%", new Vector2(0, -45), new Vector2(280, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
 
-        Panel(waveBar.transform, "SpeedControlPanel", new Vector2(0, -72), new Vector2(178, 44), new Color(.12f, .065f, .035f, .96f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Button speedDown = Button(waveBar.transform, "<", new Vector2(-62, -72), new Vector2(46, 34), DecreaseSpeed, false);
+        Panel(encounterBar.transform, "SpeedControlPanel", new Vector2(0, -72), new Vector2(178, 44), new Color(.12f, .065f, .035f, .96f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Button speedDown = Button(encounterBar.transform, "<", new Vector2(-62, -72), new Vector2(46, 34), DecreaseSpeed, false);
         speedDown.gameObject.name = "SpeedPrevious";
-        speedText = Text(waveBar.transform, "1x", new Vector2(0, -72), new Vector2(68, 34), 16, new Color(1f, .82f, .40f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        speedText = Text(encounterBar.transform, "1x", new Vector2(0, -72), new Vector2(68, 34), 16, new Color(1f, .82f, .40f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         speedText.gameObject.name = "SpeedValue";
-        Button speedUp = Button(waveBar.transform, ">", new Vector2(62, -72), new Vector2(46, 34), IncreaseSpeed, false);
+        Button speedUp = Button(encounterBar.transform, ">", new Vector2(62, -72), new Vector2(46, 34), IncreaseSpeed, false);
         speedUp.gameObject.name = "SpeedNext";
-        startWaveButton = Button(waveBar.transform, L("START", "СТАРТ"), new Vector2(350, -25), new Vector2(104, 58), StartWave, true);
-    }
-
-    void BuildActionPanel(Transform parent)
-    {
-        GameObject panel = Panel(parent, "CombatActions", new Vector2(-24, -24), new Vector2(330, 66), new Color(.035f, .022f, .016f, .92f), new Vector2(1, 1), new Vector2(1, 1));
-        giftButton = Button(panel.transform, "", Vector2.zero, new Vector2(282, 40), ToggleGiftChoice, false);
-        giftText = giftButton.GetComponentInChildren<Text>();
+        startEncounterButton = Button(encounterBar.transform, L("START", "СТАРТ"), new Vector2(350, -25), new Vector2(104, 58), StartEncounter, true);
     }
 
     void BuildMagicCornerControl(Transform parent)
@@ -198,7 +188,6 @@ public sealed class ModernCombatHud : MonoBehaviour
     {
         if (magicFlyout == null) return;
         bool show = !magicFlyout.activeSelf;
-        CloseGiftChoice();
         magicFlyout.SetActive(show);
         if (show)
         {
@@ -218,43 +207,15 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (gm != null && gm.UseMagic()) CloseMagicFlyout();
     }
 
-    void BuildGiftChoice(Transform parent)
+    void BuildFirstEncounterPreparation(Transform parent)
     {
-        giftChoiceOverlay = new GameObject("DivineGiftChoiceOverlay");
-        giftChoiceOverlay.transform.SetParent(parent, false);
-        Image backdrop = giftChoiceOverlay.AddComponent<Image>();
-        backdrop.color = new Color(.012f, .008f, .006f, .72f);
-        RectTransform backdropRect = backdrop.rectTransform;
-        backdropRect.anchorMin = Vector2.zero;
-        backdropRect.anchorMax = Vector2.one;
-        backdropRect.offsetMin = Vector2.zero;
-        backdropRect.offsetMax = Vector2.zero;
-
-        GameObject panel = Panel(giftChoiceOverlay.transform, "DivineGiftChoicePanel", Vector2.zero, new Vector2(780, 350), new Color(.045f, .026f, .016f, .995f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Text(panel.transform, L("CHOOSE A DIVINE GIFT", "ВЫБЕРИТЕ ДАР БОГА"), new Vector2(0, 132), new Vector2(650, 44), 27, new Color(1f, .70f, .24f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        Text(panel.transform, L("Choose once. The blessing lasts for this map.", "Выберите один раз. Благословение действует всю карту."), new Vector2(0, 96), new Vector2(650, 30), 13, new Color(.78f, .69f, .60f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
-        Button ares = Button(panel.transform, L("ARES\n+10% PLAYER DAMAGE", "АРЕС\n+10% УРОНА ИГРОКА"), new Vector2(-190, 31), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Ares), true);
-        ares.gameObject.name = "Gift_Ares";
-        Button athena = Button(panel.transform, L("ATHENA\nGATE +2 HP", "АФИНА\nВОРОТА +2 HP"), new Vector2(190, 31), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Athena), false);
-        athena.gameObject.name = "Gift_Athena";
-        Button apollo = Button(panel.transform, L("APOLLO\n+100 GOLD", "АПОЛЛОН\n+100 ЗОЛОТА"), new Vector2(-190, -68), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Apollo), false);
-        apollo.gameObject.name = "Gift_Apollo";
-        Button poseidon = Button(panel.transform, L("POSEIDON\nENEMIES -10% SPEED", "ПОСЕЙДОН\nВРАГИ -10% СКОРОСТИ"), new Vector2(190, -68), new Vector2(330, 82), () => ChooseGift(DivineGiftType.Poseidon), false);
-        poseidon.gameObject.name = "Gift_Poseidon";
-        Button close = Button(panel.transform, L("CANCEL", "ОТМЕНА"), new Vector2(0, -142), new Vector2(200, 40), CloseGiftChoice, false);
-        close.gameObject.name = "GiftChoiceCancel";
-        giftChoiceOverlay.SetActive(false);
-    }
-
-    void BuildFirstWavePreparation(Transform parent)
-    {
-        firstWavePrep = Panel(parent, "FirstWavePreparation", new Vector2(0, -176), new Vector2(760, 330), new Color(.035f, .022f, .016f, .975f), new Vector2(.5f, 1f), new Vector2(.5f, 1f));
-        firstWavePrepTitle = Text(firstWavePrep.transform, "", new Vector2(0, 112), new Vector2(680, 62), 34, new Color(1f, .68f, .22f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        Text(firstWavePrep.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 66), new Vector2(620, 30), 13, new Color(.76f, .67f, .58f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        firstWavePrepObjective = Text(firstWavePrep.transform, "", new Vector2(0, 24), new Vector2(640, 42), 17, new Color(.96f, .88f, .75f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        firstWavePrepComposition = Text(firstWavePrep.transform, "", new Vector2(0, -30), new Vector2(660, 52), 14, new Color(.90f, .79f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        firstWavePrepStartButton = Button(firstWavePrep.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0, -105), new Vector2(300, 64), StartWave, true);
-        firstWavePrep.SetActive(false);
+        firstEncounterPrep = Panel(parent, "FirstWavePreparation", new Vector2(0, -176), new Vector2(760, 330), new Color(.035f, .022f, .016f, .975f), new Vector2(.5f, 1f), new Vector2(.5f, 1f));
+        firstEncounterPrepTitle = Text(firstEncounterPrep.transform, "", new Vector2(0, 112), new Vector2(680, 62), 34, new Color(1f, .68f, .22f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        Text(firstEncounterPrep.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 66), new Vector2(620, 30), 13, new Color(.76f, .67f, .58f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        firstEncounterPrepObjective = Text(firstEncounterPrep.transform, "", new Vector2(0, 24), new Vector2(640, 42), 17, new Color(.96f, .88f, .75f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        firstEncounterPrepComposition = Text(firstEncounterPrep.transform, "", new Vector2(0, -30), new Vector2(660, 52), 14, new Color(.90f, .79f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        firstEncounterPrepStartButton = Button(firstEncounterPrep.transform, L("START ENCOUNTER", "НАЧАТЬ БОЙ"), new Vector2(0, -105), new Vector2(300, 64), StartEncounter, true);
+        firstEncounterPrep.SetActive(false);
     }
 
     void BuildDock(Transform parent)
@@ -372,16 +333,15 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (blocked || GameManager.Instance == null)
         {
             HideBuildTooltip();
-            CloseGiftChoice();
             CloseMagicFlyout();
             if (selectedCard != null) selectedCard.SetActive(false);
-            if (firstWavePrep != null) firstWavePrep.SetActive(false);
+            if (firstEncounterPrep != null) firstEncounterPrep.SetActive(false);
             return;
         }
 
         UpdateResources();
-        UpdateFirstWavePreparation();
-        UpdateWave();
+        UpdateFirstEncounterPreparation();
+        UpdateEncounter();
         UpdateActions();
         UpdateBuildDock();
         UpdateSelected();
@@ -408,18 +368,18 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (gateHealthFill != null) gateHealthFill.fillAmount = gm.MaxBaseHealth > 0 ? Mathf.Clamp01(gm.BaseHealth / (float)gm.MaxBaseHealth) : 0f;
     }
 
-    void UpdateFirstWavePreparation()
+    void UpdateFirstEncounterPreparation()
     {
         GameManager gm = GameManager.Instance;
-        bool visible = spawner != null && gm != null && gm.CurrentWave == 0 && !spawner.WaveActive && spawner.WaitingForManualStart && !gm.GameEnded;
-        if (firstWavePrep != null) firstWavePrep.SetActive(visible);
-        if (waveBar != null) waveBar.SetActive(!visible);
+        bool visible = spawner != null && gm != null && EncounterRuntime.CurrentEncounter(spawner) == 0 && !EncounterRuntime.EncounterActive(spawner) && EncounterRuntime.WaitingForEncounterStart(spawner) && !gm.GameEnded;
+        if (firstEncounterPrep != null) firstEncounterPrep.SetActive(visible);
+        if (encounterBar != null) encounterBar.SetActive(!visible);
         if (!visible) return;
-        int seconds = Mathf.Max(0, Mathf.CeilToInt(spawner.InterWaveCountdown));
-        firstWavePrepTitle.text = L($"PREPARE FOR ATTACK — {seconds}", $"ПОДГОТОВКА К АТАКЕ — {seconds}");
-        firstWavePrepObjective.text = L("OBJECTIVE • DEFEND THE GATE", "ЦЕЛЬ • ЗАЩИТИТЕ ВОРОТА");
-        firstWavePrepComposition.text = CombatHudWaveFormatter.BuildPreview(spawner);
-        firstWavePrepStartButton.interactable = false;
+        int seconds = Mathf.Max(0, Mathf.CeilToInt(EncounterRuntime.InterEncounterCountdown(spawner)));
+        firstEncounterPrepTitle.text = L($"PREPARE FOR ATTACK — {seconds}", $"ПОДГОТОВКА К АТАКЕ — {seconds}");
+        firstEncounterPrepObjective.text = L("OBJECTIVE • DEFEND THE GATE", "ЦЕЛЬ • ЗАЩИТИТЕ ВОРОТА");
+        firstEncounterPrepComposition.text = CombatHudEncounterFormatter.BuildPreview(spawner);
+        firstEncounterPrepStartButton.interactable = false;
     }
 
     void UpdateActions()
@@ -433,63 +393,44 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (magicAction != null) magicAction.interactable = magicReady;
         if (magicToggle != null) magicToggle.interactable = gm != null && !gm.GameEnded;
         if (gm == null || gm.GameEnded) CloseMagicFlyout();
-
-        giftText.text = gm != null && gm.GiftAvailable ? L("CHOOSE DIVINE GIFT", "ВЫБРАТЬ ДАР БОГА") : gm != null && gm.GiftSelected ? L("DIVINE GIFT SELECTED", "ДАР БОГА ВЫБРАН") : L("DIVINE GIFT", "ДАР БОГА");
-        giftButton.interactable = gm != null && gm.GiftAvailable && !gm.GameEnded;
-        if (gm == null || !gm.GiftAvailable) CloseGiftChoice();
     }
 
-    void UpdateWave()
+    void UpdateEncounter()
     {
         GameManager gm = GameManager.Instance;
-        int sec = spawner != null ? Mathf.RoundToInt(spawner.CurrentWaveElapsed) : 0;
-        waveText.text = $"{L("WAVE", "ВОЛНА")} {gm.CurrentWave}/{gm.MaxWaves}   •   {sec / 60:00}:{sec % 60:00}";
+        int currentEncounter = EncounterRuntime.CurrentEncounter(spawner);
+        int maxEncounters = EncounterRuntime.MaxEncounters;
+        int sec = Mathf.RoundToInt(EncounterRuntime.CurrentEncounterElapsed(spawner));
+        encounterText.text = $"{L("ENCOUNTER", "БОЙ")} {currentEncounter}/{maxEncounters}   •   {sec / 60:00}:{sec % 60:00}";
         if (spawner == null)
         {
             threatText.text = "";
-            wavePreviewText.text = "";
-            if (waveProgressFill != null) waveProgressFill.fillAmount = 0f;
-            if (waveProgressText != null) waveProgressText.text = "0%";
-            startWaveButton.gameObject.SetActive(false);
+            encounterPreviewText.text = "";
+            if (encounterProgressFill != null) encounterProgressFill.fillAmount = 0f;
+            if (encounterProgressText != null) encounterProgressText.text = "0%";
+            startEncounterButton.gameObject.SetActive(false);
             return;
         }
 
-        string threat = spawner.NextWaveHasBoss ? L("BOSS APPROACHING: MENELAUS", "ПРИБЛИЖАЕТСЯ БОСС: МЕНЕЛАЙ") : spawner.NextWaveHasHeavy ? L("HEAVY FORMATION EXPECTED", "ОЖИДАЕТСЯ ТЯЖЁЛАЯ ФОРМАЦИЯ") : L("STANDARD ENEMY FORMATION", "ОБЫЧНАЯ ВРАЖЕСКАЯ ФОРМАЦИЯ");
-        if (spawner.WaveActive) threatText.text = $"{EnemyRegistry.AliveCount} {L("ENEMIES REMAIN", "ВРАГОВ В СТРОЮ")} • {threat}";
-        else if (spawner.InterWaveCountdown > 0) threatText.text = $"{L("NEXT WAVE IN", "СЛЕДУЮЩАЯ ВОЛНА ЧЕРЕЗ")} {Mathf.CeilToInt(spawner.InterWaveCountdown)}{L("s", "с")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")}";
-        else threatText.text = $"{L("READY", "ГОТОВО")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")} • {threat}";
+        string threat = EncounterRuntime.NextEncounterHasBoss(spawner) ? L("BOSS APPROACHING: MENELAUS", "ПРИБЛИЖАЕТСЯ БОСС: МЕНЕЛАЙ") : EncounterRuntime.NextEncounterHasHeavy(spawner) ? L("HEAVY FORMATION EXPECTED", "ОЖИДАЕТСЯ ТЯЖЁЛАЯ ФОРМАЦИЯ") : L("STANDARD ENEMY FORMATION", "ОБЫЧНАЯ ВРАЖЕСКАЯ ФОРМАЦИЯ");
+        if (EncounterRuntime.EncounterActive(spawner)) threatText.text = $"{EnemyRegistry.AliveCount} {L("ENEMIES REMAIN", "ВРАГОВ В СТРОЮ")} • {threat}";
+        else if (EncounterRuntime.InterEncounterCountdown(spawner) > 0f) threatText.text = $"{L("NEXT ENCOUNTER IN", "СЛЕДУЮЩИЙ БОЙ ЧЕРЕЗ")} {Mathf.CeilToInt(EncounterRuntime.InterEncounterCountdown(spawner))}{L("s", "с")} • {EncounterRuntime.NextEncounterEnemyCount(spawner)} {L("enemies", "врагов")}";
+        else threatText.text = $"{L("READY", "ГОТОВО")} • {EncounterRuntime.NextEncounterEnemyCount(spawner)} {L("enemies", "врагов")} • {threat}";
 
-        float progress = spawner.CurrentWaveProgress;
-        if (waveProgressFill != null) waveProgressFill.fillAmount = progress;
-        if (waveProgressText != null) waveProgressText.text = spawner.WaveActive ? $"{spawner.CurrentWaveResolvedEnemies} / {Mathf.Max(1, spawner.CurrentWaveTotalEnemies)}   •   {Mathf.RoundToInt(progress * 100f)}%" : gm.CurrentWave > 0 ? "100%" : "0%";
-        wavePreviewText.text = CombatHudWaveFormatter.BuildPreview(spawner);
-        bool canStart = spawner.WaitingForManualStart && !spawner.WaveActive && !gm.GameEnded && gm.CurrentWave > 0;
-        startWaveButton.gameObject.SetActive(canStart);
-        startWaveButton.interactable = canStart;
+        float progress = EncounterRuntime.CurrentEncounterProgress(spawner);
+        if (encounterProgressFill != null) encounterProgressFill.fillAmount = progress;
+        if (encounterProgressText != null) encounterProgressText.text = EncounterRuntime.EncounterActive(spawner) ? $"{EncounterRuntime.CurrentEncounterResolvedEnemies(spawner)} / {Mathf.Max(1, EncounterRuntime.CurrentEncounterTotalEnemies(spawner))}   •   {Mathf.RoundToInt(progress * 100f)}%" : currentEncounter > 0 ? "100%" : "0%";
+        encounterPreviewText.text = CombatHudEncounterFormatter.BuildPreview(spawner);
+        bool canStart = EncounterRuntime.WaitingForEncounterStart(spawner) && !EncounterRuntime.EncounterActive(spawner) && !gm.GameEnded && currentEncounter > 0;
+        startEncounterButton.gameObject.SetActive(canStart);
+        startEncounterButton.interactable = canStart;
     }
 
-    void ToggleGiftChoice()
+    void StartEncounter()
     {
-        GameManager gm = GameManager.Instance;
-        if (giftChoiceOverlay == null || gm == null || !gm.GiftAvailable) return;
-        bool show = !giftChoiceOverlay.activeSelf;
-        CloseMagicFlyout();
-        giftChoiceOverlay.SetActive(show);
-        if (show)
-        {
-            HideBuildTooltip();
-            if (selectedCard != null) selectedCard.SetActive(false);
-        }
-    }
-
-    void CloseGiftChoice() { if (giftChoiceOverlay != null) giftChoiceOverlay.SetActive(false); }
-    void ChooseGift(DivineGiftType gift) { GameManager gm = GameManager.Instance; if (gm != null && gm.UseGift(gift)) CloseGiftChoice(); }
-
-    void StartWave()
-    {
-        if (firstWavePrep != null) firstWavePrep.SetActive(false);
-        if (waveBar != null) waveBar.SetActive(true);
-        if (spawner != null) spawner.StartWaveNow();
+        if (firstEncounterPrep != null) firstEncounterPrep.SetActive(false);
+        if (encounterBar != null) encounterBar.SetActive(true);
+        EncounterRuntime.StartEncounterNow(spawner);
     }
 
     void UpdateBuildDock() => CombatHudTowerPanelPresenter.RefreshBuildDock(placement, spawner, buildTypes, buildButtons, buildSelectionText);
@@ -527,7 +468,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     void UpdateSelected()
     {
         Tower selected = placement != null ? placement.SelectedTower : null;
-        bool visible = selected != null && !defenseDockOpen && (giftChoiceOverlay == null || !giftChoiceOverlay.activeSelf) && (magicFlyout == null || !magicFlyout.activeSelf);
+        bool visible = selected != null && !defenseDockOpen && (magicFlyout == null || !magicFlyout.activeSelf);
         if (selectedCard != null) selectedCard.SetActive(visible);
         if (!visible) return;
         PositionSelectedCard(selected);
@@ -557,7 +498,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void HandlePcHotkeys()
     {
-        if (placement == null || (giftChoiceOverlay != null && giftChoiceOverlay.activeSelf) || (magicFlyout != null && magicFlyout.activeSelf)) return;
+        if (placement == null || (magicFlyout != null && magicFlyout.activeSelf)) return;
         for (int i = 0; i < buildTypes.Length; i++)
         {
             if (!GameInput.BuildSlotPressed(i + 1)) continue;
