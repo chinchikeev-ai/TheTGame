@@ -3,12 +3,18 @@ using UnityEngine.UI;
 
 public class HectorHUD : MonoBehaviour
 {
+    static readonly string[] BlockingMenuNames =
+    {
+        "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu"
+    };
+
     GameObject root;
     Text nameText;
     Text hpText;
     Image hpFill;
     Text[] abilityTexts = new Text[4];
     Image[] cooldownFills = new Image[4];
+    Canvas menuCanvas;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -95,11 +101,14 @@ public class HectorHUD : MonoBehaviour
     void Update()
     {
         HectorController h = HectorController.Instance;
-        if (h == null || root == null)
+        GameManager gm = GameManager.Instance;
+        bool hidden = h == null || gm == null || gm.GameEnded || IsMenuBlockingCombat();
+        if (hidden || root == null)
         {
             if (root != null) root.SetActive(false);
             return;
         }
+
         root.SetActive(true);
         if (h.IsDowned)
         {
@@ -122,6 +131,23 @@ public class HectorHUD : MonoBehaviour
             cooldownFills[i].fillAmount = ratio;
             abilityTexts[i].color = remain[i] <= .01f ? new Color(1f,.86f,.42f,1f) : new Color(.66f,.60f,.52f,1f);
         }
+    }
+
+    bool IsMenuBlockingCombat()
+    {
+        if (menuCanvas == null)
+        {
+            GameObject menu = GameObject.Find("MenuCanvas");
+            menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
+        }
+        if (menuCanvas == null) return false;
+
+        for (int i = 0; i < BlockingMenuNames.Length; i++)
+        {
+            Transform screen = menuCanvas.transform.Find(BlockingMenuNames[i]);
+            if (screen != null && screen.gameObject.activeInHierarchy) return true;
+        }
+        return false;
     }
 
     Image AddImage(Transform parent,string name,Vector2 pos,Vector2 size,Sprite sprite)
