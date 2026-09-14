@@ -21,14 +21,18 @@ public sealed class ModernCombatHud : MonoBehaviour
     Text speedText, magicText, giftText;
     Text selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview;
     Button upgradeButton, sellButton, priorityButton, startWaveButton, magicButton, giftButton;
+    Button defenseToggleButton;
+    Text defenseToggleText;
     Text buildSelectionText;
 
+    GameObject buildDock;
     GameObject buildTooltip;
     GameObject selectedCard;
     Image tooltipAccent;
     Text tooltipTitle, tooltipRole, tooltipStats, tooltipMatchup;
     TowerType hoveredBuildType;
     bool buildTooltipVisible;
+    bool defenseDockOpen;
 
     readonly TowerType[] buildTypes =
     {
@@ -83,6 +87,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         BuildWaveBar(root.transform);
         BuildActionPanel(root.transform);
         BuildDock(root.transform);
+        BuildDefenseToggle(root.transform);
         BuildBuildTooltip(root.transform);
         BuildSelectedCard(root.transform);
     }
@@ -120,18 +125,46 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDock(Transform parent)
     {
-        GameObject dock = Panel(parent, "BuildDock", new Vector2(0, 24), new Vector2(1040, 148), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 0), new Vector2(.5f, 0));
-        Text(dock.transform, L("TROJAN DEFENSES", "ОБОРОНА ТРОИ"), new Vector2(-438, 52), new Vector2(240, 26), 13, new Color(.74f, .65f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        buildSelectionText = Text(dock.transform, "", new Vector2(310, 52), new Vector2(560, 26), 12, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleRight, FontStyle.Bold);
+        buildDock = Panel(parent, "BuildDock", new Vector2(0, 24), new Vector2(1040, 148), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 0), new Vector2(.5f, 0));
+        Text(buildDock.transform, L("TROJAN DEFENSES", "ОБОРОНА ТРОИ"), new Vector2(-438, 52), new Vector2(240, 26), 13, new Color(.74f, .65f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        buildSelectionText = Text(buildDock.transform, "", new Vector2(310, 52), new Vector2(560, 26), 12, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleRight, FontStyle.Bold);
 
         for (int i = 0; i < buildTypes.Length; i++)
         {
             TowerType type = buildTypes[i];
             float x = -397 + i * 158;
-            buildButtons[i] = Button(dock.transform, BuildLabel(type, buildHotkeys[i]), new Vector2(x, -17), new Vector2(144, 78), () => SelectBuild(type), false);
+            buildButtons[i] = Button(buildDock.transform, BuildLabel(type, buildHotkeys[i]), new Vector2(x, -17), new Vector2(144, 78), () => SelectBuild(type), false);
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
             relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
         }
+
+        defenseDockOpen = false;
+        buildDock.SetActive(false);
+    }
+
+    void BuildDefenseToggle(Transform parent)
+    {
+        defenseToggleButton = Button(parent, "+", new Vector2(-24, 24), new Vector2(64, 64), ToggleDefenseDock, true);
+        RectTransform rt = defenseToggleButton.transform as RectTransform;
+        if (rt != null)
+        {
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
+            rt.anchoredPosition = new Vector2(-24f, 24f);
+        }
+        defenseToggleText = defenseToggleButton.GetComponentInChildren<Text>();
+        if (defenseToggleText != null)
+        {
+            defenseToggleText.fontSize = 28;
+            defenseToggleText.fontStyle = FontStyle.Bold;
+        }
+    }
+
+    void ToggleDefenseDock()
+    {
+        defenseDockOpen = !defenseDockOpen;
+        if (buildDock != null) buildDock.SetActive(defenseDockOpen);
+        if (!defenseDockOpen) HideBuildTooltip();
+        if (defenseToggleText != null) defenseToggleText.text = defenseDockOpen ? "−" : "+";
     }
 
     void BuildBuildTooltip(Transform parent)
@@ -157,7 +190,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildSelectedCard(Transform parent)
     {
-        selectedCard = Panel(parent, "SelectedTowerCard", new Vector2(-24, 200), new Vector2(390, 390), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 0), new Vector2(1, 0));
+        selectedCard = Panel(parent, "SelectedTowerCard", new Vector2(-104, 24), new Vector2(390, 390), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 0), new Vector2(1, 0));
         selectedTitle = Text(selectedCard.transform, "", new Vector2(0, 145), new Vector2(350, 42), 21, new Color(1f, .70f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         selectedStats = Text(selectedCard.transform, "", new Vector2(0, 68), new Vector2(350, 110), 15, new Color(.94f, .87f, .77f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
         selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -22), new Vector2(350, 62), 13, new Color(1f, .73f, .31f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
@@ -279,6 +312,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void ShowBuildTooltip(TowerType type)
     {
+        if (!defenseDockOpen) return;
         hoveredBuildType = type;
         buildTooltipVisible = true;
         if (buildTooltip != null) buildTooltip.SetActive(true);
@@ -293,7 +327,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void RefreshBuildTooltip()
     {
-        if (!buildTooltipVisible || buildTooltip == null) return;
+        if (!defenseDockOpen || !buildTooltipVisible || buildTooltip == null) return;
         TowerData data = BalanceCatalog.GetTower(hoveredBuildType);
         if (data == null) return;
 
