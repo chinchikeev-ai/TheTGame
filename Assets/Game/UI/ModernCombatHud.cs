@@ -336,15 +336,22 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildSelectedCard(Transform parent)
     {
-        selectedCard = Panel(parent, "SelectedTowerCard", Vector2.zero, new Vector2(340, 274), new Color(.045f, .027f, .018f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedCard = Panel(parent, "SelectedTowerCard", Vector2.zero, new Vector2(368, 328), new Color(.045f, .027f, .018f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
         selectedCardRect = selectedCard.transform as RectTransform;
-        selectedTitle = Text(selectedCard.transform, "", new Vector2(0, 103), new Vector2(304, 34), 18, new Color(1f, .70f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        selectedStats = Text(selectedCard.transform, "", new Vector2(0, 45), new Vector2(304, 72), 13, new Color(.94f, .87f, .77f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
-        selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -17), new Vector2(304, 44), 11, new Color(1f, .73f, .31f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
-        selectedPriority = Text(selectedCard.transform, "", new Vector2(0, -54), new Vector2(304, 24), 11, new Color(.82f, .72f, .62f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        upgradeButton = Button(selectedCard.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-78, -91), new Vector2(144, 42), () => placement?.UpgradeSelected(), true);
-        sellButton = Button(selectedCard.transform, L("SELL", "ПРОДАТЬ"), new Vector2(78, -91), new Vector2(144, 42), () => placement?.SellSelected(), false);
-        priorityButton = Button(selectedCard.transform, L("TARGET PRIORITY", "ПРИОРИТЕТ ЦЕЛИ"), new Vector2(0, -122), new Vector2(304, 30), () => placement?.CycleSelectedPriority(), false);
+        Panel(selectedCard.transform, "SelectedTowerHeader", new Vector2(0, 126), new Vector2(320, 54), new Color(.42f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Icon(selectedCard.transform, "SelectedTowerCrest", new Vector2(-132, 126), new Vector2(58, 58), TroyHudArt.Tower(TowerType.TrojanGuard));
+        selectedTitle = Text(selectedCard.transform, "", new Vector2(36, 126), new Vector2(236, 38), 18, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+
+        Panel(selectedCard.transform, "SelectedStatsPanel", new Vector2(0, 48), new Vector2(320, 92), new Color(.075f, .044f, .028f, .94f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedStats = Text(selectedCard.transform, "", new Vector2(0, 48), new Vector2(288, 74), 13, new Color(.96f, .89f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
+
+        Panel(selectedCard.transform, "SelectedUpgradePanel", new Vector2(0, -40), new Vector2(320, 66), new Color(.10f, .056f, .030f, .94f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -40), new Vector2(288, 48), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
+        selectedPriority = Text(selectedCard.transform, "", new Vector2(0, -86), new Vector2(304, 24), 11, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+
+        upgradeButton = Button(selectedCard.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-102, -124), new Vector2(112, 40), () => placement?.UpgradeSelected(), true);
+        sellButton = Button(selectedCard.transform, L("SELL", "ПРОДАТЬ"), new Vector2(20, -124), new Vector2(96, 40), () => placement?.SellSelected(), false);
+        priorityButton = Button(selectedCard.transform, L("PRIORITY", "ПРИОРИТЕТ"), new Vector2(118, -124), new Vector2(112, 40), () => placement?.CycleSelectedPriority(), false);
         selectedCard.SetActive(false);
     }
 
