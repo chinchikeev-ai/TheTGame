@@ -137,6 +137,20 @@ public class ArchitectureContractTests
     }
 
     [Test]
+    public void ArcherTower_HasReadableCadenceWithPreservedBaselineDps()
+    {
+        TowerData archer = Resources.Load<TowerData>("Data/Towers/ArcherTower");
+        Assert.NotNull(archer);
+        Assert.AreEqual(1.5f, archer.attacksPerSecond, 0.001f);
+        Assert.AreEqual(45f, archer.damage, 0.001f);
+        Assert.AreEqual(67.5f, archer.damage * archer.attacksPerSecond, 0.1f);
+
+        TowerData ballista = Resources.Load<TowerData>("Data/Towers/Ballista");
+        Assert.NotNull(ballista);
+        Assert.Greater(archer.attacksPerSecond, ballista.attacksPerSecond);
+    }
+
+    [Test]
     public void EveryEnemyType_HasData()
     {
         foreach (EnemyArchetype type in Enum.GetValues(typeof(EnemyArchetype)))
