@@ -53,6 +53,8 @@ Production art / runtime presentation, with implementation split across existing
 - simplify repeated ground noise;
 - keep lanes readable as broad paths, not debug-grid decoration.
 
+Implementation status: **implemented in runtime code; awaiting real Play Mode screenshot QA.**
+
 ### Pass B — make defense roles unmistakable
 From the current gameplay camera, enforce these primary reads:
 - Archer = large bow/quiver + light canopy/platform;
@@ -61,6 +63,17 @@ From the current gameplay camera, enforce these primary reads:
 - Ballista = machine silhouette dominates crew;
 - Priest = pale/gold shrine + tall solar staff/disc;
 - Fire = large flame/brazier + bottle/fire-keeper silhouette.
+
+Implementation status: **implemented in `TowerArtDirector`; awaiting real Play Mode screenshot QA.**
+
+Current runtime cues added/strengthened:
+- Archer: larger red canopy, giant bow silhouette, larger arrow bundle, slightly larger visible crew.
+- Spear Wall: larger forward shields, five upright spears, longer forward spears, stronger red crest.
+- Guard: larger shield wall, shield bosses, larger crew, stronger red/bronze mass.
+- Ballista: wider bow, larger frame/rail/bolt and stronger machine-first read.
+- Priest: larger pale/gold shrine, enlarged Apollo disc, sun rays and tall staff/disc.
+- Fire: larger brazier/flame cluster, pitch rack/bottles and raised fire-bottle keeper cue.
+- All additions remain presentation-only and use collider-free visual primitives.
 
 ### Pass C — hero/enemy hierarchy
 - Hector = taller/broader, large round shield, long spear, crest, red cape and warm bronze/red mass;
@@ -97,4 +110,4 @@ From the current gameplay camera, enforce these primary reads:
 - Production-art status remains governed by `MODEL_ART_INVENTORY.md`; passing this task does not automatically mean `DONE`.
 
 ## Status
-`IN_PROGRESS`
+`IN_PROGRESS — PASS A + PASS B IMPLEMENTED, PLAY MODE QA PENDING`
