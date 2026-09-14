@@ -27,6 +27,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 - Проверить restart Chapter I: выбор покровителя не должен обходиться.
 - Первый Encounter не начинается раньше завершения 30-секундной подготовки.
 - Guidance показывает подготовку берега, выбранного покровителя, Encounter 1 и переход ко второму бою без старой player-facing Wave-терминологии.
+- Полный RU/EN localization pass: в RU нет сырых английских enum/displayName/тегов/приоритетов/сложностей; в EN нет русских утечек.
+- RU/EN visual fit после localization cleanup: 1920x1080 и 1366/1376x768 без обрезки длинных русских строк.
 - Правый `PatronCommentaryPresentation` не пересекается с `BossHUD`, верхними ресурсами и combat controls на 1920x1080 и 1366/1376x768; RU/EN текст не обрезается.
 - В бою не появляется in-map Gift chooser, а основной combat HUD использует прямой `EncounterRuntime`/Encounter copy без `CombatHudLegacyCleanup`.
 - Новый Story-проход на 1x без паузы: целевая длительность Chapter I — 11–13 минут.
