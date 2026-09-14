@@ -2,18 +2,20 @@ using UnityEngine;
 
 public class BuildPoint : MonoBehaviour
 {
-    const float IdleCoreScale = .16f;
-    const float IdleRimScale = .27f;
+    // Idle build sites should remain discoverable without becoming the dominant
+    // repeating pattern in the tactical view. Interaction states expand strongly.
+    const float IdleCoreScale = .075f;
+    const float IdleRimScale = .14f;
     const float HoverCoreScale = .27f;
     const float HoverRimScale = .37f;
 
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
-    static readonly Color FoundationEarth = new Color(.43f,.35f,.24f);
-    static readonly Color FoundationStone = new Color(.39f,.36f,.30f);
-    static readonly Color FoundationStoneLight = new Color(.47f,.42f,.34f);
-    static readonly Color IdleColor = new Color(.50f,.40f,.25f);
-    static readonly Color RimColor = new Color(.31f,.28f,.22f);
+    static readonly Color FoundationEarth = new Color(.38f,.32f,.24f);
+    static readonly Color FoundationStone = new Color(.36f,.34f,.29f);
+    static readonly Color FoundationStoneLight = new Color(.41f,.38f,.32f);
+    static readonly Color IdleColor = new Color(.41f,.35f,.27f);
+    static readonly Color RimColor = new Color(.34f,.31f,.26f);
     static readonly Color ValidColor = new Color(.32f,.86f,.38f);
     static readonly Color InvalidColor = new Color(.94f,.22f,.12f);
     static readonly Color OccupiedColor = new Color(.20f,.19f,.16f);
@@ -39,8 +41,8 @@ public class BuildPoint : MonoBehaviour
         GameObject rimObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         rimObj.name = "BuildStateOuterAccent";
         rimObj.transform.SetParent(transform,false);
-        rimObj.transform.localPosition = new Vector3(0f, .042f, 0f);
-        rimObj.transform.localScale = new Vector3(IdleRimScale, .008f, IdleRimScale);
+        rimObj.transform.localPosition = new Vector3(0f, .036f, 0f);
+        rimObj.transform.localScale = new Vector3(IdleRimScale, .006f, IdleRimScale);
         Object.Destroy(rimObj.GetComponent<Collider>());
         rim = rimObj.GetComponent<Renderer>();
         TowerFactory.SetColor(rimObj, RimColor);
@@ -48,8 +50,8 @@ public class BuildPoint : MonoBehaviour
         GameObject markerObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         markerObj.name = "BuildStateCore";
         markerObj.transform.SetParent(transform,false);
-        markerObj.transform.localPosition = new Vector3(0f, .052f, 0f);
-        markerObj.transform.localScale = new Vector3(IdleCoreScale, .009f, IdleCoreScale);
+        markerObj.transform.localPosition = new Vector3(0f, .044f, 0f);
+        markerObj.transform.localScale = new Vector3(IdleCoreScale, .007f, IdleCoreScale);
         Object.Destroy(markerObj.GetComponent<Collider>());
         marker = markerObj.GetComponent<Renderer>();
         TowerFactory.SetColor(markerObj, IdleColor);
@@ -63,26 +65,28 @@ public class BuildPoint : MonoBehaviour
         GameObject earth = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         earth.name = "Packed Foundation Earth";
         earth.transform.SetParent(root.transform,false);
-        earth.transform.localPosition = new Vector3(0f,.010f,0f);
-        earth.transform.localScale = new Vector3(.50f,.025f,.47f);
+        earth.transform.localPosition = new Vector3(0f,.006f,0f);
+        earth.transform.localScale = new Vector3(.32f,.014f,.30f);
         Object.Destroy(earth.GetComponent<Collider>());
         TowerFactory.SetColor(earth,FoundationEarth);
 
+        // Two small irregular stones are enough to imply a prepared foundation.
+        // The old seven-stone ring read as a bright flower repeated across the map.
         float phase = Mathf.Repeat(Mathf.Abs(transform.position.x * 17f + transform.position.z * 11f),23f);
-        for(int i=0;i<7;i++)
+        for(int i=0;i<2;i++)
         {
-            float angle = (phase + i * 51.43f) * Mathf.Deg2Rad;
-            float radius = .43f + (i%3)*.025f;
-            GameObject slab = GameObject.CreatePrimitive(i%3==0 ? PrimitiveType.Sphere : PrimitiveType.Cube);
+            float angle = (phase + i * 163f) * Mathf.Deg2Rad;
+            float radius = .27f + i*.035f;
+            GameObject slab = GameObject.CreatePrimitive(i==0 ? PrimitiveType.Sphere : PrimitiveType.Cube);
             slab.name = "Weathered Foundation Stone";
             slab.transform.SetParent(root.transform,false);
-            slab.transform.localPosition = new Vector3(Mathf.Cos(angle)*radius,.025f,Mathf.Sin(angle)*radius);
-            slab.transform.localRotation = Quaternion.Euler(i%2==0?2f:-2f,phase+i*47f,(i%3-1)*3f);
-            slab.transform.localScale = i%3==0
-                ? new Vector3(.29f,.065f,.22f)
-                : new Vector3(.34f+(i%2)*.05f,.075f,.20f+(i%3)*.025f);
+            slab.transform.localPosition = new Vector3(Mathf.Cos(angle)*radius,.016f,Mathf.Sin(angle)*radius);
+            slab.transform.localRotation = Quaternion.Euler(i==0?2f:-2f,phase+i*71f,i==0?-2f:3f);
+            slab.transform.localScale = i==0
+                ? new Vector3(.17f,.036f,.13f)
+                : new Vector3(.20f,.040f,.12f);
             Object.Destroy(slab.GetComponent<Collider>());
-            TowerFactory.SetColor(slab,i%2==0 ? FoundationStone : FoundationStoneLight);
+            TowerFactory.SetColor(slab,i==0 ? FoundationStone : FoundationStoneLight);
         }
     }
 
@@ -139,8 +143,8 @@ public class BuildPoint : MonoBehaviour
 
         float coreScale = value ? HoverCoreScale : IdleCoreScale;
         float rimScale = value ? HoverRimScale : IdleRimScale;
-        marker.transform.localScale = new Vector3(coreScale, .009f, coreScale);
-        rim.transform.localScale = new Vector3(rimScale, .008f, rimScale);
+        marker.transform.localScale = new Vector3(coreScale, value ? .009f : .007f, coreScale);
+        rim.transform.localScale = new Vector3(rimScale, value ? .008f : .006f, rimScale);
 
         Color core = value ? (valid ? ValidColor : InvalidColor) : IdleColor;
         Color edge = value ? (valid ? ValidRimColor : InvalidRimColor) : RimColor;
@@ -152,8 +156,8 @@ public class BuildPoint : MonoBehaviour
     {
         if (marker == null || rim == null) return;
         hovered = false;
-        marker.transform.localScale = new Vector3(IdleCoreScale, .009f, IdleCoreScale);
-        rim.transform.localScale = new Vector3(IdleRimScale, .008f, IdleRimScale);
+        marker.transform.localScale = new Vector3(IdleCoreScale, .007f, IdleCoreScale);
+        rim.transform.localScale = new Vector3(IdleRimScale, .006f, IdleRimScale);
         SetRendererColor(marker, Occupied ? OccupiedColor : IdleColor);
         SetRendererColor(rim, Occupied ? OccupiedColor : RimColor);
         marker.gameObject.SetActive(!Occupied);
