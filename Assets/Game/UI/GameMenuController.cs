@@ -69,6 +69,16 @@ public class GameMenuController : MonoBehaviour
 
     void BuildUI()
     {
+        if (canvas == null)
+        {
+            GameObject stale = GameObject.Find("MenuCanvas");
+            if (stale != null)
+            {
+                stale.SetActive(false);
+                Destroy(stale);
+            }
+        }
+
         GameObject canvasObj = new GameObject("MenuCanvas");
         canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -96,23 +106,23 @@ public class GameMenuController : MonoBehaviour
     void BuildMainMenu()
     {
         mainMenu = MakeMainMenuScreen(canvas, MainMenuBackgroundResource);
+        GameObject panel = MakePanel(mainMenu.transform, "MainPanel", new Vector2(.5f, .5f), new Vector2(1320, 800), new Color(.045f, .024f, .016f, .94f));
 
-        GameObject heroPanel = MakePanel(mainMenu.transform, "HeroPanel", new Vector2(.18f, .5f), new Vector2(620, 820), new Color(.055f, .028f, .018f, .82f));
-        heroPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(40f, 0f);
+        RectTransform heroPanel = MakeContainer(panel.transform, "HeroPanel", new Vector2(-345f, -4f), new Vector2(520f, 610f));
+        AddTitle(heroPanel, "THE TROY GAME", new Vector2(0, 220), 58, MenuTextStyle.Logo, new Vector2(500, 86));
+        AddTitle(heroPanel, "SIEGE DEFENSE", new Vector2(0, 158), 22, MenuTextStyle.Subtitle, new Vector2(500, 42));
+        AddDivider(heroPanel, new Vector2(0, 116), 400);
+        AddTitle(heroPanel, L("DEFEND TROY • MASTER THE FIRE", "ЗАЩИТИ ТРОЮ • ПОВЕЛЕВАЙ ОГНЁМ"), new Vector2(0, 72), 16, MenuTextStyle.Muted, new Vector2(470, 44));
+        AddTitle(heroPanel, L("A story-driven defense campaign", "Сюжетная кампания обороны Трои"), new Vector2(0, -176), 15, MenuTextStyle.Muted, new Vector2(470, 42));
 
-        AddTitle(heroPanel.transform, "THE TROY GAME", new Vector2(0, 270), 66, MenuTextStyle.Logo, new Vector2(560, 100));
-        AddTitle(heroPanel.transform, "SIEGE DEFENSE", new Vector2(0, 205), 24, MenuTextStyle.Subtitle, new Vector2(560, 50));
-        AddDivider(heroPanel.transform, new Vector2(0, 160), 440);
-        AddTitle(heroPanel.transform, L("DEFEND TROY • MASTER THE FIRE", "ЗАЩИТИ ТРОЮ • ПОВЕЛЕВАЙ ОГНЁМ"), new Vector2(0, 115), 18, MenuTextStyle.Muted, new Vector2(520, 46));
-
-        AddButton(heroPanel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(0, 20), ShowLevels, new Vector2(430, 68), MenuButtonStyle.Highlight);
-        AddButton(heroPanel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(0, -64), StartNewCampaign, new Vector2(430, 62), MenuButtonStyle.Stone);
-        AddButton(heroPanel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, -140), ShowLevels, new Vector2(430, 62), MenuButtonStyle.Stone);
-        AddButton(heroPanel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, -216), ShowSettingsFromMain, new Vector2(430, 62), MenuButtonStyle.Ghost);
-        AddButton(heroPanel.transform, L("EXIT", "ВЫХОД"), new Vector2(0, -292), QuitGame, new Vector2(430, 58), MenuButtonStyle.Ghost);
-
-        AddTitle(mainMenu.transform, L("Troy still stands.", "Троя ещё стоит."), new Vector2(560, -430), 22, MenuTextStyle.Subtitle, new Vector2(620, 50));
-        AddTitle(mainMenu.transform, "v0.6 • PRE-ALPHA", new Vector2(770, -500), 16, MenuTextStyle.Muted, new Vector2(280, 38));
+        AddTitle(panel.transform, L("CAMPAIGN", "КАМПАНИЯ"), new Vector2(320, 245), 32, MenuTextStyle.Subtitle, new Vector2(520, 50));
+        AddTitle(panel.transform, L("Continue the defense or start again", "Продолжите оборону или начните заново"), new Vector2(320, 202), 15, MenuTextStyle.Muted, new Vector2(520, 38));
+        AddButton(panel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(320, 112), ShowLevels, new Vector2(470, 64), MenuButtonStyle.Highlight);
+        AddButton(panel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(320, 34), StartNewCampaign, new Vector2(470, 58), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(320, -38), ShowLevels, new Vector2(470, 58), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(320, -110), ShowSettingsFromMain, new Vector2(470, 58), MenuButtonStyle.Ghost);
+        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(320, -182), QuitGame, new Vector2(470, 54), MenuButtonStyle.Ghost);
+        AddTitle(panel.transform, "v0.6 • PRE-ALPHA", new Vector2(500, -348), 13, MenuTextStyle.Muted, new Vector2(250, 28));
     }
 
     void BuildLevelMenu()
@@ -140,26 +150,43 @@ public class GameMenuController : MonoBehaviour
     void BuildPauseMenu()
     {
         pauseMenu = MakeScreen(canvas, "PauseMenu", new Color(.02f, .015f, .012f, .985f));
-        GameObject panel = MakePanel(pauseMenu.transform, "PauseCard", new Vector2(.5f, .5f), new Vector2(620, 680), new Color(.07f, .04f, .025f, .99f));
+        GameObject panel = MakePanel(pauseMenu.transform, "PauseCard", new Vector2(.5f, .5f), new Vector2(1000, 720), new Color(.055f, .03f, .018f, .99f));
 
-        AddTitle(panel.transform, L("PAUSED", "ПАУЗА"), new Vector2(0, 250), 52, MenuTextStyle.Logo);
-        AddTitle(panel.transform, L("The battle waits for your command", "Битва ждёт вашего приказа"), new Vector2(0, 202), 18, MenuTextStyle.Muted);
-        AddButton(panel.transform, L("RESUME", "ВЕРНУТЬСЯ В ИГРУ"), new Vector2(0, 110), Resume, new Vector2(420, 64), MenuButtonStyle.Highlight);
-        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, 32), ShowSettingsFromPause, new Vector2(420, 60), MenuButtonStyle.Stone);
-        AddButton(panel.transform, L("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"), new Vector2(0, -46), RestartChapter, new Vector2(420, 60), MenuButtonStyle.Stone);
-        AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0, -124), ReturnToMainMenu, new Vector2(420, 60), MenuButtonStyle.Ghost);
-        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0, -202), QuitGame, new Vector2(420, 56), MenuButtonStyle.Ghost);
+        AddTitle(panel.transform, L("PAUSED", "ПАУЗА"), new Vector2(0, 268), 48, MenuTextStyle.Logo);
+        AddTitle(panel.transform, L("The battle waits for your command", "Битва ждёт вашего приказа"), new Vector2(0, 222), 17, MenuTextStyle.Muted, new Vector2(720, 38));
+        AddDivider(panel.transform, new Vector2(0, 184), 700);
+
+        AddButton(panel.transform, L("RESUME", "ВЕРНУТЬСЯ В ИГРУ"), new Vector2(0, 104), Resume, new Vector2(500, 62), MenuButtonStyle.Highlight);
+        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, 30), ShowSettingsFromPause, new Vector2(500, 56), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"), new Vector2(0, -40), RestartChapter, new Vector2(500, 56), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0, -110), ReturnToMainMenu, new Vector2(500, 56), MenuButtonStyle.Ghost);
+        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0, -180), QuitGame, new Vector2(500, 52), MenuButtonStyle.Ghost);
     }
 
     void BuildEndMenu()
     {
         endMenu = MakeScreen(canvas, "EndMenu", new Color(.02f, .015f, .012f, .99f));
-        GameObject panel = MakePanel(endMenu.transform, "ResultCard", new Vector2(.5f, .5f), new Vector2(980, 820), new Color(.07f, .04f, .025f, .99f));
+        GameObject panel = MakePanel(endMenu.transform, "ResultCard", new Vector2(.5f, .5f), new Vector2(1160, 800), new Color(.055f, .03f, .018f, .99f));
 
-        endTitle = AddTitle(panel.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0, 320), 58, MenuTextStyle.Logo);
-        endSummary = AddTitle(panel.transform, "", new Vector2(0, 80), 22, MenuTextStyle.Normal, new Vector2(840, 420));
-        AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-175, -300), RestartChapter, new Vector2(300, 64), MenuButtonStyle.Highlight);
-        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(175, -300), ReturnToChapterSelect, new Vector2(300, 64), MenuButtonStyle.Stone);
+        endTitle = AddTitle(panel.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0, 326), 52, MenuTextStyle.Logo);
+        AddTitle(panel.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 278), 16, MenuTextStyle.Muted, new Vector2(760, 34));
+        AddDivider(panel.transform, new Vector2(0, 244), 820);
+        endSummary = AddTitle(panel.transform, "", new Vector2(0, 34), 18, MenuTextStyle.Normal, new Vector2(900, 390));
+
+        AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-330, -322), RestartChapter, new Vector2(280, 58), MenuButtonStyle.Highlight);
+        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, -322), ReturnToChapterSelect, new Vector2(300, 58), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(330, -322), ReturnToMainMenu, new Vector2(280, 58), MenuButtonStyle.Ghost);
+    }
+
+    RectTransform MakeContainer(Transform parent, string name, Vector2 position, Vector2 size)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
+        rt.anchoredPosition = position;
+        rt.sizeDelta = size;
+        return rt;
     }
 
     void ToggleLanguage()
@@ -176,6 +203,7 @@ public class GameMenuController : MonoBehaviour
     void RebuildUiAfterLanguageChange(bool wasSettings, bool wasPause, bool wasLevels)
     {
         GameObject oldCanvas = canvas != null ? canvas.gameObject : null;
+        if (oldCanvas != null) oldCanvas.SetActive(false);
         BuildUI();
 
         if (wasSettings) SetScreenState(settings: true);
