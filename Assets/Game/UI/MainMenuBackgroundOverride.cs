@@ -1,15 +1,12 @@
-using System;
 using System.Collections;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public sealed class MainMenuBackgroundOverride : MonoBehaviour
 {
-    const string ApprovedMenuResourceRoot = "Menu/ApprovedMainMenu/part";
-    const int ApprovedMenuPartCount = 10;
+    const string ApprovedMenuResource = "Menu/ApprovedMainMenu";
 
     readonly Vector2 playPosition = new Vector2(437f, 286f);
     readonly Vector2 playSize = new Vector2(548f, 203f);
@@ -41,13 +38,23 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
     void Awake()
     {
-        approvedSprite = LoadApprovedMenuSprite();
+        approvedTexture = Resources.Load<Texture2D>(ApprovedMenuResource);
+        if (approvedTexture == null)
+        {
+            RuntimeFileLogger.Event("MENU", "Approved main-menu art resource is missing");
+            return;
+        }
+
+        approvedSprite = Sprite.Create(
+            approvedTexture,
+            new Rect(0f, 0f, approvedTexture.width, approvedTexture.height),
+            new Vector2(.5f, .5f),
+            100f);
     }
 
     void LateUpdate()
     {
-        if (approvedSprite == null) return;
-        if (appliedMainMenu != null) return;
+        if (approvedSprite == null || appliedMainMenu != null) return;
 
         controller = FindFirstObjectByType<GameMenuController>();
         if (controller == null) return;
@@ -60,52 +67,6 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
         ApplyApprovedMenu(mainMenu);
         appliedMainMenu = mainMenu.gameObject;
-    }
-
-    Sprite LoadApprovedMenuSprite()
-    {
-        StringBuilder encoded = new StringBuilder(560000);
-        for (int i = 0; i < ApprovedMenuPartCount; i++)
-        {
-            TextAsset part = Resources.Load<TextAsset>($"{ApprovedMenuResourceRoot}{i:00}");
-            if (part == null)
-            {
-                RuntimeFileLogger.Event("MENU", $"Approved menu reference part missing: {i:00}");
-                return null;
-            }
-
-            encoded.Append(part.text.Trim());
-        }
-
-        try
-        {
-            byte[] bytes = Convert.FromBase64String(encoded.ToString());
-            approvedTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false)
-            {
-                name = "ApprovedMainMenuReference"
-            };
-
-            if (!approvedTexture.LoadImage(bytes, false))
-            {
-                RuntimeFileLogger.Event("MENU", "Approved menu reference could not be decoded as an image");
-                Destroy(approvedTexture);
-                approvedTexture = null;
-                return null;
-            }
-
-            approvedTexture.wrapMode = TextureWrapMode.Clamp;
-            approvedTexture.filterMode = FilterMode.Bilinear;
-            return Sprite.Create(
-                approvedTexture,
-                new Rect(0f, 0f, approvedTexture.width, approvedTexture.height),
-                new Vector2(.5f, .5f),
-                100f);
-        }
-        catch (Exception exception)
-        {
-            RuntimeFileLogger.Event("MENU", $"Approved menu reference decode failed: {exception.GetType().Name}");
-            return null;
-        }
     }
 
     void ApplyApprovedMenu(Transform mainMenu)
@@ -175,7 +136,7 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         glowRect.offsetMax = new Vector2(5f, 5f);
 
         Outline outline = glowObject.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, .76f, .30f, .0f);
+        outline.effectColor = new Color(1f, .76f, .30f, 0f);
         outline.effectDistance = new Vector2(3f, -3f);
 
         MainMenuHotspotFeedback feedback = go.AddComponent<MainMenuHotspotFeedback>();
@@ -303,7 +264,6 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
     void OnDestroy()
     {
         if (approvedSprite != null) Destroy(approvedSprite);
-        if (approvedTexture != null) Destroy(approvedTexture);
     }
 }
 
