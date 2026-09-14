@@ -114,8 +114,18 @@ public class HectorController : MonoBehaviour
         if (best == null) return;
 
         nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate);
-        best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
-        presentation?.PlayAttackImpact(best.transform.position);
+        Vector3 impactPoint = best.transform.position;
+        if (presentation == null)
+        {
+            best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
+            return;
+        }
+
+        presentation.PlayAttackImpact(impactPoint, () =>
+        {
+            if (IsDowned || best == null || !best.IsAlive) return;
+            best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
+        });
     }
 
     public void TakeDamage(float damage)
@@ -183,10 +193,22 @@ public class HectorController : MonoBehaviour
         if (target == null) return;
 
         nextSpearThrow = Time.time + spearThrowCooldown;
-        target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
-        target.ApplyArmorBreak(.25f, 6f);
-        RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
-        presentation?.PlaySpearImpact(target.transform.position);
+        Vector3 impactPoint = target.transform.position;
+        if (presentation == null)
+        {
+            target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
+            if (target != null) target.ApplyArmorBreak(.25f, 6f);
+            RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
+            return;
+        }
+
+        presentation.PlaySpearImpact(impactPoint, () =>
+        {
+            if (IsDowned || target == null || !target.IsAlive) return;
+            target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
+            if (target != null) target.ApplyArmorBreak(.25f, 6f);
+            RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
+        });
     }
 
     public void UseUltimate()

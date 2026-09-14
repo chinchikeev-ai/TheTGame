@@ -88,13 +88,27 @@ public class TrojanGuardSquad : MonoBehaviour
         {
             nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate * rallyRate);
             ownerTower?.crewAnimation?.PlayGuardPoke();
-            presentation?.PlaySpearAttack();
-            attackTarget.ReceiveDamage(new DamagePacket(damage * rallyDamage, DamageType.Physical, TowerType.TrojanGuard));
-            CombatImpactPresentation.MeleeHit(attackTarget.transform.position + Vector3.up * .55f, TowerType.TrojanGuard);
-            Vector3 shotPoint = transform.position + Vector3.up * .8f;
-            RuntimeEffects.Instance?.PlayShotSound(TowerType.TrojanGuard);
-            CombatImpactPresentation.ShotFlash(shotPoint, TowerType.TrojanGuard);
+            float attackDamage = damage * rallyDamage;
+            if (presentation == null)
+            {
+                ApplyAttackImpact(attackTarget, attackDamage);
+            }
+            else
+            {
+                presentation.PlaySpearAttack(() => ApplyAttackImpact(attackTarget, attackDamage));
+            }
         }
+    }
+
+    void ApplyAttackImpact(Enemy attackTarget, float attackDamage)
+    {
+        if (!IsAlive || attackTarget == null || !attackTarget.IsAlive || !blockedEnemies.Contains(attackTarget)) return;
+
+        attackTarget.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Physical, TowerType.TrojanGuard));
+        CombatImpactPresentation.MeleeHit(attackTarget.transform.position + Vector3.up * .55f, TowerType.TrojanGuard);
+        Vector3 shotPoint = transform.position + Vector3.up * .8f;
+        RuntimeEffects.Instance?.PlayShotSound(TowerType.TrojanGuard);
+        CombatImpactPresentation.ShotFlash(shotPoint, TowerType.TrojanGuard);
     }
 
     void FillOpenSlots()

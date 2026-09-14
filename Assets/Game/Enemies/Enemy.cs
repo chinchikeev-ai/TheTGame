@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -159,8 +160,13 @@ public class Enemy : MonoBehaviour
         if (Time.time >= nextAttack)
         {
             nextAttack = Time.time + attackInterval;
-            PlayCombatAttack();
-            blockingGuard.TakeDamage(Mathf.Max(4f, baseDamage * 18f * statuses.DamageMultiplier));
+            TrojanGuardSquad targetGuard = blockingGuard;
+            float damage = Mathf.Max(4f, baseDamage * 18f * statuses.DamageMultiplier);
+            PlayCombatAttack(() =>
+            {
+                if (!IsAlive || targetGuard == null || !targetGuard.IsAlive || blockingGuard != targetGuard) return;
+                targetGuard.TakeDamage(damage);
+            });
         }
         return true;
     }
@@ -179,8 +185,12 @@ public class Enemy : MonoBehaviour
         if (Time.time >= nextAttack)
         {
             nextAttack = Time.time + attackInterval;
-            PlayCombatAttack();
-            hector.TakeDamage(Mathf.Max(1f, baseDamage * 12f * statuses.DamageMultiplier));
+            float damage = Mathf.Max(1f, baseDamage * 12f * statuses.DamageMultiplier);
+            PlayCombatAttack(() =>
+            {
+                if (!IsAlive || hector == null || hector.IsDowned) return;
+                hector.TakeDamage(damage);
+            });
         }
         return true;
     }
@@ -196,30 +206,38 @@ public class Enemy : MonoBehaviour
         if (Time.time >= nextAttack)
         {
             nextAttack = Time.time + attackInterval;
-            PlayCombatAttack();
-            GameManager.Instance.DamageBase(Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier)));
-            RuntimeEffects.Instance?.PlayHitSound(false);
-            CombatImpactPresentation.GateHit(finalTarget.position, false);
+            int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
+            PlayCombatAttack(() =>
+            {
+                if (!IsAlive || GameManager.Instance == null || GameManager.Instance.GameEnded || finalTarget == null) return;
+                GameManager.Instance.DamageBase(damage);
+                RuntimeEffects.Instance?.PlayHitSound(false);
+                CombatImpactPresentation.GateHit(finalTarget.position, false);
+            });
         }
         return true;
     }
 
-    void PlayCombatAttack()
+    void PlayCombatAttack(Action impact)
     {
-        if (presentation == null) return;
+        if (presentation == null)
+        {
+            impact?.Invoke();
+            return;
+        }
 
         switch (Archetype)
         {
             case EnemyArchetype.Infantry:
             case EnemyArchetype.HeavyHoplite:
             case EnemyArchetype.ShieldBearer:
-                presentation.PlaySpearAttack();
+                presentation.PlaySpearAttack(impact);
                 break;
             case EnemyArchetype.Archer:
-                presentation.PlayBowShot();
+                presentation.PlayBowShot(impact);
                 break;
             default:
-                presentation.PlayAttack();
+                presentation.PlayAttack(impact);
                 break;
         }
     }
@@ -324,10 +342,13 @@ public class Enemy : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.GameEnded || Time.time < nextAttack) return;
 
         nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
-        PlayCombatAttack();
         int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
-        GameManager.Instance.BossReachedGate(damage);
-        RuntimeEffects.Instance?.PlayHitSound(true);
-        CombatImpactPresentation.GateHit(transform.position, true);
+        PlayCombatAttack(() =>
+        {
+            if (!IsAlive || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
+            GameManager.Instance.BossReachedGate(damage);
+            RuntimeEffects.Instance?.PlayHitSound(true);
+            CombatImpactPresentation.GateHit(transform.position, true);
+        });
     }
 }
