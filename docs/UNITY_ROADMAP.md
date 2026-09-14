@@ -75,25 +75,36 @@ Freeze Chapter I gameplay as the reference implementation for the rest of the ca
 - Hector Q/E/R/F;
 - Menelaus final encounter;
 - save/unlock Chapter II;
-- EN/RU;
+- deterministic EN/RU language selection;
 - telemetry/reporter/analyzer;
+- verified 1x/no-pause telemetry contract;
 - Chapter I gameplay-freeze readiness validator;
+- tracked `CHAPTER_I_GAMEPLAY_ACCEPTANCE.json` manifest;
+- exact Story candidate binding by telemetry session id + SHA-256;
+- WARN-review template generation;
+- Story/Strategos/Legendary comparative pressure analyzer;
+- 1920x1080 and 1376x768 RU/EN visual-fit presets + QA checklist;
+- final gameplay acceptance validator with `BLOCKED` / `READY TO FREEZE` / `PASS` states;
 - Chapter I release-candidate validator;
 - responsive HUD target layout;
 - current combat/readability pass.
 
-## Remaining gate
+## Remaining evidence gate
 
-1. Complete a clean Story run at 1x using the current EncounterData.
-2. Analyze the latest playthrough.
-3. Run `Check Chapter I Gameplay Freeze Readiness`.
-4. Resolve every hard blocker.
-5. Resolve or explicitly accept remaining WARN findings.
-6. Record human acceptance and freeze Story pacing/economy/pressure.
-7. Repeat pressure checks on Strategos and Legendary.
-8. Run 1920x1080 and 1366/1376x768 RU/EN visual-fit QA.
+The tooling for steps 5–8 is complete. The remaining work is real Play Mode/human evidence and must not be fabricated:
 
-Definition of Done: `CHAPTER_I_RC_PLAYTEST.md` passes and the baseline is explicitly accepted. `READY FOR HUMAN ACCEPTANCE` alone is not the final freeze.
+1. Complete a clean Story run at 1x/no-pause using the current EncounterData.
+2. Run the analyzer and hard Gameplay Freeze Readiness validator.
+3. Bind the freeze-ready Story report to the acceptance manifest.
+4. Fix or explicitly accept every analyzer WARN and record the decision.
+5. Record explicit human Story acceptance.
+6. Complete clean 1x/no-pause Strategos and Legendary runs and review the comparative pressure report.
+7. Complete 1920x1080 + 1366/1376x768 RU/EN visual-fit QA and record evidence/limitations.
+8. Run the final acceptance validator; set `gameplayFrozen=true` only when it reports `READY TO FREEZE`.
+
+Changing the bound Story report invalidates downstream WARN, human, difficulty, visual-fit and freeze approvals, preventing stale acceptance from carrying over to changed balance.
+
+Definition of Done: `CHAPTER_I_RC_PLAYTEST.md` and `CHAPTER_I_GAMEPLAY_ACCEPTANCE.md` pass with explicit accepted evidence and the final validator reports `PASS`. `READY FOR HUMAN ACCEPTANCE` alone is not the final freeze.
 
 ---
 
@@ -115,7 +126,7 @@ Replace or formally accept the visible candidate art needed for a showable Chapt
 8. Troy wall/gate kit.
 9. Final authored/retargeted animation review.
 
-Current runtime already exposes animation hooks for Hector, Menelaus, Guard, Spear Wall, Archer Post, Ballista crew, Apollo priests and Fire Keeper. These hooks support final art but do not make candidate art final by themselves.
+Current runtime already exposes animation hooks for Hector, Menelaus, Guard, Spear Wall, Archer Post, Ballista crew, Apollo priests and Fire Keeper. Character-combat presentation also includes weapon release sockets, animation-phase impacts, projectile flights, Greek Archer nocked-arrow lifecycle and Hector carried-spear flight/restore behavior. These support final art but do not make candidate art final by themselves.
 
 Definition of Done: required P0 rows in `MODEL_ART_INVENTORY.md` satisfy the `DONE` contract and Chapter I passes real visual QA.
 
