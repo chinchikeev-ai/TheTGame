@@ -64,6 +64,8 @@ Difficulty count scaling is applied to the authored non-boss plan. Boss entries 
 
 Enemy composition must **not** be reconstructed from encounter number, spawn index or modulo formulas in runtime code.
 
+The former `WaveData` compatibility pipeline was removed on 2026-09-14. There is no `Resources/Data/Waves` fallback and `BalanceCatalog` no longer exposes wave lookup/default APIs. Do not reintroduce `WaveData`; all encounter composition and pacing belongs in `EncounterData` referenced by `ChapterData`.
+
 ## ChapterData
 Path: `Assets/Resources/Chapters`  
 Owner: `Assets/Game/Campaign/Data/ChapterData.cs`
@@ -79,14 +81,6 @@ A chapter owns:
 - next chapter unlock.
 
 Chapter I contract: five authored encounters, about 12 minutes target duration, runtime profile `chapter01_landing`, unlock Chapter II.
-
-## Legacy WaveData
-Path: `Assets/Resources/Data/Waves`  
-Owner: `Assets/Game/Campaign/Data/WaveData.cs`
-
-`WaveData` is retained only as compatibility/history during migration. `EnemySpawner` no longer reads it and it is **not** an authority for runtime encounter composition.
-
-Do not author new chapter content as `WaveData`. New and migrated content belongs in `EncounterData` referenced by `ChapterData`.
 
 ## Difficulty
 Current owner: `Assets/Game/Core/Balance/DifficultyRules.cs`.
