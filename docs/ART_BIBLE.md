@@ -51,6 +51,31 @@ Avoid:
 - muddy brown/gray environments;
 - solemn historical-simulator presentation.
 
+## Canonical In-Game Presentation Baseline
+
+The **current Chapter I gameplay view is the production baseline**. Art must be designed for the game that already exists rather than redesigning the game around a separate concept illustration.
+
+Current visual/readability contract:
+
+- top-down / isometric-like orthographic gameplay camera;
+- default Chapter I camera uses approximately `73°` pitch and `10.6` orthographic size;
+- normal gameplay is viewed from tactical distance, not cinematic close-up distance;
+- map scale, route readability, gate objective placement and unit scale are treated as working constraints;
+- the world should read as a **stylized tactical board / toy battlefield** built from simple, bold 3D forms;
+- current primitive/procedural geometry is acceptable as blockout and runtime fallback, but final art should replace the technical-prototype look with authored stylized meshes, stronger material language and better silhouette hierarchy;
+- all final decisions are judged first from the real gameplay camera. Beauty-shot readability is secondary.
+
+Do **not** use a separately painted 2D/isometric concept map as a new camera/layout target. Concept art may inform palette, props, silhouettes and atmosphere only. It must not force a redesign of the established Chapter I gameplay view unless a dedicated gameplay task explicitly changes camera or map layout.
+
+### Visual-layer replacement rule
+
+Improve the existing game by replacing or refining presentation layers while preserving gameplay structure:
+
+- keep routes, gameplay colliders, spawn logic, tower placement and objective logic stable unless a gameplay task says otherwise;
+- replace or refine character prefabs, tower-unit visuals, environment meshes, materials, props, VFX and UI presentation;
+- decorative additions should avoid gameplay colliders unless collision is intentionally part of gameplay;
+- simple geometry remains desirable where it supports readability and performance, but it should no longer look like unstyled colored primitives.
+
 ## Tone and Comedy
 
 Humor is primarily visual and physical, not constant joke dialogue.
@@ -152,6 +177,8 @@ Core silhouettes:
 
 Tower crews should have readable cartoon acting: draw, brace, heave, recoil, celebrate or panic where appropriate without delaying gameplay logic.
 
+At the current tactical camera, a defense must be identifiable before the player reads its small decorative details. The primary silhouette should communicate its role: spear cluster, bow/quiver, large ballista frame, bright solar shrine, fire source, or shield wall.
+
 ## Enemy Visual Rules
 
 Greek enemies should be readable by role:
@@ -216,7 +243,7 @@ SFX may use slightly exaggerated impact and movement accents when they improve r
 
 ## Production Acceptance
 
-A candidate is off-direction if it is technically correct but reads as realistic, grim, generic medieval fantasy, visually solemn or too detailed to read at gameplay distance.
+A candidate is off-direction if it is technically correct but reads as realistic, grim, generic medieval fantasy, visually solemn, too detailed to read at gameplay distance, or only works in a close-up while failing in the current gameplay camera.
 
 Production-art `DONE` requires consistency with:
 
