@@ -57,22 +57,22 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         mapFieldImage.color = new Color(.07f, .042f, .025f, .74f);
         mapFieldImage.raycastTarget = false;
         RectTransform field = mapFieldImage.rectTransform;
-        field.anchorMin = field.anchorMax = field.pivot = new Vector2(.30f, .5f);
-        field.anchoredPosition = new Vector2(0f, 0f);
-        field.sizeDelta = new Vector2(860f, 660f);
+        field.anchorMin = field.anchorMax = field.pivot = new Vector2(.29f, .5f);
+        field.anchoredPosition = Vector2.zero;
+        field.sizeDelta = new Vector2(920f, 700f);
         Outline fieldOutline = mapField.AddComponent<Outline>();
         fieldOutline.effectColor = new Color(.58f, .31f, .12f, .38f);
         fieldOutline.effectDistance = new Vector2(2f, -2f);
 
         Vector2[] points =
         {
-            new Vector2(-300, -120),
-            new Vector2(-230,  -25),
-            new Vector2(-120,   68),
-            new Vector2(   0,  125),
-            new Vector2( 120,   82),
-            new Vector2( 220,   -8),
-            new Vector2( 300, -110)
+            new Vector2(-300, 150),
+            new Vector2(-105, 150),
+            new Vector2( 100, 125),
+            new Vector2( 285,  45),
+            new Vector2( 155, -120),
+            new Vector2( -65, -155),
+            new Vector2(-285, -105)
         };
 
         int unlockedChapter = Campaign != null ? Campaign.UnlockedChapter : 1;
@@ -91,18 +91,27 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         RectTransform card = levelCard as RectTransform;
         if (card == null) return;
         card.anchorMin = card.anchorMax = card.pivot = new Vector2(.82f, .5f);
-        card.anchoredPosition = new Vector2(-30f, 0f);
-        card.sizeDelta = new Vector2(610f, 760f);
+        card.anchoredPosition = new Vector2(-24f, 0f);
+        card.sizeDelta = new Vector2(590f, 720f);
 
         Image image = levelCard.GetComponent<Image>();
         if (image != null) image.color = new Color(.075f, .042f, .025f, .965f);
 
-        foreach (RectTransform child in levelCard.GetComponentsInChildren<RectTransform>(true))
+        Text[] texts = levelCard.GetComponentsInChildren<Text>(true);
+        for (int i = 0; i < texts.Length; i++)
         {
-            if (child == card) continue;
-            string n = child.gameObject.name;
-            if (n.Contains("CHAPTER SELECT") || n.Contains("ВЫБОР ГЛАВЫ")) child.anchoredPosition = new Vector2(0, 285);
-            else if (n.Contains("Choose where") || n.Contains("Выберите этап")) child.anchoredPosition = new Vector2(0, 235);
+            RectTransform rt = texts[i].rectTransform;
+            string value = texts[i].text;
+            if (value.Contains("CHAPTER SELECT") || value.Contains("ВЫБОР ГЛАВЫ"))
+            {
+                rt.anchoredPosition = new Vector2(0, 280);
+                rt.sizeDelta = new Vector2(520, 70);
+            }
+            else if (value.Contains("Choose where") || value.Contains("Выберите этап"))
+            {
+                rt.anchoredPosition = new Vector2(0, 225);
+                rt.sizeDelta = new Vector2(500, 50);
+            }
         }
 
         Button[] buttons = levelCard.GetComponentsInChildren<Button>(true);
@@ -114,18 +123,18 @@ public sealed class CampaignMapPresentation : MonoBehaviour
             if (label == null) continue;
             if (label.text.Contains("THE LANDING") || label.text.Contains("ВЫСАДКА"))
             {
-                rt.anchoredPosition = new Vector2(0, 85);
-                rt.sizeDelta = new Vector2(480, 82);
+                rt.anchoredPosition = new Vector2(0, 82);
+                rt.sizeDelta = new Vector2(470, 74);
             }
             else if (label.text.Contains("ROAD TO TROY") || label.text.Contains("ДОРОГА К ТРОЕ"))
             {
-                rt.anchoredPosition = new Vector2(0, -20);
-                rt.sizeDelta = new Vector2(480, 76);
+                rt.anchoredPosition = new Vector2(0, -18);
+                rt.sizeDelta = new Vector2(470, 70);
             }
             else if (label.text == "BACK" || label.text == "НАЗАД")
             {
-                rt.anchoredPosition = new Vector2(0, -280);
-                rt.sizeDelta = new Vector2(250, 58);
+                rt.anchoredPosition = new Vector2(0, -286);
+                rt.sizeDelta = new Vector2(240, 54);
             }
         }
     }
@@ -146,27 +155,28 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
         rt.anchoredPosition = pos;
-        rt.sizeDelta = new Vector2(chapter == 1 ? 118f : 90f, chapter == 1 ? 118f : 90f);
+        float nodeSize = chapter == 1 ? 92f : 74f;
+        rt.sizeDelta = new Vector2(nodeSize, nodeSize);
         image.raycastTarget = false;
 
         Outline outline = go.AddComponent<Outline>();
         outline.effectColor = unlocked ? new Color(1f, .52f, .16f, .75f) : new Color(.27f, .20f, .15f, .45f);
         outline.effectDistance = new Vector2(2f, -2f);
 
-        MakeText(go.transform, ToRoman(chapter), new Vector2(0, 7), chapter == 1 ? 34 : 27,
+        MakeText(go.transform, ToRoman(chapter), new Vector2(0, 3), chapter == 1 ? 28 : 22,
             unlocked ? new Color(1f, .84f, .55f, 1f) : new Color(.52f, .46f, .40f, 1f));
 
-        Text titleText = MakeText(parent, ChapterName(chapter), pos + new Vector2(0, -70), 14,
+        Text titleText = MakeText(parent, ChapterName(chapter), pos + new Vector2(0, -54), 12,
             unlocked ? new Color(.94f, .83f, .67f, 1f) : new Color(.48f, .43f, .38f, .9f));
-        titleText.rectTransform.sizeDelta = new Vector2(165f, 42f);
+        titleText.rectTransform.sizeDelta = new Vector2(150f, 34f);
 
         string state;
         if (completed) state = progress.bestScore > 0 ? L($"BEST {progress.bestScore:N0}", $"ЛУЧШИЙ {progress.bestScore:N0}") : L("COMPLETED", "ПРОЙДЕНО");
         else if (unlocked) state = L("AVAILABLE", "ДОСТУПНО");
         else state = L("LOCKED", "ЗАКРЫТО");
-        Text stateText = MakeText(parent, state, pos + new Vector2(0, -95), 11,
+        Text stateText = MakeText(parent, state, pos + new Vector2(0, -78), 10,
             completed ? new Color(1f, .52f, .20f, .95f) : new Color(.67f, .59f, .50f, .85f));
-        stateText.rectTransform.sizeDelta = new Vector2(150f, 26f);
+        stateText.rectTransform.sizeDelta = new Vector2(140f, 24f);
     }
 
     void MakeConnector(Transform parent, Vector2 a, Vector2 b, bool active)
@@ -186,9 +196,8 @@ public sealed class CampaignMapPresentation : MonoBehaviour
 
     void MakeLegend(Transform parent)
     {
-        Text text = MakeText(parent,
-            L("THE WAR FOR TROY", "ВОЙНА ЗА ТРОЮ"),
-            new Vector2(0, 315), 24, new Color(1f, .73f, .34f, .96f));
+        Text text = MakeText(parent, L("THE WAR FOR TROY", "ВОЙНА ЗА ТРОЮ"), new Vector2(0, 302), 24,
+            new Color(1f, .73f, .34f, .96f));
         text.rectTransform.sizeDelta = new Vector2(440f, 44f);
     }
 
@@ -206,7 +215,7 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         }
         Text text = MakeText(parent,
             L($"CHAPTER {unlocked}/7  •  COMPLETED {completed}/7", $"ГЛАВА {unlocked}/7  •  ПРОЙДЕНО {completed}/7"),
-            new Vector2(0, 275), 13, new Color(.82f, .70f, .56f, .90f));
+            new Vector2(0, 265), 13, new Color(.82f, .70f, .56f, .90f));
         text.rectTransform.sizeDelta = new Vector2(440f, 34f);
     }
 
