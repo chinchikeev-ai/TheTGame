@@ -8,12 +8,17 @@ public class HectorHUD : MonoBehaviour
         "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu"
     };
 
+    readonly string[] abilityKeys = { "Q", "E", "R", "F" };
+    readonly string[] abilityArt = { "warcry", "shieldwall", "spear", "ultimate" };
+
     GameObject root;
     Text nameText;
     Text hpText;
+    Text commandText;
     Image hpFill;
     Text[] abilityTexts = new Text[4];
     Image[] cooldownFills = new Image[4];
+    Button[] abilityButtons = new Button[4];
     Canvas menuCanvas;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -45,11 +50,16 @@ public class HectorHUD : MonoBehaviour
         RectTransform pr = panel.rectTransform;
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(1f,1f);
         pr.anchoredPosition = new Vector2(-24f,-164f);
-        pr.sizeDelta = new Vector2(330f,204f);
+        pr.sizeDelta = new Vector2(350f,230f);
 
-        AddImage(root.transform,"HectorPortrait",new Vector2(-124,50),new Vector2(74,74),TroyHudArt.Portrait("hector"));
-        nameText = AddText(root.transform,"HECTOR",new Vector2(-34,65),new Vector2(174,28),17,new Color(1f,.72f,.28f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
-        hpText = AddText(root.transform,"",new Vector2(-34,37),new Vector2(174,22),13,new Color(.94f,.86f,.72f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        Image portrait = AddImage(root.transform,"HectorPortrait",new Vector2(-132,58),new Vector2(78,78),TroyHudArt.Portrait("hector"));
+        portrait.raycastTarget = true;
+        Button portraitButton = portrait.gameObject.AddComponent<Button>();
+        portraitButton.targetGraphic = portrait;
+        portraitButton.onClick.AddListener(SelectHectorFromHud);
+
+        nameText = AddText(root.transform,"HECTOR",new Vector2(-40,73),new Vector2(194,28),17,new Color(1f,.72f,.28f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        hpText = AddText(root.transform,"",new Vector2(-40,45),new Vector2(194,22),13,new Color(.94f,.86f,.72f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
 
         GameObject track = new GameObject("HealthTrack");
         track.transform.SetParent(root.transform,false);
@@ -57,8 +67,8 @@ public class HectorHUD : MonoBehaviour
         trackImage.color = new Color(.15f,.06f,.035f,.95f);
         RectTransform tr = trackImage.rectTransform;
         tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(.5f,.5f);
-        tr.anchoredPosition = new Vector2(30,11);
-        tr.sizeDelta = new Vector2(232,13);
+        tr.anchoredPosition = new Vector2(30,19);
+        tr.sizeDelta = new Vector2(244,13);
         GameObject fillObj = new GameObject("HealthFill");
         fillObj.transform.SetParent(track.transform,false);
         hpFill = fillObj.AddComponent<Image>();
@@ -68,22 +78,28 @@ public class HectorHUD : MonoBehaviour
         RectTransform fr = hpFill.rectTransform;
         fr.anchorMin = Vector2.zero; fr.anchorMax = Vector2.one; fr.offsetMin = new Vector2(2,2); fr.offsetMax = new Vector2(-2,-2);
 
-        string[] keys = { "Q", "E", "R", "F" };
-        string[] names = { GameLanguage.T("WAR CRY","КЛИЧ"), GameLanguage.T("SHIELD","ЩИТЫ"), GameLanguage.T("SPEAR","КОПЬЁ"), GameLanguage.T("FOR TROY!","ЗА ТРОЮ!") };
-        string[] art = { "warcry", "shieldwall", "spear", "ultimate" };
+        commandText = AddText(root.transform,"",new Vector2(0,-7),new Vector2(320,24),11,new Color(1f,.76f,.28f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
+
         for (int i=0;i<4;i++)
         {
-            float x = -111 + i*74;
-            GameObject slot = new GameObject("Ability_"+keys[i]);
+            float x = -117 + i*78;
+            GameObject slot = new GameObject("Ability_"+abilityKeys[i]);
             slot.transform.SetParent(root.transform,false);
             Image bg = slot.AddComponent<Image>();
             bg.sprite = TroyHudArt.Panel(); bg.type = Image.Type.Sliced; bg.color = new Color(.42f,.22f,.08f,1f);
             RectTransform sr = bg.rectTransform;
             sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(.5f,.5f);
-            sr.anchoredPosition = new Vector2(x,-59);
-            sr.sizeDelta = new Vector2(68,76);
-            AddImage(slot.transform,"Icon",new Vector2(0,11),new Vector2(40,40),TroyHudArt.Ability(art[i]));
-            abilityTexts[i] = AddText(slot.transform,keys[i]+"  "+names[i],new Vector2(0,-25),new Vector2(64,20),8,new Color(.96f,.86f,.70f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
+            sr.anchoredPosition = new Vector2(x,-70);
+            sr.sizeDelta = new Vector2(72,78);
+
+            int abilityIndex = i;
+            Button button = slot.AddComponent<Button>();
+            button.targetGraphic = bg;
+            button.onClick.AddListener(() => UseAbilityFromHud(abilityIndex));
+            abilityButtons[i] = button;
+
+            AddImage(slot.transform,"Icon",new Vector2(0,11),new Vector2(40,40),TroyHudArt.Ability(abilityArt[i]));
+            abilityTexts[i] = AddText(slot.transform,"",new Vector2(0,-25),new Vector2(68,20),8,new Color(.96f,.86f,.70f,1f),TextAnchor.MiddleCenter,FontStyle.Bold);
             GameObject cd = new GameObject("Cooldown");
             cd.transform.SetParent(slot.transform,false);
             cooldownFills[i] = cd.AddComponent<Image>();
@@ -92,6 +108,7 @@ public class HectorHUD : MonoBehaviour
             cooldownFills[i].fillMethod = Image.FillMethod.Radial360;
             cooldownFills[i].fillOrigin = 2;
             cooldownFills[i].fillClockwise = false;
+            cooldownFills[i].raycastTarget = false;
             RectTransform cr = cooldownFills[i].rectTransform;
             cr.anchorMin = Vector2.zero; cr.anchorMax = Vector2.one; cr.offsetMin = Vector2.zero; cr.offsetMax = Vector2.zero;
             cooldownFills[i].transform.SetAsFirstSibling();
@@ -115,21 +132,60 @@ public class HectorHUD : MonoBehaviour
             nameText.text = GameLanguage.T("HECTOR DOWNED","ГЕКТОР ПОВЕРЖЕН");
             hpText.text = GameLanguage.T("REVIVE ","ВОЗВРАЩЕНИЕ ") + Mathf.CeilToInt(h.DownedRemaining) + GameLanguage.T("s","с");
             hpFill.fillAmount = 0f;
+            commandText.text = GameLanguage.T("UNAVAILABLE • REVIVING","НЕДОСТУПЕН • ВОЗВРАЩАЕТСЯ");
         }
         else
         {
             nameText.text = GameLanguage.T("HECTOR • PRINCE OF TROY","ГЕКТОР • ПРИНЦ ТРОИ");
             hpText.text = $"HP {Mathf.CeilToInt(h.Health)} / {Mathf.CeilToInt(h.maxHealth)}";
             hpFill.fillAmount = h.maxHealth > 0f ? Mathf.Clamp01(h.Health / h.maxHealth) : 0f;
+            commandText.text = h.Selected
+                ? GameLanguage.T("SELECTED • RMB MOVE • Q/E/R/F ABILITIES","ВЫБРАН • ПКМ ДВИЖЕНИЕ • Q/E/R/F УМЕНИЯ")
+                : GameLanguage.T("CLICK HECTOR TO COMMAND","КЛИКНИТЕ ПО ГЕКТОРУ ДЛЯ УПРАВЛЕНИЯ");
+            commandText.color = h.Selected ? new Color(1f,.84f,.36f,1f) : new Color(.92f,.74f,.42f,1f);
         }
 
+        string[] names =
+        {
+            GameLanguage.T("WAR CRY","КЛИЧ"),
+            GameLanguage.T("SHIELD","ЩИТЫ"),
+            GameLanguage.T("SPEAR","КОПЬЁ"),
+            GameLanguage.T("FOR TROY!","ЗА ТРОЮ!")
+        };
         float[] remain = { h.WarCryCooldownRemaining, h.ShieldWallCooldownRemaining, h.SpearThrowCooldownRemaining, h.UltimateCooldownRemaining };
         float[] total = { h.warCryCooldown, h.shieldWallCooldown, h.spearThrowCooldown, h.ultimateCooldown };
         for(int i=0;i<4;i++)
         {
             float ratio = total[i] > 0f ? Mathf.Clamp01(remain[i]/total[i]) : 0f;
             cooldownFills[i].fillAmount = ratio;
-            abilityTexts[i].color = remain[i] <= .01f ? new Color(1f,.86f,.42f,1f) : new Color(.66f,.60f,.52f,1f);
+            abilityTexts[i].text = abilityKeys[i]+"  "+names[i];
+            bool ready = !h.IsDowned && remain[i] <= .01f && h.CanAcceptCombatCommand;
+            abilityTexts[i].color = ready ? new Color(1f,.86f,.42f,1f) : new Color(.66f,.60f,.52f,1f);
+            if (abilityButtons[i] != null) abilityButtons[i].interactable = !h.IsDowned && remain[i] <= .01f;
+        }
+    }
+
+    void SelectHectorFromHud()
+    {
+        HectorController h = HectorController.Instance;
+        if (h == null || h.IsDowned) return;
+        h.SetSelected(true);
+        RuntimeFileLogger.Event("HECTOR_INPUT", "Selected from HUD portrait.");
+    }
+
+    void UseAbilityFromHud(int index)
+    {
+        HectorController h = HectorController.Instance;
+        if (h == null || h.IsDowned) return;
+        if (!h.Selected) h.SetSelected(true);
+        if (!h.CanAcceptCombatCommand) return;
+
+        switch (index)
+        {
+            case 0: h.UseWarCry(); break;
+            case 1: h.UseShieldWall(); break;
+            case 2: h.UseSpearThrow(); break;
+            case 3: h.UseUltimate(); break;
         }
     }
 
