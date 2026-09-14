@@ -67,3 +67,6 @@ project.lock.json
 
 # Local MCP bridge settings
 ProjectSettings/McpUnitySettings.json
+
+# Local reference images kept outside the Unity project
+/Pictures/
