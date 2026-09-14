@@ -74,6 +74,10 @@ public static class ChapterOneRuntimeInstaller
         if (presentation == null) presentation = hector.AddComponent<HectorPresentationBridge>();
         presentation.Initialize(controller);
 
+        HectorSelectionPresentation selection = hector.GetComponent<HectorSelectionPresentation>();
+        if (selection == null) selection = hector.AddComponent<HectorSelectionPresentation>();
+        selection.Initialize(controller);
+
         HectorInputDriver input = hector.GetComponent<HectorInputDriver>();
         if (input == null) input = hector.AddComponent<HectorInputDriver>();
         input.Initialize(controller, camera);
