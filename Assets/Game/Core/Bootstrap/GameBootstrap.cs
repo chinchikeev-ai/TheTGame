@@ -33,7 +33,6 @@ public class GameBootstrap : MonoBehaviour
         EnsureComponent<MenuProgressPresentation>("GameMenuProgress");
         EnsureComponent<CampaignMapPresentation>("CampaignMapPresentation");
         EnsureComponent<MainMenuAmbientPresentation>("MainMenuAmbientPresentation");
-        EnsureComponent<ResultScreenPresentation>("ResultScreenPresentation");
         EnsureComponent<ModernSettingsPresentation>("ModernSettingsPresentation");
 
         RuntimeFileLogger.Event(
