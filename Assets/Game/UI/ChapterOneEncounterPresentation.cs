@@ -149,7 +149,7 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
     {
         portrait.sprite = TroyHudArt.Portrait("menelaus");
         kicker.text = GameLanguage.T("BOSS ARRIVAL","ПОЯВЛЕНИЕ БОССА");
-        title.text = "MENELAUS";
+        title.text = GameLanguage.T("MENELAUS", "МЕНЕЛАЙ");
         subtitle.text = GameLanguage.T("Commander Aura active • reinforcements will follow","Аура командира активна • последуют подкрепления");
         hideAt = Time.unscaledTime + 3.4f;
         RuntimeEffects.Instance?.PlayHeroPulse(new Vector3(-13f,.2f,0f), new Color(.82f,.12f,.04f), 7f, .65f);
