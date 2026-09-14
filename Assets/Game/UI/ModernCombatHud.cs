@@ -255,14 +255,21 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDock(Transform parent)
     {
-        buildDock = Panel(parent, "BuildDock", new Vector2(-104f, 24f), new Vector2(1040, 148), new Color(.035f, .022f, .016f, .95f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        Text(buildDock.transform, L("TROJAN DEFENSES", "ОБОРОНА ТРОИ"), new Vector2(-438, 52), new Vector2(240, 26), 13, new Color(.74f, .65f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        buildSelectionText = Text(buildDock.transform, "", new Vector2(310, 52), new Vector2(560, 26), 12, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleRight, FontStyle.Bold);
+        buildDock = Panel(parent, "BuildDock", new Vector2(-104f, 24f), new Vector2(1040, 176), new Color(.040f, .024f, .016f, .96f), new Vector2(1f, 0f), new Vector2(1f, 0f));
+        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 66), new Vector2(920, 38), new Color(.44f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Text(buildDock.transform, L("DEPLOY DEFENDERS", "РАЗМЕСТИТЬ ЗАЩИТНИКОВ"), new Vector2(-286, 66), new Vector2(310, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildSelectionText = Text(buildDock.transform, "", new Vector2(222, 66), new Vector2(560, 24), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         for (int i = 0; i < buildTypes.Length; i++)
         {
             TowerType type = buildTypes[i];
             float x = -397 + i * 158;
-            buildButtons[i] = Button(buildDock.transform, BuildLabel(type, buildHotkeys[i]), new Vector2(x, -17), new Vector2(144, 78), () => SelectBuild(type), false);
+            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -24), new Vector2(136, 112), () => SelectBuild(type), false);
+            buildButtons[i].gameObject.name = "BuildCard_" + type;
+            Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Tower(type));
+            Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-51, 43), new Vector2(24, 22), 13, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            Text(buildButtons[i].transform, TowerName(type).ToUpperInvariant(), new Vector2(0, -18), new Vector2(122, 26), 12, new Color(1f, .90f, .68f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-24, -43), new Vector2(22, 22), CoinSprite());
+            Text(buildButtons[i].transform, TowerFactory.GetCost(type).ToString(), new Vector2(20, -43), new Vector2(62, 22), 12, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
             relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
         }

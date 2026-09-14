@@ -80,9 +80,18 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
                 if (buttons[i].transform.parent != dock) continue;
                 Image img = buttons[i].GetComponent<Image>();
                 if (img != null) { img.sprite=TroyHudArt.Panel(); img.type=Image.Type.Sliced; }
-                EnsureIcon(buttons[i].transform,"TowerPortrait",new Vector2(0,15),42,TroyHudArt.Tower(types[towerIndex]));
-                Text txt = buttons[i].GetComponentInChildren<Text>();
-                if (txt != null) { txt.rectTransform.anchoredPosition=new Vector2(0,-22); txt.fontSize=11; }
+                Transform authoredIcon = buttons[i].transform.Find("TowerIcon");
+                if (authoredIcon != null)
+                {
+                    Image authoredImage = authoredIcon.GetComponent<Image>();
+                    if (authoredImage != null) authoredImage.sprite = TroyHudArt.Tower(types[towerIndex]);
+                }
+                else
+                {
+                    EnsureIcon(buttons[i].transform,"TowerPortrait",new Vector2(0,15),42,TroyHudArt.Tower(types[towerIndex]));
+                    Text txt = buttons[i].GetComponentInChildren<Text>();
+                    if (txt != null) { txt.rectTransform.anchoredPosition=new Vector2(0,-22); txt.fontSize=11; }
+                }
                 towerIndex++;
             }
         }
