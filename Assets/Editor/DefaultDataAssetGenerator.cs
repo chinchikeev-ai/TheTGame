@@ -35,7 +35,8 @@ public static class DefaultDataAssetGenerator
 
     static void CreateTowerIfMissing(TowerType type)
     {
-        string path = $"{Root}/Towers/{type}.asset";
+        string resourceName = BalanceCatalog.GetTowerResourceName(type);
+        string path = $"{Root}/Towers/{resourceName}.asset";
         if (AssetDatabase.LoadAssetAtPath<TowerData>(path) != null) return;
 
         TowerData source = BalanceCatalog.GetTowerRuntimeDefault(type);
@@ -43,7 +44,7 @@ public static class DefaultDataAssetGenerator
         EditorUtility.CopySerialized(source, asset);
         AssetDatabase.CreateAsset(asset, path);
         Object.DestroyImmediate(source);
-        Debug.Log($"[DATA] Created missing TowerData: {path}");
+        Debug.Log($"[DATA] Created missing TowerData: {path} for TowerType.{type}");
     }
 
     static void CreateEnemyIfMissing(EnemyArchetype type)
