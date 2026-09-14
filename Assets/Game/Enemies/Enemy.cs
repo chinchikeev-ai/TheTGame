@@ -165,6 +165,15 @@ public class Enemy : MonoBehaviour
             PlayCombatAttack(() =>
             {
                 if (!IsAlive || targetGuard == null || !targetGuard.IsAlive || blockingGuard != targetGuard) return;
+                if (Archetype == EnemyArchetype.Archer)
+                {
+                    LaunchArcherArrow(targetGuard.transform, Vector3.up * .75f, () =>
+                    {
+                        if (targetGuard == null || !targetGuard.IsAlive) return;
+                        targetGuard.TakeDamage(damage);
+                    });
+                    return;
+                }
                 targetGuard.TakeDamage(damage);
             });
         }
@@ -189,6 +198,15 @@ public class Enemy : MonoBehaviour
             PlayCombatAttack(() =>
             {
                 if (!IsAlive || hector == null || hector.IsDowned) return;
+                if (Archetype == EnemyArchetype.Archer)
+                {
+                    LaunchArcherArrow(hector.transform, Vector3.up * .75f, () =>
+                    {
+                        if (hector == null || hector.IsDowned) return;
+                        hector.TakeDamage(damage);
+                    });
+                    return;
+                }
                 hector.TakeDamage(damage);
             });
         }
@@ -210,12 +228,23 @@ public class Enemy : MonoBehaviour
             PlayCombatAttack(() =>
             {
                 if (!IsAlive || GameManager.Instance == null || GameManager.Instance.GameEnded || finalTarget == null) return;
-                GameManager.Instance.DamageBase(damage);
-                RuntimeEffects.Instance?.PlayHitSound(false);
-                CombatImpactPresentation.GateHit(finalTarget.position, false);
+                LaunchArcherArrow(finalTarget, Vector3.up * .55f, () =>
+                {
+                    if (GameManager.Instance == null || GameManager.Instance.GameEnded || finalTarget == null) return;
+                    GameManager.Instance.DamageBase(damage);
+                    RuntimeEffects.Instance?.PlayHitSound(false);
+                    CombatImpactPresentation.GateHit(finalTarget.position, false);
+                });
             });
         }
         return true;
+    }
+
+    void LaunchArcherArrow(Transform target, Vector3 targetOffset, Action impact)
+    {
+        if (!IsAlive || target == null) return;
+        Vector3 start = transform.position + Vector3.up * .95f + transform.forward * .28f;
+        CombatFlightPresentation.SpawnArrow(start, target, targetOffset, _ => impact?.Invoke());
     }
 
     void PlayCombatAttack(Action impact)

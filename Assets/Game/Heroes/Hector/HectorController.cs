@@ -205,9 +205,13 @@ public class HectorController : MonoBehaviour
         presentation.PlaySpearImpact(impactPoint, () =>
         {
             if (IsDowned || target == null || !target.IsAlive) return;
-            target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
-            if (target != null) target.ApplyArmorBreak(.25f, 6f);
-            RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
+            presentation.LaunchSpearFlight(target.transform, point =>
+            {
+                if (target == null || !target.IsAlive) return;
+                target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
+                if (target != null) target.ApplyArmorBreak(.25f, 6f);
+                RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}; impact={point}");
+            });
         });
     }
 
