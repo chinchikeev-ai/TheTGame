@@ -61,26 +61,29 @@ public class HectorHUD : MonoBehaviour
         panel.color = Color.white;
         RectTransform pr = panel.rectTransform;
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(0f, 0f);
-        pr.anchoredPosition = new Vector2(24f, 24f);
-        pr.sizeDelta = new Vector2(470f, 268f);
+        pr.anchoredPosition = new Vector2(18f, 18f);
+        pr.sizeDelta = new Vector2(488f, 266f);
 
-        Image portrait = AddImage(root.transform, "HectorPortrait", new Vector2(-184, 82), new Vector2(80, 80), TroyHudArt.Portrait("hector"));
+        AddPanel(root.transform, "HectorPortraitFrame", new Vector2(-190, 70), new Vector2(128, 128), new Color(.22f, .12f, .055f, 1f));
+        Image portrait = AddImage(root.transform, "HectorPortrait", new Vector2(-190, 70), new Vector2(104, 104), TroyHudArt.Portrait("hector"));
         portrait.raycastTarget = true;
         Button portraitButton = portrait.gameObject.AddComponent<Button>();
         portraitButton.targetGraphic = portrait;
         portraitButton.onClick.AddListener(SelectHectorFromHud);
 
-        nameText = AddText(root.transform, "HECTOR", new Vector2(-82, 98), new Vector2(294, 28), 17, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        hpText = AddText(root.transform, "", new Vector2(-82, 70), new Vector2(294, 22), 13, new Color(.94f, .86f, .72f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddPanel(root.transform, "HectorNameBanner", new Vector2(42, 94), new Vector2(304, 48), new Color(.33f, .070f, .035f, 1f));
+        nameText = AddText(root.transform, "HECTOR", new Vector2(42, 103), new Vector2(278, 28), 21, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        hpText = AddText(root.transform, "", new Vector2(42, 78), new Vector2(278, 22), 13, new Color(.94f, .86f, .72f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
 
+        AddPanel(root.transform, "HectorHealthFrame", new Vector2(42, 48), new Vector2(314, 28), new Color(.10f, .045f, .025f, 1f));
         GameObject track = new GameObject("HealthTrack");
         track.transform.SetParent(root.transform, false);
         Image trackImage = track.AddComponent<Image>();
         trackImage.color = new Color(.15f, .06f, .035f, .95f);
         RectTransform tr = trackImage.rectTransform;
         tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(.5f, .5f);
-        tr.anchoredPosition = new Vector2(54, 48);
-        tr.sizeDelta = new Vector2(308, 13);
+        tr.anchoredPosition = new Vector2(42, 48);
+        tr.sizeDelta = new Vector2(286, 14);
 
         GameObject fillObj = new GameObject("HealthFill");
         fillObj.transform.SetParent(track.transform, false);
@@ -94,23 +97,25 @@ public class HectorHUD : MonoBehaviour
         fr.offsetMin = new Vector2(2, 2);
         fr.offsetMax = new Vector2(-2, -2);
 
-        commandText = AddText(root.transform, "", new Vector2(54, 26), new Vector2(308, 20), 10, new Color(1f, .76f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        commentaryText = AddText(root.transform, "", new Vector2(0, -8), new Vector2(430, 44), 13, new Color(.96f, .88f, .76f, 1f), TextAnchor.MiddleLeft, FontStyle.Italic);
+        commandText = AddText(root.transform, "", new Vector2(42, 25), new Vector2(310, 20), 10, new Color(1f, .76f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddPanel(root.transform, "HectorQuoteParchment", new Vector2(0, -22), new Vector2(436, 48), new Color(.20f, .13f, .075f, .96f));
+        commentaryText = AddText(root.transform, "", new Vector2(0, -22), new Vector2(402, 34), 12, new Color(.98f, .90f, .76f, 1f), TextAnchor.MiddleLeft, FontStyle.Italic);
         commentaryText.gameObject.name = "HectorCommentary";
 
+        AddPanel(root.transform, "HectorAbilityRail", new Vector2(0, -91), new Vector2(436, 78), new Color(.085f, .050f, .030f, .98f));
         for (int i = 0; i < 4; i++)
         {
-            float x = -150 + i * 100;
+            float x = -153 + i * 102;
             GameObject slot = new GameObject("Ability_" + abilityKeys[i]);
             slot.transform.SetParent(root.transform, false);
             Image bg = slot.AddComponent<Image>();
             bg.sprite = TroyHudArt.Panel();
             bg.type = Image.Type.Sliced;
-            bg.color = new Color(.42f, .22f, .08f, 1f);
+            bg.color = new Color(.36f, .18f, .070f, 1f);
             RectTransform sr = bg.rectTransform;
             sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(.5f, .5f);
-            sr.anchoredPosition = new Vector2(x, -82);
-            sr.sizeDelta = new Vector2(90, 80);
+            sr.anchoredPosition = new Vector2(x, -91);
+            sr.sizeDelta = new Vector2(88, 72);
 
             int abilityIndex = i;
             Button button = slot.AddComponent<Button>();
@@ -118,8 +123,9 @@ public class HectorHUD : MonoBehaviour
             button.onClick.AddListener(() => UseAbilityFromHud(abilityIndex));
             abilityButtons[i] = button;
 
-            AddImage(slot.transform, "Icon", new Vector2(0, 12), new Vector2(40, 40), TroyHudArt.Ability(abilityArt[i]));
-            abilityTexts[i] = AddText(slot.transform, "", new Vector2(0, -25), new Vector2(86, 20), 8, new Color(.96f, .86f, .70f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            AddText(slot.transform, abilityKeys[i], new Vector2(-30, 24), new Vector2(20, 18), 10, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            AddImage(slot.transform, "Icon", new Vector2(0, 10), new Vector2(38, 38), TroyHudArt.Ability(abilityArt[i]));
+            abilityTexts[i] = AddText(slot.transform, "", new Vector2(0, -25), new Vector2(82, 22), 8, new Color(.96f, .86f, .70f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
 
             GameObject cd = new GameObject("Cooldown");
             cd.transform.SetParent(slot.transform, false);
@@ -198,7 +204,7 @@ public class HectorHUD : MonoBehaviour
         {
             float ratio = total[i] > 0f ? Mathf.Clamp01(remain[i] / total[i]) : 0f;
             cooldownFills[i].fillAmount = ratio;
-            abilityTexts[i].text = abilityKeys[i] + "  " + names[i];
+            abilityTexts[i].text = names[i];
             bool ready = !h.IsDowned && remain[i] <= .01f && h.CanAcceptCombatCommand;
             abilityTexts[i].color = ready ? new Color(1f, .86f, .42f, 1f) : new Color(.66f, .60f, .52f, 1f);
             if (abilityButtons[i] != null) abilityButtons[i].interactable = !h.IsDowned && remain[i] <= .01f;
@@ -326,6 +332,22 @@ public class HectorHUD : MonoBehaviour
         go.transform.SetParent(parent, false);
         Image image = go.AddComponent<Image>();
         image.sprite = sprite;
+        image.raycastTarget = false;
+        RectTransform rt = image.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = size;
+        return image;
+    }
+
+    Image AddPanel(Transform parent, string name, Vector2 pos, Vector2 size, Color color)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>();
+        image.sprite = TroyHudArt.Panel();
+        image.type = Image.Type.Sliced;
+        image.color = color;
         image.raycastTarget = false;
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
