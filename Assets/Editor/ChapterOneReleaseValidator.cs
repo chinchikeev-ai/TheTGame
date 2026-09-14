@@ -8,6 +8,8 @@ public static class ChapterOneReleaseValidator
 {
     static readonly string[] RequiredPresentationScripts =
     {
+        "Assets/Game/Campaign/Runtime/ChapterRuntimeInstaller.cs",
+        "Assets/Game/Campaign/Runtime/ChapterOneRuntimeInstaller.cs",
         "Assets/Game/World/CoastEnvironmentBuilder.cs",
         "Assets/Game/World/LandingPresentation.cs",
         "Assets/Game/World/ChapterOneVisualEnhancer.cs",
@@ -24,14 +26,16 @@ public static class ChapterOneReleaseValidator
         "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs"
     };
 
-    static readonly string[] RequiredBootstrapTokens =
+    static readonly string[] RequiredChapterRuntimeTokens =
     {
         "ChapterOneVisualEnhancer.Enhance()",
         "TroyGateHeroBuilder.Build()",
         "ChapterOneWallLife.Build()",
         "ChapterOneAtmosphereController",
+        "ChapterOnePlaythroughReporter",
         "LandingPresentation",
-        "ChapterOneCinematicCamera"
+        "ChapterOneCinematicCamera",
+        "ChapterOneGuidancePresentation"
     };
 
     [MenuItem("TheTroyGame/Validation/Validate Chapter I Release Candidate")]
@@ -48,9 +52,10 @@ public static class ChapterOneReleaseValidator
     {
         int errors = 0;
         ValidateChapterData(ref errors, log);
-        ValidateFinalWave(ref errors, log);
+        ValidateEncounterData(ref errors, log);
         ValidatePresentationFiles(ref errors, log);
         ValidateBootstrapWiring(ref errors, log);
+        ValidateEncounterRuntimeWiring(ref errors, log);
         ValidateProductionArtWiring(ref errors, log);
         ValidateLegacyPlaceholderFallbacks(ref errors, log);
         return errors;
@@ -67,7 +72,10 @@ public static class ChapterOneReleaseValidator
 
         Check(chapter.chapterNumber == 1, "Chapter number must remain 1.", ref errors, log);
         Check(string.Equals(chapter.chapterId, "chapter_01_landing", StringComparison.Ordinal), "Chapter id must remain chapter_01_landing.", ref errors, log);
+        Check(string.Equals(chapter.runtimeProfile, ChapterOneRuntimeInstaller.ProfileId, StringComparison.Ordinal),
+            $"Chapter I runtimeProfile must remain {ChapterOneRuntimeInstaller.ProfileId}.", ref errors, log);
         Check(chapter.combatEvents == 5, "Chapter I must contain exactly 5 combat events.", ref errors, log);
+        Check(chapter.EncounterCount == 5, "Chapter I must reference exactly 5 authored encounters.", ref errors, log);
         Check(chapter.targetDurationMinutes >= 11f && chapter.targetDurationMinutes <= 13f,
             $"Target duration must remain 11-13 minutes, current={chapter.targetDurationMinutes:0.0}.", ref errors, log);
         Check(chapter.unlockChapter == 2, "Chapter I victory must unlock Chapter II.", ref errors, log);
@@ -80,23 +88,46 @@ public static class ChapterOneReleaseValidator
             "EN/RU tutorial counts must match.", ref errors, log);
     }
 
-    static void ValidateFinalWave(ref int errors, bool log)
+    static void ValidateEncounterData(ref int errors, bool log)
     {
-        for (int wave = 1; wave <= 5; wave++)
+        ChapterData chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+        if (chapter == null) return;
+
+        int[] expectedCounts = { 8, 12, 16, 20, 25 };
+        float totalPacingSeconds = 0f;
+
+        for (int encounterNumber = 1; encounterNumber <= 5; encounterNumber++)
         {
-            WaveData data = BalanceCatalog.GetWave(wave, 5);
-            if (data == null)
+            EncounterData encounter = chapter.GetEncounter(encounterNumber);
+            if (encounter == null)
             {
-                Fail($"Wave {wave}/5 data is missing.", ref errors, log);
+                Fail($"Authored encounter {encounterNumber}/5 is missing from ChapterData.", ref errors, log);
                 continue;
             }
-            Check(data.enemyCount > 0, $"Wave {wave} must contain enemies.", ref errors, log);
-            Check(data.spawnInterval > 0f, $"Wave {wave} spawn interval must be positive.", ref errors, log);
-            if (wave < 5) Check(!data.hasBoss, $"Only final wave may carry the Chapter I boss flag; wave {wave} is marked as boss.", ref errors, log);
+
+            Check(encounter.encounterNumber == encounterNumber,
+                $"Encounter slot {encounterNumber} has encounterNumber={encounter.encounterNumber}.", ref errors, log);
+            Check(encounter.BaseEnemyCount == expectedCounts[encounterNumber - 1],
+                $"Encounter {encounterNumber} base count changed: expected={expectedCounts[encounterNumber - 1]}, current={encounter.BaseEnemyCount}.", ref errors, log);
+            Check(encounter.spawnInterval > 0f, $"Encounter {encounterNumber} spawn interval must be positive.", ref errors, log);
+            Check(encounter.targetDuration > 0f, $"Encounter {encounterNumber} target duration must be positive.", ref errors, log);
+            Check(encounter.preparationTime >= 0f, $"Encounter {encounterNumber} preparation time cannot be negative.", ref errors, log);
+            Check(encounter.spawnGroups != null && encounter.spawnGroups.Length > 0,
+                $"Encounter {encounterNumber} must contain authored spawn groups.", ref errors, log);
+
+            if (encounterNumber < 5)
+                Check(!encounter.HasBoss, $"Only encounter 5 may contain the Chapter I boss; encounter {encounterNumber} contains Boss.", ref errors, log);
+
+            totalPacingSeconds += encounter.preparationTime + encounter.targetDuration;
         }
 
-        WaveData finalWave = BalanceCatalog.GetWave(5, 5);
-        Check(finalWave != null && finalWave.hasBoss, "Final wave must contain the boss encounter.", ref errors, log);
+        Check(totalPacingSeconds >= 11f * 60f && totalPacingSeconds <= 13f * 60f,
+            $"Authored auto-start pacing must remain 11-13 minutes; current target={totalPacingSeconds:0}s.", ref errors, log);
+
+        EncounterData finalEncounter = chapter.GetEncounter(5);
+        Check(finalEncounter != null && finalEncounter.HasBoss, "Final encounter must contain the boss archetype.", ref errors, log);
+        Check(finalEncounter != null && HasBehavior(finalEncounter, "menelaus"),
+            "Final encounter must explicitly bind behaviorId=menelaus instead of relying on a spawner special case.", ref errors, log);
 
         EnemyData boss = BalanceCatalog.GetEnemy(EnemyArchetype.Boss);
         Check(boss != null, "Boss EnemyData is missing.", ref errors, log);
@@ -109,22 +140,45 @@ public static class ChapterOneReleaseValidator
         foreach (string path in RequiredPresentationScripts)
         {
             if (AssetDatabase.LoadAssetAtPath<MonoScript>(path) == null)
-                Fail($"Required Chapter I presentation script missing: {path}", ref errors, log);
+                Fail($"Required Chapter I presentation/runtime script missing: {path}", ref errors, log);
         }
     }
 
     static void ValidateBootstrapWiring(ref int errors, bool log)
     {
         const string bootstrapPath = "Assets/Game/Core/Bootstrap/GameBootstrap.cs";
-        if (!File.Exists(bootstrapPath))
-        {
-            Fail("GameBootstrap.cs is missing.", ref errors, log);
-            return;
-        }
+        CheckSourceContains(bootstrapPath, "ChapterRuntimeInstaller.Install", "GameBootstrap must delegate chapter-specific setup through ChapterRuntimeInstaller.", ref errors, log);
+        CheckSourceDoesNotContain(bootstrapPath, "ChapterOneVisualEnhancer", "GameBootstrap must not directly own Chapter I world presentation.", ref errors, log);
+        CheckSourceDoesNotContain(bootstrapPath, "ChapterOneCinematicCamera", "GameBootstrap must not directly own the Chapter I cinematic.", ref errors, log);
+        CheckSourceDoesNotContain(bootstrapPath, "LandingPresentation", "GameBootstrap must not directly own Chapter I landing presentation.", ref errors, log);
 
-        string source = File.ReadAllText(bootstrapPath);
-        foreach (string token in RequiredBootstrapTokens)
-            Check(source.Contains(token), $"Chapter I presentation is not wired in GameBootstrap: {token}", ref errors, log);
+        const string chapterRuntimePath = "Assets/Game/Campaign/Runtime/ChapterOneRuntimeInstaller.cs";
+        foreach (string token in RequiredChapterRuntimeTokens)
+            CheckSourceContains(chapterRuntimePath, token, $"Chapter I runtime installer lost required wiring: {token}", ref errors, log);
+    }
+
+    static void ValidateEncounterRuntimeWiring(ref int errors, bool log)
+    {
+        CheckSourceContains(
+            "Assets/Game/Enemies/EnemySpawner.cs",
+            "chapter.GetEncounter(wave)",
+            "EnemySpawner must consume authored EncounterData from the active ChapterData.",
+            ref errors, log);
+        CheckSourceContains(
+            "Assets/Game/Enemies/EnemySpawner.cs",
+            "EnemyRuntimeBehaviorRegistry.Attach",
+            "EnemySpawner must bind special behaviors through the runtime behavior registry.",
+            ref errors, log);
+        CheckSourceDoesNotContain(
+            "Assets/Game/Core/Balance/BalanceCatalog.cs",
+            "GetEnemyForWave",
+            "BalanceCatalog must not restore hidden wave-composition rules.",
+            ref errors, log);
+        CheckSourceDoesNotContain(
+            "Assets/Game/Enemies/EnemySpawner.cs",
+            "AddComponent<MenelausBossController>",
+            "EnemySpawner must not hardcode Menelaus as the final spawn.",
+            ref errors, log);
     }
 
     static void ValidateProductionArtWiring(ref int errors, bool log)
@@ -229,6 +283,17 @@ public static class ChapterOneReleaseValidator
             "Landing Greek Silhouette",
             "Landing presentation must not restore capsule soldier silhouettes.",
             ref errors, log);
+    }
+
+    static bool HasBehavior(EncounterData encounter, string behaviorId)
+    {
+        if (encounter == null || encounter.spawnGroups == null) return false;
+        for (int i = 0; i < encounter.spawnGroups.Length; i++)
+        {
+            EncounterSpawnGroup group = encounter.spawnGroups[i];
+            if (group != null && string.Equals(group.behaviorId, behaviorId, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
     }
 
     static void CheckSourceContains(string path, string token, string message, ref int errors, bool log)
