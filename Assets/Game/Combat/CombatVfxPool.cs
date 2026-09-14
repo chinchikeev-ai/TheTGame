@@ -17,9 +17,9 @@ public sealed class CombatVfxPool : MonoBehaviour
         public Vector3 drift;
     }
 
-    const int SphereCount = 18;
-    const int CubeCount = 8;
-    const int CylinderCount = 8;
+    const int SphereCount = 24;
+    const int CubeCount = 14;
+    const int CylinderCount = 10;
 
     static CombatVfxPool instance;
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
