@@ -186,6 +186,8 @@ Current rules:
 - procedural tower/environment geometry remains `PROCEDURAL` until replaced/promoted;
 - `DONE` requires final derivative assets under `Assets/Game/Art/...`, runtime adoption and real visual QA.
 
+Runtime visual binding now reports the actual source used for heroes, Greek enemies and Trojan tower crews (`PRODUCTION_RESOURCE`, `GENERATED_RESOURCE` or `PROCEDURAL_FALLBACK`). Archer, Spear Wall and Trojan Guard tower crews also have role-specific procedural silhouettes when their generated/production prefab resources are absent, so a clean checkout no longer silently loses those visible defenders. These fallback figures remain `PROCEDURAL`, not final production art.
+
 Current Chapter I final production-art counts remain zero for characters, Tower-Units and environment families until that acceptance gate is actually passed.
 
 ## Validation tooling
