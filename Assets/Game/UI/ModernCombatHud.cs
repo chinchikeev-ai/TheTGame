@@ -168,22 +168,26 @@ public sealed class ModernCombatHud : MonoBehaviour
         containerRect.offsetMin = Vector2.zero;
         containerRect.offsetMax = Vector2.zero;
 
-        magicToggle = Button(container.transform, L("MAGIC", "МАГИЯ"), Vector2.zero, new Vector2(64, 64), ToggleMagicFlyout, true);
+        magicToggle = Button(container.transform, L("DIVINE\nPOWER", "БОЖЕСТВ.\nСИЛА"), Vector2.zero, new Vector2(116, 104), ToggleMagicFlyout, true);
         magicToggle.gameObject.name = "MagicToggle";
         RectTransform toggleRect = magicToggle.transform as RectTransform;
         toggleRect.anchorMin = toggleRect.anchorMax = toggleRect.pivot = new Vector2(1f, 0f);
-        toggleRect.anchoredPosition = new Vector2(-24f, 104f);
+        toggleRect.anchoredPosition = new Vector2(-152f, 24f);
+        Icon(magicToggle.transform, "DivinePowerIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Ability("magic"));
         magicToggleText = magicToggle.GetComponentInChildren<Text>();
         if (magicToggleText != null)
         {
-            magicToggleText.fontSize = 10;
+            magicToggleText.rectTransform.anchoredPosition = new Vector2(0, -28);
+            magicToggleText.rectTransform.sizeDelta = new Vector2(102, 42);
+            magicToggleText.fontSize = 13;
+            magicToggleText.lineSpacing = .88f;
             magicToggleText.resizeTextForBestFit = true;
-            magicToggleText.resizeTextMinSize = 8;
-            magicToggleText.resizeTextMaxSize = 11;
+            magicToggleText.resizeTextMinSize = 9;
+            magicToggleText.resizeTextMaxSize = 14;
         }
 
-        magicFlyout = Panel(container.transform, "MagicFlyout", new Vector2(-24f, 184f), new Vector2(300f, 84f), new Color(.035f, .022f, .016f, .97f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        magicAction = Button(magicFlyout.transform, "", Vector2.zero, new Vector2(268f, 54f), CastMagic, true);
+        magicFlyout = Panel(container.transform, "MagicFlyout", new Vector2(-24f, 150f), new Vector2(360f, 100f), new Color(.035f, .022f, .016f, .97f), new Vector2(1f, 0f), new Vector2(1f, 0f));
+        magicAction = Button(magicFlyout.transform, "", Vector2.zero, new Vector2(326f, 66f), CastMagic, true);
         magicAction.gameObject.name = "Magic_Primary";
         magicActionText = magicAction.GetComponentInChildren<Text>();
         if (magicActionText != null) magicActionText.fontSize = 13;
@@ -255,15 +259,15 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDock(Transform parent)
     {
-        buildDock = Panel(parent, "BuildDock", new Vector2(-104f, 24f), new Vector2(1040, 176), new Color(.040f, .024f, .016f, .96f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 66), new Vector2(920, 38), new Color(.44f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Text(buildDock.transform, L("DEPLOY DEFENDERS", "РАЗМЕСТИТЬ ЗАЩИТНИКОВ"), new Vector2(-286, 66), new Vector2(310, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        buildSelectionText = Text(buildDock.transform, "", new Vector2(222, 66), new Vector2(560, 24), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildDock = Panel(parent, "BuildDock", new Vector2(-284f, 24f), new Vector2(920, 176), new Color(.040f, .024f, .016f, .96f), new Vector2(1f, 0f), new Vector2(1f, 0f));
+        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 66), new Vector2(800, 38), new Color(.44f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Text(buildDock.transform, L("DEPLOY DEFENDERS", "РАЗМЕСТИТЬ ЗАЩИТНИКОВ"), new Vector2(-236, 66), new Vector2(300, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildSelectionText = Text(buildDock.transform, "", new Vector2(192, 66), new Vector2(470, 24), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         for (int i = 0; i < buildTypes.Length; i++)
         {
             TowerType type = buildTypes[i];
-            float x = -397 + i * 158;
-            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -24), new Vector2(136, 112), () => SelectBuild(type), false);
+            float x = -360 + i * 144;
+            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -24), new Vector2(124, 112), () => SelectBuild(type), false);
             buildButtons[i].gameObject.name = "BuildCard_" + type;
             Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Tower(type));
             Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-51, 43), new Vector2(24, 22), 13, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
@@ -279,18 +283,26 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDefenseToggle(Transform parent)
     {
-        defenseToggleButton = Button(parent, "+", new Vector2(-24, 24), new Vector2(64, 64), ToggleDefenseDock, true);
+        defenseToggleButton = Button(parent, L("DEFENDERS\n+", "ЗАЩИТА\n+"), new Vector2(-24, 24), new Vector2(116, 104), ToggleDefenseDock, true);
+        defenseToggleButton.gameObject.name = "DefendersToggle";
         RectTransform rt = defenseToggleButton.transform as RectTransform;
         if (rt != null)
         {
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
             rt.anchoredPosition = new Vector2(-24f, 24f);
         }
+        Icon(defenseToggleButton.transform, "DefendersIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Tower(TowerType.TrojanGuard));
         defenseToggleText = defenseToggleButton.GetComponentInChildren<Text>();
         if (defenseToggleText != null)
         {
-            defenseToggleText.fontSize = 28;
+            defenseToggleText.rectTransform.anchoredPosition = new Vector2(0, -28);
+            defenseToggleText.rectTransform.sizeDelta = new Vector2(102, 42);
+            defenseToggleText.fontSize = 13;
             defenseToggleText.fontStyle = FontStyle.Bold;
+            defenseToggleText.lineSpacing = .88f;
+            defenseToggleText.resizeTextForBestFit = true;
+            defenseToggleText.resizeTextMinSize = 9;
+            defenseToggleText.resizeTextMaxSize = 14;
         }
     }
 
@@ -300,7 +312,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (buildDock != null) buildDock.SetActive(defenseDockOpen);
         if (!defenseDockOpen) HideBuildTooltip();
         if (defenseDockOpen) CloseMagicFlyout();
-        if (defenseToggleText != null) defenseToggleText.text = defenseDockOpen ? "−" : "+";
+        if (defenseToggleText != null) defenseToggleText.text = defenseDockOpen ? L("DEFENDERS\n-", "ЗАЩИТА\n-") : L("DEFENDERS\n+", "ЗАЩИТА\n+");
     }
 
     void BuildBuildTooltip(Transform parent)
@@ -409,7 +421,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         speedText.text = $"{CombatControlsUI.CurrentSpeed:0}x";
         float cooldown = gm != null ? gm.MagicCooldownRemaining : 0f;
         bool magicReady = gm != null && cooldown <= .01f && !gm.GameEnded && EnemyRegistry.AliveCount > 0;
-        if (magicToggleText != null) magicToggleText.text = cooldown > .01f ? Mathf.CeilToInt(cooldown) + L("s", "с") : L("MAGIC", "МАГИЯ");
+        if (magicToggleText != null) magicToggleText.text = cooldown > .01f ? L("DIVINE\n", "СИЛА\n") + Mathf.CeilToInt(cooldown) + L("s", "с") : L("DIVINE\nREADY", "СИЛА\nГОТОВА");
         if (magicActionText != null) magicActionText.text = cooldown > .01f ? L("DIVINE POWER   ", "БОЖЕСТВЕННАЯ СИЛА   ") + Mathf.CeilToInt(cooldown) + L("s", "с") : L("DIVINE POWER   READY", "БОЖЕСТВЕННАЯ СИЛА   ГОТОВА");
         if (magicAction != null) magicAction.interactable = magicReady;
         if (magicToggle != null) magicToggle.interactable = gm != null && !gm.GameEnded;
