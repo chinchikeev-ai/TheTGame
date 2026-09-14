@@ -50,6 +50,9 @@ public class HectorController : MonoBehaviour
     public float battlefieldMargin = .65f;
 
     readonly List<Enemy> enemySnapshot = new List<Enemy>(64);
+    readonly List<Vector3> roadMovePoints = new List<Vector3>(16);
+    Transform[][] movementRoutes;
+    int roadMoveIndex;
     Vector3 destination;
     Vector3 spawnPosition;
     Vector3 actionFacingPoint;
@@ -70,6 +73,8 @@ public class HectorController : MonoBehaviour
     public bool IsActionLocked => !IsDowned && CurrentAction != HectorCombatAction.None && Time.time < actionLockUntil;
     public bool CanMove => !IsDowned && !IsActionLocked && !ShieldWallActive;
     public bool CanAcceptCombatCommand => !IsDowned && !IsActionLocked && !ShieldWallActive;
+    public bool RouteMovementEnabled => HectorRouteNavigator.HasRoutes(movementRoutes);
+    public Vector3 MoveDestination => destination;
 
     void Awake()
     {
@@ -79,9 +84,28 @@ public class HectorController : MonoBehaviour
 
     void OnDestroy() { if (Instance == this) Instance = null; }
 
+    public void ConfigureMovementRoutes(Transform[][] routes, bool moveToGateStart)
+    {
+        movementRoutes = routes;
+        if (!RouteMovementEnabled) return;
+
+        float height = transform.position.y;
+        Vector3 start = moveToGateStart
+            ? HectorRouteNavigator.GateStart(movementRoutes, height)
+            : HectorRouteNavigator.ProjectToNearestRoute(transform.position, movementRoutes, height);
+        transform.position = start;
+        destination = start;
+        spawnPosition = start;
+        roadMovePoints.Clear();
+        roadMoveIndex = 0;
+    }
+
     void Start()
     {
-        transform.position = MapBuilder.ClampToPlayableArea(transform.position, battlefieldMargin);
+        if (RouteMovementEnabled)
+            transform.position = HectorRouteNavigator.ProjectToNearestRoute(transform.position, movementRoutes, transform.position.y);
+        else
+            transform.position = MapBuilder.ClampToPlayableArea(transform.position, battlefieldMargin);
         destination = transform.position;
         spawnPosition = transform.position;
         Health = maxHealth;
@@ -108,24 +132,63 @@ public class HectorController : MonoBehaviour
         presentation?.SetSelected(Selected);
     }
 
+    public Vector3 ConstrainMoveDestination(Vector3 worldPosition)
+    {
+        if (RouteMovementEnabled)
+            return HectorRouteNavigator.ProjectToNearestRoute(worldPosition, movementRoutes, transform.position.y);
+        worldPosition.y = transform.position.y;
+        return MapBuilder.ClampToPlayableArea(worldPosition, battlefieldMargin);
+    }
+
     public void MoveTo(Vector3 worldPosition)
     {
         if (!CanMove) return;
-        destination = worldPosition;
-        destination.y = transform.position.y;
-        destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
+
+        if (RouteMovementEnabled)
+        {
+            Vector3 requested = ConstrainMoveDestination(worldPosition);
+            if (!HectorRouteNavigator.BuildPath(transform.position, requested, movementRoutes, transform.position.y, roadMovePoints))
+                return;
+            roadMoveIndex = 0;
+            destination = roadMovePoints[0];
+            return;
+        }
+
+        destination = ConstrainMoveDestination(worldPosition);
     }
 
     void Move()
     {
         if (!CanMove) return;
+
+        if (RouteMovementEnabled)
+        {
+            if (roadMoveIndex >= roadMovePoints.Count) return;
+            destination = roadMovePoints[roadMoveIndex];
+            MoveTowardsDestination();
+            Vector3 remaining = destination - transform.position;
+            remaining.y = 0f;
+            if (remaining.sqrMagnitude <= .01f)
+            {
+                transform.position = destination;
+                roadMoveIndex++;
+                if (roadMoveIndex < roadMovePoints.Count) destination = roadMovePoints[roadMoveIndex];
+            }
+            return;
+        }
+
         destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
+        MoveTowardsDestination();
+        transform.position = MapBuilder.ClampToPlayableArea(transform.position, battlefieldMargin);
+    }
+
+    void MoveTowardsDestination()
+    {
         Vector3 delta = destination - transform.position;
         delta.y = 0f;
         if (delta.sqrMagnitude > .01f)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(delta), 10f * Time.deltaTime);
         transform.position = Vector3.MoveTowards(transform.position, destination, moveSpeed * Time.deltaTime);
-        transform.position = MapBuilder.ClampToPlayableArea(transform.position, battlefieldMargin);
     }
 
     void AutoAttack()
@@ -148,7 +211,8 @@ public class HectorController : MonoBehaviour
     void ApplyBasicAttackImpact(int token, Enemy target)
     {
         if (!ActionTokenValid(token) || target == null || !target.IsAlive) return;
-        target.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
+        float multiplier = GameManager.Instance != null ? GameManager.Instance.PlayerDamageMultiplier : 1f;
+        target.ReceiveDamage(new DamagePacket(attackDamage * multiplier, DamageType.Hero));
     }
 
     public void TakeDamage(float damage) => ApplyIncomingDamage(damage, null);
@@ -183,6 +247,7 @@ public class HectorController : MonoBehaviour
         SetSelected(false);
         reviveAt = Time.time + downedDuration;
         destination = transform.position;
+        roadMovePoints.Clear();
         presentation?.SetDownedState(true);
         RuntimeFileLogger.Event("HECTOR", $"Downed; reviveIn={downedDuration:0.0}s");
     }
@@ -195,8 +260,12 @@ public class HectorController : MonoBehaviour
         hasActionFacingPoint = false;
         IsDowned = false;
         Health = maxHealth * .50f;
-        transform.position = MapBuilder.ClampToPlayableArea(spawnPosition, battlefieldMargin);
+        transform.position = RouteMovementEnabled
+            ? HectorRouteNavigator.ProjectToNearestRoute(spawnPosition, movementRoutes, spawnPosition.y)
+            : MapBuilder.ClampToPlayableArea(spawnPosition, battlefieldMargin);
         destination = transform.position;
+        roadMovePoints.Clear();
+        roadMoveIndex = 0;
         presentation?.SetDownedState(false);
         presentation?.PlayReviveEffect();
         RuntimeFileLogger.Event("HECTOR", $"Revived hp={Health:0}/{maxHealth:0}");
@@ -263,9 +332,10 @@ public class HectorController : MonoBehaviour
             presentation.LaunchSpearFlight(target.transform, point =>
             {
                 if (target == null || !target.IsAlive) return;
-                target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
+                float multiplier = GameManager.Instance != null ? GameManager.Instance.PlayerDamageMultiplier : 1f;
+                target.ReceiveDamage(new DamagePacket(spearThrowDamage * multiplier, DamageType.Hero));
                 target.ApplyArmorBreak(.25f, 6f);
-                RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}; impact={point}");
+                RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage * multiplier:0}; impact={point}");
             });
         });
     }
@@ -273,9 +343,10 @@ public class HectorController : MonoBehaviour
     void ApplySpearThrowFallback(int token, Enemy target)
     {
         if (!ActionTokenValid(token) || target == null || !target.IsAlive) return;
-        target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
+        float multiplier = GameManager.Instance != null ? GameManager.Instance.PlayerDamageMultiplier : 1f;
+        target.ReceiveDamage(new DamagePacket(spearThrowDamage * multiplier, DamageType.Hero));
         target.ApplyArmorBreak(.25f, 6f);
-        RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
+        RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage * multiplier:0}");
     }
 
     public void UseUltimate()
@@ -300,6 +371,7 @@ public class HectorController : MonoBehaviour
         }
         int enemiesHit = 0;
         float radiusSq = ultimateEnemyRadius * ultimateEnemyRadius;
+        float multiplier = GameManager.Instance != null ? GameManager.Instance.PlayerDamageMultiplier : 1f;
         enemySnapshot.Clear();
         foreach (Enemy enemy in EnemyRegistry.All)
             if (enemy != null && enemy.IsAlive) enemySnapshot.Add(enemy);
@@ -307,7 +379,7 @@ public class HectorController : MonoBehaviour
         {
             Enemy enemy = enemySnapshot[i];
             if (enemy == null || !enemy.IsAlive || (enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
-            enemy.ReceiveDamage(new DamagePacket(ultimateDamage, DamageType.Hero));
+            enemy.ReceiveDamage(new DamagePacket(ultimateDamage * multiplier, DamageType.Hero));
             enemy.ApplySlow(.70f, 4f);
             enemiesHit++;
         }
