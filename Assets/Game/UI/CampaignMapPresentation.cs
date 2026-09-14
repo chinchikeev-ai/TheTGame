@@ -144,7 +144,7 @@ public sealed class CampaignMapPresentation : MonoBehaviour
         AddRect(city.transform, "BannerL", new Vector2(-72f, 65f), new Vector2(18f, 62f), new Color(.58f, .08f, .025f, .96f));
         AddRect(city.transform, "BannerR", new Vector2(72f, 65f), new Vector2(18f, 62f), new Color(.58f, .08f, .025f, .96f));
 
-        Text label = AddMapLabel(city.transform, "TROY", new Vector2(0f, 168f), 24, new Color(1f, .62f, .16f, 1f), 190f);
+        Text label = AddMapLabel(city.transform, L("TROY", "ТРОЯ"), new Vector2(0f, 168f), 24, new Color(1f, .62f, .16f, 1f), 190f);
         Shadow shadow = label.gameObject.AddComponent<Shadow>();
         shadow.effectColor = new Color(.10f, .02f, .003f, .95f);
         shadow.effectDistance = new Vector2(3f, -3f);
@@ -217,7 +217,6 @@ public sealed class CampaignMapPresentation : MonoBehaviour
     {
         Vector2 delta = b - a;
         float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
-
         GameObject shadow = AddRect(parent, "RouteShadow", (a + b) * .5f, new Vector2(delta.magnitude, 12f), new Color(.075f, .030f, .010f, .82f), angle);
         shadow.transform.SetAsFirstSibling();
 
