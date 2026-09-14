@@ -96,7 +96,10 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         contentRoot = new GameObject("ContentRoot");
         contentRoot.transform.SetParent(contentPanel.transform, false);
         RectTransform cr = contentRoot.AddComponent<RectTransform>();
-        cr.anchorMin = Vector2.zero; cr.anchorMax = Vector2.one; cr.offsetMin = cr.offsetMax = Vector2.zero;
+        cr.anchorMin = Vector2.zero;
+        cr.anchorMax = Vector2.one;
+        cr.offsetMin = Vector2.zero;
+        cr.offsetMax = Vector2.zero;
 
         MakeButton(modernPanel.transform, L("RESET DEFAULTS", "СБРОСИТЬ"), new Vector2(-250,-350), ResetDefaults, new Vector2(270,54), false);
         MakeButton(modernPanel.transform, L("BACK", "НАЗАД"), new Vector2(80,-350), Back, new Vector2(240,54), false);
@@ -136,10 +139,94 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
 
     void BuildAudio()
     {
-        SetHeader(L("AUDIO", "ЗВУК"), L("Balance music and overall game volume.", "Настройте музыку и общую громкость игры."));
-        MakeSliderRow(L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"), 105, GameUserSettings.MasterVolume, value => GameUserSettings.MasterVolume = value);
-        MakeSliderRow(L("MUSIC", "МУЗЫКА"), -35, GameUserSettings.MusicVolume, value => GameUserSettings.MusicVolume = value);
-        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-150));
+        SetHeader(L("AUDIO", "ЗВУК"), L("Simple, predictable audio controls.", "Простое и понятное управление звуком."));
+        MakeAudioSliderCard(
+            L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"),
+            L("All game sounds and effects", "Все звуки игры и эффекты"),
+            72f,
+            GameUserSettings.MasterVolume,
+            value => GameUserSettings.MasterVolume = value);
+        MakeAudioSliderCard(
+            L("MUSIC", "МУЗЫКА"),
+            L("Background music only", "Только фоновая музыка"),
+            -68f,
+            GameUserSettings.MusicVolume,
+            value => GameUserSettings.MusicVolume = value);
+        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-170));
+    }
+
+    void MakeAudioSliderCard(string label, string description, float y, float initial, Action<float> onChanged)
+    {
+        GameObject card = MakeRect(contentRoot.transform, label + " Card", new Vector2(0f, y), new Vector2(690f, 118f), new Color(.075f,.047f,.032f,.94f));
+        Outline outline = card.AddComponent<Outline>();
+        outline.effectColor = new Color(.53f,.30f,.12f,.32f);
+        outline.effectDistance = new Vector2(1f,-1f);
+
+        AddText(card.transform, label, new Vector2(-210f,20f), new Vector2(330f,30f), 17, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddText(card.transform, description, new Vector2(-210f,-7f), new Vector2(330f,24f), 12, new Color(.72f,.64f,.56f,.95f), TextAnchor.MiddleLeft, FontStyle.Normal);
+
+        GameObject sliderObject = new GameObject(label + " Slider", typeof(RectTransform));
+        sliderObject.transform.SetParent(card.transform, false);
+        Slider slider = sliderObject.AddComponent<Slider>();
+        RectTransform sliderRect = sliderObject.GetComponent<RectTransform>();
+        sliderRect.anchorMin = sliderRect.anchorMax = sliderRect.pivot = new Vector2(.5f,.5f);
+        sliderRect.anchoredPosition = new Vector2(70f,-31f);
+        sliderRect.sizeDelta = new Vector2(470f,36f);
+
+        GameObject bg = MakeRect(sliderObject.transform, "Background", Vector2.zero, new Vector2(470f,12f), new Color(.18f,.11f,.075f,1f));
+        RectTransform bgRect = bg.GetComponent<RectTransform>();
+        bgRect.anchorMin = new Vector2(0f,.5f);
+        bgRect.anchorMax = new Vector2(1f,.5f);
+        bgRect.pivot = new Vector2(.5f,.5f);
+        bgRect.offsetMin = new Vector2(0f,-6f);
+        bgRect.offsetMax = new Vector2(0f,6f);
+        bg.GetComponent<Image>().raycastTarget = false;
+
+        GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
+        fillArea.transform.SetParent(sliderObject.transform, false);
+        RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
+        fillAreaRect.anchorMin = new Vector2(0f,.5f);
+        fillAreaRect.anchorMax = new Vector2(1f,.5f);
+        fillAreaRect.pivot = new Vector2(.5f,.5f);
+        fillAreaRect.offsetMin = new Vector2(10f,-6f);
+        fillAreaRect.offsetMax = new Vector2(-10f,6f);
+
+        GameObject fill = MakeRect(fillArea.transform, "Fill", Vector2.zero, Vector2.zero, new Color(.72f,.20f,.06f,1f));
+        RectTransform fillRect = fill.GetComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+        fill.GetComponent<Image>().raycastTarget = false;
+
+        GameObject handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
+        handleArea.transform.SetParent(sliderObject.transform, false);
+        RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
+        handleAreaRect.anchorMin = new Vector2(0f,.5f);
+        handleAreaRect.anchorMax = new Vector2(1f,.5f);
+        handleAreaRect.pivot = new Vector2(.5f,.5f);
+        handleAreaRect.offsetMin = new Vector2(11f,-18f);
+        handleAreaRect.offsetMax = new Vector2(-11f,18f);
+
+        GameObject handle = MakeRect(handleArea.transform, "Handle", Vector2.zero, new Vector2(22f,28f), new Color(1f,.72f,.25f,1f));
+        RectTransform handleRect = handle.GetComponent<RectTransform>();
+        handleRect.anchorMin = handleRect.anchorMax = handleRect.pivot = new Vector2(.5f,.5f);
+
+        slider.fillRect = fillRect;
+        slider.handleRect = handleRect;
+        slider.targetGraphic = handle.GetComponent<Image>();
+        slider.direction = Slider.Direction.LeftToRight;
+        slider.wholeNumbers = false;
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+        slider.value = initial;
+
+        Text valueText = AddText(card.transform, Mathf.RoundToInt(initial * 100f) + "%", new Vector2(285f,20f), new Vector2(90f,30f), 16, new Color(1f,.82f,.52f,1f), TextAnchor.MiddleRight, FontStyle.Bold);
+        slider.onValueChanged.AddListener(value =>
+        {
+            valueText.text = Mathf.RoundToInt(value * 100f) + "%";
+            onChanged(value);
+        });
     }
 
     void BuildVideo()
@@ -179,72 +266,6 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         if (descriptionText != null) descriptionText.text = description;
     }
 
-    void MakeSliderRow(string label, float y, float initial, Action<float> onChanged)
-    {
-        AddText(contentRoot.transform, label, new Vector2(-230,y+26), new Vector2(330,34), 16, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-
-        GameObject go = new GameObject(label + " Slider");
-        go.transform.SetParent(contentRoot.transform, false);
-        Slider slider = go.AddComponent<Slider>();
-        RectTransform sliderRect = go.GetComponent<RectTransform>();
-        sliderRect.anchorMin = sliderRect.anchorMax = sliderRect.pivot = new Vector2(.5f,.5f);
-        sliderRect.anchoredPosition = new Vector2(-35,y-16);
-        sliderRect.sizeDelta = new Vector2(470,36);
-
-        GameObject bg = MakeRect(go.transform, "Background", Vector2.zero, new Vector2(470,12), new Color(.18f,.11f,.075f,1f));
-        RectTransform bgRect = bg.GetComponent<RectTransform>();
-        bgRect.anchorMin = new Vector2(0f,.5f);
-        bgRect.anchorMax = new Vector2(1f,.5f);
-        bgRect.pivot = new Vector2(.5f,.5f);
-        bgRect.offsetMin = new Vector2(0f,-6f);
-        bgRect.offsetMax = new Vector2(0f,6f);
-        bg.GetComponent<Image>().raycastTarget = false;
-
-        GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
-        fillArea.transform.SetParent(go.transform, false);
-        RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
-        fillAreaRect.anchorMin = new Vector2(0f,.5f);
-        fillAreaRect.anchorMax = new Vector2(1f,.5f);
-        fillAreaRect.pivot = new Vector2(.5f,.5f);
-        fillAreaRect.offsetMin = new Vector2(10f,-6f);
-        fillAreaRect.offsetMax = new Vector2(-10f,6f);
-
-        GameObject fill = MakeRect(fillArea.transform, "Fill", Vector2.zero, Vector2.zero, new Color(.72f,.20f,.06f,1f));
-        RectTransform fillRect = fill.GetComponent<RectTransform>();
-        fillRect.anchorMin = Vector2.zero;
-        fillRect.anchorMax = Vector2.one;
-        fillRect.pivot = new Vector2(.5f,.5f);
-        fillRect.offsetMin = Vector2.zero;
-        fillRect.offsetMax = Vector2.zero;
-        fill.GetComponent<Image>().raycastTarget = false;
-
-        GameObject handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
-        handleArea.transform.SetParent(go.transform, false);
-        RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
-        handleAreaRect.anchorMin = new Vector2(0f,.5f);
-        handleAreaRect.anchorMax = new Vector2(1f,.5f);
-        handleAreaRect.pivot = new Vector2(.5f,.5f);
-        handleAreaRect.offsetMin = new Vector2(11f,-18f);
-        handleAreaRect.offsetMax = new Vector2(-11f,18f);
-
-        GameObject handle = MakeRect(handleArea.transform, "Handle", Vector2.zero, new Vector2(22,28), new Color(1f,.72f,.25f,1f));
-        RectTransform handleRect = handle.GetComponent<RectTransform>();
-        handleRect.anchorMin = handleRect.anchorMax = handleRect.pivot = new Vector2(.5f,.5f);
-        handleRect.anchoredPosition = Vector2.zero;
-
-        slider.fillRect = fillRect;
-        slider.handleRect = handleRect;
-        slider.targetGraphic = handle.GetComponent<Image>();
-        slider.direction = Slider.Direction.LeftToRight;
-        slider.wholeNumbers = false;
-        slider.minValue = 0;
-        slider.maxValue = 1;
-        slider.value = initial;
-
-        Text value = AddText(contentRoot.transform, Mathf.RoundToInt(initial*100)+"%", new Vector2(255,y-16), new Vector2(90,34), 16, new Color(1f,.82f,.52f,1f), TextAnchor.MiddleRight, FontStyle.Bold);
-        slider.onValueChanged.AddListener(v => { value.text=Mathf.RoundToInt(v*100)+"%"; onChanged(v); });
-    }
-
     void MakeSelectorRow(string label, float y, Func<string> value, UnityAction action)
     {
         AddText(contentRoot.transform,label,new Vector2(-230,y),new Vector2(300,46),16,Color.white,TextAnchor.MiddleLeft,FontStyle.Bold);
@@ -276,7 +297,17 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void ResetDefaults(){ GameUserSettings.ResetToDefaults(); FindResolution(); FindFps(); ShowTab(activeTab); }
     void Back(){ if(menu!=null) menu.SendMessage("BackFromSettings",SendMessageOptions.DontRequireReceiver); }
 
-    void SelectFirstContentControl(){ if(EventSystem.current==null||contentRoot==null)return; Button b=contentRoot.GetComponentInChildren<Button>(true); if(b!=null) EventSystem.current.SetSelectedGameObject(b.gameObject); }
+    void SelectFirstContentControl()
+    {
+        if(EventSystem.current==null||contentRoot==null)return;
+        Button button=contentRoot.GetComponentInChildren<Button>(true);
+        if(button!=null) EventSystem.current.SetSelectedGameObject(button.gameObject);
+        else
+        {
+            Slider slider=contentRoot.GetComponentInChildren<Slider>(true);
+            if(slider!=null) EventSystem.current.SetSelectedGameObject(slider.gameObject);
+        }
+    }
 
     GameObject MakePanel(Transform parent,string name,Vector2 pos,Vector2 size,Color color){ GameObject go=MakeRect(parent,name,pos,size,color); Outline o=go.AddComponent<Outline>(); o.effectColor=new Color(.68f,.37f,.14f,.42f); o.effectDistance=new Vector2(1.5f,-1.5f); return go; }
     GameObject MakeRect(Transform parent,string name,Vector2 pos,Vector2 size,Color color){ GameObject go=new GameObject(name); go.transform.SetParent(parent,false); Image im=go.AddComponent<Image>(); im.color=color; RectTransform rt=im.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=size; return go; }
