@@ -9,7 +9,8 @@ public sealed class AudioSettingsLayoutPolisher : MonoBehaviour
 
     Transform settingsRoot;
     Transform contentRoot;
-    int polishedAudioRootId;
+    Slider polishedMasterSlider;
+    Slider polishedMusicSlider;
     float nextProbeAt;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -44,12 +45,12 @@ public sealed class AudioSettingsLayoutPolisher : MonoBehaviour
         Slider[] sliders = content.GetComponentsInChildren<Slider>(true);
         if (sliders.Length != 2) return;
 
-        int rootId = content.GetInstanceID() ^ sliders[0].GetInstanceID() ^ sliders[1].GetInstanceID();
-        if (contentRoot == content && polishedAudioRootId == rootId && content.Find("AudioMasterCard") != null) return;
+        if (contentRoot == content && polishedMasterSlider == sliders[0] && polishedMusicSlider == sliders[1] && content.Find("AudioMasterCard") != null) return;
 
         contentRoot = content;
         PolishAudio(sliders);
-        polishedAudioRootId = rootId;
+        polishedMasterSlider = sliders[0];
+        polishedMusicSlider = sliders[1];
     }
 
     void PolishAudio(Slider[] sliders)
