@@ -6,7 +6,7 @@ public static class DifficultyRules
     {
         switch (difficulty)
         {
-            case CampaignDifficulty.Story: return 380;
+            case CampaignDifficulty.Story: return 350;
             case CampaignDifficulty.Legendary: return 240;
             default: return 300;
         }
@@ -16,7 +16,7 @@ public static class DifficultyRules
     {
         switch (difficulty)
         {
-            case CampaignDifficulty.Story: return 24;
+            case CampaignDifficulty.Story: return 22;
             case CampaignDifficulty.Legendary: return 16;
             default: return 20;
         }
@@ -26,7 +26,7 @@ public static class DifficultyRules
     {
         switch (difficulty)
         {
-            case CampaignDifficulty.Story: return .85f;
+            case CampaignDifficulty.Story: return .95f;
             case CampaignDifficulty.Legendary: return 1.25f;
             default: return 1f;
         }
@@ -46,7 +46,7 @@ public static class DifficultyRules
     {
         switch (difficulty)
         {
-            case CampaignDifficulty.Story: return .90f;
+            case CampaignDifficulty.Story: return 1.15f;
             case CampaignDifficulty.Legendary: return 1.15f;
             default: return 1f;
         }
@@ -56,7 +56,7 @@ public static class DifficultyRules
     {
         switch (difficulty)
         {
-            case CampaignDifficulty.Story: return 1.15f;
+            case CampaignDifficulty.Story: return 1.05f;
             case CampaignDifficulty.Legendary: return .90f;
             default: return 1f;
         }
