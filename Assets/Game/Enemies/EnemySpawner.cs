@@ -59,6 +59,7 @@ public class EnemySpawner : MonoBehaviour
     }
     public bool WaveActive { get; private set; }
     public bool WaitingForManualStart { get; private set; } = true;
+    public bool FirstEncounterPreparationLocked => CurrentWave == 0 && !WaveActive && WaitingForManualStart && InterWaveCountdown > 0f;
     public bool NextWaveHasHeavy { get; private set; }
     public bool NextWaveHasBoss { get; private set; }
     public string NextWaveBossDisplayName { get; private set; } = "";
@@ -112,6 +113,12 @@ public class EnemySpawner : MonoBehaviour
     public void StartWaveNow()
     {
         if (WaveActive || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
+        if (FirstEncounterPreparationLocked)
+        {
+            RuntimeFileLogger.Event("WAVE", $"Manual start ignored for encounter=1; mandatory preparation remaining={InterWaveCountdown:0.0}s");
+            return;
+        }
+
         requestStart = true;
         InterWaveCountdown = 0f;
         RuntimeFileLogger.Event("WAVE", $"Manual start requested for encounter={Mathf.Max(1, CurrentWave + 1)}");
@@ -123,6 +130,7 @@ public class EnemySpawner : MonoBehaviour
         for (int wave = 1; wave <= maxWaves; wave++)
         {
             PrepareNextWave(wave);
+            requestStart = false;
             WaitingForManualStart = true;
             GameStateController.Instance?.SetState(wave == 1 ? GameState.Preparing : GameState.BetweenWaves);
 
@@ -132,13 +140,22 @@ public class EnemySpawner : MonoBehaviour
                 $"Prepared encounter={wave}/{maxWaves}, id={preparedEncounter.encounterId}, enemies={effectiveEnemyCount}, prep={preparationSeconds:0.0}s, target={preparedEncounter.targetDuration:0.0}s, spawnInterval={preparedEncounter.spawnInterval:0.00}s, hpMul={effectiveHpMultiplier:0.00}, speedMul={effectiveSpeedMultiplier:0.00}, boss={NextWaveHasBoss}, difficulty={CampaignSave.Difficulty}");
 
             InterWaveCountdown = preparationSeconds;
-            while (InterWaveCountdown > 0f && !requestStart && !GameManager.Instance.GameEnded)
+            bool allowManualStart = wave > 1;
+            while (InterWaveCountdown > 0f && (!requestStart || !allowManualStart) && !GameManager.Instance.GameEnded)
             {
-                InterWaveCountdown -= Time.deltaTime;
+                InterWaveCountdown = Mathf.Max(0f, InterWaveCountdown - Time.deltaTime);
                 yield return null;
             }
 
             if (GameManager.Instance.GameEnded) yield break;
+
+            if (wave == 1)
+            {
+                while (!GameManager.Instance.GiftSelected && !GameManager.Instance.GameEnded)
+                    yield return null;
+                if (GameManager.Instance.GameEnded) yield break;
+            }
+
             requestStart = false;
             WaitingForManualStart = false;
             InterWaveCountdown = 0f;
@@ -178,7 +195,8 @@ public class EnemySpawner : MonoBehaviour
 
         CampaignDifficulty difficulty = CampaignSave.Difficulty;
         effectiveHpMultiplier = preparedEncounter.hpMultiplier * DifficultyRules.EnemyHpMultiplier(difficulty);
-        effectiveSpeedMultiplier = preparedEncounter.speedMultiplier * DifficultyRules.EnemySpeedMultiplier(difficulty);
+        float divineSpeedMultiplier = GameManager.Instance != null ? GameManager.Instance.EnemySpeedGiftMultiplier : 1f;
+        effectiveSpeedMultiplier = preparedEncounter.speedMultiplier * DifficultyRules.EnemySpeedMultiplier(difficulty) * divineSpeedMultiplier;
         BuildPreparedPlan(DifficultyRules.EnemyCountMultiplier(difficulty));
 
         effectiveEnemyCount = preparedPlan.Count;

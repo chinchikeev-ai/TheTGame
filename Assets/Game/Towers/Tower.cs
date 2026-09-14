@@ -179,9 +179,11 @@ public class Tower : MonoBehaviour
         crewAnimation?.PlayTowerAttack(Type);
         if (head != null && !recoiling) StartCoroutine(RecoilHead());
 
+        float patronDamage = GameManager.Instance != null ? GameManager.Instance.PlayerDamageMultiplier : 1f;
+        float finalDamage = damage * warCryDamage * patronDamage;
         if (Type == TowerType.SpearThrower)
         {
-            target.ReceiveDamage(new DamagePacket(damage * warCryDamage, DamageRules.ForTower(Type), Type));
+            target.ReceiveDamage(new DamagePacket(finalDamage, DamageRules.ForTower(Type), Type));
             RuntimeEffects.Instance?.PlayHeroAbilitySound();
             CombatImpactPresentation.Pulse(target.transform.position, new Color(.92f,.78f,.36f), 1.1f, .18f);
             return;
@@ -190,7 +192,7 @@ public class Tower : MonoBehaviour
         Projectile.Spawn(
             start,
             target,
-            damage * warCryDamage,
+            finalDamage,
             projectileSpeed,
             splashRadius,
             slowMultiplier,
