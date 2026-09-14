@@ -22,7 +22,10 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Main combat HUD layout/content, controls, encounter strip, contextual selected-defense panel, build details, corner magic controls | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
+| Main combat HUD layout/content, controls, encounter strip, contextual selected-defense panel, build details, corner Divine Power controls | `ModernCombatHud` | Patron selection/commentary or secondary combat/build canvas |
+| Pre-map Patron God selection | `PreMapPatronSelectionPresentation` | In-map patron re-selection or combat HUD ownership |
+| Selected Patron God portrait + battlefield commentary | `PatronCommentaryPresentation` | Patron selection, objectives, generic combat notifications |
+| Combat HUD legacy Gift/Wave presentation suppression during migration | `CombatHudLegacyCleanup` | New gameplay/UI features; this is migration-only debt |
 | Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
 | Settings UI including audio layout | `ModernSettingsPresentation` | Runtime layout polishers or duplicate settings canvases |
 | Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Secondary tutorial/objective canvas |
@@ -30,7 +33,7 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
 | Encounter intro/boss warning card | `ChapterOneEncounterPresentation` | Persistent encounter status bar |
 | Visual next-encounter enemy cards | `VisualEncounterPreviewPresentation` | General combat HUD |
-| Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card |
+| Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card or Patron commentary |
 | End-of-battle menu and detailed results | `GameMenuController` | Extra result canvases or compatibility result builders |
 
 ## Runtime services without visual ownership
@@ -44,10 +47,11 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 These components are still active or intentionally retained during a cutover. They are not canonical end-state owners and must not accumulate new responsibilities:
 
 - `HectorMotionFallbackAnimator` is a runtime animation safety net until Hector's production Animator is frozen. Authored animation wins when available.
+- `CombatHudLegacyCleanup` temporarily hides the obsolete in-map `CombatActions` / `DivineGiftChoiceOverlay` and rewrites remaining player-facing Wave copy. Delete it after the dead Gift UI is physically removed from `ModernCombatHud` and that HUD reads Encounter state/copy directly.
 - Procedural character/environment visual factories remain fallback paths until production-art freeze; they are not the preferred production source.
 - Wave-prefixed members retained inside `EnemySpawner`, `GameManager`, and historical playthrough-report schemas are compatibility debt only. New runtime consumers must use Encounter terminology; see `docs/ENCOUNTER_TERMINOLOGY_MIGRATION.md`.
 
-`CombatCornerControlsPresentation` has been removed. Its BuildDock placement, compact gift panel and corner magic UX are now owned directly by `ModernCombatHud`.
+`CombatCornerControlsPresentation` has been removed. BuildDock placement and corner Divine Power UX are owned directly by `ModernCombatHud`. Patron selection is owned by `PreMapPatronSelectionPresentation`, and in-map Patron portrait/commentary is owned by `PatronCommentaryPresentation`.
 
 `AudioSettingsLayoutPolisher` has been removed. The audio cards, labels, sliders and percentages are now authored directly by `ModernSettingsPresentation`.
 
