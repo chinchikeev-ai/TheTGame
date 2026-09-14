@@ -5,7 +5,7 @@ using static GameMenuUiFactory;
 
 public class GameMenuController : MonoBehaviour
 {
-    const string MainMenuBackgroundResource = "Menu/Main_screen";
+    const string MainMenuBackgroundResource = "Menu/Main_screen_2026";
 
     static bool openLevelSelectAfterReload;
     static bool startLevelAfterReload;
@@ -106,23 +106,41 @@ public class GameMenuController : MonoBehaviour
     void BuildMainMenu()
     {
         mainMenu = MakeMainMenuScreen(canvas, MainMenuBackgroundResource);
-        GameObject panel = MakePanel(mainMenu.transform, "MainPanel", new Vector2(.5f, .5f), new Vector2(1320, 800), new Color(.045f, .024f, .016f, .94f));
 
-        RectTransform heroPanel = MakeContainer(panel.transform, "HeroPanel", new Vector2(-345f, -4f), new Vector2(520f, 610f));
-        AddTitle(heroPanel, "THE TROY GAME", new Vector2(0, 220), 58, MenuTextStyle.Logo, new Vector2(500, 86));
-        AddTitle(heroPanel, "SIEGE DEFENSE", new Vector2(0, 158), 22, MenuTextStyle.Subtitle, new Vector2(500, 42));
-        AddDivider(heroPanel, new Vector2(0, 116), 400);
-        AddTitle(heroPanel, L("DEFEND TROY • MASTER THE FIRE", "ЗАЩИТИ ТРОЮ • ПОВЕЛЕВАЙ ОГНЁМ"), new Vector2(0, 72), 16, MenuTextStyle.Muted, new Vector2(470, 44));
-        AddTitle(heroPanel, L("A story-driven defense campaign", "Сюжетная кампания обороны Трои"), new Vector2(0, -176), 15, MenuTextStyle.Muted, new Vector2(470, 42));
+        GameObject panel = MakePanel(
+            mainMenu.transform,
+            "MainPanel",
+            new Vector2(.76f, .50f),
+            new Vector2(700f, 980f),
+            new Color(.035f, .018f, .010f, .55f));
 
-        AddTitle(panel.transform, L("CAMPAIGN", "КАМПАНИЯ"), new Vector2(320, 245), 32, MenuTextStyle.Subtitle, new Vector2(520, 50));
-        AddTitle(panel.transform, L("Continue the defense or start again", "Продолжите оборону или начните заново"), new Vector2(320, 202), 15, MenuTextStyle.Muted, new Vector2(520, 38));
-        AddButton(panel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(320, 112), ShowLevels, new Vector2(470, 64), MenuButtonStyle.Highlight);
-        AddButton(panel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(320, 34), StartNewCampaign, new Vector2(470, 58), MenuButtonStyle.Stone);
-        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(320, -38), ShowLevels, new Vector2(470, 58), MenuButtonStyle.Stone);
-        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(320, -110), ShowSettingsFromMain, new Vector2(470, 58), MenuButtonStyle.Ghost);
-        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(320, -182), QuitGame, new Vector2(470, 54), MenuButtonStyle.Ghost);
-        AddTitle(panel.transform, "v0.6 • PRE-ALPHA", new Vector2(500, -348), 13, MenuTextStyle.Muted, new Vector2(250, 28));
+        Image panelImage = panel.GetComponent<Image>();
+        if (panelImage != null) panelImage.raycastTarget = false;
+
+        AddTitle(panel.transform, "THE TROY GAME", new Vector2(0f, 350f), 62, MenuTextStyle.Logo, new Vector2(640f, 86f));
+        AddTitle(panel.transform, "GODS DEFENSE", new Vector2(0f, 285f), 26, MenuTextStyle.Subtitle, new Vector2(600f, 46f));
+        AddTitle(
+            panel.transform,
+            L("DEFEND TROY. BREAK THE LANDING.", "ЗАЩИТИ ТРОЮ. СОРВИ ВЫСАДКУ."),
+            new Vector2(0f, 228f),
+            17,
+            MenuTextStyle.Muted,
+            new Vector2(610f, 42f));
+
+        AddButton(panel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(0f, 112f), ShowLevels, new Vector2(560f, 86f), MenuButtonStyle.Highlight);
+        AddButton(panel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(0f, 8f), StartNewCampaign, new Vector2(520f, 72f), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0f, -82f), ShowLevels, new Vector2(520f, 72f), MenuButtonStyle.Stone);
+        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0f, -172f), ShowSettingsFromMain, new Vector2(520f, 72f), MenuButtonStyle.Ghost);
+        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0f, -262f), QuitGame, new Vector2(520f, 68f), MenuButtonStyle.Ghost);
+
+        AddTitle(
+            panel.transform,
+            L("Progress saves automatically", "Прогресс сохраняется автоматически"),
+            new Vector2(0f, -350f),
+            14,
+            MenuTextStyle.Muted,
+            new Vector2(580f, 34f));
+        AddTitle(panel.transform, "v0.6 • PRE-ALPHA", new Vector2(0f, -405f), 13, MenuTextStyle.Muted, new Vector2(280f, 28f));
     }
 
     void BuildLevelMenu()
@@ -176,17 +194,6 @@ public class GameMenuController : MonoBehaviour
         AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-330, -322), RestartChapter, new Vector2(280, 58), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, -322), ReturnToChapterSelect, new Vector2(300, 58), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(330, -322), ReturnToMainMenu, new Vector2(280, 58), MenuButtonStyle.Ghost);
-    }
-
-    RectTransform MakeContainer(Transform parent, string name, Vector2 position, Vector2 size)
-    {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        RectTransform rt = go.AddComponent<RectTransform>();
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
-        rt.anchoredPosition = position;
-        rt.sizeDelta = size;
-        return rt;
     }
 
     void ToggleLanguage()
