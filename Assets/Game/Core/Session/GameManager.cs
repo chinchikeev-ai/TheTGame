@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
     public float MagicCooldownRemaining => Mathf.Max(0f, magicReadyAt - Time.unscaledTime);
     public bool GiftSelected { get; private set; }
     public DivineGiftType SelectedGift { get; private set; }
-    public bool GiftAvailable => !GameEnded && CurrentWave == 0 && !GiftSelected;
+    public bool GiftAvailable => !runStarted && !GameEnded && CurrentWave == 0 && !GiftSelected;
     public float PlayerDamageMultiplier => GiftSelected && SelectedGift == DivineGiftType.Ares ? 1.10f : 1f;
     public float EnemySpeedGiftMultiplier => GiftSelected && SelectedGift == DivineGiftType.Poseidon ? .90f : 1f;
     public int FinalScore { get; private set; }
@@ -82,9 +82,14 @@ public class GameManager : MonoBehaviour
     public void BeginRun()
     {
         if (runStarted) return;
+        if (!GiftSelected)
+        {
+            RuntimeFileLogger.Event("RUN", $"Map {MapNumber} start rejected: patron god was not selected before the map.");
+            return;
+        }
         runStarted = true;
         runStartTime = Time.unscaledTime;
-        RuntimeFileLogger.Event("RUN", $"Map {MapNumber} started. maxWaves={MaxWaves}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, difficulty={CampaignSave.Difficulty}");
+        RuntimeFileLogger.Event("RUN", $"Map {MapNumber} started. patron={SelectedGift}, maxWaves={MaxWaves}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, difficulty={CampaignSave.Difficulty}");
     }
 
     public void AddMoney(int amount) => economy?.AddIncome(amount);
@@ -152,7 +157,7 @@ public class GameManager : MonoBehaviour
         if (GameEnded || Time.unscaledTime < magicReadyAt || EnemyRegistry.AliveCount == 0) return false;
         magicReadyAt = Time.unscaledTime + 30f;
         var enemies = new System.Collections.Generic.List<Enemy>(EnemyRegistry.All);
-        RuntimeFileLogger.Event("MAGIC", $"Used on wave={CurrentWave}, targets={enemies.Count}");
+        RuntimeFileLogger.Event("MAGIC", $"Divine Storm used on wave={CurrentWave}, targets={enemies.Count}, damage=120, slow=50%, duration=5s");
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null) continue;
@@ -177,7 +182,7 @@ public class GameManager : MonoBehaviour
                 BaseHealth += 2;
                 break;
             case DivineGiftType.Apollo:
-                AddMoney(100);
+                AddMoney(50);
                 break;
             case DivineGiftType.Poseidon:
                 break;
@@ -185,11 +190,11 @@ public class GameManager : MonoBehaviour
 
         RuntimeFileLogger.Event(
             "GIFT_SELECTED",
-            $"god={gift}, map={MapNumber}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, playerDamageMul={PlayerDamageMultiplier:0.00}, enemySpeedMul={EnemySpeedGiftMultiplier:0.00}");
+            $"god={gift}, map={MapNumber}, beforeRun={!runStarted}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, playerDamageMul={PlayerDamageMultiplier:0.00}, enemySpeedMul={EnemySpeedGiftMultiplier:0.00}");
         return true;
     }
 
-    // Legacy compatibility for older callers. A legacy gift request now selects Apollo once for the map.
+    // Legacy compatibility for older callers. A legacy gift request now selects Apollo once before the map starts.
     public bool UseGift() => UseGift(DivineGiftType.Apollo);
 
     public void WinGame()
