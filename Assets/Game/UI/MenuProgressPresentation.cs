@@ -34,7 +34,8 @@ public sealed class MenuProgressPresentation : MonoBehaviour
     {
         Transform mainMenu = canvas.transform.Find("MainMenu");
         if (mainMenu == null) return;
-        Transform heroPanel = mainMenu.Find("HeroPanel");
+        Transform mainPanel = mainMenu.Find("MainPanel");
+        Transform heroPanel = mainPanel != null ? mainPanel.Find("HeroPanel") : mainMenu.Find("HeroPanel");
         if (heroPanel == null) return;
         Transform old = heroPanel.Find("CampaignProgressSummary");
         if (old != null) Destroy(old.gameObject);
@@ -45,13 +46,21 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         root.transform.SetParent(heroPanel, false);
         RectTransform rr = root.AddComponent<RectTransform>();
         rr.anchorMin = rr.anchorMax = rr.pivot = new Vector2(.5f, .5f);
-        rr.anchoredPosition = new Vector2(0f, 72f);
-        rr.sizeDelta = new Vector2(500f, 64f);
+        rr.anchoredPosition = new Vector2(0f, -32f);
+        rr.sizeDelta = new Vector2(470f, 118f);
+
+        Image bg = root.AddComponent<Image>();
+        bg.color = new Color(.075f, .042f, .026f, .78f);
+        Outline outline = root.AddComponent<Outline>();
+        outline.effectColor = new Color(.55f, .31f, .12f, .32f);
+        outline.effectDistance = new Vector2(1f, -1f);
 
         if (!hasProgress)
         {
-            MakeText(root.transform, L("No campaign in progress", "Кампания ещё не начата"), Vector2.zero, 16,
-                new Color(.78f, .68f, .58f, .85f), 480f);
+            MakeText(root.transform, L("CAMPAIGN", "КАМПАНИЯ"), new Vector2(0, 24), 13,
+                new Color(1f, .70f, .28f, 1f), 430f);
+            MakeText(root.transform, L("No campaign in progress", "Кампания ещё не начата"), new Vector2(0, -16), 16,
+                new Color(.84f, .75f, .66f, .92f), 430f);
             return;
         }
 
@@ -59,8 +68,8 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         int score = campaign.TotalBestScore;
         string line1 = L($"Continue from Chapter {chapter}", $"Продолжить с главы {chapter}");
         string line2 = L($"Campaign score {score:N0}", $"Счёт кампании {score:N0}");
-        MakeText(root.transform, line1, new Vector2(0, 13), 17, new Color(1f, .84f, .56f, 1f), 480f);
-        MakeText(root.transform, line2, new Vector2(0, -14), 14, new Color(.78f, .68f, .58f, .9f), 480f);
+        MakeText(root.transform, line1, new Vector2(0, 22), 17, new Color(1f, .84f, .56f, 1f), 430f);
+        MakeText(root.transform, line2, new Vector2(0, -18), 14, new Color(.78f, .68f, .58f, .9f), 430f);
     }
 
     void RefreshChapterSelect()
@@ -101,6 +110,7 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         text.fontStyle = FontStyle.Bold;
         text.color = color;
         text.alignment = TextAnchor.MiddleCenter;
+        text.raycastTarget = false;
         RectTransform rt = text.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
         rt.anchoredPosition = pos;
