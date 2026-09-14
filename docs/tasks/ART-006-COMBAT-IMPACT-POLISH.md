@@ -34,13 +34,13 @@ Current runtime already has projectile, melee, hero and death presentation, but 
 - [x] Melee and Hector hits gain a stronger, short-lived top-down impact beat.
 - [x] Heavy/gate/boss events remain visually larger than normal hits.
 - [x] Existing public presentation methods remain callable without gameplay changes.
-- [ ] No architecture guard violations.
+- [ ] No architecture guard violations — guard was not executed in this environment.
 
 ## Automated validation
-- [ ] `python tools/check-architecture.py`
-- [ ] EditMode tests required/updated — not required for pure transient visual tuning; existing public contracts are preserved.
-- [ ] PlayMode tests required/updated — manual visual QA is required for feel/readability.
-- [ ] Full Unity validation — not run unless explicitly requested.
+- [ ] `python tools/check-architecture.py` — not run; repository is being edited through GitHub connector only.
+- [x] EditMode tests required/updated — not required for this pure transient visual tuning; existing public contracts were preserved.
+- [x] PlayMode tests required/updated — no automated visual-feel assertion added; manual visual QA is the correct acceptance check for this pass.
+- [ ] Full Unity validation — not run; Unity CI remains manual-only and was not requested.
 
 ## Manual validation
 - Compare normal projectile, spear, fire, slow, Trojan guard and Hector hits at normal gameplay zoom.
@@ -48,13 +48,15 @@ Current runtime already has projectile, melee, hero and death presentation, but 
 - Verify pooled effects do not visibly disappear under a normal wave burst.
 
 ## Known risks
-More simultaneous pooled shards/particles increase transient presentation load slightly. Pool sizes are still fixed and no per-hit material allocation is added.
+More simultaneous pooled shards/particles increase transient presentation load slightly. Pool sizes remain fixed and no per-hit material allocation was added.
 
 ## Result
-- changed files: pending
-- validation actually executed: none yet
-- remaining manual checks: all visual checks above
-- commit SHA: pending
+- changed files: `Assets/Game/Combat/CombatImpactPresentation.cs`, `Assets/Game/Combat/CombatVfxPool.cs`, `docs/TODO.md`, this task contract.
+- implementation: added a short central impact beat plus outward shards to projectile/melee/Hector/gate/heavy-death events; increased fixed VFX pool capacity.
+- gameplay/balance changes: none.
+- validation actually executed: static source inspection only.
+- remaining manual checks: all visual checks above at real gameplay zoom/density.
+- implementation commits: `d1541a2b83b6b1bb0dcdd4ed9f68643c3ff8f439`, `3f8589ec49b1abb556d6167fc840bb65582c7e7b`, `42d5b621ff0b9cbd6fe1f42f1c9f0998a84593c7`.
 
 ## Status
-`IN_PROGRESS`
+`DONE`
