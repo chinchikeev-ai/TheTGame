@@ -48,9 +48,9 @@ public sealed class ModernSettingsSliderFix : MonoBehaviour
         Image backgroundImage = background.GetComponent<Image>();
         if (backgroundImage != null) backgroundImage.raycastTarget = false;
 
-        GameObject fillAreaObject = new GameObject("Fill Area");
+        GameObject fillAreaObject = new GameObject("Fill Area", typeof(RectTransform));
         fillAreaObject.transform.SetParent(slider.transform, false);
-        RectTransform fillArea = fillAreaObject.AddComponent<RectTransform>();
+        RectTransform fillArea = fillAreaObject.GetComponent<RectTransform>();
         fillArea.anchorMin = new Vector2(0f, .5f);
         fillArea.anchorMax = new Vector2(1f, .5f);
         fillArea.pivot = new Vector2(.5f, .5f);
@@ -67,9 +67,9 @@ public sealed class ModernSettingsSliderFix : MonoBehaviour
         Image fillImage = fill.GetComponent<Image>();
         if (fillImage != null) fillImage.raycastTarget = false;
 
-        GameObject handleAreaObject = new GameObject("Handle Slide Area");
+        GameObject handleAreaObject = new GameObject("Handle Slide Area", typeof(RectTransform));
         handleAreaObject.transform.SetParent(slider.transform, false);
-        RectTransform handleArea = handleAreaObject.AddComponent<RectTransform>();
+        RectTransform handleArea = handleAreaObject.GetComponent<RectTransform>();
         handleArea.anchorMin = new Vector2(0f, .5f);
         handleArea.anchorMax = new Vector2(1f, .5f);
         handleArea.pivot = new Vector2(.5f, .5f);
