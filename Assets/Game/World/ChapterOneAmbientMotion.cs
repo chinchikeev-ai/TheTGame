@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ChapterOneAmbientMotion : MonoBehaviour
 {
-    public enum MotionKind { Sea, Flame, Banner, Smoke }
+    public enum MotionKind { Sea, Flame, Banner, Smoke, Dust, Ember, HeatShimmer }
     public MotionKind kind;
     public float phase;
     Vector3 basePosition;
@@ -35,6 +35,21 @@ public class ChapterOneAmbientMotion : MonoBehaviour
             case MotionKind.Smoke:
                 transform.localPosition = basePosition + new Vector3(Mathf.Sin(t * .8f) * .06f, Mathf.Sin(t * .5f) * .08f, Mathf.Cos(t * .7f) * .04f);
                 transform.localScale = baseScale * (1f + Mathf.Sin(t * .9f) * .06f);
+                break;
+            case MotionKind.Dust:
+                transform.localPosition = basePosition + new Vector3(Mathf.Sin(t * .42f) * .30f, Mathf.Sin(t * .72f) * .035f, Mathf.Cos(t * .37f) * .20f);
+                transform.localRotation = baseRotation * Quaternion.Euler(0f, Mathf.Sin(t * .31f) * 8f, 0f);
+                transform.localScale = new Vector3(baseScale.x * (1f + Mathf.Sin(t * .55f) * .08f), baseScale.y, baseScale.z * (1f + Mathf.Cos(t * .48f) * .10f));
+                break;
+            case MotionKind.Ember:
+                float cycle = Mathf.Repeat(t * .42f, 1f);
+                float flicker = 1f + Mathf.Sin(t * 10.4f) * .16f;
+                transform.localPosition = basePosition + new Vector3(Mathf.Sin(t * 2.8f) * .13f, cycle * .92f, Mathf.Cos(t * 2.1f) * .09f);
+                transform.localScale = baseScale * Mathf.Max(.38f, (1f - cycle * .48f) * flicker);
+                break;
+            case MotionKind.HeatShimmer:
+                transform.localPosition = basePosition + new Vector3(Mathf.Sin(t * 4.1f) * .025f, Mathf.Sin(t * 3.4f) * .035f, 0f);
+                transform.localScale = new Vector3(baseScale.x * (1f + Mathf.Sin(t * 3.7f) * .08f), baseScale.y * (1f + Mathf.Cos(t * 4.3f) * .11f), baseScale.z);
                 break;
         }
     }
