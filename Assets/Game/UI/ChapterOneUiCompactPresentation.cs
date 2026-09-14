@@ -21,7 +21,6 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         ApplyModernCombatHud();
         ApplyGuidanceCards();
         ApplyPatronCard();
-        ApplyHectorHud();
         ApplyCombatActions();
     }
 
@@ -84,16 +83,6 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         Transform card = FindDescendant(root.transform, "PatronCommentaryCard");
         SetScale(card, .78f);
         SetPanelAlpha(card, .93f);
-    }
-
-    void ApplyHectorHud()
-    {
-        GameObject canvas = GameObject.Find("HectorHUDCanvas");
-        if (canvas == null) return;
-
-        Transform panel = FindDescendant(canvas.transform, "HectorPanel");
-        SetScale(panel, .76f);
-        SetAnchoredPosition(panel, new Vector2(14f, 14f));
     }
 
     void ApplyCombatActions()

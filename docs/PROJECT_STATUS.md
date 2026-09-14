@@ -6,6 +6,12 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Hector HUD illustrated candidate (2026-09-15): eleven separate bitmap assets now
+replace its procedural decoration, with live localized labels, portrait selection,
+health and four ability cooldowns. Unity compilation, isolated RU/EN Canvas renders
+at 1600x900 / 1280x720, text-fit and five-button checks passed. Full gameplay visual
+acceptance and a new Windows player build are not claimed.
+
 **Chapter I: The Landing — gameplay release candidate + production-art candidate pass.**
 
 Chapter I is functionally playable as a vertical slice, but it is **not frozen** yet. Two independent gates remain:

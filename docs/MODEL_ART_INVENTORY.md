@@ -16,6 +16,11 @@ A builder succeeding does **not** promote an asset to `DONE`.
 
 ## Chapter I characters
 
+Hector HUD artwork: GENERATED PLACEHOLDER pending in-game visual acceptance.
+Eleven dedicated bitmaps under `Assets/Game/Art/Resources/HectorHud` are wired into
+`HectorHUD`; the portrait direction is approved, the assembled block awaits review.
+This is HUD illustration only and does not change Hector's 3D model status.
+
 | Asset | Status | Current candidate / note |
 |---|---|---|
 | Greek Infantry | GENERATED PLACEHOLDER + SOURCE ONLY | KayKit-derived candidate + spear/shield/armor candidate pass |
