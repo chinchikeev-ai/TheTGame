@@ -2,7 +2,7 @@
 
 ## Status
 
-IN PROGRESS
+IMPLEMENTED — AWAITING UNITY PLAY MODE QA
 
 ## Goal
 
@@ -15,15 +15,14 @@ Bring Hector's Chapter I production candidate and runtime fallback into the appr
 - `docs/CHARACTER_ART_DIRECTION.md`
 - `docs/CARTOON_CHARACTER_PIPELINE.md`
 
-## Scope
+## Implemented
 
-- Correct Hector's generated shield family from figure-eight/square to a large round Trojan shield.
-- Give the procedural runtime fallback a dedicated Hector silhouette rather than the generic hero body kit.
-- Add full-body armour cues to the fallback so chest, shoulders, forearms, knees and lower legs read as armoured at gameplay scale.
-- Put the approved horse motif on the shield rather than repeating it across the costume.
-- Keep the long spear, red cape and red horsehair crest as primary hero-read elements.
-- Prevent duplicate hero crests when generated/source art already contains one.
-- Keep gameplay logic, collider authority, combat timings and Chapter I map layout unchanged.
+- Hector's production shield binding now uses the large authored round shield candidate rather than the square/figure-eight family.
+- The production shield gets a restrained horse emblem; the horse motif is not repeated across the full costume.
+- The procedural Hector fallback now has a dedicated large round shield, long spear, red cape and full-body armour cues across torso, shoulders, forearms, knees and greaves.
+- `HeroSignatureArt` no longer doubles the horsehair crest when the underlying generated/source candidate already contains one.
+- The Trojan core-unit visual identity pass gives Hector a stronger hero body read while preserving root gameplay collider authority.
+- No combat timing, ability logic, map layout or gameplay API was intentionally changed.
 
 ## Out of scope
 
@@ -38,7 +37,7 @@ Bring Hector's Chapter I production candidate and runtime fallback into the appr
 1. Hector reads differently from the standard Trojan infantry at the Chapter I gameplay camera.
 2. Hector is visibly armoured across torso, shoulders, forearms and lower legs.
 3. Hector carries a long spear and a large round shield.
-4. The round shield carries a simple readable horse emblem in the procedural fallback.
+4. The round shield carries a simple readable horse emblem.
 5. Red cape and crest remain strong top-down faction/hero markers.
 6. Decorative visual parts add no gameplay colliders.
 7. Existing hero gameplay systems and public APIs are unchanged.
@@ -46,18 +45,24 @@ Bring Hector's Chapter I production candidate and runtime fallback into the appr
 9. Existing generated/source crest is not doubled by `HeroSignatureArt`.
 10. Final status remains candidate/placeholder until Unity Play Mode QA passes.
 
-## Planned files
+## Files implemented
 
 - `Assets/Game/Characters/RuntimeWarriorVisualFactory.cs`
 - `Assets/Game/Characters/HeroSignatureArt.cs`
-- `Assets/Editor/CartoonCharacterPrefabBuilder.cs`
 - `Assets/Editor/ChapterOneShieldCandidateBuilder.cs`
-- documentation/status notes as needed
+- `Assets/Editor/TrojanCoreUnitVisualPass.cs`
 
-## Validation plan
+## Validation completed without Unity
 
-- Review the generated hierarchy/names and collider ownership statically.
-- Run `python tools/check-architecture.py` when a local checkout is available.
-- Rebuild Chapter I production candidates in Unity.
+- Presentation additions use collider-free decorative primitives.
+- Root Hector gameplay collider values were not changed by the visual pass.
+- Shield candidate binding remains a presentation/editor pipeline concern.
+- Duplicate-crest prevention excludes the `HeroSignatureArt` subtree itself.
+
+## Remaining acceptance work
+
+- Rebuild Chapter I production candidates in a real Unity Editor checkout.
 - Run EditMode/PlayMode tests.
-- Inspect Hector in the actual Chapter I gameplay camera at target 16:9 framing before production acceptance.
+- Inspect shield face/emblem orientation, armour clipping, spear grip and crest/cape silhouette in the actual Chapter I gameplay camera at target 16:9 framing.
+- Tune only presentation offsets/scales after that inspection.
+- Do not promote Hector to `DONE` until the repository's art acceptance gate is satisfied.
