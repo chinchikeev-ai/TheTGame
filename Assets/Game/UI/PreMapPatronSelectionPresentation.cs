@@ -9,6 +9,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
     Canvas menuCanvas;
     GameObject difficultyOverlay;
     GameObject patronOverlay;
+    Text patronDifficultyLabel;
     Button chapterOneButton;
     bool bound;
 
@@ -37,8 +38,6 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         }
         if (gm == null || gm.GameEnded || gm.GiftSelected) return;
 
-        // Safety net: any legacy/restart flow attempting to enter combat without a patron
-        // is routed back through the full pre-map preparation flow.
         if (Time.timeScale > 0f)
             ShowDifficulty();
     }
@@ -114,8 +113,8 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         MakeText(panel.transform,
             GameLanguage.T("One patron stays with Troy for the whole battle.", "Один покровитель помогает Трое всю битву."),
             new Vector2(0, 232), new Vector2(800, 46), 17, false, new Color(.88f, .78f, .66f, 1f));
-        MakeText(panel.transform,
-            GameLanguage.T("Difficulty: ", "Сложность: ") + DifficultyRules.Label(CampaignController.Instance != null ? CampaignController.Instance.Difficulty : CampaignDifficulty.Story),
+        patronDifficultyLabel = MakeText(panel.transform,
+            "",
             new Vector2(0, 194), new Vector2(800, 38), 15, true, new Color(.75f, .62f, .48f, 1f));
 
         MakeGodButton(panel.transform, new Vector2(-225, 88),
@@ -197,12 +196,29 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
 
         Time.timeScale = 0f;
         if (difficultyOverlay != null) difficultyOverlay.SetActive(false);
+        if (patronDifficultyLabel != null)
+        {
+            CampaignDifficulty difficulty = CampaignController.Instance != null
+                ? CampaignController.Instance.Difficulty
+                : CampaignDifficulty.Story;
+            patronDifficultyLabel.text = GameLanguage.T("Difficulty: ", "Сложность: ") + DifficultyLabel(difficulty);
+        }
         if (patronOverlay != null)
         {
             patronOverlay.transform.SetAsLastSibling();
             patronOverlay.SetActive(true);
         }
         RuntimeFileLogger.Event("PATRON", "Pre-map patron selection opened");
+    }
+
+    string DifficultyLabel(CampaignDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case CampaignDifficulty.Story: return GameLanguage.T("STORY", "ИСТОРИЯ");
+            case CampaignDifficulty.Legendary: return GameLanguage.T("LEGENDARY", "ЛЕГЕНДА");
+            default: return GameLanguage.T("STRATEGOS", "СТРАТЕГ");
+        }
     }
 
     void BackToDifficulty()
