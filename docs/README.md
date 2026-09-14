@@ -15,11 +15,13 @@ For development or AI-assisted work, use this order:
 5. `MODULE_MAP.md` — where each kind of change belongs.
 6. `DATA_CATALOG.md` — authored runtime data and source-of-truth rules.
 7. `RUNTIME_GRAPH.md` — runtime composition and lifecycle.
-8. `AI_PIPELINE.md` — validation and CI truthfulness rules.
-9. `MODEL_ART_INVENTORY.md` — authoritative art/model completion status.
-10. `ART_BIBLE.md` — single canonical creative + visual direction authority.
-11. `UNITY_ROADMAP.md` — what should be built next.
-12. `GDD.md` — canonical game-design target.
+8. `TERMINOLOGY.md` — canonical player-facing naming.
+9. `ENCOUNTER_TERMINOLOGY_MIGRATION.md` — Encounter-vs-Wave compatibility boundary.
+10. `AI_PIPELINE.md` — validation and CI truthfulness rules.
+11. `MODEL_ART_INVENTORY.md` — authoritative art/model completion status.
+12. `ART_BIBLE.md` — single canonical creative + visual direction authority.
+13. `UNITY_ROADMAP.md` — what should be built next.
+14. `GDD.md` — canonical game-design target.
 
 For non-trivial work use `tasks/TASK_TEMPLATE.md`.
 
@@ -30,11 +32,12 @@ When documents disagree, resolve them in this order:
 1. **Current code + automated validation** — runtime truth.
 2. **`PROJECT_STATUS.md`** — documented implementation truth.
 3. **`ARCHITECTURE.md` / `DATA_CATALOG.md` / `RUNTIME_GRAPH.md`** — engineering contracts.
-4. **`MODEL_ART_INVENTORY.md`** — production-art completion truth.
-5. **`ART_BIBLE.md`** — single creative/visual direction authority.
-6. **`GDD.md`** — intended game design.
-7. **`UNITY_ROADMAP.md`** — planned implementation order.
-8. Design-detail documents and audits — supporting reference only.
+4. **`TERMINOLOGY.md` / `ENCOUNTER_TERMINOLOGY_MIGRATION.md`** — canonical naming and compatibility boundaries.
+5. **`MODEL_ART_INVENTORY.md`** — production-art completion truth.
+6. **`ART_BIBLE.md`** — single creative/visual direction authority.
+7. **`GDD.md`** — intended game design.
+8. **`UNITY_ROADMAP.md`** — planned implementation order.
+9. Design-detail documents and audits — supporting reference only.
 
 `TODO.md` is an execution queue, not an authority over current implementation state or design contracts.
 
@@ -47,7 +50,8 @@ A future-design document must never be used as evidence that a feature is implem
 - `PROJECT_STATUS.md` — current state, blockers and next product gate.
 - `TODO.md` — current work queue; keep it short and delete completed items.
 - `UNITY_ROADMAP.md` — milestone order from the current state to v1.0.
-- `TERMINOLOGY.md` — canonical naming.
+- `TERMINOLOGY.md` — canonical player-facing naming: Patron God, Artifact, Divine Power and Divine Power resource.
+- `ENCOUNTER_TERMINOLOGY_MIGRATION.md` — Encounter is canonical; remaining Wave-prefixed runtime names are compatibility debt only.
 - `TROY_DEFENSE_UNITS.md` — Trojan defense design; clearly separates Chapter I implemented roster from future concepts.
 
 Future/meta-system design references:
@@ -60,8 +64,9 @@ These remain design references until `PROJECT_STATUS.md` says the systems are im
 
 - `ARCHITECTURE.md` — module ownership and dependency direction.
 - `MODULE_MAP.md` — task-to-module routing.
-- `DATA_CATALOG.md` — ScriptableObject/data ownership.
+- `DATA_CATALOG.md` — ScriptableObject/data ownership; `EncounterData` is the authored combat source of truth and `WaveData` must not be recreated.
 - `RUNTIME_GRAPH.md` — bootstrap/runtime flow.
+- `ENCOUNTER_TERMINOLOGY_MIGRATION.md` — safe compatibility boundary for remaining Wave-prefixed runtime names and historical telemetry.
 - `NAMESPACE_POLICY.md` — namespace migration policy.
 - `AI_PIPELINE.md` — architecture guard, Unity tests, build validation and CI rules.
 
@@ -114,13 +119,15 @@ Audits are diagnostic snapshots. They preserve findings/rationale but do not ove
 4. One canonical game-design document: `GDD.md`.
 5. One canonical production-art status document: `MODEL_ART_INVENTORY.md`.
 6. One canonical creative + visual direction document: `ART_BIBLE.md`.
-7. Do not create a second document for the same authority/scope.
-8. Delete obsolete implementation plans instead of leaving competing instructions.
-9. Merge overlapping references when one canonical document can carry the information cleanly.
-10. Update status/inventory in the same change that materially changes implementation/art state.
-11. Future concepts must be explicitly labeled as future/design-only.
-12. Never claim Unity compile/tests/build are green unless those checks actually ran and passed.
-13. Do not promote production art that conflicts with `ART_BIBLE.md` even if it is technically complete.
+7. Canonical runtime combat terminology is Encounter; do not create new Wave-prefixed gameplay APIs or `WaveData`.
+8. Canonical player-facing divine terminology comes from `TERMINOLOGY.md`; runtime legacy names do not override it.
+9. Do not create a second document for the same authority/scope.
+10. Delete obsolete implementation plans instead of leaving competing instructions.
+11. Merge overlapping references when one canonical document can carry the information cleanly.
+12. Update status/inventory in the same change that materially changes implementation/art state.
+13. Future concepts must be explicitly labeled as future/design-only.
+14. Never claim Unity compile/tests/build are green unless those checks actually ran and passed.
+15. Do not promote production art that conflicts with `ART_BIBLE.md` even if it is technically complete.
 
 ## Removed obsolete documents
 
