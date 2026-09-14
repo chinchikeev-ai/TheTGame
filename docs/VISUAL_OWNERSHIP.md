@@ -22,28 +22,30 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Main combat HUD layout/content, controls, wave strip, build details | `ModernCombatHud` | Legacy combat/build canvases; secondary layout owner |
+| Main combat HUD layout/content, controls, wave strip, build details | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
 | Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
-| Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Legacy `ChapterFlowUI` canvas |
+| Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Secondary tutorial/objective canvas |
 | Hector health and ability HUD | `HectorHUD` | Main combat resources/build UI |
 | Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
 | Wave intro/boss warning card | `ChapterOneWavePresentation` | Persistent wave status bar |
 | Visual next-wave enemy cards | `VisualWavePreviewPresentation` | General combat HUD |
 | Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card |
-| End-of-battle menu/result shell | `GameMenuController` | Extra result canvases |
-| Detailed end-of-battle metrics inside `MenuCanvas/EndMenu` | `ResultScreenPresentation` | Independent result screen/canvas |
+| End-of-battle menu and detailed results | `GameMenuController` | Extra result canvases or compatibility result builders |
 
-## Compatibility-only UI
+## Runtime services without visual ownership
 
-These classes must not create visual canvases. They remain only so older serialized references or shared state do not break:
+- `CombatControlsUI` owns combat-speed state/actions only. Graphics belong to `ModernCombatHud`.
+- `GameStateController` owns session-state transitions; it is not a HUD owner.
 
-- `GameUIController`
-- `ChapterFlowUI`
-- `CampaignProgressUI`
-- `BuildDefenseInfoPresentation`
-- `CombatControlsUI` — speed state/actions only; graphics belong to `ModernCombatHud`.
+## Migration debt
 
-`ExtendedBalanceUI` is dormant and is not auto-created; its enemy-hover inspector is a separate optional diagnostic surface, not part of the canonical combat HUD.
+These components are still active or intentionally retained during a cutover. They are not canonical end-state owners and must not accumulate new responsibilities:
+
+- `CombatCornerControlsPresentation` currently mutates `ModernCombatHud` layout and creates a secondary magic control. Its intended layout must be absorbed into `ModernCombatHud`, then the component removed.
+- `HectorMotionFallbackAnimator` is a runtime animation safety net until Hector's production Animator is frozen. Authored animation wins when available.
+- Procedural character/environment visual factories remain fallback paths until production-art freeze; they are not the preferred production source.
+
+Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, or `ExtendedBalanceUI`.
 
 ## Decorator rule
 
