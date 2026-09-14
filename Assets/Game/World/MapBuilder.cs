@@ -9,7 +9,7 @@ public class MapBuilder : MonoBehaviour
 
     static readonly Color PackedEarth = new Color(.39f,.315f,.215f);
     static readonly Color WornEarth = new Color(.51f,.41f,.285f);
-    static readonly Color RutEarth = new Color(.29f,.235f,.17f);
+    static readonly Color RutEarth = new Color(.32f,.265f,.20f);
     static readonly Color RoadStone = new Color(.38f,.36f,.31f);
 
     public Transform[][] Paths { get; private set; }
@@ -88,19 +88,21 @@ public class MapBuilder : MonoBehaviour
             int seed = routeSeed + i * 7;
             float width = CellSize * 1.13f;
 
-            CreateIrregularGroundRibbon(routeRoot.transform,a,b,width,seed,PackedEarth,.015f,1.0f,"Trampled Route");
-            CreateIrregularGroundRibbon(routeRoot.transform,a+Vector3.up*.024f,b+Vector3.up*.024f,width*.62f,seed+17,WornEarth,.011f,.86f,"Worn Route Center");
+            CreateIrregularGroundRibbon(routeRoot.transform,a,b,width,seed,PackedEarth,.015f,.78f,"Trampled Route");
+            CreateIrregularGroundRibbon(routeRoot.transform,a+Vector3.up*.024f,b+Vector3.up*.024f,width*.62f,seed+17,WornEarth,.011f,.64f,"Worn Route Center");
             CreateWheelRuts(routeRoot.transform,a,b,width,seed);
-            CreateFootScuffs(routeRoot.transform,a,b,width,seed);
 
-            if (i % 3 != 1)
+            // Foot scuffs are intentionally sparse. At tactical zoom they should
+            // suggest traffic, not become a repeating texture over the battlefield.
+            if ((i & 1) == 0)
+                CreateFootScuffs(routeRoot.transform,a,b,width,seed);
+
+            if (i % 3 == 0)
             {
                 Vector3 mid = Vector3.Lerp(a,b,.42f + Mathf.Sin(seed*.37f)*.08f);
                 Vector3 dir = (b-a).normalized;
                 Vector3 side = new Vector3(-dir.z,0f,dir.x);
-                AddRoadStone(routeRoot.transform,mid+side*CellSize*(.55f+.06f*Mathf.Sin(seed)),seed*17f,.88f+(i%2)*.16f);
-                if (i % 3 == 0)
-                    AddRoadStone(routeRoot.transform,mid-side*CellSize*.60f,seed*23f+19f,.72f);
+                AddRoadStone(routeRoot.transform,mid+side*CellSize*(.55f+.06f*Mathf.Sin(seed)),seed*17f,.82f+(i%2)*.12f);
             }
         }
     }
@@ -113,7 +115,7 @@ public class MapBuilder : MonoBehaviour
         Vector3 dir = delta.normalized;
         Vector3 side = new Vector3(-dir.z,0f,dir.x);
         float length = delta.magnitude;
-        int count = Mathf.Max(3,Mathf.CeilToInt(length/(1.55f/Mathf.Max(.45f,density))));
+        int count = Mathf.Max(2,Mathf.CeilToInt(length/(1.75f/Mathf.Max(.45f,density))));
         Quaternion rotation = Quaternion.LookRotation(dir,Vector3.up);
 
         for (int i = 0; i < count; i++)
@@ -121,17 +123,17 @@ public class MapBuilder : MonoBehaviour
             float t = (i+.5f)/count;
             float wave = Mathf.Sin(seed*.83f+i*1.91f);
             float secondWave = Mathf.Sin(seed*.29f+i*2.63f);
-            float offset = wave*width*.11f;
-            float patchWidth = width*(.70f+.10f*secondWave);
-            float patchLength = (length/count)*(1.22f+.12f*Mathf.Sin(i*1.43f+seed));
+            float offset = wave*width*.09f;
+            float patchWidth = width*(.72f+.07f*secondWave);
+            float patchLength = (length/count)*(1.28f+.08f*Mathf.Sin(i*1.43f+seed));
             GameObject patch = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             patch.name = name;
             patch.transform.SetParent(parent,false);
             patch.transform.position = Vector3.Lerp(a,b,t)+side*offset+Vector3.up*height;
-            patch.transform.rotation = rotation * Quaternion.Euler(0f,wave*5f,0f);
-            patch.transform.localScale = new Vector3(patchWidth,.028f,patchLength);
+            patch.transform.rotation = rotation * Quaternion.Euler(0f,wave*4f,0f);
+            patch.transform.localScale = new Vector3(patchWidth,.025f,patchLength);
             Object.Destroy(patch.GetComponent<Collider>());
-            TowerFactory.SetColor(patch,color*(.94f+(i%3)*.025f));
+            TowerFactory.SetColor(patch,color*(.965f+(i%2)*.02f));
         }
     }
 
@@ -142,7 +144,7 @@ public class MapBuilder : MonoBehaviour
 
         Vector3 dir = delta.normalized;
         Vector3 side = new Vector3(-dir.z,0f,dir.x);
-        float drift = Mathf.Sin(seed*.71f)*roadWidth*.035f;
+        float drift = Mathf.Sin(seed*.71f)*roadWidth*.025f;
         float separation = roadWidth*.19f;
         CreateBrokenRoadMark(parent,a+side*(separation+drift),b+side*(separation+drift),seed,"Cart Rut");
         CreateBrokenRoadMark(parent,a-side*(separation-drift),b-side*(separation-drift),seed+31,"Cart Rut");
@@ -155,22 +157,22 @@ public class MapBuilder : MonoBehaviour
         Vector3 dir = delta.normalized;
         Vector3 side = new Vector3(-dir.z,0f,dir.x);
         float length = delta.magnitude;
-        int count = Mathf.Max(2,Mathf.CeilToInt(length/1.45f));
+        int count = Mathf.Max(2,Mathf.CeilToInt(length/1.90f));
         Quaternion rotation = Quaternion.LookRotation(dir,Vector3.up);
 
         for (int i = 0; i < count; i++)
         {
-            if (((i+seed)&3)==2) continue;
+            if (((i+seed)&2)!=0) continue;
             float t=(i+.5f)/count;
-            float drift=Mathf.Sin(seed*.47f+i*1.61f)*.035f;
+            float drift=Mathf.Sin(seed*.47f+i*1.61f)*.025f;
             GameObject mark=GameObject.CreatePrimitive(PrimitiveType.Sphere);
             mark.name=name;
             mark.transform.SetParent(parent,false);
-            mark.transform.position=Vector3.Lerp(a,b,t)+side*drift+Vector3.up*.047f;
+            mark.transform.position=Vector3.Lerp(a,b,t)+side*drift+Vector3.up*.040f;
             mark.transform.rotation=rotation;
-            mark.transform.localScale=new Vector3(.075f,.008f,(length/count)*.62f);
+            mark.transform.localScale=new Vector3(.055f,.006f,(length/count)*.52f);
             Object.Destroy(mark.GetComponent<Collider>());
-            TowerFactory.SetColor(mark,RutEarth*(.94f+(i%2)*.04f));
+            TowerFactory.SetColor(mark,RutEarth*(.97f+(i%2)*.02f));
         }
     }
 
@@ -180,20 +182,20 @@ public class MapBuilder : MonoBehaviour
         if(delta.sqrMagnitude<.001f) return;
         Vector3 dir=delta.normalized;
         Vector3 side=new Vector3(-dir.z,0f,dir.x);
-        int count=Mathf.Clamp(Mathf.CeilToInt(delta.magnitude*.58f),3,8);
+        int count=Mathf.Clamp(Mathf.CeilToInt(delta.magnitude*.30f),2,4);
         float yaw=Mathf.Atan2(dir.x,dir.z)*Mathf.Rad2Deg;
         for(int i=0;i<count;i++)
         {
             float t=(i+.35f)/count;
-            float lane=Mathf.Sin(seed*.71f+i*2.17f)*width*.29f;
+            float lane=Mathf.Sin(seed*.71f+i*2.17f)*width*.24f;
             GameObject scuff=GameObject.CreatePrimitive(PrimitiveType.Sphere);
             scuff.name="Foot Traffic Scuff";
             scuff.transform.SetParent(parent,false);
-            scuff.transform.position=Vector3.Lerp(a,b,t)+side*lane+Vector3.up*.044f;
-            scuff.transform.rotation=Quaternion.Euler(0f,yaw+(i%2==0?-10f:9f),0f);
-            scuff.transform.localScale=new Vector3(.11f,.006f,.22f+(i%3)*.035f);
+            scuff.transform.position=Vector3.Lerp(a,b,t)+side*lane+Vector3.up*.038f;
+            scuff.transform.rotation=Quaternion.Euler(0f,yaw+(i%2==0?-8f:7f),0f);
+            scuff.transform.localScale=new Vector3(.075f,.005f,.15f+(i%2)*.025f);
             Object.Destroy(scuff.GetComponent<Collider>());
-            TowerFactory.SetColor(scuff,RutEarth*.91f);
+            TowerFactory.SetColor(scuff,RutEarth*.97f);
         }
     }
 
@@ -207,7 +209,7 @@ public class MapBuilder : MonoBehaviour
         outer.transform.rotation = Quaternion.Euler(0f,yaw,0f);
         outer.transform.localScale = new Vector3(CellSize*1.55f*scale,.050f,CellSize*1.12f*scale);
         Object.Destroy(outer.GetComponent<Collider>());
-        TowerFactory.SetColor(outer,PackedEarth*.94f);
+        TowerFactory.SetColor(outer,PackedEarth*.97f);
 
         GameObject center = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         center.name = "Worn Junction Center";
@@ -216,7 +218,7 @@ public class MapBuilder : MonoBehaviour
         center.transform.rotation = Quaternion.Euler(0f,yaw+11f,0f);
         center.transform.localScale = new Vector3(CellSize*.88f*scale,.028f,CellSize*.69f*scale);
         Object.Destroy(center.GetComponent<Collider>());
-        TowerFactory.SetColor(center,WornEarth);
+        TowerFactory.SetColor(center,WornEarth*.97f);
     }
 
     void AddRoadStone(Transform parent, Vector3 p, float yaw, float scale)
@@ -225,10 +227,10 @@ public class MapBuilder : MonoBehaviour
         stone.name = "Roadside Stone";
         stone.transform.SetParent(parent,false);
         stone.transform.position = p+Vector3.up*.03f;
-        stone.transform.localScale = new Vector3(.28f,.11f,.21f)*scale;
+        stone.transform.localScale = new Vector3(.24f,.09f,.18f)*scale;
         stone.transform.rotation = Quaternion.Euler(0f,yaw,0f);
         Object.Destroy(stone.GetComponent<Collider>());
-        TowerFactory.SetColor(stone,RoadStone*(.94f+.04f*Mathf.Abs(Mathf.Sin(yaw))));
+        TowerFactory.SetColor(stone,RoadStone*(.97f+.02f*Mathf.Abs(Mathf.Sin(yaw))));
     }
 
     void CreateGameplayAnchors()
