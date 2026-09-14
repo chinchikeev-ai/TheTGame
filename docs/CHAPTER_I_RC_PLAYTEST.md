@@ -10,10 +10,11 @@ Run Chapter I in the Unity Editor or a local Windows build with these conditions
 
 - Difficulty: `Story`
 - Combat speed: `1x` for the entire run
+- Do **not** pause after the run starts; Chapter I pacing currently uses unscaled wall-clock time
 - Language: Russian for the first visual-fit pass; repeat English fit after balance is stable
 - Resolution: `1920x1080` first, then `1366x768` / `1376x768`
 - Play normally from Chapter I start through the result screen
-- Let normal preparation timers run unless the purpose of the run is explicitly to measure manual early-wave starts
+- Let normal preparation timers run unless the purpose of the run is explicitly to measure manual early-encounter starts
 - Do not use editor cheats, debug spawning, time acceleration, forced kills or test-only helpers
 - Use Hector, upgrades, targeting, Magic and Gift as a real player would
 - Finish all five authored encounters and the Menelaus encounter
@@ -24,6 +25,8 @@ The runtime reporter automatically writes:
 - `ChapterI_Waves_*.csv`
 
 under `Application.persistentDataPath/Logs`.
+
+Current telemetry schema records both combat-speed compliance and whether pause was used. Older reports that do not contain these verification fields are not eligible for the gameplay freeze.
 
 ## Analyze the run
 
@@ -49,14 +52,17 @@ It never marks gameplay frozen automatically.
 
 A Story baseline is eligible for human acceptance only when all of the following are true:
 
+- Report uses the current telemetry schema with 1x/no-pause evidence.
 - Report belongs to Chapter I.
 - Difficulty is exactly `Story`.
+- Combat speed stayed at exactly `1x` for the entire run.
+- Pause was not used after the run started.
 - Result is `VICTORY`.
 - Menelaus is defeated and does not reach a completed gate-breach state.
 - Total Chapter I time is between `11:00` and `13:00`.
 - Exactly five encounter snapshots are present.
 - Every encounter snapshot is complete.
-- Every encounter `1..5` is represented exactly in the run.
+- Every encounter `1..5` is represented in the run.
 - No individual encounter differs from its authored duration target by `40%` or more.
 - Gate HP remains above zero.
 
