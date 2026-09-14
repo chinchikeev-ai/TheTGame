@@ -5,7 +5,7 @@ using static GameMenuUiFactory;
 
 public class GameMenuController : MonoBehaviour
 {
-    const string MainMenuBackgroundResource = "Menu/Main_screen_2026";
+    const string MainMenuBackgroundResource = "Menu/Main_screen";
 
     static bool openLevelSelectAfterReload;
     static bool startLevelAfterReload;
