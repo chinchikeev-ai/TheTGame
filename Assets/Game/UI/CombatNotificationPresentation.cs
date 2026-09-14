@@ -62,7 +62,7 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
         if(group.alpha<=0f)return;
 
         if(lastWave<0){lastWave=gm.CurrentWave;lastTowersBuilt=gm.TowersBuilt;lastGate=gm.BaseHealth;bossDefeated=gm.BossDefeated;}
-        if(gm.CurrentWave>lastWave){lastWave=gm.CurrentWave;Push(GameLanguage.T($"Wave {gm.CurrentWave} has begun",$"Волна {gm.CurrentWave} началась"),TroyHudArt.Icon("enemy"),5f);}
+        if(gm.CurrentWave>lastWave){lastWave=gm.CurrentWave;Push(GameLanguage.T($"Encounter {gm.CurrentWave} has begun",$"Бой {gm.CurrentWave} начался"),TroyHudArt.Icon("enemy"),5f);}
         if(gm.TowersBuilt>lastTowersBuilt){lastTowersBuilt=gm.TowersBuilt;Push(GameLanguage.T("Trojan defense deployed","Оборона Трои установлена"),TroyHudArt.Icon("shield"),4f);}
         if(lastGate>=0 && gm.BaseHealth<lastGate){int lost=lastGate-gm.BaseHealth;lastGate=gm.BaseHealth;Push(GameLanguage.T($"Gate damaged −{lost}",$"Ворота повреждены −{lost}"),TroyHudArt.Icon("gate"),5f);}
 
