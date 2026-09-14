@@ -17,12 +17,14 @@ public static class ChapterOneShieldCandidateBuilder
         public string prefabPath;
         public bool figureEight;
         public float scaleMultiplier;
+        public bool horseEmblem;
 
-        public ShieldTarget(string prefabPath, bool figureEight, float scaleMultiplier)
+        public ShieldTarget(string prefabPath, bool figureEight, float scaleMultiplier, bool horseEmblem = false)
         {
             this.prefabPath = prefabPath;
             this.figureEight = figureEight;
             this.scaleMultiplier = scaleMultiplier;
+            this.horseEmblem = horseEmblem;
         }
     }
 
@@ -34,7 +36,7 @@ public static class ChapterOneShieldCandidateBuilder
         new ShieldTarget(GreekRoot + "Enemy_Boss.prefab", false, 1.08f),
         new ShieldTarget(TrojanRoot + "Trojan_Infantry.prefab", false, 1.00f),
         new ShieldTarget(TrojanRoot + "Trojan_Guard.prefab", true, 1.00f),
-        new ShieldTarget(HeroRoot + "Hero_Hector.prefab", false, 1.10f),
+        new ShieldTarget(HeroRoot + "Hero_Hector.prefab", false, 1.10f, true),
         new ShieldTarget(HeroRoot + "Hero_Menelaus.prefab", false, 1.05f)
     };
 
@@ -104,6 +106,8 @@ public static class ChapterOneShieldCandidateBuilder
             foreach (Renderer renderer in renderers)
                 TowerFactory.SetColor(renderer.gameObject, tint);
 
+            if (target.horseEmblem) AddHorseEmblem(shield.transform);
+
             PrefabUtility.SaveAsPrefabAsset(root, target.prefabPath);
             return true;
         }
@@ -111,6 +115,31 @@ public static class ChapterOneShieldCandidateBuilder
         {
             PrefabUtility.UnloadPrefabContents(root);
         }
+    }
+
+    static void AddHorseEmblem(Transform shield)
+    {
+        Color gold = new Color(.86f, .62f, .20f);
+        AddEmblemPart(shield, "HectorHorseBody", PrimitiveType.Cube, new Vector3(-.02f, .02f, .184f), new Vector3(.25f, .105f, .022f), gold, Quaternion.Euler(0f, 0f, -7f));
+        AddEmblemPart(shield, "HectorHorseNeck", PrimitiveType.Cube, new Vector3(.14f, .11f, .186f), new Vector3(.055f, .16f, .023f), gold, Quaternion.Euler(0f, 0f, -24f));
+        AddEmblemPart(shield, "HectorHorseHead", PrimitiveType.Sphere, new Vector3(.20f, .19f, .188f), new Vector3(.085f, .065f, .024f), gold);
+        AddEmblemPart(shield, "HectorHorseLegFront", PrimitiveType.Cube, new Vector3(.09f, -.11f, .186f), new Vector3(.045f, .16f, .022f), gold, Quaternion.Euler(0f, 0f, -19f));
+        AddEmblemPart(shield, "HectorHorseLegRear", PrimitiveType.Cube, new Vector3(-.13f, -.11f, .186f), new Vector3(.045f, .15f, .022f), gold, Quaternion.Euler(0f, 0f, 18f));
+        AddEmblemPart(shield, "HectorHorseTail", PrimitiveType.Cube, new Vector3(-.22f, .07f, .186f), new Vector3(.035f, .13f, .022f), gold, Quaternion.Euler(0f, 0f, 42f));
+    }
+
+    static GameObject AddEmblemPart(Transform parent, string name, PrimitiveType type, Vector3 localPosition, Vector3 localScale, Color color, Quaternion? localRotation = null)
+    {
+        GameObject part = GameObject.CreatePrimitive(type);
+        part.name = name;
+        part.transform.SetParent(parent, false);
+        part.transform.localPosition = localPosition;
+        part.transform.localScale = localScale;
+        if (localRotation.HasValue) part.transform.localRotation = localRotation.Value;
+        Collider collider = part.GetComponent<Collider>();
+        if (collider != null) UnityEngine.Object.DestroyImmediate(collider);
+        TowerFactory.SetColor(part, color);
+        return part;
     }
 
     static Transform FindGeneratedShield(GameObject root)
