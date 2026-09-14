@@ -99,6 +99,17 @@ Current runtime cues added/strengthened:
 - cooler Greek beachhead/camp/ships;
 - add visual-only props only where they strengthen landmarks and do not affect gameplay collision.
 
+Implementation status: **implemented in `ChapterOneFactionStaging`; awaiting real Play Mode screenshot QA.**
+
+Current runtime cues added/strengthened:
+- Greek side: stronger blue/dark-blue/pale-cloth family applied to tents, command canopy, sails, ship stripes, shields and camp cloth where matching runtime objects exist.
+- Greek beachhead: three blue standards plus pale cloth / blue shield landmark clusters.
+- Trojan side: gate/city restaged toward warm stone + pale stone + red roofs/banners + bronze/gold hardware.
+- Trojan approach: four red/bronze standards, two braziers and broad warm/pale stone accents near the gate.
+- The staging pass waits for the normal Chapter I presentation owners to build, then applies the final material hierarchy.
+- New staging geometry is presentation-only and strips primitive colliders.
+- Camera, paths, build cells, gameplay colliders and combat data are not intentionally changed.
+
 ### Pass E — UI/VFX/animation coherence
 - unify combat UI with Art Bible palette/material language;
 - keep HUD quiet and tactical;
@@ -123,4 +134,4 @@ Current runtime cues added/strengthened:
 - Production-art status remains governed by `MODEL_ART_INVENTORY.md`; passing this task does not automatically mean `DONE`.
 
 ## Status
-`IN_PROGRESS — PASS A + PASS B + PASS C IMPLEMENTED, PLAY MODE QA PENDING`
+`IN_PROGRESS — PASS A + PASS B + PASS C + PASS D IMPLEMENTED, PLAY MODE QA PENDING`
