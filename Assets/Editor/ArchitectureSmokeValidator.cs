@@ -16,10 +16,15 @@ public static class ArchitectureSmokeValidator
         "Assets/Game/Core/Logging/RuntimeFileLogger.cs",
         "Assets/Game/Campaign/CampaignController.cs",
         "Assets/Game/Campaign/ChapterController.cs",
+        "Assets/Game/Campaign/Data/ChapterData.cs",
+        "Assets/Game/Campaign/Data/EncounterData.cs",
+        "Assets/Game/Campaign/Runtime/ChapterRuntimeInstaller.cs",
+        "Assets/Game/Campaign/Runtime/ChapterOneRuntimeInstaller.cs",
         "Assets/Game/Campaign/Persistence/CampaignSave.cs",
         "Assets/Game/Combat/CombatDamage.cs",
         "Assets/Game/Enemies/Enemy.cs",
         "Assets/Game/Enemies/EnemySpawner.cs",
+        "Assets/Game/Enemies/EnemyRuntimeBehaviorRegistry.cs",
         "Assets/Game/Towers/Tower.cs",
         "Assets/Game/Towers/TowerRegistry.cs",
         "Assets/Game/Heroes/Hector/HectorController.cs",
@@ -93,6 +98,29 @@ public static class ArchitectureSmokeValidator
                 errors++;
             }
         }
+
+        string bootstrapPath = Path.GetFullPath("Assets/Game/Core/Bootstrap/GameBootstrap.cs");
+        if (File.Exists(bootstrapPath))
+        {
+            string bootstrap = File.ReadAllText(bootstrapPath);
+            if (!bootstrap.Contains("ChapterRuntimeInstaller.Install"))
+            {
+                Debug.LogError("[SMOKE] GameBootstrap must delegate chapter-specific setup through ChapterRuntimeInstaller.");
+                errors++;
+            }
+            if (bootstrap.Contains("ChapterOneVisualEnhancer") || bootstrap.Contains("ChapterOneCinematicCamera") || bootstrap.Contains("LandingPresentation"))
+            {
+                Debug.LogError("[SMOKE] GameBootstrap contains Chapter I-specific presentation wiring.");
+                errors++;
+            }
+        }
+
+        string balancePath = Path.GetFullPath("Assets/Game/Core/Balance/BalanceCatalog.cs");
+        if (File.Exists(balancePath) && File.ReadAllText(balancePath).Contains("GetEnemyForWave"))
+        {
+            Debug.LogError("[SMOKE] Hidden encounter composition must not be restored in BalanceCatalog.GetEnemyForWave.");
+            errors++;
+        }
     }
 
     static void ValidateGameData(ref int errors)
@@ -107,7 +135,24 @@ public static class ArchitectureSmokeValidator
         {
             if (chapter.chapterNumber != 1) { Debug.LogError("[SMOKE] Chapter I number must be 1."); errors++; }
             if (chapter.combatEvents != 5) { Debug.LogError("[SMOKE] Chapter I must have 5 combat events."); errors++; }
+            if (chapter.EncounterCount != 5) { Debug.LogError("[SMOKE] Chapter I must reference 5 authored encounters."); errors++; }
+            if (chapter.runtimeProfile != ChapterOneRuntimeInstaller.ProfileId) { Debug.LogError("[SMOKE] Chapter I runtime profile is invalid."); errors++; }
             if (chapter.unlockChapter < 2) { Debug.LogError("[SMOKE] Chapter I must unlock Chapter II."); errors++; }
+
+            for (int encounterNumber = 1; encounterNumber <= 5; encounterNumber++)
+            {
+                EncounterData encounter = chapter.GetEncounter(encounterNumber);
+                if (encounter == null)
+                {
+                    Debug.LogError($"[SMOKE] Missing EncounterData for Chapter I encounter {encounterNumber}.");
+                    errors++;
+                    continue;
+                }
+                if (encounter.BaseEnemyCount <= 0) { Debug.LogError($"[SMOKE] Encounter {encounterNumber} has no base enemies."); errors++; }
+                if (encounter.spawnInterval <= 0f) { Debug.LogError($"[SMOKE] Encounter {encounterNumber} has invalid spawn interval."); errors++; }
+                if (encounter.targetDuration <= 0f) { Debug.LogError($"[SMOKE] Encounter {encounterNumber} has invalid target duration."); errors++; }
+                if (encounter.spawnGroups == null || encounter.spawnGroups.Length == 0) { Debug.LogError($"[SMOKE] Encounter {encounterNumber} has no spawn groups."); errors++; }
+            }
         }
 
         foreach (TowerType type in Enum.GetValues(typeof(TowerType)))
@@ -124,14 +169,6 @@ public static class ArchitectureSmokeValidator
             if (data == null) { Debug.LogError($"[SMOKE] Missing EnemyData for {type}."); errors++; continue; }
             if (data.hpMultiplier <= 0f) { Debug.LogError($"[SMOKE] Invalid HP multiplier for {type}."); errors++; }
             if (data.speedMultiplier <= 0f) { Debug.LogError($"[SMOKE] Invalid speed multiplier for {type}."); errors++; }
-        }
-
-        for (int wave = 1; wave <= 5; wave++)
-        {
-            WaveData data = BalanceCatalog.GetWave(wave, 5);
-            if (data == null) { Debug.LogError($"[SMOKE] Missing WaveData for wave {wave}."); errors++; continue; }
-            if (data.enemyCount <= 0) { Debug.LogError($"[SMOKE] Wave {wave} has no enemies."); errors++; }
-            if (data.spawnInterval <= 0f) { Debug.LogError($"[SMOKE] Wave {wave} has invalid spawn interval."); errors++; }
         }
     }
 
