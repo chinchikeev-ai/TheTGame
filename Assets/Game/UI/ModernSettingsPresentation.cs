@@ -163,12 +163,13 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void BuildControls()
     {
         SetHeader(L("CONTROLS", "УПРАВЛЕНИЕ"), L("PC keyboard and mouse controls.", "Управление на ПК: клавиатура и мышь."));
-        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 110);
-        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 40);
-        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), -30);
-        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -100);
+        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 130);
+        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 70);
+        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), 10);
+        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -50);
+        MakeControlRow(L("SCREENSHOT", "СНИМОК ЭКРАНА"), "F12", -110);
         MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC", -170);
-        AddHint(L("Tower hotkeys: 1–6. Hector: click to select, RMB to move, Q / E / R / F abilities.", "Оборона: 1–6. Гектор: ЛКМ выбрать, ПКМ двигаться, способности Q / E / R / F."), new Vector2(0,-240));
+        AddHint(L("Tower hotkeys: 1–6. Hector: click to select, RMB to move, Q / E / R / F abilities. Screenshots are saved to the game data Screenshots folder.", "Оборона: 1–6. Гектор: ЛКМ выбрать, ПКМ двигаться, способности Q / E / R / F. Снимки сохраняются в папку Screenshots данных игры."), new Vector2(0,-240));
     }
 
     void SetHeader(string title, string description)
