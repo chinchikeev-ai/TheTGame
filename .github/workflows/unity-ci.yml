@@ -21,6 +21,8 @@ jobs:
           python-version: '3.12'
       - name: Check architecture contracts
         run: python tools/check-architecture.py
+      - name: Check Chapter I gameplay acceptance contracts
+        run: python tools/check-chapter1-gameplay-acceptance.py
 
   tests:
     name: Unity ${{ matrix.testMode }} tests
