@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,28 +5,12 @@ using UnityEngine.UI;
 
 public sealed class MainMenuBackgroundOverride : MonoBehaviour
 {
-    const string ApprovedMenuResource = "Menu/ApprovedMainMenu";
+    const string BackgroundResource = "Menu/Main_screen";
 
-    readonly Vector2 playPosition = new Vector2(437f, 286f);
-    readonly Vector2 playSize = new Vector2(548f, 203f);
-    readonly Vector2 heroesPosition = new Vector2(454f, 127f);
-    readonly Vector2 secondarySize = new Vector2(457f, 116f);
-    readonly Vector2 towersPosition = new Vector2(454f, 8f);
-    readonly Vector2 upgradesPosition = new Vector2(454f, -106f);
-    readonly Vector2 shopPosition = new Vector2(454f, -217f);
-    readonly Vector2 settingsPosition = new Vector2(861f, 473f);
-    readonly Vector2 settingsSize = new Vector2(104f, 100f);
-    readonly Vector2 exitPosition = new Vector2(791f, -469f);
-    readonly Vector2 exitSize = new Vector2(208f, 118f);
-
-    Texture2D approvedTexture;
-    Sprite approvedSprite;
     GameObject appliedMainMenu;
     GameMenuController controller;
-    GameObject toastPanel;
+    GameObject toast;
     Text toastText;
-    CanvasGroup toastCanvasGroup;
-    Coroutine toastRoutine;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoStart()
@@ -36,25 +19,9 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
             new GameObject("ApprovedMainMenuPresenter").AddComponent<MainMenuBackgroundOverride>();
     }
 
-    void Awake()
-    {
-        approvedTexture = Resources.Load<Texture2D>(ApprovedMenuResource);
-        if (approvedTexture == null)
-        {
-            RuntimeFileLogger.Event("MENU", "Approved main-menu art resource is missing");
-            return;
-        }
-
-        approvedSprite = Sprite.Create(
-            approvedTexture,
-            new Rect(0f, 0f, approvedTexture.width, approvedTexture.height),
-            new Vector2(.5f, .5f),
-            100f);
-    }
-
     void LateUpdate()
     {
-        if (approvedSprite == null || appliedMainMenu != null) return;
+        if (appliedMainMenu != null) return;
 
         controller = FindFirstObjectByType<GameMenuController>();
         if (controller == null) return;
@@ -65,130 +32,203 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         Transform mainMenu = canvasObject.transform.Find("MainMenu");
         if (mainMenu == null) return;
 
-        ApplyApprovedMenu(mainMenu);
+        BuildApprovedLayout(mainMenu);
         appliedMainMenu = mainMenu.gameObject;
+        RuntimeFileLogger.Event("MENU", "Applied approved main-menu layout stage");
     }
 
-    void ApplyApprovedMenu(Transform mainMenu)
+    void BuildApprovedLayout(Transform mainMenu)
     {
         for (int i = 0; i < mainMenu.childCount; i++)
             mainMenu.GetChild(i).gameObject.SetActive(false);
 
-        GameObject approvedRoot = new GameObject("ApprovedMainMenu");
-        approvedRoot.transform.SetParent(mainMenu, false);
-        RectTransform approvedRect = approvedRoot.AddComponent<RectTransform>();
-        Stretch(approvedRect);
+        GameObject root = new GameObject("ApprovedMainMenu");
+        root.transform.SetParent(mainMenu, false);
+        Stretch(root.AddComponent<RectTransform>());
 
-        GameObject artObject = new GameObject("ApprovedReferenceArt");
-        artObject.transform.SetParent(approvedRoot.transform, false);
-        Image art = artObject.AddComponent<Image>();
-        art.sprite = approvedSprite;
-        art.type = Image.Type.Simple;
-        art.preserveAspect = false;
-        art.raycastTarget = false;
-        Stretch(art.rectTransform);
-
-        CreateHotspot(approvedRoot.transform, "PLAY", playPosition, playSize, OpenChapterSelect, .18f);
-        CreateHotspot(approvedRoot.transform, "HEROES", heroesPosition, secondarySize, () => ShowComingSoon("HEROES"), .12f);
-        CreateHotspot(approvedRoot.transform, "TOWERS", towersPosition, new Vector2(457f, 112f), () => ShowComingSoon("TOWERS"), .12f);
-        CreateHotspot(approvedRoot.transform, "UPGRADES", upgradesPosition, new Vector2(457f, 110f), () => ShowComingSoon("UPGRADES"), .12f);
-        CreateHotspot(approvedRoot.transform, "SHOP", shopPosition, new Vector2(457f, 106f), () => ShowComingSoon("SHOP"), .12f);
-        CreateHotspot(approvedRoot.transform, "SETTINGS", settingsPosition, settingsSize, OpenSettings, .16f);
-        CreateHotspot(approvedRoot.transform, "EXIT", exitPosition, exitSize, ExitGame, .14f);
-
-        BuildToast(approvedRoot.transform);
-        RuntimeFileLogger.Event("MENU", "Applied user-approved main-menu reference and interactive hotspots");
+        BuildBackground(root.transform);
+        BuildLogo(root.transform);
+        BuildMenu(root.transform);
+        BuildToast(root.transform);
     }
 
-    void CreateHotspot(
-        Transform parent,
-        string name,
-        Vector2 position,
-        Vector2 size,
-        UnityEngine.Events.UnityAction action,
-        float hoverAlpha)
+    void BuildBackground(Transform parent)
     {
-        GameObject go = new GameObject(name + "_Hotspot");
+        GameObject backgroundObject = new GameObject("Background");
+        backgroundObject.transform.SetParent(parent, false);
+        Image background = backgroundObject.AddComponent<Image>();
+        background.raycastTarget = false;
+        Stretch(background.rectTransform);
+
+        Texture2D texture = Resources.Load<Texture2D>(BackgroundResource);
+        if (texture != null)
+        {
+            background.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(.5f, .5f), 100f);
+            background.type = Image.Type.Simple;
+            background.preserveAspect = false;
+            background.color = Color.white;
+        }
+        else
+        {
+            background.color = new Color(.12f, .08f, .04f, 1f);
+        }
+
+        GameObject shadeObject = new GameObject("RightShade");
+        shadeObject.transform.SetParent(parent, false);
+        Image shade = shadeObject.AddComponent<Image>();
+        shade.color = new Color(.025f, .008f, .003f, .63f);
+        shade.raycastTarget = false;
+        RectTransform shadeRect = shade.rectTransform;
+        shadeRect.anchorMin = new Vector2(.60f, 0f);
+        shadeRect.anchorMax = Vector2.one;
+        shadeRect.offsetMin = Vector2.zero;
+        shadeRect.offsetMax = Vector2.zero;
+    }
+
+    void BuildLogo(Transform parent)
+    {
+        GameObject plaque = CreatePanel(parent, "LogoPlaque", new Vector2(-570f, 330f), new Vector2(650f, 245f),
+            new Color(.15f, .05f, .015f, .95f), new Color(.96f, .55f, .13f, .95f));
+
+        AddText(plaque.transform, "THE TROY GAME", new Vector2(0f, 38f), 58, new Color(1f, .70f, .18f, 1f));
+        AddText(plaque.transform, "GODS DEFENSE", new Vector2(0f, -38f), 30, new Color(1f, .90f, .58f, 1f));
+    }
+
+    void BuildMenu(Transform parent)
+    {
+        Button play = CreateMenuButton(parent, "PLAY", new Vector2(485f, 255f), new Vector2(540f, 170f),
+            new Color(.93f, .30f, .05f, 1f), new Color(1f, .67f, .16f, 1f), 56);
+        play.onClick.AddListener(() => InvokeController("ShowLevels"));
+
+        CreateSecondary(parent, "HEROES", new Vector2(485f, 72f));
+        CreateSecondary(parent, "TOWERS", new Vector2(485f, -58f));
+        CreateSecondary(parent, "UPGRADES", new Vector2(485f, -188f));
+        CreateSecondary(parent, "SHOP", new Vector2(485f, -318f));
+
+        Button settings = CreateMenuButton(parent, "SETTINGS", new Vector2(825f, 465f), new Vector2(175f, 76f),
+            new Color(.18f, .07f, .025f, .98f), new Color(.95f, .55f, .13f, 1f), 19);
+        settings.onClick.AddListener(() => InvokeController("ShowSettingsFromMain"));
+
+        Button exit = CreateMenuButton(parent, "EXIT", new Vector2(825f, -470f), new Vector2(190f, 78f),
+            new Color(.24f, .05f, .025f, .98f), new Color(.85f, .19f, .08f, 1f), 24);
+        exit.onClick.AddListener(() => InvokeController("QuitGame"));
+    }
+
+    void CreateSecondary(Transform parent, string label, Vector2 position)
+    {
+        Button button = CreateMenuButton(parent, label, position, new Vector2(455f, 100f),
+            new Color(.78f, .60f, .36f, 1f), new Color(.36f, .16f, .05f, 1f), 28);
+        button.onClick.AddListener(() => ShowComingSoon(label));
+    }
+
+    Button CreateMenuButton(Transform parent, string label, Vector2 position, Vector2 size, Color face, Color border, int fontSize)
+    {
+        GameObject go = new GameObject(label);
         go.transform.SetParent(parent, false);
 
-        Image input = go.AddComponent<Image>();
-        input.color = new Color(1f, 1f, 1f, .001f);
-        input.raycastTarget = true;
+        Image image = go.AddComponent<Image>();
+        image.color = face;
 
-        RectTransform rect = input.rectTransform;
+        RectTransform rect = image.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
         rect.anchoredPosition = position;
         rect.sizeDelta = size;
 
+        Outline outline = go.AddComponent<Outline>();
+        outline.effectColor = border;
+        outline.effectDistance = new Vector2(5f, -5f);
+
+        Shadow shadow = go.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.03f, .01f, .005f, .82f);
+        shadow.effectDistance = new Vector2(0f, -8f);
+
         Button button = go.AddComponent<Button>();
-        button.targetGraphic = input;
-        button.transition = Selectable.Transition.None;
-        button.onClick.AddListener(action);
+        button.targetGraphic = image;
+        button.transition = Selectable.Transition.ColorTint;
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1f, .94f, .78f, 1f);
+        colors.pressedColor = new Color(.70f, .58f, .46f, 1f);
+        colors.selectedColor = colors.highlightedColor;
+        colors.fadeDuration = .07f;
+        button.colors = colors;
 
-        GameObject glowObject = new GameObject("Glow");
-        glowObject.transform.SetParent(go.transform, false);
-        Image glow = glowObject.AddComponent<Image>();
-        glow.color = new Color(1f, .72f, .22f, 0f);
-        glow.raycastTarget = false;
-        RectTransform glowRect = glow.rectTransform;
-        Stretch(glowRect);
-        glowRect.offsetMin = new Vector2(-5f, -5f);
-        glowRect.offsetMax = new Vector2(5f, 5f);
+        go.AddComponent<MenuButtonFeedback>();
 
-        Outline outline = glowObject.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, .76f, .30f, 0f);
-        outline.effectDistance = new Vector2(3f, -3f);
+        Text labelText = AddText(go.transform, label, Vector2.zero, fontSize, LabelColor(face));
+        RectTransform labelRect = labelText.rectTransform;
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+        return button;
+    }
 
-        MainMenuHotspotFeedback feedback = go.AddComponent<MainMenuHotspotFeedback>();
-        feedback.Configure(glow, outline, hoverAlpha);
+    GameObject CreatePanel(Transform parent, string name, Vector2 position, Vector2 size, Color fill, Color border)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+
+        Image image = go.AddComponent<Image>();
+        image.color = fill;
+        image.raycastTarget = false;
+
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+
+        Outline outline = go.AddComponent<Outline>();
+        outline.effectColor = border;
+        outline.effectDistance = new Vector2(4f, -4f);
+        return go;
+    }
+
+    Text AddText(Transform parent, string value, Vector2 position, int fontSize, Color color)
+    {
+        GameObject go = new GameObject(value + "_Text");
+        go.transform.SetParent(parent, false);
+
+        Text text = go.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.text = value;
+        text.fontSize = fontSize;
+        text.fontStyle = FontStyle.Bold;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.color = color;
+        text.raycastTarget = false;
+
+        RectTransform rect = text.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = new Vector2(600f, 90f);
+
+        Shadow shadow = go.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.05f, .015f, .005f, .88f);
+        shadow.effectDistance = new Vector2(2f, -3f);
+        return text;
     }
 
     void BuildToast(Transform parent)
     {
-        toastPanel = new GameObject("ComingSoonToast");
-        toastPanel.transform.SetParent(parent, false);
-        Image panelImage = toastPanel.AddComponent<Image>();
-        panelImage.color = new Color(.12f, .045f, .015f, .94f);
-        panelImage.raycastTarget = false;
-
-        RectTransform panelRect = panelImage.rectTransform;
-        panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(.5f, .5f);
-        panelRect.anchoredPosition = new Vector2(320f, -390f);
-        panelRect.sizeDelta = new Vector2(460f, 64f);
-
-        Outline outline = toastPanel.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, .60f, .18f, .80f);
-        outline.effectDistance = new Vector2(2f, -2f);
-
-        GameObject textObject = new GameObject("Text");
-        textObject.transform.SetParent(toastPanel.transform, false);
-        toastText = textObject.AddComponent<Text>();
-        toastText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        toastText.fontSize = 20;
-        toastText.fontStyle = FontStyle.Bold;
-        toastText.alignment = TextAnchor.MiddleCenter;
-        toastText.color = new Color(1f, .88f, .58f, 1f);
-        toastText.raycastTarget = false;
-        Stretch(toastText.rectTransform);
-
-        toastCanvasGroup = toastPanel.AddComponent<CanvasGroup>();
-        toastCanvasGroup.alpha = 0f;
-        toastPanel.SetActive(false);
+        toast = CreatePanel(parent, "ComingSoonToast", new Vector2(280f, -415f), new Vector2(520f, 64f),
+            new Color(.10f, .035f, .012f, .96f), new Color(.94f, .53f, .13f, .85f));
+        toastText = AddText(toast.transform, string.Empty, Vector2.zero, 19, new Color(1f, .88f, .56f, 1f));
+        toast.SetActive(false);
     }
 
-    void OpenChapterSelect()
+    void ShowComingSoon(string feature)
     {
-        InvokeController("ShowLevels");
+        if (toast == null || toastText == null) return;
+        toastText.text = GameLanguage.T(feature + " - IN DEVELOPMENT", feature + " - В РАЗРАБОТКЕ");
+        toast.SetActive(true);
+        CancelInvoke(nameof(HideToast));
+        Invoke(nameof(HideToast), 1.5f);
     }
 
-    void OpenSettings()
+    void HideToast()
     {
-        InvokeController("ShowSettingsFromMain");
-    }
-
-    void ExitGame()
-    {
-        InvokeController("QuitGame");
+        if (toast != null) toast.SetActive(false);
     }
 
     void InvokeController(string methodName)
@@ -196,61 +236,20 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         if (controller == null) controller = FindFirstObjectByType<GameMenuController>();
         if (controller == null) return;
 
-        MethodInfo method = typeof(GameMenuController).GetMethod(
-            methodName,
+        MethodInfo method = typeof(GameMenuController).GetMethod(methodName,
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
         if (method == null)
         {
-            RuntimeFileLogger.Event("MENU", $"Approved menu action was not found: {methodName}");
+            RuntimeFileLogger.Event("MENU", "Menu action not found: " + methodName);
             return;
         }
-
         method.Invoke(controller, null);
     }
 
-    void ShowComingSoon(string feature)
+    static Color LabelColor(Color background)
     {
-        if (toastPanel == null || toastText == null) return;
-
-        toastText.text = GameLanguage.T(
-            $"{feature}  -  IN DEVELOPMENT",
-            $"{feature}  -  В РАЗРАБОТКЕ");
-
-        if (toastRoutine != null) StopCoroutine(toastRoutine);
-        toastRoutine = StartCoroutine(AnimateToast());
-    }
-
-    IEnumerator AnimateToast()
-    {
-        toastPanel.SetActive(true);
-        float time = 0f;
-        while (time < .14f)
-        {
-            time += Time.unscaledDeltaTime;
-            toastCanvasGroup.alpha = Mathf.Clamp01(time / .14f);
-            yield return null;
-        }
-
-        toastCanvasGroup.alpha = 1f;
-        float hold = 0f;
-        while (hold < 1.35f)
-        {
-            hold += Time.unscaledDeltaTime;
-            yield return null;
-        }
-
-        time = 0f;
-        while (time < .22f)
-        {
-            time += Time.unscaledDeltaTime;
-            toastCanvasGroup.alpha = 1f - Mathf.Clamp01(time / .22f);
-            yield return null;
-        }
-
-        toastCanvasGroup.alpha = 0f;
-        toastPanel.SetActive(false);
-        toastRoutine = null;
+        float luminance = background.r * .299f + background.g * .587f + background.b * .114f;
+        return luminance > .55f ? new Color(.20f, .07f, .018f, 1f) : new Color(1f, .88f, .56f, 1f);
     }
 
     static void Stretch(RectTransform rect)
@@ -259,118 +258,5 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         rect.anchorMax = Vector2.one;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
-    }
-
-    void OnDestroy()
-    {
-        if (approvedSprite != null) Destroy(approvedSprite);
-    }
-}
-
-public sealed class MainMenuHotspotFeedback : MonoBehaviour,
-    IPointerEnterHandler,
-    IPointerExitHandler,
-    IPointerDownHandler,
-    IPointerUpHandler,
-    ISelectHandler,
-    IDeselectHandler
-{
-    const float HoverScale = 1.025f;
-    const float PressScale = .965f;
-    const float Speed = 20f;
-
-    RectTransform rect;
-    Image glow;
-    Outline outline;
-    float hoverAlpha;
-    float targetAlpha;
-    Vector3 targetScale = Vector3.one;
-    bool highlighted;
-
-    public void Configure(Image glowImage, Outline glowOutline, float alpha)
-    {
-        glow = glowImage;
-        outline = glowOutline;
-        hoverAlpha = alpha;
-    }
-
-    void Awake()
-    {
-        rect = transform as RectTransform;
-    }
-
-    void OnEnable()
-    {
-        highlighted = false;
-        targetAlpha = 0f;
-        targetScale = Vector3.one;
-        if (rect != null) rect.localScale = Vector3.one;
-        ApplyVisual(0f);
-    }
-
-    void Update()
-    {
-        if (rect == null) return;
-        float t = 1f - Mathf.Exp(-Speed * Time.unscaledDeltaTime);
-        rect.localScale = Vector3.Lerp(rect.localScale, targetScale, t);
-
-        float current = glow != null ? glow.color.a : 0f;
-        float next = Mathf.Lerp(current, targetAlpha, t);
-        ApplyVisual(next);
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        SetHighlighted(true);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        SetHighlighted(false);
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        if (!IsInteractable()) return;
-        targetScale = Vector3.one * PressScale;
-        targetAlpha = hoverAlpha * 1.25f;
-    }
-
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        if (!IsInteractable()) return;
-        targetScale = Vector3.one * (highlighted ? HoverScale : 1f);
-        targetAlpha = highlighted ? hoverAlpha : 0f;
-    }
-
-    public void OnSelect(BaseEventData eventData)
-    {
-        SetHighlighted(true);
-    }
-
-    public void OnDeselect(BaseEventData eventData)
-    {
-        SetHighlighted(false);
-    }
-
-    void SetHighlighted(bool value)
-    {
-        highlighted = value && IsInteractable();
-        targetScale = Vector3.one * (highlighted ? HoverScale : 1f);
-        targetAlpha = highlighted ? hoverAlpha : 0f;
-    }
-
-    void ApplyVisual(float alpha)
-    {
-        if (glow != null)
-            glow.color = new Color(1f, .72f, .22f, alpha);
-        if (outline != null)
-            outline.effectColor = new Color(1f, .80f, .34f, Mathf.Clamp01(alpha * 2.1f));
-    }
-
-    bool IsInteractable()
-    {
-        Button button = GetComponent<Button>();
-        return button == null || button.interactable;
     }
 }
