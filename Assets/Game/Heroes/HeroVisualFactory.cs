@@ -15,9 +15,29 @@ public static class HeroVisualFactory
     public static GameObject Create(TroyHeroId heroId)
     {
         string prefabName = GetPrefabName(heroId);
+        string source;
+        string detail;
+
         GameObject prefab = Resources.Load<GameObject>(ProductionResourceRoot + prefabName);
-        if (prefab == null)
+        if (prefab != null)
+        {
+            source = "PRODUCTION_RESOURCE";
+            detail = ProductionResourceRoot + prefabName;
+        }
+        else
+        {
             prefab = Resources.Load<GameObject>(GeneratedResourceRoot + prefabName);
+            if (prefab != null)
+            {
+                source = "GENERATED_RESOURCE";
+                detail = GeneratedResourceRoot + prefabName;
+            }
+            else
+            {
+                source = "PROCEDURAL_FALLBACK";
+                detail = "RuntimeWarriorVisualFactory";
+            }
+        }
 
         GameObject result = prefab != null
             ? Object.Instantiate(prefab)
@@ -25,6 +45,7 @@ public static class HeroVisualFactory
 
         result.name = prefabName;
         HeroSignatureArt.Enhance(result, heroId);
+        RuntimeVisualAudit.Report("Hero:" + heroId, source, detail);
         return result;
     }
 
