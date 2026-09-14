@@ -10,7 +10,7 @@ public sealed class MenuProgressPresentation : MonoBehaviour
 
     void Start()
     {
-        canvas = FindFirstObjectByType<Canvas>();
+        canvas = FindMenuCanvas();
         if (canvas == null) return;
         RefreshMainMenuProgress();
         RefreshChapterSelect();
@@ -18,10 +18,16 @@ public sealed class MenuProgressPresentation : MonoBehaviour
 
     public void RefreshAll()
     {
-        if (canvas == null) canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) canvas = FindMenuCanvas();
         if (canvas == null) return;
         RefreshMainMenuProgress();
         RefreshChapterSelect();
+    }
+
+    Canvas FindMenuCanvas()
+    {
+        GameObject menuCanvas = GameObject.Find("MenuCanvas");
+        return menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
     }
 
     void RefreshMainMenuProgress()
@@ -45,7 +51,7 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         if (!hasProgress)
         {
             MakeText(root.transform, L("No campaign in progress", "Кампания ещё не начата"), Vector2.zero, 16,
-                new Color(.78f, .68f, .58f, .85f));
+                new Color(.78f, .68f, .58f, .85f), 480f);
             return;
         }
 
@@ -53,8 +59,8 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         int score = campaign.TotalBestScore;
         string line1 = L($"Continue from Chapter {chapter}", $"Продолжить с главы {chapter}");
         string line2 = L($"Campaign score {score:N0}", $"Счёт кампании {score:N0}");
-        MakeText(root.transform, line1, new Vector2(0, 13), 17, new Color(1f, .84f, .56f, 1f));
-        MakeText(root.transform, line2, new Vector2(0, -14), 14, new Color(.78f, .68f, .58f, .9f));
+        MakeText(root.transform, line1, new Vector2(0, 13), 17, new Color(1f, .84f, .56f, 1f), 480f);
+        MakeText(root.transform, line2, new Vector2(0, -14), 14, new Color(.78f, .68f, .58f, .9f), 480f);
     }
 
     void RefreshChapterSelect()
@@ -71,7 +77,7 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         RectTransform sr = stats.AddComponent<RectTransform>();
         sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(.5f, .5f);
         sr.anchoredPosition = new Vector2(0, -155);
-        sr.sizeDelta = new Vector2(720, 70);
+        sr.sizeDelta = new Vector2(500, 62);
 
         CampaignController campaign = CampaignController.Instance;
         ChapterProgress chapter1 = campaign != null ? campaign.GetProgress(1) : null;
@@ -79,12 +85,12 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         int completionValue = chapter1 != null ? chapter1.completions : 0;
         string best = bestValue > 0 ? bestValue.ToString("N0") : "—";
         string completions = completionValue > 0 ? completionValue.ToString() : "0";
-        string text = L($"CHAPTER I  •  BEST SCORE {best}  •  COMPLETIONS {completions}",
-                        $"ГЛАВА I  •  ЛУЧШИЙ СЧЁТ {best}  •  ПРОХОЖДЕНИЙ {completions}");
-        MakeText(stats.transform, text, Vector2.zero, 16, new Color(.82f, .72f, .62f, .92f));
+        string text = L($"CHAPTER I  •  BEST {best}  •  CLEARS {completions}",
+                        $"ГЛАВА I  •  ЛУЧШИЙ {best}  •  ПРОХОЖДЕНИЙ {completions}");
+        MakeText(stats.transform, text, Vector2.zero, 14, new Color(.82f, .72f, .62f, .92f), 500f);
     }
 
-    Text MakeText(Transform parent, string value, Vector2 pos, int fontSize, Color color)
+    Text MakeText(Transform parent, string value, Vector2 pos, int fontSize, Color color, float width)
     {
         GameObject go = new GameObject("Text");
         go.transform.SetParent(parent, false);
@@ -98,7 +104,7 @@ public sealed class MenuProgressPresentation : MonoBehaviour
         RectTransform rt = text.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
         rt.anchoredPosition = pos;
-        rt.sizeDelta = new Vector2(700, 30);
+        rt.sizeDelta = new Vector2(width, 30);
         return text;
     }
 }
