@@ -110,13 +110,20 @@ public sealed class ModernCombatHud : MonoBehaviour
         bar.transform.SetParent(parent, false);
         RectTransform barRect = bar.transform as RectTransform;
         barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(0f, 1f);
-        barRect.anchoredPosition = new Vector2(24f, -24f);
-        barRect.sizeDelta = new Vector2(354f, 150f);
+        barRect.anchoredPosition = new Vector2(20f, -20f);
+        barRect.sizeDelta = new Vector2(320f, 150f);
 
-        Panel(bar.transform, "GoldResourcePanel", new Vector2(-58, 44), new Vector2(236, 58), new Color(.18f, .075f, .025f, .98f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-154, 44), new Vector2(52, 52), CoinSprite());
+        GameObject goldPanel = Panel(bar.transform, "GoldResourcePanel", new Vector2(-66, 48), new Vector2(210, 50), new Color(1f, 1f, 1f, 1f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Image goldImage = goldPanel.GetComponent<Image>();
+        if (goldImage != null)
+        {
+            goldImage.sprite = TroyHudArt.Panel();
+            goldImage.type = Image.Type.Sliced;
+            goldImage.color = new Color(.42f, .22f, .08f, 1f);
+        }
+        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-156, 48), new Vector2(54, 54), TroyHudArt.Icon("gold"));
         coin.color = Color.white;
-        goldText = Text(bar.transform, "0", new Vector2(-60, 44), new Vector2(150, 44), 27, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        goldText = Text(bar.transform, "0", new Vector2(-54, 48), new Vector2(132, 36), 27, new Color(1f, .88f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
 
         Panel(bar.transform, "GateResourcePanel", new Vector2(0, -38), new Vector2(330, 78), new Color(.070f, .041f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
         Icon(bar.transform, "GateIcon", new Vector2(-132, -38), new Vector2(54, 54), TroyHudArt.Icon("gate"));
