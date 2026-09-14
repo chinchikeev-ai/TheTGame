@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum DivineGiftType
@@ -33,14 +32,17 @@ public class GameManager : MonoBehaviour
     public bool BossBreached { get; private set; }
     public float RunTime => GameEnded ? finalRunTime : runStarted ? Mathf.Max(0f, Time.unscaledTime - runStartTime) : 0f;
     public float MagicCooldownRemaining => Mathf.Max(0f, magicReadyAt - Time.unscaledTime);
-    public bool GiftAvailable => !GameEnded && CurrentWave > 0 && giftWave != CurrentWave;
+    public bool GiftSelected { get; private set; }
+    public DivineGiftType SelectedGift { get; private set; }
+    public bool GiftAvailable => !GameEnded && CurrentWave == 0 && !GiftSelected;
+    public float PlayerDamageMultiplier => GiftSelected && SelectedGift == DivineGiftType.Ares ? 1.10f : 1f;
+    public float EnemySpeedGiftMultiplier => GiftSelected && SelectedGift == DivineGiftType.Poseidon ? .90f : 1f;
     public int FinalScore { get; private set; }
 
     EconomyController economy;
     float runStartTime;
     float finalRunTime;
     float magicReadyAt;
-    int giftWave = -1;
     bool runStarted;
     bool bossAtGateRecorded;
 
@@ -149,7 +151,7 @@ public class GameManager : MonoBehaviour
     {
         if (GameEnded || Time.unscaledTime < magicReadyAt || EnemyRegistry.AliveCount == 0) return false;
         magicReadyAt = Time.unscaledTime + 30f;
-        List<Enemy> enemies = new List<Enemy>(EnemyRegistry.All);
+        var enemies = new System.Collections.Generic.List<Enemy>(EnemyRegistry.All);
         RuntimeFileLogger.Event("MAGIC", $"Used on wave={CurrentWave}, targets={enemies.Count}");
         foreach (Enemy enemy in enemies)
         {
@@ -164,55 +166,31 @@ public class GameManager : MonoBehaviour
     {
         if (!GiftAvailable) return false;
 
-        giftWave = CurrentWave;
+        GiftSelected = true;
+        SelectedGift = gift;
         switch (gift)
         {
             case DivineGiftType.Ares:
-                ApplyAresGift();
                 break;
             case DivineGiftType.Athena:
-                HealBase(2);
+                MaxBaseHealth += 2;
+                BaseHealth += 2;
                 break;
             case DivineGiftType.Apollo:
                 AddMoney(100);
                 break;
             case DivineGiftType.Poseidon:
-                ApplyPoseidonGift();
                 break;
         }
 
-        RuntimeFileLogger.Event("GIFT", $"god={gift}, wave={CurrentWave}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, targets={EnemyRegistry.AliveCount}");
+        RuntimeFileLogger.Event(
+            "GIFT_SELECTED",
+            $"god={gift}, map={MapNumber}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}, playerDamageMul={PlayerDamageMultiplier:0.00}, enemySpeedMul={EnemySpeedGiftMultiplier:0.00}");
         return true;
     }
 
-    // Legacy compatibility for older callers. New HUD always asks the player to choose a god.
-    public bool UseGift()
-    {
-        if (!GiftAvailable) return false;
-        giftWave = CurrentWave;
-        AddMoney(100);
-        HealBase(2);
-        RuntimeFileLogger.Event("GIFT", $"legacy gift used on wave={CurrentWave}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}");
-        return true;
-    }
-
-    void ApplyAresGift()
-    {
-        List<Enemy> enemies = new List<Enemy>(EnemyRegistry.All);
-        foreach (Enemy enemy in enemies)
-        {
-            if (enemy != null) enemy.TakeDamage(60f);
-        }
-    }
-
-    void ApplyPoseidonGift()
-    {
-        List<Enemy> enemies = new List<Enemy>(EnemyRegistry.All);
-        foreach (Enemy enemy in enemies)
-        {
-            if (enemy != null) enemy.ApplySlow(.50f, 5f);
-        }
-    }
+    // Legacy compatibility for older callers. A legacy gift request now selects Apollo once for the map.
+    public bool UseGift() => UseGift(DivineGiftType.Apollo);
 
     public void WinGame()
     {
