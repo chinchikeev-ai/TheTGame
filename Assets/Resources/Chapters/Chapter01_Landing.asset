@@ -14,10 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chapterNumber: 1
   chapterId: chapter_01_landing
+  runtimeProfile: chapter01_landing
   titleEnglish: The Landing
   titleRussian: "\u0412\u044B\u0441\u0430\u0434\u043A\u0430"
   combatEvents: 5
   targetDurationMinutes: 12
+  encounters:
+  - {fileID: 11400000, guid: a101d8b64e3640fab22fd582fe903f11, type: 2}
+  - {fileID: 11400000, guid: a102d8b64e3640fab22fd582fe903f12, type: 2}
+  - {fileID: 11400000, guid: a103d8b64e3640fab22fd582fe903f13, type: 2}
+  - {fileID: 11400000, guid: a104d8b64e3640fab22fd582fe903f14, type: 2}
+  - {fileID: 11400000, guid: a105d8b64e3640fab22fd582fe903f15, type: 2}
   objectiveEnglish:
   - Hold both landing routes.
   - Stop Greek forces from reaching the Trojan gate.
