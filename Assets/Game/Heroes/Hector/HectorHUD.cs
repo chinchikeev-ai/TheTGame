@@ -113,13 +113,15 @@ public class HectorHUD : MonoBehaviour
             cr.anchorMin = Vector2.zero; cr.anchorMax = Vector2.one; cr.offsetMin = Vector2.zero; cr.offsetMax = Vector2.zero;
             cooldownFills[i].transform.SetAsFirstSibling();
         }
+
+        root.SetActive(false);
     }
 
     void Update()
     {
         HectorController h = HectorController.Instance;
         GameManager gm = GameManager.Instance;
-        bool hidden = h == null || gm == null || gm.GameEnded || IsMenuBlockingCombat();
+        bool hidden = h == null || gm == null || gm.GameEnded || !h.Selected || IsMenuBlockingCombat();
         if (hidden || root == null)
         {
             if (root != null) root.SetActive(false);
@@ -139,10 +141,8 @@ public class HectorHUD : MonoBehaviour
             nameText.text = GameLanguage.T("HECTOR • PRINCE OF TROY","ГЕКТОР • ПРИНЦ ТРОИ");
             hpText.text = $"HP {Mathf.CeilToInt(h.Health)} / {Mathf.CeilToInt(h.maxHealth)}";
             hpFill.fillAmount = h.maxHealth > 0f ? Mathf.Clamp01(h.Health / h.maxHealth) : 0f;
-            commandText.text = h.Selected
-                ? GameLanguage.T("SELECTED • RMB MOVE • Q/E/R/F ABILITIES","ВЫБРАН • ПКМ ДВИЖЕНИЕ • Q/E/R/F УМЕНИЯ")
-                : GameLanguage.T("CLICK HECTOR TO COMMAND","КЛИКНИТЕ ПО ГЕКТОРУ ДЛЯ УПРАВЛЕНИЯ");
-            commandText.color = h.Selected ? new Color(1f,.84f,.36f,1f) : new Color(.92f,.74f,.42f,1f);
+            commandText.text = GameLanguage.T("RMB MOVE • Q/E/R/F ABILITIES","ПКМ ДВИЖЕНИЕ • Q/E/R/F УМЕНИЯ");
+            commandText.color = new Color(1f,.84f,.36f,1f);
         }
 
         string[] names =
@@ -176,9 +176,7 @@ public class HectorHUD : MonoBehaviour
     void UseAbilityFromHud(int index)
     {
         HectorController h = HectorController.Instance;
-        if (h == null || h.IsDowned) return;
-        if (!h.Selected) h.SetSelected(true);
-        if (!h.CanAcceptCombatCommand) return;
+        if (h == null || h.IsDowned || !h.Selected || !h.CanAcceptCombatCommand) return;
 
         switch (index)
         {
