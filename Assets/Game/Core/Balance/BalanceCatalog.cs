@@ -91,7 +91,7 @@ public static class BalanceCatalog
     }
 
     // TowerType names are serialized legacy identifiers. Asset filenames use player-facing canonical terminology.
-    static string GetTowerResourceName(TowerType type)
+    public static string GetTowerResourceName(TowerType type)
     {
         switch (type)
         {
