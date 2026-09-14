@@ -29,7 +29,7 @@ public static class ChapterOneRuntimeInstaller
         TowerPlacement placement = EnsureComponent<TowerPlacement>("TowerPlacement");
         if (placement.gameCamera == null) placement.gameCamera = camera;
 
-        EnsureHector(camera);
+        EnsureHector(camera, mapBuilder.Paths);
         EnsureComponent<LandingPresentation>("LandingPresentation");
 
         ChapterOneCinematicCamera cinematic = Object.FindFirstObjectByType<ChapterOneCinematicCamera>();
@@ -51,7 +51,7 @@ public static class ChapterOneRuntimeInstaller
         return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
     }
 
-    static void EnsureHector(Camera camera)
+    static void EnsureHector(Camera camera, Transform[][] routes)
     {
         HectorController controller = Object.FindFirstObjectByType<HectorController>();
         GameObject hector;
@@ -60,7 +60,9 @@ public static class ChapterOneRuntimeInstaller
         {
             hector = HeroVisualFactory.Create(TroyHeroId.Hector);
             hector.name = "Hector";
-            hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
+            hector.transform.position = HectorRouteNavigator.HasRoutes(routes)
+                ? HectorRouteNavigator.GateStart(routes, .6f)
+                : MapBuilder.CellToWorld(new Vector2Int(16, 6), .6f);
             controller = hector.AddComponent<HectorController>();
         }
         else
@@ -68,6 +70,7 @@ public static class ChapterOneRuntimeInstaller
             hector = controller.gameObject;
         }
 
+        controller.ConfigureMovementRoutes(routes, true);
         EnsureHectorSelectionTarget(hector.transform);
 
         HectorPresentationBridge presentation = hector.GetComponent<HectorPresentationBridge>();
