@@ -14,9 +14,13 @@ public class TrojanGuardSquad : MonoBehaviour
     public float damage = 34f;
     public float attackRate = 1.0f;
     public int blockCapacity = 3;
+    public float blockDamageMultiplier = .65f;
+    public float braceTurnSpeed = 8f;
+    public float frontalBlockDot = .05f;
     public bool IsAlive => Health > 0f;
     public float Health { get; private set; }
     public int BlockedCount => blockedEnemies.Count;
+    public bool IsBraced => IsAlive && blockedEnemies.Count > 0;
 
     Tower ownerTower;
     float nextAttack;
@@ -35,6 +39,7 @@ public class TrojanGuardSquad : MonoBehaviour
     void OnDisable()
     {
         all.Remove(this);
+        presentation?.SetBlocking(false);
         ReleaseAll();
     }
 
@@ -61,6 +66,7 @@ public class TrojanGuardSquad : MonoBehaviour
         if (blockedEnemies.Count >= Mathf.Max(0, blockCapacity)) return false;
         blockedEnemies.Add(enemy);
         ownerTower?.crewAnimation?.PlayGuardBlock();
+        presentation?.SetBlocking(true);
         return true;
     }
 
@@ -69,6 +75,7 @@ public class TrojanGuardSquad : MonoBehaviour
     public void Release(Enemy enemy)
     {
         if (enemy != null) blockedEnemies.Remove(enemy);
+        if (blockedEnemies.Count == 0) presentation?.SetBlocking(false);
     }
 
     void Update()
@@ -82,6 +89,7 @@ public class TrojanGuardSquad : MonoBehaviour
 
         CleanupBlocked();
         FillOpenSlots();
+        UpdateDefensivePresentation();
 
         Enemy attackTarget = FindNearestBlockedEnemy();
         if (attackTarget != null && Time.time >= nextAttack)
@@ -98,6 +106,20 @@ public class TrojanGuardSquad : MonoBehaviour
                 presentation.PlaySpearAttack(() => ApplyAttackImpact(attackTarget, attackDamage));
             }
         }
+    }
+
+    void UpdateDefensivePresentation()
+    {
+        Enemy braceTarget = FindNearestBlockedEnemy();
+        bool braced = braceTarget != null;
+        presentation?.SetBlocking(braced);
+        if (!braced) return;
+
+        Vector3 direction = braceTarget.transform.position - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= .001f) return;
+        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Mathf.Max(0f, braceTurnSpeed) * Time.deltaTime);
     }
 
     void ApplyAttackImpact(Enemy attackTarget, float attackDamage)
@@ -156,6 +178,7 @@ public class TrojanGuardSquad : MonoBehaviour
             else enemy.ClearBlockedByGuard(this);
         }
         cleanupBuffer.Clear();
+        if (blockedEnemies.Count == 0) presentation?.SetBlocking(false);
     }
 
     Enemy FindNearestBlockedEnemy()
@@ -175,6 +198,7 @@ public class TrojanGuardSquad : MonoBehaviour
 
     void ReleaseAll()
     {
+        presentation?.SetBlocking(false);
         if (blockedEnemies.Count == 0) return;
 
         cleanupBuffer.Clear();
@@ -190,17 +214,51 @@ public class TrojanGuardSquad : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        ApplyIncomingDamage(amount, null);
+    }
+
+    public void TakeDamage(float amount, Vector3 sourcePoint)
+    {
+        ApplyIncomingDamage(amount, sourcePoint);
+    }
+
+    void ApplyIncomingDamage(float amount, Vector3? sourcePoint)
+    {
         if (!IsAlive) return;
-        Health -= Mathf.Max(1f, amount);
-        presentation?.PlayHit();
+        float incoming = Mathf.Max(1f, amount);
+        bool blocked = IsBraced && (!sourcePoint.HasValue || IsFacingSource(sourcePoint.Value));
+        float applied = blocked ? incoming * Mathf.Clamp(blockDamageMultiplier, .05f, 1f) : incoming;
+        Health -= applied;
+
+        if (blocked)
+        {
+            RuntimeEffects.Instance?.PlayShieldBlockSound(incoming >= 25f);
+            CombatImpactPresentation.Pulse(transform.position + Vector3.up * .72f, new Color(.95f,.68f,.22f), .72f, .16f);
+            ownerTower?.crewAnimation?.PlayGuardBlock();
+            presentation?.SetBlocking(true);
+        }
+        else
+        {
+            presentation?.PlayHit();
+        }
+
         if (Health <= 0f)
         {
             Health = 0f;
+            presentation?.SetBlocking(false);
             ReleaseAll();
             presentation?.PlayDeath(false);
             RuntimeFileLogger.Event("GUARD", "Trojan Guard squad destroyed");
             if (ownerTower != null) ownerTower.DestroyWithoutRefund();
             else Destroy(gameObject);
         }
+    }
+
+    bool IsFacingSource(Vector3 sourcePoint)
+    {
+        Vector3 direction = sourcePoint - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= .001f) return true;
+        return Vector3.Dot(transform.forward, direction.normalized) >= frontalBlockDot;
     }
 }

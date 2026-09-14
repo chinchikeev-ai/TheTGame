@@ -20,6 +20,8 @@ public class HectorController : MonoBehaviour
     public float warCryDuration = 10f;
     public float warCryCooldown = 20f;
     public float shieldWallCooldown = 22f;
+    public float shieldWallDuration = 4f;
+    public float shieldWallDamageMultiplier = .55f;
     public float spearThrowCooldown = 12f;
     public float spearThrowRange = 10f;
     public float spearThrowDamage = 220f;
@@ -36,10 +38,13 @@ public class HectorController : MonoBehaviour
     float nextAttack;
     float nextWarCry;
     float nextShieldWall;
+    float shieldWallUntil;
     float nextSpearThrow;
     float nextUltimate;
     float reviveAt;
     HectorPresentationBridge presentation;
+
+    public bool ShieldWallActive => !IsDowned && Time.time < shieldWallUntil;
 
     void Awake()
     {
@@ -130,15 +135,38 @@ public class HectorController : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        ApplyIncomingDamage(damage);
+    }
+
+    public void TakeDamage(float damage, Vector3 sourcePoint)
+    {
+        ApplyIncomingDamage(damage);
+    }
+
+    void ApplyIncomingDamage(float damage)
+    {
         if (IsDowned || Health <= 0f) return;
-        Health -= Mathf.Max(1f, damage);
-        presentation?.PlayDamageImpact(damage);
+        float incoming = Mathf.Max(1f, damage);
+        bool blocked = ShieldWallActive;
+        float applied = blocked ? incoming * Mathf.Clamp(shieldWallDamageMultiplier, .05f, 1f) : incoming;
+        Health -= applied;
+
+        if (blocked)
+        {
+            presentation?.PlayShieldBlockImpact(incoming);
+        }
+        else
+        {
+            presentation?.PlayDamageImpact(applied);
+        }
+
         if (Health <= 0f) Down();
     }
 
     void Down()
     {
         Health = 0f;
+        shieldWallUntil = 0f;
         IsDowned = true;
         SetSelected(false);
         reviveAt = Time.time + downedDuration;
@@ -178,12 +206,13 @@ public class HectorController : MonoBehaviour
     {
         if (IsDowned || Time.time < nextShieldWall) return;
         nextShieldWall = Time.time + shieldWallCooldown;
+        shieldWallUntil = Time.time + Mathf.Max(.2f, shieldWallDuration);
 
         Vector3 center = transform.position + transform.forward * 2.2f;
-        HectorShieldWallFactory.Create(center, transform.rotation);
+        HectorShieldWallFactory.Create(center, transform.rotation, shieldWallDuration);
 
-        RuntimeFileLogger.Event("HECTOR", "Shield Wall used");
-        presentation?.PlayShieldWall(center);
+        RuntimeFileLogger.Event("HECTOR", $"Shield Wall used; duration={shieldWallDuration:0.0}s; damageMultiplier={shieldWallDamageMultiplier:0.00}");
+        presentation?.PlayShieldWall(center, shieldWallDuration);
     }
 
     public void UseSpearThrow()
@@ -266,6 +295,7 @@ public class HectorController : MonoBehaviour
 
     public float WarCryCooldownRemaining => Mathf.Max(0f, nextWarCry - Time.time);
     public float ShieldWallCooldownRemaining => Mathf.Max(0f, nextShieldWall - Time.time);
+    public float ShieldWallRemaining => ShieldWallActive ? Mathf.Max(0f, shieldWallUntil - Time.time) : 0f;
     public float SpearThrowCooldownRemaining => Mathf.Max(0f, nextSpearThrow - Time.time);
     public float UltimateCooldownRemaining => Mathf.Max(0f, nextUltimate - Time.time);
 }

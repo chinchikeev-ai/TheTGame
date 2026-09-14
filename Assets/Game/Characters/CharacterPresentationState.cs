@@ -14,6 +14,9 @@ public class CharacterPresentationState : MonoBehaviour
     Coroutine bowRoutine;
     Coroutine impactRoutine;
     bool dead;
+    bool blocking;
+
+    public bool IsBlocking => blocking;
 
     void Awake()
     {
@@ -29,6 +32,20 @@ public class CharacterPresentationState : MonoBehaviour
             animator.SetFloat(Animator.StringToHash("Speed"), moving ? 1f : 0f, .08f, Time.deltaTime);
         else if (HasParameter("Moving", AnimatorControllerParameterType.Bool))
             animator.SetBool(Animator.StringToHash("Moving"), moving);
+    }
+
+    public void SetBlocking(bool value)
+    {
+        if (blocking == value) return;
+        blocking = value;
+        if (animator == null) return;
+
+        if (HasParameter("Blocking", AnimatorControllerParameterType.Bool))
+            animator.SetBool(Animator.StringToHash("Blocking"), value);
+        if (HasParameter("IsBlocking", AnimatorControllerParameterType.Bool))
+            animator.SetBool(Animator.StringToHash("IsBlocking"), value);
+
+        if (value && !dead) PlayBlock();
     }
 
     public void PlayAttack() => Trigger("Attack");
@@ -105,6 +122,7 @@ public class CharacterPresentationState : MonoBehaviour
 
     public void SetDowned(bool downed)
     {
+        if (downed) SetBlocking(false);
         if (animator != null && HasParameter("IsDowned", AnimatorControllerParameterType.Bool))
             animator.SetBool(Animator.StringToHash("IsDowned"), downed);
     }
@@ -113,6 +131,7 @@ public class CharacterPresentationState : MonoBehaviour
     {
         if (dead) return 0f;
         SetMoving(false);
+        SetBlocking(false);
         dead = true;
 
         if (bowRoutine != null)

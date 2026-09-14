@@ -15,6 +15,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     CharacterWeaponPresentation weaponPresentation;
     Renderer bodyRenderer;
     Vector3 previousPosition;
+    float shieldWallPoseUntil;
     bool previousDowned;
     bool selected;
 
@@ -71,6 +72,14 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         CombatImpactPresentation.HeroHit(transform.position + Vector3.up * .7f, damage >= 25f);
     }
 
+    public void PlayShieldBlockImpact(float incomingDamage)
+    {
+        characterPresentation?.SetBlocking(true);
+        RuntimeEffects.Instance?.PlayShieldBlockSound(incomingDamage >= 25f);
+        CombatImpactPresentation.Pulse(transform.position + transform.forward * .25f + Vector3.up * .75f,
+            new Color(.96f,.72f,.26f), incomingDamage >= 25f ? .95f : .72f, .18f);
+    }
+
     public void PlayWarCry(float radius)
     {
         characterPresentation?.PlayAbilityQ();
@@ -79,7 +88,14 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
     public void PlayShieldWall(Vector3 center)
     {
+        PlayShieldWall(center, 4f);
+    }
+
+    public void PlayShieldWall(Vector3 center, float duration)
+    {
+        shieldWallPoseUntil = Mathf.Max(shieldWallPoseUntil, Time.time + Mathf.Max(.2f, duration));
         characterPresentation?.PlayAbilityE();
+        characterPresentation?.SetBlocking(true);
         abilityPresentation?.PlayShieldWall(center, transform.rotation);
     }
 
@@ -140,6 +156,9 @@ public sealed class HectorPresentationBridge : MonoBehaviour
             previousDowned = downed;
             RefreshSelectionTint();
         }
+
+        bool shieldPoseActive = !downed && Time.time < shieldWallPoseUntil;
+        characterPresentation.SetBlocking(shieldPoseActive);
 
         Vector3 delta = transform.position - previousPosition;
         delta.y = 0f;
