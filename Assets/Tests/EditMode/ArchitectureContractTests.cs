@@ -11,18 +11,42 @@ public class ArchitectureContractTests
         Assert.NotNull(chapter);
         Assert.AreEqual(1, chapter.chapterNumber);
         Assert.AreEqual(5, chapter.combatEvents);
+        Assert.AreEqual(5, chapter.EncounterCount);
+        Assert.AreEqual(ChapterOneRuntimeInstaller.ProfileId, chapter.runtimeProfile);
         Assert.GreaterOrEqual(chapter.unlockChapter, 2);
+    }
+
+    [Test]
+    public void ChapterOne_EncounterComposition_IsAuthored()
+    {
+        ChapterData chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+        Assert.NotNull(chapter);
+
+        int[] expectedCounts = { 8, 12, 16, 20, 25 };
+        for (int encounterNumber = 1; encounterNumber <= 5; encounterNumber++)
+        {
+            EncounterData encounter = chapter.GetEncounter(encounterNumber);
+            Assert.NotNull(encounter, $"Encounter {encounterNumber}");
+            Assert.AreEqual(encounterNumber, encounter.encounterNumber);
+            Assert.AreEqual(expectedCounts[encounterNumber - 1], encounter.BaseEnemyCount, $"Encounter {encounterNumber}");
+            Assert.NotNull(encounter.spawnGroups);
+            Assert.Greater(encounter.spawnGroups.Length, 0);
+            if (encounterNumber < 5) Assert.IsFalse(encounter.HasBoss, $"Encounter {encounterNumber} must not contain a boss.");
+        }
     }
 
     [Test]
     public void ChapterOne_AutoStartPacing_IsElevenToThirteenMinutes()
     {
+        ChapterData chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+        Assert.NotNull(chapter);
+
         float totalSeconds = 0f;
-        for (int wave = 1; wave <= 5; wave++)
+        for (int encounterNumber = 1; encounterNumber <= chapter.EncounterCount; encounterNumber++)
         {
-            WaveData data = BalanceCatalog.GetWave(wave, 5);
-            Assert.NotNull(data, $"Wave {wave}");
-            totalSeconds += data.preparationTime + data.targetDuration;
+            EncounterData encounter = chapter.GetEncounter(encounterNumber);
+            Assert.NotNull(encounter, $"Encounter {encounterNumber}");
+            totalSeconds += encounter.preparationTime + encounter.targetDuration;
         }
 
         Assert.GreaterOrEqual(totalSeconds, 11f * 60f, $"Chapter I auto-start target is too short: {totalSeconds:0}s");
@@ -30,14 +54,23 @@ public class ArchitectureContractTests
     }
 
     [Test]
-    public void ChapterOne_FinalWave_IsMenelausBossWave()
+    public void ChapterOne_FinalEncounter_IsMenelausBossEncounter()
     {
-        WaveData finalWave = BalanceCatalog.GetWave(5, 5);
+        ChapterData chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+        Assert.NotNull(chapter);
+        EncounterData finalEncounter = chapter.GetEncounter(5);
         EnemyData boss = BalanceCatalog.GetEnemy(EnemyArchetype.Boss);
-        Assert.NotNull(finalWave);
-        Assert.IsTrue(finalWave.hasBoss);
+
+        Assert.NotNull(finalEncounter);
+        Assert.IsTrue(finalEncounter.HasBoss);
+        Assert.IsTrue(finalEncounter.Contains(EnemyArchetype.Boss));
         Assert.NotNull(boss);
         Assert.AreEqual("menelaus", boss.id);
+
+        bool menelausBehavior = false;
+        foreach (EncounterSpawnGroup group in finalEncounter.spawnGroups)
+            if (group != null && string.Equals(group.behaviorId, "menelaus", StringComparison.OrdinalIgnoreCase)) menelausBehavior = true;
+        Assert.IsTrue(menelausBehavior, "Final encounter must explicitly bind the Menelaus runtime behavior.");
     }
 
     [Test]
