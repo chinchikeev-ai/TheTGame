@@ -9,12 +9,14 @@ Path: `Assets/Resources/Data/Towers`
 Owner: `Assets/Game/Towers/TowerData.cs`
 
 Assets:
-- `MachineGun.asset` — Archer Tower
-- `Cannon.asset` — Ballista
-- `Slow.asset` — Priests of Apollo
-- `SpearThrower.asset` — Spear Wall
+- `ArcherTower.asset` — Archer Tower
+- `Ballista.asset` — Ballista
+- `PriestsOfApollo.asset` — Priests of Apollo
+- `SpearWall.asset` — Spear Wall
 - `FireTower.asset` — Fire Tower
 - `TrojanGuard.asset` — Trojan Guard
+
+These filenames are canonical and intentionally match gameplay terminology. Preserve the existing `.meta` GUIDs when moving or renaming them.
 
 ## EnemyData
 Path: `Assets/Resources/Data/Enemies`  
@@ -107,3 +109,4 @@ Stores unlocks, difficulty, per-chapter results, narrative choices, modifiers, C
 7. Adding a new chapter requires a supported `runtimeProfile` and authored encounters before it can be enabled.
 8. Missing authored runtime data is a validation failure, never a silent fallback.
 9. Preserve `.meta` files and GUIDs when moving assets.
+10. Keep asset filenames aligned with canonical gameplay terminology; do not reintroduce legacy names such as MachineGun/Cannon/Slow/SpearThrower.
