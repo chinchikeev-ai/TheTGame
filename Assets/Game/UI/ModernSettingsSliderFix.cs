@@ -86,7 +86,7 @@ public sealed class ModernSettingsSliderFix : MonoBehaviour
         slider.handleRect = handleRect;
         slider.direction = Slider.Direction.LeftToRight;
         slider.wholeNumbers = false;
-        slider.AddComponent<SettingsSliderLayoutMarker>();
+        slider.gameObject.AddComponent<SettingsSliderLayoutMarker>();
     }
 }
 
