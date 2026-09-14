@@ -34,6 +34,7 @@ public static class ChapterOneRuntimeInstaller
         EnsureComponent<EnemyInspectorPresentation>("EnemyInspector");
         EnsureComponent<CombatActionClarityPresentation>("CombatActionClarity");
         EnsureComponent<PreMapPatronSelectionPresentation>("PreMapPatronSelection");
+        EnsureComponent<PatronCommentaryPresentation>("PatronCommentary");
         EnsureComponent<LandingPresentation>("LandingPresentation");
 
         ChapterOneCinematicCamera cinematic = Object.FindFirstObjectByType<ChapterOneCinematicCamera>();
