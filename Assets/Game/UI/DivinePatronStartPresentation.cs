@@ -63,6 +63,7 @@ public sealed class DivinePatronStartPresentation : MonoBehaviour
         bool choosing = !gm.GameEnded && gm.CurrentWave == 0 && !gm.GiftSelected;
         if (choosing)
         {
+            overlay.transform.SetAsLastSibling();
             overlay.SetActive(true);
             giftButton.interactable = true;
             if (giftButtonText != null)
