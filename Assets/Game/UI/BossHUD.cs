@@ -77,9 +77,9 @@ public class BossHUD : MonoBehaviour
         RectTransform fr = fill.rectTransform;
         fr.anchorMin = Vector2.zero; fr.anchorMax = Vector2.one; fr.offsetMin = new Vector2(3,3); fr.offsetMax = new Vector2(-3,-3);
 
-        MakeBadge(root.transform,"AURA",new Vector2(-145,-38),new Color(.78f,.18f,.06f,1f));
-        MakeBadge(root.transform,"REINFORCEMENTS",new Vector2(8,-38),new Color(.62f,.34f,.10f,1f));
-        MakeBadge(root.transform,"GATE THREAT",new Vector2(175,-38),new Color(.72f,.10f,.035f,1f));
+        MakeBadge(root.transform,GameLanguage.T("AURA","АУРА"),new Vector2(-145,-38),new Color(.78f,.18f,.06f,1f));
+        MakeBadge(root.transform,GameLanguage.T("REINFORCEMENTS","ПОДКРЕПЛЕНИЯ"),new Vector2(8,-38),new Color(.62f,.34f,.10f,1f));
+        MakeBadge(root.transform,GameLanguage.T("GATE THREAT","УГРОЗА ВОРОТАМ"),new Vector2(175,-38),new Color(.72f,.10f,.035f,1f));
         root.SetActive(false);
     }
 
