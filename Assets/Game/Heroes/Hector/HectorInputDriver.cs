@@ -41,18 +41,48 @@ public sealed class HectorInputDriver : MonoBehaviour
         if (GameInput.UltimatePressed()) hector.UseUltimate();
     }
 
+    public bool TrySelectAtScreenPoint(Vector2 screenPoint)
+    {
+        Camera cam = gameCamera != null ? gameCamera : Camera.main;
+        if (cam == null || hector == null || hector.IsDowned) return false;
+        return ApplySelectionRay(cam.ScreenPointToRay(screenPoint));
+    }
+
     void UpdateSelection(Camera cam)
     {
-        Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
-        bool selected = Physics.Raycast(ray, out RaycastHit hit, 200f) &&
-                        hit.collider.GetComponentInParent<HectorController>() == hector;
+        ApplySelectionRay(cam.ScreenPointToRay(GameInput.PointerPosition));
+    }
+
+    bool ApplySelectionRay(Ray ray)
+    {
+        RaycastHit[] hits = Physics.RaycastAll(ray, 200f, ~0, QueryTriggerInteraction.Collide);
+        bool selected = false;
+        float nearestHectorDistance = float.PositiveInfinity;
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            HectorController hitHector = hits[i].collider != null
+                ? hits[i].collider.GetComponentInParent<HectorController>()
+                : null;
+            if (hitHector != hector || hits[i].distance >= nearestHectorDistance) continue;
+            nearestHectorDistance = hits[i].distance;
+            selected = true;
+        }
+
+        bool changed = hector.Selected != selected;
         hector.SetSelected(selected);
+        if (changed)
+            RuntimeFileLogger.Event("HECTOR_INPUT", selected ? "Selected by pointer." : "Deselected by pointer.");
+        return selected;
     }
 
     void MoveSelectedHector(Camera cam)
     {
         Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
         if (!battlefieldPlane.Raycast(ray, out float enter)) return;
-        hector.MoveTo(ray.GetPoint(enter));
+        Vector3 destination = ray.GetPoint(enter);
+        hector.MoveTo(destination);
+        HectorCommandFeedback.ShowMove(destination);
+        RuntimeFileLogger.Event("HECTOR_INPUT", $"Move command x={destination.x:0.0}, z={destination.z:0.0}");
     }
 }
