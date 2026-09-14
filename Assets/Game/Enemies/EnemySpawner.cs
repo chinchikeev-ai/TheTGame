@@ -45,6 +45,18 @@ public class EnemySpawner : MonoBehaviour
     public float InterWaveCountdown { get; private set; }
     public float TargetWaveDuration { get; private set; }
     public float CurrentWaveElapsed => WaveActive ? Mathf.Max(0f, Time.time - waveStartedAt) : lastWaveDuration;
+    public int CurrentWaveTotalEnemies => currentWaveTotalEnemies;
+    public int CurrentWaveSpawnedEnemies => currentWaveSpawnedEnemies;
+    public int CurrentWaveResolvedEnemies => Mathf.Max(0, currentWaveSpawnedEnemies - EnemyRegistry.AliveCount);
+    public float CurrentWaveProgress
+    {
+        get
+        {
+            if (!WaveActive) return CurrentWave > 0 ? 1f : 0f;
+            if (currentWaveTotalEnemies <= 0) return 0f;
+            return Mathf.Clamp01(CurrentWaveResolvedEnemies / (float)currentWaveTotalEnemies);
+        }
+    }
     public bool WaveActive { get; private set; }
     public bool WaitingForManualStart { get; private set; } = true;
     public bool NextWaveHasHeavy { get; private set; }
@@ -68,6 +80,8 @@ public class EnemySpawner : MonoBehaviour
     float lastWaveDuration;
     EncounterData preparedEncounter;
     int effectiveEnemyCount;
+    int currentWaveTotalEnemies;
+    int currentWaveSpawnedEnemies;
     float effectiveHpMultiplier = 1f;
     float effectiveSpeedMultiplier = 1f;
 
@@ -133,8 +147,10 @@ public class EnemySpawner : MonoBehaviour
             WaveActive = true;
             waveStartedAt = Time.time;
             lastWaveDuration = 0f;
+            currentWaveTotalEnemies = preparedPlan.Count;
+            currentWaveSpawnedEnemies = 0;
             GameStateController.Instance?.SetState(GameState.WaveRunning);
-            RuntimeFileLogger.Event("WAVE", $"Started encounter={wave}/{maxWaves}, id={preparedEncounter.encounterId}");
+            RuntimeFileLogger.Event("WAVE", $"Started encounter={wave}/{maxWaves}, id={preparedEncounter.encounterId}, total={currentWaveTotalEnemies}");
 
             for (int i = 0; i < preparedPlan.Count; i++)
             {
@@ -309,6 +325,7 @@ public class EnemySpawner : MonoBehaviour
             effectiveHpMultiplier * spawn.hpMultiplier,
             effectiveSpeedMultiplier * spawn.speedMultiplier,
             spawn.behaviorId);
+        currentWaveSpawnedEnemies++;
     }
 
     void SpawnConfiguredEnemy(EnemyData data, int route, float hpMultiplier, float speedMultiplier, string behaviorId = null)
@@ -341,11 +358,13 @@ public class EnemySpawner : MonoBehaviour
             int route = paths != null && paths.Length > 1 ? i % paths.Length : 0;
             EnemyArchetype archetype = pattern[i % pattern.Length];
             EnemyData data = BalanceCatalog.GetEnemy(archetype);
+            currentWaveTotalEnemies++;
             SpawnConfiguredEnemy(
                 data,
                 route,
                 Mathf.Max(.01f, effectiveHpMultiplier * hpMultiplier),
                 Mathf.Max(.01f, effectiveSpeedMultiplier * speedMultiplier));
+            currentWaveSpawnedEnemies++;
             yield return ReinforcementDelay;
         }
     }
