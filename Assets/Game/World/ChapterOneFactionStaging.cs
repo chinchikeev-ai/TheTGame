@@ -41,13 +41,13 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
 
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1)
         {
-            Destroy(gameObject);
+            UnityEngine.Object.Destroy(gameObject);
             yield break;
         }
 
         if (GameObject.Find("Chapter01_FactionStaging") != null)
         {
-            Destroy(gameObject);
+            UnityEngine.Object.Destroy(gameObject);
             yield break;
         }
 
@@ -85,7 +85,7 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
                 TowerFactory.SetColor(renderer.gameObject,GreekBlue);
             else if (Contains(n,"Rolled Cloth") || Contains(n,"Greek Camp Ground Cloth"))
                 TowerFactory.SetColor(renderer.gameObject,GreekPaleCloth);
-            else if (Contains(n,"Bronze") && (Contains(n,"Ship") || Contains(n,"Spear") || Contains(n,"Shield") || Contains(n,"Canopy") || Contains(n,"Mark")))
+            else if (Contains(n,"Bronze") && (Contains(n,"Spear") || Contains(n,"Shield") || Contains(n,"Canopy") || Contains(n,"Mark")))
                 TowerFactory.SetColor(renderer.gameObject,GreekCoolBronze);
         }
     }
@@ -105,7 +105,6 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
             if (renderer == null) continue;
             string n = renderer.gameObject.name;
 
-            // Strong material families first; broad stone matching happens last.
             if (Contains(n,"Banner") || Contains(n,"Red Cloth") || Contains(n,"Roof"))
             {
                 TowerFactory.SetColor(renderer.gameObject,Contains(n,"Roof") ? TrojanDeepRed : TrojanRed);
@@ -135,8 +134,6 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
         CreateGreekStandard(root,new Vector3(-9.85f,.04f,-4.85f),8f,.94f);
         CreateGreekStandard(root,new Vector3(-7.95f,.04f,7.20f),4f,.82f);
 
-        // Pale cloth + bronze + wood cluster gives the beachhead a deliberately
-        // cooler material stack without painting the whole battlefield blue.
         for (int side=-1; side<=1; side+=2)
         {
             Vector3 p = new Vector3(-8.55f,.035f,side*5.95f);
@@ -160,8 +157,6 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
         CreateTrojanBrazier(root,new Vector3(gateX-2.55f,.08f,-3.10f),.92f);
         CreateTrojanBrazier(root,new Vector3(gateX-2.55f,.08f,4.60f),.92f);
 
-        // A few large pale/warm stones create an authored material transition
-        // into Troy without touching path colliders or placement logic.
         Vector3[] stones =
         {
             new Vector3(gateX-4.65f,.06f,-5.00f),
@@ -239,7 +234,7 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
         go.transform.localScale=scale;
         if(rotation.HasValue) go.transform.localRotation=rotation.Value;
         Collider collider=go.GetComponent<Collider>();
-        if(collider!=null) Destroy(collider);
+        if(collider!=null) UnityEngine.Object.Destroy(collider);
         TowerFactory.SetColor(go,color);
         return go;
     }
