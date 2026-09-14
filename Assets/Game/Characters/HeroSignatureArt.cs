@@ -80,7 +80,7 @@ public static class HeroSignatureArt
         part.transform.localScale = scale;
         if (rotation.HasValue) part.transform.localRotation = rotation.Value;
         Collider collider = part.GetComponent<Collider>();
-        if (collider != null) Object.Destroy(collider);
+        if (collider != null) UnityEngine.Object.Destroy(collider);
         TowerFactory.SetColor(part, color);
         return part;
     }
