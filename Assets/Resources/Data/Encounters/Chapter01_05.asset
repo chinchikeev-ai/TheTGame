@@ -45,7 +45,12 @@ MonoBehaviour:
     - 1
     - 0
     - 3
+    - 0
+    - 1
+    - 4
+    - 2
     repeats: 1
+    baseCount: 24
     route: -1
     routeOffset: 0
     startDelay: 0
@@ -56,6 +61,7 @@ MonoBehaviour:
   - pattern:
     - 6
     repeats: 1
+    baseCount: 1
     route: -1
     routeOffset: 0
     startDelay: 0
