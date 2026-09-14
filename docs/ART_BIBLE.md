@@ -1,12 +1,14 @@
 # TheTroyGame — Art Bible
 
-Last reviewed: 2026-09-12
+Last reviewed: 2026-09-14
 
 ## Core Identity
 
+**Trojan War × Cartoon Tower Defence × Adventure Comedy.**
+
 **Troy = Fire.**
 
-The player is defending a bronze-age city whose visual language becomes hotter, more dramatic, and more mythological as the campaign approaches the fall of Troy.
+The player is defending a Bronze Age city whose visual language becomes hotter, more dramatic, and more mythological as the campaign approaches the fall of Troy. The presentation must stay colorful, exaggerated, readable and characterful rather than realistic or grim-dark.
 
 Troy should feel:
 
@@ -14,6 +16,7 @@ Troy should feel:
 - disciplined;
 - heroic;
 - bronze and sunlit;
+- colorful and theatrical;
 - increasingly smoky, ember-lit, and desperate.
 
 Greece should feel:
@@ -21,7 +24,46 @@ Greece should feel:
 - cooler by contrast;
 - organized and numerous;
 - sea-borne in Chapter I;
+- visually bold and readable by silhouette;
 - increasingly elite, siege-heavy, and mythological over time.
+
+`CREATIVE_DIRECTION.md` is the canonical tone contract. Historical research defines visual vocabulary, not realistic proportions.
+
+## Style Contract
+
+Characters, structures and props should use:
+
+- stylized cartoon proportions;
+- oversized helmets, shields, weapons and readable props where useful;
+- simplified, strong shape language;
+- expressive faces and body poses;
+- exaggerated anticipation, recoil and hit reactions;
+- controlled squash/stretch where rigs allow it;
+- high readability at gameplay camera distance;
+- saturated but disciplined color separation between factions and roles.
+
+Avoid:
+
+- photorealism;
+- grim-dark desaturation;
+- generic medieval-fantasy silhouettes;
+- over-detailed armor that collapses at gameplay zoom;
+- muddy brown/gray environments;
+- solemn historical-simulator presentation.
+
+## Tone and Comedy
+
+Humor is primarily visual and physical, not constant joke dialogue.
+
+Preferred devices:
+
+- expressive preparation and recovery poses;
+- oversized equipment used for readable silhouette and comic timing;
+- surprised, frustrated, panicked or triumphant reactions;
+- broad boss entrances and hero gestures;
+- small environmental gags that never obscure tactical state.
+
+Comedy must not erase the stakes. Chapter VII remains emotionally serious in outcome even though the visual language stays stylized.
 
 ## Palette
 
@@ -43,16 +85,18 @@ Usage:
 - charcoal: shadows, smoke, panel backgrounds;
 - fire orange: flames, selected states, VFX, late-campaign escalation.
 
-Avoid letting the game become one flat orange/brown screen. Use blue sea/sky, pale stone, dark smoke, and Greek cloth/armor to create contrast.
+Avoid letting the game become one flat orange/brown screen. Use blue sea/sky, pale stone, dark smoke, Greek cloth/armor and brighter faction accents to create contrast.
 
 ## Chapter I — The Landing
 
 Mood:
 
-- warm coastal daylight;
+- bright warm coastal daylight;
+- adventurous opening energy;
 - Trojan city behind the defense;
 - Greek pressure arriving from the sea;
 - readable beachhead routes;
+- playful character acting during landing and combat;
 - first sparks of the larger siege.
 
 Required first-viewport signals:
@@ -61,7 +105,8 @@ Required first-viewport signals:
 - coastline / Greek landing direction;
 - visible build positions;
 - warm fire/bronze UI accents;
-- clear enemy approach paths.
+- clear enemy approach paths;
+- immediately readable cartoon-adventure identity.
 
 ## UI Direction
 
@@ -71,6 +116,7 @@ Menus:
 - stone/bronze/gold treatment;
 - dark red primary action;
 - readable against illustrated background;
+- stylized rather than photorealistic decoration;
 - avoid plain prototype blue panels.
 
 Combat HUD:
@@ -104,16 +150,33 @@ Core silhouettes:
 - Trojan Guard: shield wall/blocking soldiers;
 - Cyclops later: large mythic artillery silhouette.
 
+Tower crews should have readable cartoon acting: draw, brace, heave, recoil, celebrate or panic where appropriate without delaying gameplay logic.
+
 ## Enemy Visual Rules
 
 Greek enemies should be readable by role:
 
 - infantry: simple mass unit;
-- runner: faster/lighter silhouette;
+- runner: lighter, more elastic silhouette;
 - shield bearer/heavy hoplite: shield/armor mass;
-- archer: ranged posture;
+- archer: clear bow/quiver posture;
 - battering ram: siege object, not a reskinned infantry;
-- Menelaus: boss silhouette, command aura, distinct health presentation.
+- Menelaus: oversized commander silhouette, command aura, distinct health presentation.
+
+Role readability must come from silhouette and equipment before color.
+
+## Animation Direction
+
+Animation should favor:
+
+- strong line of action;
+- readable anticipation → action → recovery;
+- exaggerated but fast hit reactions;
+- broad hero/boss gestures;
+- controlled squash/stretch where technically safe;
+- clear telegraphs at gameplay camera distance.
+
+Gameplay timings remain authoritative. Visual exaggeration must not desynchronize damage timing or mislead the player.
 
 ## VFX Direction
 
@@ -128,15 +191,16 @@ Minimum Chapter I VFX:
 - Shield Wall placement;
 - fire/ember accents on Trojan UI and environment.
 
-Fire should be useful feedback, not only decoration.
+VFX should be bold, readable and slightly theatrical. Fire should be useful feedback, not only decoration.
 
 ## Audio Direction
 
 Music states:
 
-- menu / preparation: calmer antique mode;
+- menu / preparation: lighter adventurous antique mode;
 - battle: more percussion and pressure;
-- boss: heavier, more dramatic layer.
+- boss: heavier, more dramatic layer;
+- finale: dramatic treatment with reduced overt comedy.
 
 SFX priorities:
 
@@ -147,6 +211,19 @@ SFX priorities:
 - wave horn;
 - boss intro;
 - menu confirm/back.
+
+SFX may use slightly exaggerated impact and movement accents when they improve readability and comic timing.
+
+## Production Acceptance
+
+A candidate is off-direction if it is technically correct but reads as realistic, grim, generic medieval fantasy, visually solemn or too detailed to read at gameplay distance.
+
+Production-art `DONE` requires consistency with:
+
+- `CREATIVE_DIRECTION.md`;
+- this Art Bible;
+- `CHARACTER_ART_DIRECTION.md` where applicable;
+- `MODEL_ART_INVENTORY.md` acceptance gates.
 
 ## Asset Rules
 
