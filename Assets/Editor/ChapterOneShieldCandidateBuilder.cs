@@ -34,7 +34,7 @@ public static class ChapterOneShieldCandidateBuilder
         new ShieldTarget(GreekRoot + "Enemy_Boss.prefab", false, 1.08f),
         new ShieldTarget(TrojanRoot + "Trojan_Infantry.prefab", false, 1.00f),
         new ShieldTarget(TrojanRoot + "Trojan_Guard.prefab", true, 1.00f),
-        new ShieldTarget(HeroRoot + "Hero_Hector.prefab", true, 1.02f),
+        new ShieldTarget(HeroRoot + "Hero_Hector.prefab", false, 1.10f),
         new ShieldTarget(HeroRoot + "Hero_Menelaus.prefab", false, 1.05f)
     };
 
