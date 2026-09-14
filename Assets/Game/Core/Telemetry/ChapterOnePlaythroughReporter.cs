@@ -71,6 +71,8 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
 
     int activeWave;
     float waveStartUnscaled;
+    int startPreparedEnemies;
+    float startTargetDuration;
     int startKills;
     int startLeaks;
     int startGoldEarned;
@@ -152,6 +154,8 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
     {
         activeWave = wave;
         waveStartUnscaled = Time.unscaledTime;
+        startPreparedEnemies = spawner.NextWaveEnemyCount;
+        startTargetDuration = spawner.TargetWaveDuration;
         startKills = game.Kills;
         startLeaks = game.Leaks;
         startGoldEarned = game.GoldEarned;
@@ -159,7 +163,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
         startMoney = game.Money;
         startGateHp = game.BaseHealth;
         maxAlive = EnemyRegistry.AliveCount;
-        RuntimeFileLogger.Event("RC_REPORT", $"Encounter snapshot started encounter={wave}, gold={startMoney}, gateHP={startGateHp}, preparedEnemies={spawner.NextWaveEnemyCount}");
+        RuntimeFileLogger.Event("RC_REPORT", $"Encounter snapshot started encounter={wave}, gold={startMoney}, gateHP={startGateHp}, preparedEnemies={startPreparedEnemies}, target={startTargetDuration:0.0}s");
     }
 
     void FinishWave(bool completed)
@@ -167,11 +171,11 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
         if (activeWave <= 0) return;
 
         float actual = Mathf.Max(0f, Time.unscaledTime - waveStartUnscaled);
-        float target = spawner.TargetWaveDuration;
+        float target = startTargetDuration;
         WaveReport wave = new WaveReport
         {
             wave = activeWave,
-            preparedEnemies = spawner.NextWaveEnemyCount,
+            preparedEnemies = startPreparedEnemies,
             targetDurationSeconds = target,
             actualDurationSeconds = actual,
             durationDeltaSeconds = actual - target,
@@ -189,6 +193,8 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
         report.waves.Add(wave);
         RuntimeFileLogger.Event("RC_REPORT", $"Encounter snapshot encounter={wave.wave}, actual={wave.actualDurationSeconds:0.0}s, target={wave.targetDurationSeconds:0.0}s, kills={wave.kills}, leaks={wave.leaks}, goldEarned={wave.goldEarned}, goldSpent={wave.goldSpent}, money={wave.moneyStart}->{wave.moneyEnd}, gateHP={wave.gateHpStart}->{wave.gateHpEnd}, maxAlive={wave.maxAliveEnemies}, completed={wave.completed}");
         activeWave = 0;
+        startPreparedEnemies = 0;
+        startTargetDuration = 0f;
     }
 
     void WriteReport()
