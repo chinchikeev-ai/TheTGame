@@ -138,17 +138,23 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
 
     void StylePauseMenu(Transform root)
     {
-        StyleScreenBackground(root, new Color(.24f, .085f, .025f, .86f));
+        StylePauseBattleBackdrop(root);
 
         Transform card = root.Find("PauseCard");
         if (card == null) return;
 
         RectTransform cardRect = card as RectTransform;
         if (cardRect != null)
-            cardRect.sizeDelta = new Vector2(980f, 720f);
+        {
+            cardRect.anchorMin = cardRect.anchorMax = cardRect.pivot = new Vector2(.5f, .5f);
+            cardRect.anchoredPosition = Vector2.zero;
+            cardRect.sizeDelta = new Vector2(860f, 820f);
+        }
 
-        StyleCard(card, new Color(.075f, .030f, .012f, .985f), new Color(.95f, .52f, .14f, .80f));
-        AddAccentBars(card, 940f);
+        StyleCard(card, new Color(.060f, .020f, .008f, .94f), new Color(1f, .56f, .14f, .88f));
+        AddAccentBars(card, 820f);
+        AddPauseDecoration(card);
+        RecomposePauseContent(card);
         StyleTexts(card, "PAUSED", "ПАУЗА");
 
         Button[] buttons = card.GetComponentsInChildren<Button>(true);
@@ -165,7 +171,183 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
                 StyleButton(buttons[i], ButtonVisual.Stone);
         }
 
-        RuntimeFileLogger.Event("MENU", "Styled Pause menu to approved menu language");
+        RuntimeFileLogger.Event("MENU", "Styled Pause menu as live-battle overlay");
+    }
+
+    void StylePauseBattleBackdrop(Transform root)
+    {
+        Image image = root.GetComponent<Image>();
+        if (image == null) return;
+
+        image.sprite = null;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = false;
+        image.color = new Color(.018f, .008f, .004f, .72f);
+
+        Transform old = root.Find("PauseVignette");
+        if (old != null) return;
+
+        GameObject vignette = new GameObject("PauseVignette");
+        vignette.transform.SetParent(root, false);
+        Image vignetteImage = vignette.AddComponent<Image>();
+        vignetteImage.color = new Color(.18f, .045f, .010f, .12f);
+        vignetteImage.raycastTarget = false;
+        RectTransform vr = vignetteImage.rectTransform;
+        vr.anchorMin = Vector2.zero;
+        vr.anchorMax = Vector2.one;
+        vr.offsetMin = new Vector2(95f, 55f);
+        vr.offsetMax = new Vector2(-95f, -55f);
+        Outline edge = vignette.AddComponent<Outline>();
+        edge.effectColor = new Color(.55f, .16f, .035f, .20f);
+        edge.effectDistance = new Vector2(8f, -8f);
+        vignette.transform.SetAsFirstSibling();
+    }
+
+    void AddPauseDecoration(Transform card)
+    {
+        if (card.Find("PauseDecoration") != null) return;
+
+        GameObject root = new GameObject("PauseDecoration");
+        root.transform.SetParent(card, false);
+        RectTransform rr = root.AddComponent<RectTransform>();
+        rr.anchorMin = Vector2.zero;
+        rr.anchorMax = Vector2.one;
+        rr.offsetMin = Vector2.zero;
+        rr.offsetMax = Vector2.zero;
+        rr.SetAsFirstSibling();
+
+        // Crossed spears behind the central shield plaque.
+        GameObject spearLeft = AddDecorationRect(root.transform, "SpearLeft", new Vector2(-145f, 150f), new Vector2(10f, 630f), new Color(.50f, .27f, .085f, .72f), -24f);
+        GameObject spearRight = AddDecorationRect(root.transform, "SpearRight", new Vector2(145f, 150f), new Vector2(10f, 630f), new Color(.50f, .27f, .085f, .72f), 24f);
+        spearLeft.transform.SetAsFirstSibling();
+        spearRight.transform.SetAsFirstSibling();
+
+        AddDecorationRect(root.transform, "SpearHeadLeft", new Vector2(-270f, 395f), new Vector2(32f, 46f), new Color(.84f, .52f, .18f, .85f), -24f);
+        AddDecorationRect(root.transform, "SpearHeadRight", new Vector2(270f, 395f), new Vector2(32f, 46f), new Color(.84f, .52f, .18f, .85f), 24f);
+
+        GameObject shield = AddDecorationRect(root.transform, "PauseShield", new Vector2(0f, 258f), new Vector2(560f, 126f), new Color(.25f, .055f, .018f, .97f));
+        Outline outline = shield.AddComponent<Outline>();
+        outline.effectColor = new Color(1f, .62f, .16f, .96f);
+        outline.effectDistance = new Vector2(5f, -5f);
+        Shadow shadow = shield.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.02f, .004f, .001f, .92f);
+        shadow.effectDistance = new Vector2(0f, -10f);
+        shield.AddComponent<PauseMenuAmbientPulse>();
+
+        AddDecorationRect(root.transform, "ShieldWingLeft", new Vector2(-304f, 258f), new Vector2(76f, 76f), new Color(.43f, .105f, .025f, .96f), 45f);
+        AddDecorationRect(root.transform, "ShieldWingRight", new Vector2(304f, 258f), new Vector2(76f, 76f), new Color(.43f, .105f, .025f, .96f), 45f);
+
+        AddDecorationRect(root.transform, "Divider", new Vector2(0f, 153f), new Vector2(610f, 3f), new Color(1f, .49f, .10f, .55f));
+
+        Text hint = AddDecorationText(
+            root.transform,
+            GameLanguage.T("ESC  •  RETURN TO BATTLE", "ESC  •  ВЕРНУТЬСЯ В БОЙ"),
+            new Vector2(0f, -347f),
+            new Vector2(540f, 34f),
+            13,
+            new Color(.78f, .65f, .50f, .76f));
+        hint.fontStyle = FontStyle.Bold;
+    }
+
+    void RecomposePauseContent(Transform card)
+    {
+        Text[] texts = card.GetComponentsInChildren<Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            Text text = texts[i];
+            if (text == null || text.GetComponentInParent<Button>() != null) continue;
+
+            string value = text.text ?? string.Empty;
+            RectTransform rt = text.rectTransform;
+            if (ContainsAny(value, "PAUSED", "ПАУЗА"))
+            {
+                rt.anchoredPosition = new Vector2(0f, 258f);
+                rt.sizeDelta = new Vector2(520f, 80f);
+                text.fontSize = 54;
+                text.color = new Color(1f, .72f, .20f, 1f);
+            }
+            else if (ContainsAny(value, "The battle waits", "Битва ждёт"))
+            {
+                rt.anchoredPosition = new Vector2(0f, 188f);
+                rt.sizeDelta = new Vector2(620f, 42f);
+                text.fontSize = 16;
+                text.color = new Color(.88f, .76f, .61f, .92f);
+            }
+        }
+
+        Button[] buttons = card.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            Text label = button.GetComponentInChildren<Text>(true);
+            if (label == null) continue;
+
+            string value = label.text ?? string.Empty;
+            RectTransform rt = button.transform as RectTransform;
+            if (rt == null) continue;
+
+            if (ContainsAny(value, "RESUME", "ВЕРНУТЬСЯ В ИГРУ"))
+            {
+                rt.anchoredPosition = new Vector2(0f, 92f);
+                rt.sizeDelta = new Vector2(550f, 76f);
+                label.fontSize = 24;
+            }
+            else if (ContainsAny(value, "SETTINGS", "НАСТРОЙКИ"))
+            {
+                rt.anchoredPosition = new Vector2(0f, 5f);
+                rt.sizeDelta = new Vector2(500f, 62f);
+            }
+            else if (ContainsAny(value, "RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"))
+            {
+                rt.anchoredPosition = new Vector2(0f, -70f);
+                rt.sizeDelta = new Vector2(500f, 62f);
+            }
+            else if (ContainsAny(value, "MAIN MENU", "ГЛАВНОЕ МЕНЮ"))
+            {
+                rt.anchoredPosition = new Vector2(0f, -145f);
+                rt.sizeDelta = new Vector2(500f, 60f);
+            }
+            else if (ContainsAny(value, "EXIT", "ВЫХОД"))
+            {
+                rt.anchoredPosition = new Vector2(0f, -222f);
+                rt.sizeDelta = new Vector2(300f, 54f);
+            }
+        }
+    }
+
+    GameObject AddDecorationRect(Transform parent, string name, Vector2 position, Vector2 size, Color color, float rotation = 0f)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>();
+        image.color = color;
+        image.raycastTarget = false;
+
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        rect.localRotation = Quaternion.Euler(0f, 0f, rotation);
+        return go;
+    }
+
+    Text AddDecorationText(Transform parent, string value, Vector2 position, Vector2 size, int fontSize, Color color)
+    {
+        GameObject go = new GameObject("PauseHint");
+        go.transform.SetParent(parent, false);
+        Text text = go.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.text = value;
+        text.fontSize = fontSize;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.color = color;
+        text.raycastTarget = false;
+
+        RectTransform rect = text.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        return text;
     }
 
     void StyleEndMenu(Transform root)
@@ -386,5 +568,25 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         if (approvedSprite != null) Destroy(approvedSprite);
+    }
+}
+
+public sealed class PauseMenuAmbientPulse : MonoBehaviour
+{
+    RectTransform rect;
+    Vector3 baseScale;
+
+    void Awake()
+    {
+        rect = transform as RectTransform;
+        baseScale = rect != null ? rect.localScale : Vector3.one;
+        if (baseScale == Vector3.zero) baseScale = Vector3.one;
+    }
+
+    void Update()
+    {
+        if (rect == null) return;
+        float pulse = 1f + Mathf.Sin(Time.unscaledTime * 2.1f) * .012f;
+        rect.localScale = baseScale * pulse;
     }
 }
