@@ -2,13 +2,15 @@ using UnityEngine;
 
 public enum GameState
 {
-    Preparing,
-    WaveRunning,
-    BetweenWaves,
-    Paused,
-    Victory,
-    Defeat,
-    NarrativeEvent
+    Preparing = 0,
+    EncounterRunning = 1,
+    WaveRunning = EncounterRunning,
+    BetweenEncounters = 2,
+    BetweenWaves = BetweenEncounters,
+    Paused = 3,
+    Victory = 4,
+    Defeat = 5,
+    NarrativeEvent = 6
 }
 
 public class GameStateController : MonoBehaviour
