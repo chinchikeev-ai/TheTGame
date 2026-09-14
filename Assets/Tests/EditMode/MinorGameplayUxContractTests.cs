@@ -15,7 +15,7 @@ public class MinorGameplayUxContractTests
     }
 
     [Test]
-    public void DivineGift_CanBeSelectedOnlyOncePerMap()
+    public void DivineGift_CanBeSelectedOnlyOnceAndOnlyBeforeMapStarts()
     {
         GameObject host = new GameObject("GiftContractTest");
         GameManager manager = host.AddComponent<GameManager>();
@@ -26,15 +26,34 @@ public class MinorGameplayUxContractTests
             Assert.IsTrue(manager.UseGift(DivineGiftType.Apollo));
             Assert.IsTrue(manager.GiftSelected);
             Assert.AreEqual(DivineGiftType.Apollo, manager.SelectedGift);
-            Assert.AreEqual(startingGold + 100, manager.Money);
+            Assert.AreEqual(startingGold + 50, manager.Money);
             Assert.IsFalse(manager.GiftAvailable);
             Assert.IsFalse(manager.UseGift(DivineGiftType.Ares), "A second patron selection on the same map must be rejected.");
             Assert.AreEqual(DivineGiftType.Apollo, manager.SelectedGift);
+
+            manager.BeginRun();
+            Assert.IsFalse(manager.GiftAvailable, "Patron selection must never reopen after the map run begins.");
         }
         finally
         {
             Object.DestroyImmediate(host);
         }
+    }
+
+    [Test]
+    public void EconomyAndEnemyCounts_UseRequestedGlobalRatios()
+    {
+        Assert.AreEqual(190, DifficultyRules.StartingGold(CampaignDifficulty.Story));
+        Assert.AreEqual(150, DifficultyRules.StartingGold(CampaignDifficulty.Strategos));
+        Assert.AreEqual(120, DifficultyRules.StartingGold(CampaignDifficulty.Legendary));
+
+        Assert.AreEqual(1.35f, DifficultyRules.EnemyCountMultiplier(CampaignDifficulty.Story), .0001f);
+        Assert.AreEqual(1.50f, DifficultyRules.EnemyCountMultiplier(CampaignDifficulty.Strategos), .0001f);
+        Assert.AreEqual(1.725f, DifficultyRules.EnemyCountMultiplier(CampaignDifficulty.Legendary), .0001f);
+
+        Assert.AreEqual(.575f, DifficultyRules.RewardMultiplier(CampaignDifficulty.Story), .0001f);
+        Assert.AreEqual(.50f, DifficultyRules.RewardMultiplier(CampaignDifficulty.Strategos), .0001f);
+        Assert.AreEqual(.45f, DifficultyRules.RewardMultiplier(CampaignDifficulty.Legendary), .0001f);
     }
 
     [Test]
