@@ -52,7 +52,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         objectiveText = AddText(objectiveCard.transform, "", new Vector2(-248f, -42f), new Vector2(480f, 30f), 18, new Color(.96f, .88f, .75f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         progressText = AddText(objectiveCard.transform, "", new Vector2(-248f, -72f), new Vector2(560f, 22f), 12, new Color(.77f, .69f, .59f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
 
-        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, 84f), new Vector2(500f, 126f), new Vector2(0f,0f), new Vector2(0f,0f));
+        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, 400f), new Vector2(500f, 126f), new Vector2(0f,0f), new Vector2(0f,0f));
         tutorialIcon = AddIcon(tutorialCard.transform,"TutorialIcon",new Vector2(42,63),52,TroyHudArt.Tower(TowerType.MachineGun));
         tutorialTitle = AddText(tutorialCard.transform, "", new Vector2(78f, 88f), new Vector2(396f, 24f), 13, new Color(1f, .70f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold, new Vector2(0f, 0f));
         tutorialText = AddText(tutorialCard.transform, "", new Vector2(78f, 24f), new Vector2(396f, 58f), 14, new Color(.93f, .86f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 0f));
@@ -181,7 +181,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     bool IsMenuBlockingCombat()
     {
         if (menuCanvas == null) return false;
-        string[] names = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal" };
+        string[] names = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu" };
         for (int i = 0; i < names.Length; i++)
         {
             Transform t = menuCanvas.transform.Find(names[i]);
