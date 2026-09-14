@@ -1,5 +1,7 @@
 # Chapter I Final Gameplay RC Playtest
 
+Last reviewed: 2026-09-14
+
 This is the acceptance protocol for freezing Chapter I gameplay balance. It is intentionally separate from the production-art gate.
 
 ## Baseline run
@@ -14,7 +16,7 @@ Run Chapter I in the Unity Editor or a local Windows build with these conditions
 - Let normal preparation timers run unless the purpose of the run is explicitly to measure manual early-wave starts
 - Do not use editor cheats, debug spawning, time acceleration, forced kills or test-only helpers
 - Use Hector, upgrades, targeting, Magic and Gift as a real player would
-- Finish all five combat events and the Menelaus encounter
+- Finish all five authored encounters and the Menelaus encounter
 
 The runtime reporter automatically writes:
 
@@ -30,40 +32,63 @@ After the result screen:
 1. Open `TheTroyGame > Validation > Analyze Latest Chapter I Playthrough`.
 2. The analyzer finds the newest Chapter I JSON report.
 3. It writes `ChapterI_RC_Analysis_*.md` into the same Logs directory.
-4. It opens the generated analysis and prints WARN/FAIL findings to the Unity Console.
+4. It prints WARN/FAIL findings to the Unity Console.
+5. Then run `TheTroyGame > Validation > Check Chapter I Gameplay Freeze Readiness`.
+6. The freeze validator independently re-checks all hard gates and writes `ChapterI_GameplayFreeze_Readiness_*.md`.
 
 Use `TheTroyGame > Validation > Open Chapter I Playthrough Logs` to open the report folder directly.
 
-## RC acceptance rules
+The freeze validator can return only:
 
-A Story baseline is eligible to freeze only when all of the following are true:
+- `BLOCKED` — one or more hard acceptance gates failed;
+- `READY FOR HUMAN ACCEPTANCE` — hard gates pass, but WARN findings and real presentation still require review.
 
+It never marks gameplay frozen automatically.
+
+## Hard gameplay-freeze gates
+
+A Story baseline is eligible for human acceptance only when all of the following are true:
+
+- Report belongs to Chapter I.
+- Difficulty is exactly `Story`.
 - Result is `VICTORY`.
-- Menelaus is defeated and does not destroy the Trojan gate.
-- Total Chapter I time is between `11:00` and `13:00` at 1x.
-- All five wave snapshots are present and complete.
-- No wave is grossly outside its authored target duration.
-- Economy does not show obvious starvation or large unused purchasing power.
-- Gate survival is neither zero nor an obviously untouched no-pressure result.
-- Leak pressure is explainable and does not dominate the run.
-- Peak-alive pressure does not show extreme serialization or a persistent enemy backlog.
-- Average FPS does not raise a first-pass performance warning for the tested resolution.
+- Menelaus is defeated and does not reach a completed gate-breach state.
+- Total Chapter I time is between `11:00` and `13:00`.
+- Exactly five encounter snapshots are present.
+- Every encounter snapshot is complete.
+- Every encounter `1..5` is represented exactly in the run.
+- No individual encounter differs from its authored duration target by `40%` or more.
+- Gate HP remains above zero.
 
-WARN findings may be accepted only when the design reason is explicit. FAIL findings block the Story gameplay freeze.
+The detailed analyzer additionally evaluates economy, gate-pressure quality, leaks, peak-alive pressure and observed FPS. Those findings remain part of human acceptance even when the hard freeze gate says `READY FOR HUMAN ACCEPTANCE`.
 
 ## Tuning order
 
 When the analyzer flags a problem, tune locally before changing global rules:
 
-1. Identify the exact wave with the largest pacing/pressure/gate-loss deviation.
-2. Check composition and spawn cadence.
-3. Check enemy HP/speed only after composition/cadence.
+1. Identify the exact encounter with the largest pacing/pressure/gate-loss deviation.
+2. Check authored spawn composition and cadence.
+3. Check encounter/enemy HP and speed only after composition/cadence.
 4. Check rewards and tower/upgrade prices for economy problems.
 5. Avoid hiding combat pacing problems by padding preparation time.
-6. Avoid solving one bad wave by globally increasing gate HP.
-7. For Wave 5, tune Menelaus reinforcement pressure separately from Menelaus identity whenever possible.
+6. Avoid solving one bad encounter by globally increasing gate HP.
+7. For Encounter 5, tune Menelaus reinforcement pressure separately from Menelaus identity whenever possible.
 
-Authored balance lives under `Assets/Resources/Data/Waves`, `Assets/Resources/Data/Enemies` and `Assets/Resources/Data/Towers`.
+Runtime encounter composition/pacing now lives under `Assets/Resources/Data/Encounters`. Reusable enemy stats live under `Assets/Resources/Data/Enemies`; tower stats live under `Assets/Resources/Data/Towers`.
+
+Do not tune Chapter I by adding encounter-number/index formulas back into `BalanceCatalog` or `EnemySpawner`.
+
+## Freeze rule
+
+Once a Story report returns `READY FOR HUMAN ACCEPTANCE`:
+
+1. Review every remaining analyzer WARN finding.
+2. Explicitly accept or fix each warning.
+3. Perform the required RU/EN visual/readability pass.
+4. Record the baseline as accepted in `PROJECT_STATUS.md` only after that inspection.
+5. After acceptance, change Chapter I balance only for a documented regression or deliberately reopened balance task.
+
+Until those steps are complete, Chapter I remains an RC even if the hard automated gate passes.
 
 ## Difficulty validation after Story freeze
 
@@ -85,6 +110,6 @@ After gameplay tuning is stable, complete real Play Mode checks at minimum for:
 - `1366x768` or `1376x768` RU
 - `1366x768` or `1376x768` EN
 
-Verify that the top resources, wave status, boss HUD, Hector HUD, defense picker, contextual defense-unit menu and result screen never overlap or leave the usable battlefield inaccessible.
+Verify that the top resources, encounter status, boss HUD, Hector HUD, defense picker, contextual defense-unit menu and result screen never overlap or leave the usable battlefield inaccessible.
 
 Only after gameplay RC and visual-fit QA are accepted should Chapter I be treated as the campaign gameplay baseline. Production-art freeze remains a separate gate.
