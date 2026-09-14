@@ -1,0 +1,115 @@
+using UnityEngine;
+
+public static class ChapterOneRuntimeInstaller
+{
+    public const string ProfileId = "chapter01_landing";
+
+    public static ChapterRuntimeContext Install(ChapterData chapter, Camera camera)
+    {
+        ConfigureCameraAndLighting(camera);
+
+        MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
+        bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
+        if (worldNeedsBuild)
+        {
+            bool hadRuntimeWorld = GameObject.Find("Route_A") != null || GameObject.Find("Chapter01_Roads") != null;
+            mapBuilder.BuildMap();
+            if (!hadRuntimeWorld)
+            {
+                ChapterOneVisualEnhancer.Enhance();
+                TroyGateHeroBuilder.Build();
+                ChapterOneWallLife.Build();
+            }
+        }
+
+        EnsureComponent<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
+        EnsureComponent<ChapterOnePlaythroughReporter>("ChapterOnePlaythroughReporter");
+
+        TowerPlacement placement = EnsureComponent<TowerPlacement>("TowerPlacement");
+        if (placement.gameCamera == null) placement.gameCamera = camera;
+
+        EnsureHector(camera);
+        EnsureComponent<LandingPresentation>("LandingPresentation");
+
+        ChapterOneCinematicCamera cinematic = Object.FindFirstObjectByType<ChapterOneCinematicCamera>();
+        if (cinematic == null)
+        {
+            cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
+            cinematic.Initialize(camera);
+        }
+
+        EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
+
+        RuntimeFileLogger.Event("CHAPTER_RUNTIME", $"Installed {ProfileId} for {chapter.chapterId}");
+        return new ChapterRuntimeContext(mapBuilder.Paths);
+    }
+
+    static T EnsureComponent<T>(string objectName) where T : Component
+    {
+        T existing = Object.FindFirstObjectByType<T>();
+        return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
+    }
+
+    static void EnsureHector(Camera camera)
+    {
+        HectorController controller = Object.FindFirstObjectByType<HectorController>();
+        GameObject hector;
+
+        if (controller == null)
+        {
+            hector = HeroVisualFactory.Create(TroyHeroId.Hector);
+            hector.name = "Hector";
+            hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
+            controller = hector.AddComponent<HectorController>();
+        }
+        else
+        {
+            hector = controller.gameObject;
+        }
+
+        if (hector.GetComponentInChildren<Collider>() == null)
+        {
+            CapsuleCollider collider = hector.AddComponent<CapsuleCollider>();
+            collider.center = new Vector3(0f, .9f, 0f);
+            collider.height = 1.8f;
+            collider.radius = .35f;
+        }
+
+        HectorPresentationBridge presentation = hector.GetComponent<HectorPresentationBridge>();
+        if (presentation == null) presentation = hector.AddComponent<HectorPresentationBridge>();
+        presentation.Initialize(controller);
+
+        HectorInputDriver input = hector.GetComponent<HectorInputDriver>();
+        if (input == null) input = hector.AddComponent<HectorInputDriver>();
+        input.Initialize(controller, camera);
+    }
+
+    static void ConfigureCameraAndLighting(Camera camera)
+    {
+        camera.orthographic = true;
+        camera.orthographicSize = 10.6f;
+        camera.transform.position = new Vector3(.35f, 28.2f, -4.8f);
+        camera.transform.rotation = Quaternion.Euler(73f, -1.5f, 0f);
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = new Color(.18f, .27f, .30f);
+
+        CameraController controller = camera.GetComponent<CameraController>();
+        if (controller == null) controller = camera.gameObject.AddComponent<CameraController>();
+        controller.xBounds = new Vector2(-8.0f, 8.0f);
+        controller.zBounds = new Vector2(-11.5f, 5.5f);
+        controller.minOrthoSize = 7f;
+        controller.maxOrthoSize = 13f;
+
+        if (Object.FindFirstObjectByType<Light>() == null)
+        {
+            GameObject lightObject = new GameObject("Directional Light");
+            Light light = lightObject.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.28f;
+            light.color = new Color(1f, .77f, .54f);
+            light.shadows = LightShadows.Soft;
+            light.shadowStrength = .76f;
+            lightObject.transform.rotation = Quaternion.Euler(51f, -34f, 0f);
+        }
+    }
+}
