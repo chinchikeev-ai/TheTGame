@@ -29,6 +29,11 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         }
 
         GameManager gm = GameManager.Instance;
+        if (GameMenuController.QuitRequested)
+        {
+            HideChoice();
+            return;
+        }
         if (gm == null || gm.GameEnded || gm.GiftSelected) return;
 
         // Safety net for restart/legacy flows that try to enter combat without a patron.
@@ -106,6 +111,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
 
     void ShowChoice()
     {
+        if (GameMenuController.QuitRequested) return;
         GameManager gm = GameManager.Instance;
         if (gm != null && gm.GiftSelected)
         {

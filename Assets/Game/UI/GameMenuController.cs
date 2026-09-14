@@ -9,6 +9,7 @@ public class GameMenuController : MonoBehaviour
 
     static bool openLevelSelectAfterReload;
     static bool startLevelAfterReload;
+    public static bool QuitRequested { get; private set; }
 
     Canvas canvas;
     EnemySpawner spawner;
@@ -32,6 +33,7 @@ public class GameMenuController : MonoBehaviour
 
     void Start()
     {
+        QuitRequested = false;
         GameUserSettings.ApplySaved();
         spawner = FindFirstObjectByType<EnemySpawner>();
         BuildUI();
@@ -392,6 +394,7 @@ public class GameMenuController : MonoBehaviour
     public void QuitGame()
     {
         RuntimeFileLogger.Event("MENU", "Exit requested");
+        QuitRequested = true;
         Time.timeScale = 1f;
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

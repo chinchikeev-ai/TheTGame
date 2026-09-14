@@ -10,6 +10,8 @@ public enum DivineGiftType
 
 public class GameManager : MonoBehaviour
 {
+    const float ChapterOneRewardMultiplier = .80f;
+
     public static GameManager Instance { get; private set; }
 
     public int Money => economy != null ? economy.Money : 0;
@@ -135,7 +137,9 @@ public class GameManager : MonoBehaviour
 
     public int RewardFor(int baseReward)
     {
-        return Mathf.Max(1, Mathf.RoundToInt(baseReward * DifficultyRules.RewardMultiplier(CampaignSave.Difficulty)));
+        float multiplier = DifficultyRules.RewardMultiplier(CampaignSave.Difficulty);
+        if (MapNumber == 1) multiplier *= ChapterOneRewardMultiplier;
+        return Mathf.Max(1, Mathf.RoundToInt(baseReward * multiplier));
     }
 
     public void DamageBase(int damage)

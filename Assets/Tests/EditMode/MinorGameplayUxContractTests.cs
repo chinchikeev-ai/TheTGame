@@ -57,6 +57,25 @@ public class MinorGameplayUxContractTests
     }
 
     [Test]
+    public void ChapterOne_RewardsAreReducedByTwentyPercent()
+    {
+        CampaignDifficulty previousDifficulty = CampaignSave.Difficulty;
+        GameObject host = new GameObject("ChapterOneRewardTest");
+        GameManager manager = host.AddComponent<GameManager>();
+        try
+        {
+            CampaignSave.SetDifficulty(CampaignDifficulty.Story);
+            int expected = Mathf.RoundToInt(100 * DifficultyRules.RewardMultiplier(CampaignDifficulty.Story) * .80f);
+            Assert.AreEqual(expected, manager.RewardFor(100));
+        }
+        finally
+        {
+            Object.DestroyImmediate(host);
+            CampaignSave.SetDifficulty(previousDifficulty);
+        }
+    }
+
+    [Test]
     public void HectorRouteNavigator_ProjectsOffRoadCommandsOntoRoute()
     {
         GameObject root = new GameObject("RouteTest");
