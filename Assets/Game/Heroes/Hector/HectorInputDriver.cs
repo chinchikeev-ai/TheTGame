@@ -80,9 +80,10 @@ public sealed class HectorInputDriver : MonoBehaviour
     {
         Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
         if (!battlefieldPlane.Raycast(ray, out float enter)) return;
-        Vector3 destination = ray.GetPoint(enter);
+        Vector3 requested = ray.GetPoint(enter);
+        Vector3 destination = hector.ConstrainMoveDestination(requested);
         hector.MoveTo(destination);
         HectorCommandFeedback.ShowMove(destination);
-        RuntimeFileLogger.Event("HECTOR_INPUT", $"Move command x={destination.x:0.0}, z={destination.z:0.0}");
+        RuntimeFileLogger.Event("HECTOR_INPUT", $"Move command requested=({requested.x:0.0},{requested.z:0.0}) road=({destination.x:0.0},{destination.z:0.0})");
     }
 }
