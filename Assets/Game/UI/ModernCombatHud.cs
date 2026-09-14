@@ -94,32 +94,33 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildTopBar(Transform parent)
     {
-        GameObject bar = Panel(parent, "TopResources", new Vector2(24, -24), new Vector2(470, 74), new Color(.035f, .022f, .016f, .92f), new Vector2(0, 1), new Vector2(0, 1));
-        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-194, 0), new Vector2(34, 34), CoinSprite());
+        GameObject bar = Panel(parent, "TopResources", new Vector2(24, -24), new Vector2(450, 72), new Color(.035f, .022f, .016f, .92f), new Vector2(0, 1), new Vector2(0, 1));
+        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-184, 0), new Vector2(32, 32), CoinSprite());
         coin.color = Color.white;
-        goldText = Text(bar.transform, "0", new Vector2(-148, 0), new Vector2(86, 58), 23, new Color(1f, .73f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        gateText = Text(bar.transform, "GATE", new Vector2(-28, 0), new Vector2(160, 58), 17, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        aliveText = Text(bar.transform, "ALIVE", new Vector2(142, 0), new Vector2(160, 58), 17, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        goldText = Text(bar.transform, "0", new Vector2(-142, 0), new Vector2(82, 54), 22, new Color(1f, .73f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        gateText = Text(bar.transform, "GATE", new Vector2(-25, 0), new Vector2(154, 54), 16, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        aliveText = Text(bar.transform, "ALIVE", new Vector2(136, 0), new Vector2(150, 54), 16, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
     }
 
     void BuildWaveBar(Transform parent)
     {
-        GameObject bar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(760, 124), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        waveText = Text(bar.transform, "WAVE", new Vector2(-72, 40), new Vector2(500, 30), 20, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        threatText = Text(bar.transform, "THREAT", new Vector2(-72, 8), new Vector2(500, 28), 13, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
-        wavePreviewText = Text(bar.transform, "", new Vector2(-72, -24), new Vector2(500, 28), 12, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        startWaveButton = Button(bar.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(292, 0), new Vector2(150, 74), StartWave, true);
+        GameObject bar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(720, 118), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
+        waveText = Text(bar.transform, "WAVE", new Vector2(-68, 38), new Vector2(470, 28), 19, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        threatText = Text(bar.transform, "THREAT", new Vector2(-68, 10), new Vector2(470, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
+        wavePreviewText = Text(bar.transform, "", new Vector2(-68, -28), new Vector2(470, 24), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        wavePreviewText.enabled = false;
+        startWaveButton = Button(bar.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(276, 0), new Vector2(142, 70), StartWave, true);
     }
 
     void BuildActionPanel(Transform parent)
     {
-        GameObject panel = Panel(parent, "CombatActions", new Vector2(-24, -24), new Vector2(350, 132), new Color(.035f, .022f, .016f, .92f), new Vector2(1, 1), new Vector2(1, 1));
-        Button(panel.transform, "-", new Vector2(-142, 24), new Vector2(44, 44), DecreaseSpeed, false);
-        speedText = Text(panel.transform, "1x", new Vector2(-94, 24), new Vector2(52, 44), 16, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        Button(panel.transform, "+", new Vector2(-46, 24), new Vector2(44, 44), IncreaseSpeed, false);
-        magicButton = Button(panel.transform, "", new Vector2(78, 24), new Vector2(170, 44), () => GameManager.Instance?.UseMagic(), true);
+        GameObject panel = Panel(parent, "CombatActions", new Vector2(-24, -24), new Vector2(330, 124), new Color(.035f, .022f, .016f, .92f), new Vector2(1, 1), new Vector2(1, 1));
+        Button(panel.transform, "-", new Vector2(-132, 23), new Vector2(42, 42), DecreaseSpeed, false);
+        speedText = Text(panel.transform, "1x", new Vector2(-86, 23), new Vector2(48, 42), 15, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        Button(panel.transform, "+", new Vector2(-40, 23), new Vector2(42, 42), IncreaseSpeed, false);
+        magicButton = Button(panel.transform, "", new Vector2(74, 23), new Vector2(158, 42), () => GameManager.Instance?.UseMagic(), true);
         magicText = magicButton.GetComponentInChildren<Text>();
-        giftButton = Button(panel.transform, "", new Vector2(0, -34), new Vector2(300, 38), () => GameManager.Instance?.UseGift(), false);
+        giftButton = Button(panel.transform, "", new Vector2(0, -32), new Vector2(282, 36), () => GameManager.Instance?.UseGift(), false);
         giftText = giftButton.GetComponentInChildren<Text>();
     }
 
@@ -190,14 +191,14 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildSelectedCard(Transform parent)
     {
-        selectedCard = Panel(parent, "SelectedTowerCard", new Vector2(-104, 24), new Vector2(390, 390), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 0), new Vector2(1, 0));
-        selectedTitle = Text(selectedCard.transform, "", new Vector2(0, 145), new Vector2(350, 42), 21, new Color(1f, .70f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        selectedStats = Text(selectedCard.transform, "", new Vector2(0, 68), new Vector2(350, 110), 15, new Color(.94f, .87f, .77f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
-        selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -22), new Vector2(350, 62), 13, new Color(1f, .73f, .31f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
-        selectedPriority = Text(selectedCard.transform, "", new Vector2(0, -72), new Vector2(350, 30), 13, new Color(.82f, .72f, .62f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        upgradeButton = Button(selectedCard.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-92, -126), new Vector2(166, 52), () => placement?.UpgradeSelected(), true);
-        sellButton = Button(selectedCard.transform, L("SELL", "ПРОДАТЬ"), new Vector2(92, -126), new Vector2(166, 52), () => placement?.SellSelected(), false);
-        priorityButton = Button(selectedCard.transform, L("TARGET PRIORITY", "ПРИОРИТЕТ ЦЕЛИ"), new Vector2(0, -170), new Vector2(350, 38), () => placement?.CycleSelectedPriority(), false);
+        selectedCard = Panel(parent, "SelectedTowerCard", new Vector2(-400, 24), new Vector2(340, 274), new Color(.045f, .027f, .018f, .97f), new Vector2(1, 0), new Vector2(1, 0));
+        selectedTitle = Text(selectedCard.transform, "", new Vector2(0, 103), new Vector2(304, 34), 18, new Color(1f, .70f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        selectedStats = Text(selectedCard.transform, "", new Vector2(0, 45), new Vector2(304, 72), 13, new Color(.94f, .87f, .77f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
+        selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -17), new Vector2(304, 44), 11, new Color(1f, .73f, .31f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
+        selectedPriority = Text(selectedCard.transform, "", new Vector2(0, -54), new Vector2(304, 24), 11, new Color(.82f, .72f, .62f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        upgradeButton = Button(selectedCard.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-78, -91), new Vector2(144, 42), () => placement?.UpgradeSelected(), true);
+        sellButton = Button(selectedCard.transform, L("SELL", "ПРОДАТЬ"), new Vector2(78, -91), new Vector2(144, 42), () => placement?.SellSelected(), false);
+        priorityButton = Button(selectedCard.transform, L("TARGET PRIORITY", "ПРИОРИТЕТ ЦЕЛИ"), new Vector2(0, -122), new Vector2(304, 30), () => placement?.CycleSelectedPriority(), false);
         selectedCard.SetActive(false);
     }
 
@@ -344,7 +345,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     void UpdateSelected()
     {
         Tower selected = placement != null ? placement.SelectedTower : null;
-        bool visible = selected != null;
+        bool visible = selected != null && !defenseDockOpen;
         if (selectedCard != null) selectedCard.SetActive(visible);
         if (!visible) return;
 
