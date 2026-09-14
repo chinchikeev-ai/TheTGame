@@ -125,6 +125,8 @@ It must not:
 - hardcode Menelaus as the final enemy;
 - own chapter-specific reinforcement composition.
 
+Legacy Wave-prefixed members inside `EnemySpawner` are compatibility naming only. New consumers use `EncounterRuntime`; no new Wave-prefixed gameplay APIs may be introduced.
+
 ### EnemyRuntimeBehaviorRegistry
 Attaches explicitly named special runtime behaviors such as `menelaus`.
 
@@ -132,6 +134,8 @@ An unknown behavior id is a configuration error, not a silent fallback.
 
 ### GameManager
 Session facade. Do not add new unrelated responsibilities. Chapter-specific objective rules should continue moving out of this class as later chapter objective contracts are introduced.
+
+Legacy `CurrentWave` / `MaxWaves` remain compatibility names only. New encounter-facing consumers use `EncounterRuntime`.
 
 ### GameInput
 Only location allowed to access concrete mouse/keyboard APIs for gameplay input.
@@ -157,7 +161,9 @@ Future Stun/Fear should extend the shared layer rather than create one-off imple
 - Encounter composition/pacing/routes -> `EncounterData`.
 - Chapter sequencing/runtime profile/objectives -> `ChapterData`.
 - Difficulty tuning -> shared difficulty rules/data.
-- `WaveData` -> legacy compatibility only; not runtime encounter authority.
+- `WaveData` -> removed; do not recreate or use as a fallback.
+
+`EncounterData` is the only authored combat-encounter data authority. Remaining Wave-prefixed runtime names are compatibility surface only and do not imply a Wave data model.
 
 Chapter content should be authored from data. Unique chapter scripts may orchestrate set pieces but must not fork generic combat/save systems.
 
