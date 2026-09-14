@@ -75,13 +75,13 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
     {
         if (selected == null || panel == null) return;
         panel.SetActive(true);
-        title.text = selected.name.ToUpperInvariant() + "  •  " + selected.Archetype;
+        title.text = CombatUiLabels.EnemyName(selected.Archetype) + "  •  " + CombatUiLabels.ArchetypeLabel(selected.Archetype);
 
         string blocked = selected.IsBlockedByGuard
             ? GameLanguage.T("BLOCKED BY TROJAN GUARD", "ЗАБЛОКИРОВАН ТРОЯНСКОЙ СТРАЖЕЙ")
             : GameLanguage.T("ADVANCING", "ПРОДВИГАЕТСЯ");
         stats.text =
-            $"HP  {Mathf.CeilToInt(selected.Health)} / {Mathf.CeilToInt(selected.maxHealth)}\n" +
+            $"{GameLanguage.T("HP", "ЗДОРОВЬЕ")}  {Mathf.CeilToInt(selected.Health)} / {Mathf.CeilToInt(selected.maxHealth)}\n" +
             $"{GameLanguage.T("SPEED", "СКОРОСТЬ")}  {selected.speed:0.00}\n" +
             $"{GameLanguage.T("ARMOR", "БРОНЯ")}  {selected.Armor * 100f:0}%\n" +
             $"{GameLanguage.T("ARROW RESIST", "ЗАЩИТА ОТ СТРЕЛ")}  {selected.ArrowResistance * 100f:0}%\n" +
@@ -123,7 +123,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         outline.effectColor = new Color(.72f, .31f, .10f, .72f);
         outline.effectDistance = new Vector2(2f, -2f);
 
-        title = MakeText(panel.transform, "ENEMY", new Vector2(0, 132), new Vector2(320, 46), 20, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(1f, .69f, .24f, 1f));
+        title = MakeText(panel.transform, GameLanguage.T("ENEMY", "ПРОТИВНИК"), new Vector2(0, 132), new Vector2(320, 46), 20, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(1f, .69f, .24f, 1f));
         MakeText(panel.transform, GameLanguage.T("ENEMY CHARACTERISTICS", "ХАРАКТЕРИСТИКИ ПРОТИВНИКА"), new Vector2(0, 95), new Vector2(320, 26), 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.73f, .66f, .58f, 1f));
         stats = MakeText(panel.transform, "", new Vector2(0, -30), new Vector2(300, 220), 15, FontStyle.Bold, TextAnchor.UpperLeft, new Color(.94f, .85f, .72f, 1f));
         panel.SetActive(false);
