@@ -86,7 +86,7 @@ Encounter data owns preparation time, target duration, spawn cadence, pressure m
 
 `EnemySpawner` executes this authored plan and applies difficulty scaling. It no longer derives enemy archetypes from wave/index modulo formulas and no longer hardcodes `MenelausBossController` as the final spawn.
 
-Legacy `WaveData` remains only as compatibility/history during migration and is not the runtime encounter source of truth.
+The former `WaveData` pipeline was removed on 2026-09-14. `EncounterData` is the sole authored combat composition/pacing authority. Remaining Wave-prefixed members in `EnemySpawner`, `GameManager`, HUD hierarchy names and historical telemetry are compatibility naming/schema debt only; do not reintroduce `WaveData`.
 
 ## Chapter I content contract
 
@@ -145,6 +145,9 @@ Implemented presentation work includes:
 - responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
 - separate encounter, boss, Hector, build and selected-unit regions;
 - selected-defense contextual menu around the unit;
+- pre-map Patron God selection; the selected Patron cannot be changed after the map starts;
+- upper-right selected Patron portrait/commentary for Chapter I event feedback;
+- temporary `CombatHudLegacyCleanup` suppression of obsolete in-map Gift controls and remaining player-facing Wave copy until the dead code is physically removed from `ModernCombatHud`;
 - tower hover/selection/range feedback;
 - projectile trails and type-specific hit feedback;
 - tower recoil;
