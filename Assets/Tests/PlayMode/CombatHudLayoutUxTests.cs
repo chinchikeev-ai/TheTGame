@@ -85,6 +85,33 @@ public class CombatHudLayoutUxTests
         Assert.NotNull(FindChildRecursive(overlay, "Gift_Poseidon"));
     }
 
+    [UnityTest]
+    public IEnumerator SelectedPatron_WatchesBattlefieldFromRightCommentaryPanel()
+    {
+        yield return null;
+        yield return null;
+
+        Assert.NotNull(GameManager.Instance);
+        if (GameManager.Instance.GiftAvailable)
+            Assert.IsTrue(GameManager.Instance.UseGift(DivineGiftType.Athena));
+
+        yield return null;
+        yield return null;
+
+        Transform panel = FindSceneTransform("PatronObserverPanel");
+        Assert.NotNull(panel, "Selected patron must own a dedicated observer panel.");
+        RectTransform panelRect = panel as RectTransform;
+        Assert.NotNull(panelRect);
+        Assert.AreEqual(1f, panelRect.anchorMin.x, .01f, "Patron observer must be anchored on the right side.");
+        Assert.AreEqual(1f, panelRect.anchorMin.y, .01f, "Patron observer must be anchored near the top edge.");
+
+        Image portrait = FindChildRecursive(panel, "SelectedPatronPortrait")?.GetComponent<Image>();
+        Assert.NotNull(portrait);
+        Assert.NotNull(portrait.sprite, "Selected patron portrait must load from project Resources.");
+        Assert.NotNull(FindChildRecursive(panel, "PatronSpeech"), "Patron panel must expose the current event commentary.");
+        Assert.IsNull(FindSceneTransform("HectorCommentary"), "Event commentary must no longer occupy Hector's left HUD block.");
+    }
+
     static Transform FindSceneTransform(string name)
     {
         return Resources.FindObjectsOfTypeAll<Transform>()

@@ -15,22 +15,11 @@ public class HectorHUD : MonoBehaviour
     Text nameText;
     Text hpText;
     Text commandText;
-    Text commentaryText;
     Image hpFill;
     readonly Text[] abilityTexts = new Text[4];
     readonly Image[] cooldownFills = new Image[4];
     readonly Button[] abilityButtons = new Button[4];
     Canvas menuCanvas;
-    EnemySpawner spawner;
-
-    bool stateInitialized;
-    bool lastDowned;
-    bool lastWaveActive;
-    bool lastBossDefeated;
-    int lastGateHealth;
-    int lastWave;
-    int lastBossWarningWave = -1;
-    int lastClosingWave = -1;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -62,16 +51,16 @@ public class HectorHUD : MonoBehaviour
         RectTransform pr = panel.rectTransform;
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(0f, 0f);
         pr.anchoredPosition = new Vector2(24f, 24f);
-        pr.sizeDelta = new Vector2(470f, 268f);
+        pr.sizeDelta = new Vector2(470f, 220f);
 
-        Image portrait = AddImage(root.transform, "HectorPortrait", new Vector2(-184, 82), new Vector2(80, 80), TroyHudArt.Portrait("hector"));
+        Image portrait = AddImage(root.transform, "HectorPortrait", new Vector2(-184, 58), new Vector2(80, 80), TroyHudArt.Portrait("hector"));
         portrait.raycastTarget = true;
         Button portraitButton = portrait.gameObject.AddComponent<Button>();
         portraitButton.targetGraphic = portrait;
         portraitButton.onClick.AddListener(SelectHectorFromHud);
 
-        nameText = AddText(root.transform, "HECTOR", new Vector2(-82, 98), new Vector2(294, 28), 17, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        hpText = AddText(root.transform, "", new Vector2(-82, 70), new Vector2(294, 22), 13, new Color(.94f, .86f, .72f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        nameText = AddText(root.transform, "HECTOR", new Vector2(-82, 74), new Vector2(294, 28), 17, new Color(1f, .72f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        hpText = AddText(root.transform, "", new Vector2(-82, 46), new Vector2(294, 22), 13, new Color(.94f, .86f, .72f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
 
         GameObject track = new GameObject("HealthTrack");
         track.transform.SetParent(root.transform, false);
@@ -79,7 +68,7 @@ public class HectorHUD : MonoBehaviour
         trackImage.color = new Color(.15f, .06f, .035f, .95f);
         RectTransform tr = trackImage.rectTransform;
         tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(.5f, .5f);
-        tr.anchoredPosition = new Vector2(54, 48);
+        tr.anchoredPosition = new Vector2(54, 24);
         tr.sizeDelta = new Vector2(308, 13);
 
         GameObject fillObj = new GameObject("HealthFill");
@@ -94,9 +83,7 @@ public class HectorHUD : MonoBehaviour
         fr.offsetMin = new Vector2(2, 2);
         fr.offsetMax = new Vector2(-2, -2);
 
-        commandText = AddText(root.transform, "", new Vector2(54, 26), new Vector2(308, 20), 10, new Color(1f, .76f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        commentaryText = AddText(root.transform, "", new Vector2(0, -8), new Vector2(430, 44), 13, new Color(.96f, .88f, .76f, 1f), TextAnchor.MiddleLeft, FontStyle.Italic);
-        commentaryText.gameObject.name = "HectorCommentary";
+        commandText = AddText(root.transform, "", new Vector2(54, 2), new Vector2(308, 20), 10, new Color(1f, .76f, .28f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
 
         for (int i = 0; i < 4; i++)
         {
@@ -109,7 +96,7 @@ public class HectorHUD : MonoBehaviour
             bg.color = new Color(.42f, .22f, .08f, 1f);
             RectTransform sr = bg.rectTransform;
             sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(.5f, .5f);
-            sr.anchoredPosition = new Vector2(x, -82);
+            sr.anchoredPosition = new Vector2(x, -62);
             sr.sizeDelta = new Vector2(90, 80);
 
             int abilityIndex = i;
@@ -145,20 +132,16 @@ public class HectorHUD : MonoBehaviour
     {
         HectorController h = HectorController.Instance;
         GameManager gm = GameManager.Instance;
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
-
         bool hidden = h == null || gm == null || gm.GameEnded || IsMenuBlockingCombat();
         if (hidden || root == null)
         {
             if (root != null) root.SetActive(false);
-            stateInitialized = false;
             return;
         }
 
         root.SetActive(true);
         UpdateStatus(h);
         UpdateAbilities(h);
-        UpdateCommentary(h, gm);
     }
 
     void UpdateStatus(HectorController h)
@@ -203,81 +186,6 @@ public class HectorHUD : MonoBehaviour
             abilityTexts[i].color = ready ? new Color(1f, .86f, .42f, 1f) : new Color(.66f, .60f, .52f, 1f);
             if (abilityButtons[i] != null) abilityButtons[i].interactable = !h.IsDowned && remain[i] <= .01f;
         }
-    }
-
-    void UpdateCommentary(HectorController h, GameManager gm)
-    {
-        if (!stateInitialized)
-        {
-            stateInitialized = true;
-            lastDowned = h.IsDowned;
-            lastWaveActive = spawner != null && spawner.WaveActive;
-            lastBossDefeated = gm.BossDefeated;
-            lastGateHealth = gm.BaseHealth;
-            lastWave = gm.CurrentWave;
-            Say(
-                GameLanguage.T(
-                    "Troy stands. Tell me where the line is weakest.",
-                    "Троя стоит. Покажи мне, где строй слабее всего."));
-            return;
-        }
-
-        if (h.IsDowned != lastDowned)
-        {
-            Say(h.IsDowned
-                ? GameLanguage.T("Hold the gate... I am not finished yet.", "Держите ворота... я ещё не закончил.")
-                : GameLanguage.T("I am back. Form the line around me.", "Я снова в строю. Сомкнуть строй вокруг меня."));
-        }
-        else if (gm.BossDefeated && !lastBossDefeated)
-        {
-            Say(GameLanguage.T("Menelaus is down. Troy still stands!", "Менелай пал. Троя всё ещё стоит!"));
-        }
-        else if (gm.BaseHealth < lastGateHealth)
-        {
-            float ratio = gm.MaxBaseHealth > 0 ? gm.BaseHealth / (float)gm.MaxBaseHealth : 0f;
-            Say(ratio <= .5f
-                ? GameLanguage.T("The gate is failing! Reinforce it now!", "Ворота не выдержат! Усильте оборону немедленно!")
-                : GameLanguage.T("They reached the gate. Push them back!", "Они добрались до ворот. Отбросить их!"));
-        }
-        else if (spawner != null && !spawner.WaveActive && spawner.WaitingForManualStart && spawner.NextWaveHasBoss)
-        {
-            int warningWave = Mathf.Clamp(gm.CurrentWave + 1, 1, gm.MaxWaves);
-            if (lastBossWarningWave != warningWave)
-            {
-                lastBossWarningWave = warningWave;
-                Say(GameLanguage.T("Menelaus is coming. Save your strongest defense.", "Идёт Менелай. Сберегите сильнейшую оборону."));
-            }
-        }
-        else if (spawner != null && spawner.WaveActive && !lastWaveActive)
-        {
-            Say(GameLanguage.T($"Wave {gm.CurrentWave}. Hold the formation!", $"Волна {gm.CurrentWave}. Держать строй!"));
-        }
-        else if (spawner != null && !spawner.WaveActive && lastWaveActive && gm.CurrentWave > 0)
-        {
-            Say(GameLanguage.T("The wave is broken. Repair and prepare.", "Волна разбита. Чиним оборону и готовимся."));
-        }
-        else if (spawner != null && spawner.WaveActive && spawner.CurrentWaveTotalEnemies > 0 && lastClosingWave != gm.CurrentWave)
-        {
-            int remaining = EnemyRegistry.AliveCount;
-            if (remaining > 0 && remaining <= Mathf.Max(1, Mathf.CeilToInt(spawner.CurrentWaveTotalEnemies * .25f)))
-            {
-                lastClosingWave = gm.CurrentWave;
-                Say(GameLanguage.T("They are wavering. Finish them!", "Они дрогнули. Добиваем!"));
-            }
-        }
-
-        lastDowned = h.IsDowned;
-        lastWaveActive = spawner != null && spawner.WaveActive;
-        lastBossDefeated = gm.BossDefeated;
-        lastGateHealth = gm.BaseHealth;
-        lastWave = gm.CurrentWave;
-    }
-
-    void Say(string line)
-    {
-        if (commentaryText == null) return;
-        commentaryText.text = GameLanguage.T("HECTOR: ", "ГЕКТОР: ") + line;
-        RuntimeFileLogger.Event("HECTOR_COMMENT", line);
     }
 
     void SelectHectorFromHud()

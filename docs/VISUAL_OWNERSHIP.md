@@ -30,7 +30,7 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
 | Encounter intro/boss warning card | `ChapterOneEncounterPresentation` | Persistent encounter status bar |
 | Visual next-encounter enemy cards | `VisualEncounterPreviewPresentation` | General combat HUD |
-| Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card |
+| Patron portrait + combat commentary | `CombatNotificationPresentation` + `DivinePatronCommentaryCatalog` | Upper-right observer panel using selected patron art |
 | End-of-battle menu and detailed results | `GameMenuController` | Extra result canvases or compatibility result builders |
 
 ## Runtime services without visual ownership

@@ -145,6 +145,8 @@ Implemented presentation work includes:
 - responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
 - separate encounter, boss, Hector, build and selected-unit regions;
 - selected-defense contextual menu around the unit;
+- selected patron portrait and event commentary in a dedicated upper-right battlefield observer panel;
+- distinct EN/RU patron reactions for wave flow, defenses, gate pressure, kill milestones, Hector, Menelaus and Divine Power use;
 - tower hover/selection/range feedback;
 - projectile trails and type-specific hit feedback;
 - tower recoil;
