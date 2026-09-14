@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class CharacterPresentationState : MonoBehaviour
     Vector3 baseScale;
     Coroutine fallbackRoutine;
     Coroutine bowRoutine;
+    Coroutine impactRoutine;
     bool dead;
 
     void Awake()
@@ -30,11 +32,14 @@ public class CharacterPresentationState : MonoBehaviour
     }
 
     public void PlayAttack() => Trigger("Attack");
+    public void PlayAttack(Action impact) => PlayTimedAttack("Attack", null, impact, .46f, .34f);
     public void PlaySpearAttack() => Trigger("Poke", "Attack");
+    public void PlaySpearAttack(Action impact) => PlayTimedAttack("Poke", "Attack", impact, .48f, .34f);
     public void PlayCommand() => Trigger("Command", "Attack");
     public void PlayAbilityQ() => Trigger("AbilityQ", "Attack");
     public void PlayAbilityE() => Trigger("AbilityE", "Attack");
     public void PlayAbilityR() => Trigger("AbilityR", "Attack");
+    public void PlayAbilityR(Action impact) => PlayTimedAttack("AbilityR", "Attack", impact, .52f, .38f);
     public void PlayAbilityF() => Trigger("AbilityF", "Attack");
     public void PlayBlock() => Trigger("Block", "Attack");
     public void PlayPoke() => PlaySpearAttack();
@@ -55,13 +60,22 @@ public class CharacterPresentationState : MonoBehaviour
 
     public void PlayBowShot(float redrawDelay = .18f)
     {
-        if (dead || animator == null) return;
+        PlayBowShot(null, redrawDelay);
+    }
 
-        Trigger("Release", "Attack");
-        if (!HasParameter("Draw", AnimatorControllerParameterType.Trigger)) return;
+    public void PlayBowShot(Action impact, float redrawDelay = .18f)
+    {
+        if (dead) return;
+
+        string stateName = Trigger("Release", "Attack");
+        if (impactRoutine != null) StopCoroutine(impactRoutine);
+        if (impact != null)
+            impactRoutine = StartCoroutine(InvokeAtAnimationPhase(stateName, .40f, .30f, impact));
+
+        if (animator == null || !HasParameter("Draw", AnimatorControllerParameterType.Trigger)) return;
 
         if (bowRoutine != null) StopCoroutine(bowRoutine);
-        bowRoutine = StartCoroutine(RedrawBow(Mathf.Max(.01f, redrawDelay)));
+        bowRoutine = StartCoroutine(RedrawBowAfterImpact(stateName, Mathf.Max(.01f, redrawDelay)));
     }
 
     public void PlayHit()
@@ -94,6 +108,11 @@ public class CharacterPresentationState : MonoBehaviour
             StopCoroutine(bowRoutine);
             bowRoutine = null;
         }
+        if (impactRoutine != null)
+        {
+            StopCoroutine(impactRoutine);
+            impactRoutine = null;
+        }
 
         float duration = boss ? 1.25f : .70f;
         if (animator != null)
@@ -115,29 +134,92 @@ public class CharacterPresentationState : MonoBehaviour
         return duration;
     }
 
-    void Trigger(string parameter, string fallback = null)
+    void PlayTimedAttack(string parameter, string fallback, Action impact, float normalizedImpact, float fallbackDelay)
     {
-        if (dead || animator == null) return;
+        if (dead) return;
+        string stateName = Trigger(parameter, fallback);
+        if (impact == null) return;
+
+        if (impactRoutine != null) StopCoroutine(impactRoutine);
+        impactRoutine = StartCoroutine(InvokeAtAnimationPhase(stateName, normalizedImpact, fallbackDelay, impact));
+    }
+
+    string Trigger(string parameter, string fallback = null)
+    {
+        if (dead || animator == null) return null;
 
         int parameterHash = Animator.StringToHash(parameter);
         if (HasParameter(parameterHash, AnimatorControllerParameterType.Trigger))
         {
             animator.ResetTrigger(parameterHash);
             animator.SetTrigger(parameterHash);
-            return;
+            return parameter;
         }
 
-        if (string.IsNullOrEmpty(fallback)) return;
+        if (string.IsNullOrEmpty(fallback)) return null;
         int fallbackHash = Animator.StringToHash(fallback);
-        if (!HasParameter(fallbackHash, AnimatorControllerParameterType.Trigger)) return;
+        if (!HasParameter(fallbackHash, AnimatorControllerParameterType.Trigger)) return null;
         animator.ResetTrigger(fallbackHash);
         animator.SetTrigger(fallbackHash);
+        return fallback;
     }
 
-    IEnumerator RedrawBow(float delay)
+    IEnumerator InvokeAtAnimationPhase(string stateName, float normalizedImpact, float fallbackDelay, Action impact)
     {
-        yield return new WaitForSeconds(delay);
-        Trigger("Draw");
+        float startedAt = Time.time;
+        float maxWait = Mathf.Max(.45f, fallbackDelay * 1.75f);
+        int stateHash = string.IsNullOrEmpty(stateName) ? 0 : Animator.StringToHash(stateName);
+
+        while (!dead && Time.time - startedAt < maxWait)
+        {
+            if (animator != null && stateHash != 0 && IsStateAtOrBeyondPhase(stateHash, normalizedImpact))
+            {
+                impact?.Invoke();
+                impactRoutine = null;
+                yield break;
+            }
+
+            if ((animator == null || stateHash == 0) && Time.time - startedAt >= fallbackDelay)
+            {
+                impact?.Invoke();
+                impactRoutine = null;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        if (!dead) impact?.Invoke();
+        impactRoutine = null;
+    }
+
+    bool IsStateAtOrBeyondPhase(int stateHash, float normalizedImpact)
+    {
+        if (animator == null || !animator.isActiveAndEnabled) return false;
+
+        AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+        if (current.shortNameHash == stateHash && current.normalizedTime >= normalizedImpact) return true;
+
+        if (!animator.IsInTransition(0)) return false;
+        AnimatorStateInfo next = animator.GetNextAnimatorStateInfo(0);
+        return next.shortNameHash == stateHash && next.normalizedTime >= normalizedImpact;
+    }
+
+    IEnumerator RedrawBowAfterImpact(string releaseStateName, float redrawDelay)
+    {
+        float startedAt = Time.time;
+        int stateHash = string.IsNullOrEmpty(releaseStateName) ? 0 : Animator.StringToHash(releaseStateName);
+        while (!dead && Time.time - startedAt < .60f)
+        {
+            if (animator == null || stateHash == 0 || IsStateAtOrBeyondPhase(stateHash, .58f)) break;
+            yield return null;
+        }
+
+        if (!dead)
+        {
+            yield return new WaitForSeconds(redrawDelay);
+            Trigger("Draw");
+        }
         bowRoutine = null;
     }
 
@@ -167,7 +249,7 @@ public class CharacterPresentationState : MonoBehaviour
     IEnumerator FallbackDeath(float duration)
     {
         Quaternion startRotation = transform.rotation;
-        Quaternion endRotation = startRotation * Quaternion.Euler(0f, 0f, Random.value < .5f ? 82f : -82f);
+        Quaternion endRotation = startRotation * Quaternion.Euler(0f, 0f, UnityEngine.Random.value < .5f ? 82f : -82f);
         Vector3 startPosition = transform.position;
         Vector3 endPosition = startPosition + Vector3.down * .18f;
         float elapsed = 0f;

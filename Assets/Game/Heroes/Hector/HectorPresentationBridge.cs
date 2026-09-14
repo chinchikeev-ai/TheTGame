@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public sealed class HectorPresentationBridge : MonoBehaviour
@@ -35,11 +36,21 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         RefreshSelectionTint();
     }
 
-    public void PlayAttackImpact(Vector3 point)
+    public void PlayAttackImpact(Vector3 point, Action impact)
     {
-        characterPresentation?.PlaySpearAttack();
-        CombatImpactPresentation.MeleeHit(point, TowerType.TrojanGuard);
-        RuntimeEffects.Instance?.PlayHitSound(false);
+        if (characterPresentation == null)
+        {
+            impact?.Invoke();
+            PlayMeleeImpact(point);
+            return;
+        }
+
+        characterPresentation.PlaySpearAttack(() =>
+        {
+            if (hector == null || hector.IsDowned) return;
+            impact?.Invoke();
+            PlayMeleeImpact(point);
+        });
     }
 
     public void PlayDamageImpact(float damage)
@@ -61,16 +72,33 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         abilityPresentation?.PlayShieldWall(center, transform.rotation);
     }
 
-    public void PlaySpearImpact(Vector3 point)
+    public void PlaySpearImpact(Vector3 point, Action impact)
     {
-        characterPresentation?.PlayAbilityR();
-        abilityPresentation?.PlaySpearImpact(point);
+        if (characterPresentation == null)
+        {
+            impact?.Invoke();
+            abilityPresentation?.PlaySpearImpact(point);
+            return;
+        }
+
+        characterPresentation.PlayAbilityR(() =>
+        {
+            if (hector == null || hector.IsDowned) return;
+            impact?.Invoke();
+            abilityPresentation?.PlaySpearImpact(point);
+        });
     }
 
     public void PlayUltimate(float radius)
     {
         characterPresentation?.PlayAbilityF();
         abilityPresentation?.PlayUltimate(radius);
+    }
+
+    void PlayMeleeImpact(Vector3 point)
+    {
+        CombatImpactPresentation.MeleeHit(point, TowerType.TrojanGuard);
+        RuntimeEffects.Instance?.PlayHitSound(false);
     }
 
     void LateUpdate()

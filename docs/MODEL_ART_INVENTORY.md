@@ -57,7 +57,7 @@ Final grip, scale, materials, skin deformation, clipping and gameplay-camera rea
 | Priests of Apollo | PROCEDURAL + GENERATED PLACEHOLDER crew | shrine + two priests + cast/channel + Apollo pulse | final shrine/priests/support animation/VFX/materials |
 | Spear Wall | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | shield/spear line + infantry crew + poke hook | final formation/structure/materials/authored clips |
 | Fire Tower | PROCEDURAL + GENERATED PLACEHOLDER crew | brazier/fire presentation + Fire Keeper + throw/stoke + flame pulse | final tower/props/keeper clips/materials |
-| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | shield-wall station + Guards + deterministic block/poke presentation | final station/formation clips/materials |
+| Trojan Guard Post | PROCEDURAL + GENERATED PLACEHOLDER crew + SOURCE ONLY spear | shield-wall station + Guards + deterministic block/poke presentation; melee damage/VFX now wait for the spear impact phase | final station/formation clips/materials and Play Mode timing QA |
 | Level 2/3 differentiation | PROCEDURAL | upgrade visual markers via `TowerProductionArtBinder` | authored per-tower L2/L3 meshes and specialization variants |
 
 **Chapter I Tower-Unit DONE count: 0.**
@@ -79,11 +79,11 @@ Final grip, scale, materials, skin deformation, clipping and gameplay-camera rea
 | Set | Status | Current state / remaining work |
 |---|---|---|
 | Generic locomotion / hit / death | GENERATED PLACEHOLDER | role controllers exist; imported clips are now selected deterministically by scored token matching; final authored clips/QA pending |
-| Spear combat | GENERATED PLACEHOLDER | `Poke` hooks wired to relevant runtime attacks; spear profiles use deterministic thrust/stab/poke candidate selection; final authored thrust/brace clips pending |
-| Archer combat | GENERATED PLACEHOLDER | `Draw` / `Release` wired; builder prefers distinct bow-role candidates and warns if both actions collapse to the same fallback; final weapon/hand timing and authored clips pending |
+| Spear combat | GENERATED PLACEHOLDER | `Poke` hooks wired to relevant runtime attacks; spear profiles use deterministic thrust/stab/poke candidate selection; enemy/Hector/Guard damage now waits for the animation impact phase with a bounded fallback; final authored thrust/brace clips and timing QA pending |
+| Archer combat | GENERATED PLACEHOLDER | `Draw` / `Release` wired; builder prefers distinct bow-role candidates; ranged damage now waits for `Release` impact phase and redraw waits until release progression; final projectile/hand timing and authored clips pending |
 | Shield block | GENERATED PLACEHOLDER | `Block` wired for Trojan Guard and now present in Hector's spear-bearing controller profile; final pose/clip pending |
-| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX | basic combat now has explicit `Poke`/`Block` states in Hector's controller; Q/E/R/F hooks remain; final hero body clips pending |
-| Menelaus | GENERATED PLACEHOLDER | command hook tied to reinforcements; deterministic command candidate/fallback is logged; final boss-specific clips pending |
+| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX | basic spear damage and `R` spear-throw damage/VFX now align to animation impact callbacks; Q/E/F remain immediate gameplay hooks; final hero body clips and full ability timing QA pending |
+| Menelaus | GENERATED PLACEHOLDER | command hook tied to reinforcements; deterministic command candidate/fallback is logged; repeated gate attacks now resolve damage at the attack impact phase; final boss-specific clips pending |
 | Ballista mechanism | PROCEDURAL | `TowerSupportMechanismPresentation` performs release/reload/tension feedback; final authored mechanism animation pending |
 | Apollo shrine mechanism | PROCEDURAL | cast pulse/disc motion exists; final authored support presentation pending |
 | Fire Tower mechanism | PROCEDURAL | flame pulse exists; final authored fire/keeper presentation pending |
@@ -91,7 +91,7 @@ Final grip, scale, materials, skin deformation, clipping and gameplay-camera rea
 | Siege Tower movement | MISSING | later chapter wheel/movement/assault animation |
 | Chariot horse locomotion | SOURCE ONLY + generator | pinned horse source + generator; real import/orientation/clip QA pending |
 
-The current Chapter I animation builder is an auditable candidate-binding system, not final animation production. It logs specialized selections and explicit fallbacks; generated controllers and timing/pose quality still require real Unity Play Mode inspection.
+The current Chapter I animation builder/runtime timing layer is an auditable candidate system, not final animation production. It uses normalized Animator-state phases where the expected state is available and bounded fallback timing otherwise. Exact contact/release frames, clip lengths, projectile visuals and pose quality still require real Unity Play Mode inspection before production acceptance.
 
 ## Later-campaign candidate coverage
 
@@ -166,7 +166,7 @@ Third-party provenance:
 8. final civilians and evacuation animation;
 9. authored damaged/destroyed/burning states for key structures;
 10. final environment modules for the campaign;
-11. real gameplay-camera and Play Mode QA.
+11. real gameplay-camera and Play Mode QA, including exact contact/release-frame tuning.
 
 ## Acceptance gate for `DONE`
 

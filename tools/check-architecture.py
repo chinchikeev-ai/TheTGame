@@ -209,37 +209,72 @@ if PRESENTATION.exists():
     presentation_text = PRESENTATION.read_text(encoding="utf-8")
     for token in (
         'PlaySpearAttack() => Trigger("Poke", "Attack")',
-        "public void PrepareBow()",
-        "public void PlayBowShot(float redrawDelay = .18f)",
-        'Trigger("Release", "Attack")',
-        'Trigger("Draw")',
+        'PlaySpearAttack(Action impact) => PlayTimedAttack("Poke", "Attack", impact, .48f, .34f)',
+        'PlayAbilityR(Action impact) => PlayTimedAttack("AbilityR", "Attack", impact, .52f, .38f)',
+        "public void PlayBowShot(Action impact, float redrawDelay = .18f)",
+        "InvokeAtAnimationPhase",
+        "IsStateAtOrBeyondPhase",
+        "RedrawBowAfterImpact",
+        "animator.GetCurrentAnimatorStateInfo(0)",
+        "animator.GetNextAnimatorStateInfo(0)",
+        "if (impactRoutine != null)",
     ):
         if token not in presentation_text:
-            errors.append(f"Chapter I character presentation contract missing token: {token}")
+            errors.append(f"Chapter I character impact-timing contract missing token: {token}")
 
 ENEMY = ROOT / "Assets" / "Game" / "Enemies" / "Enemy.cs"
 if ENEMY.exists():
     enemy_text = ENEMY.read_text(encoding="utf-8")
     for token in (
         "if (Archetype == EnemyArchetype.Archer) presentation.PrepareBow();",
-        "void PlayCombatAttack()",
+        "void PlayCombatAttack(Action impact)",
         "case EnemyArchetype.Infantry:",
         "case EnemyArchetype.HeavyHoplite:",
         "case EnemyArchetype.ShieldBearer:",
-        "presentation.PlaySpearAttack();",
+        "presentation.PlaySpearAttack(impact);",
         "case EnemyArchetype.Archer:",
-        "presentation.PlayBowShot();",
+        "presentation.PlayBowShot(impact);",
+        "PlayCombatAttack(() =>",
+        "if (!IsAlive || targetGuard == null || !targetGuard.IsAlive || blockingGuard != targetGuard) return;",
+        "if (!IsAlive || hector == null || hector.IsDowned) return;",
     ):
         if token not in enemy_text:
-            errors.append(f"Chapter I enemy animation dispatch contract missing token: {token}")
+            errors.append(f"Chapter I enemy impact-timing contract missing token: {token}")
 
 HECTOR_PRESENTATION = ROOT / "Assets" / "Game" / "Heroes" / "Hector" / "HectorPresentationBridge.cs"
-if HECTOR_PRESENTATION.exists() and "characterPresentation?.PlaySpearAttack();" not in HECTOR_PRESENTATION.read_text(encoding="utf-8"):
-    errors.append("Hector basic attack must use the spear presentation trigger")
+if HECTOR_PRESENTATION.exists():
+    hector_presentation_text = HECTOR_PRESENTATION.read_text(encoding="utf-8")
+    for token in (
+        "public void PlayAttackImpact(Vector3 point, Action impact)",
+        "characterPresentation.PlaySpearAttack(() =>",
+        "public void PlaySpearImpact(Vector3 point, Action impact)",
+        "characterPresentation.PlayAbilityR(() =>",
+    ):
+        if token not in hector_presentation_text:
+            errors.append(f"Hector animation-phase impact contract missing token: {token}")
+
+HECTOR = ROOT / "Assets" / "Game" / "Heroes" / "Hector" / "HectorController.cs"
+if HECTOR.exists():
+    hector_text = HECTOR.read_text(encoding="utf-8")
+    for token in (
+        "presentation.PlayAttackImpact(impactPoint, () =>",
+        "presentation.PlaySpearImpact(impactPoint, () =>",
+        "if (IsDowned || best == null || !best.IsAlive) return;",
+        "if (IsDowned || target == null || !target.IsAlive) return;",
+    ):
+        if token not in hector_text:
+            errors.append(f"Hector gameplay impact-timing contract missing token: {token}")
 
 TROJAN_GUARD = ROOT / "Assets" / "Game" / "Towers" / "TrojanGuardSquad.cs"
-if TROJAN_GUARD.exists() and "presentation?.PlaySpearAttack();" not in TROJAN_GUARD.read_text(encoding="utf-8"):
-    errors.append("Trojan Guard attack must use the spear presentation trigger")
+if TROJAN_GUARD.exists():
+    guard_text = TROJAN_GUARD.read_text(encoding="utf-8")
+    for token in (
+        "presentation.PlaySpearAttack(() => ApplyAttackImpact(attackTarget, attackDamage));",
+        "void ApplyAttackImpact(Enemy attackTarget, float attackDamage)",
+        "!blockedEnemies.Contains(attackTarget)",
+    ):
+        if token not in guard_text:
+            errors.append(f"Trojan Guard animation-phase impact contract missing token: {token}")
 
 MODEL_GAP = ROOT / "Assets" / "Editor" / "ModelGapClosureBuilder.cs"
 if MODEL_GAP.exists() and "ChapterOneProductionEquipmentBuilder.Build();" not in MODEL_GAP.read_text(encoding="utf-8"):
