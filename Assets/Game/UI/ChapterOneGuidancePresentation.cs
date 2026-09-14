@@ -152,8 +152,8 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
                 break;
             case 2:
                 tutorialIcon.sprite=TroyHudArt.Portrait("hector");
-                tutorialTitle.text=L("HECTOR","ГЕКТОР");
-                tutorialText.text=L("RMB moves Hector • Q/E/R/F abilities reinforce weak lanes.","ПКМ двигает Гектора • Q/E/R/F усиливают слабые линии.");
+                tutorialTitle.text=L("COMMAND HECTOR","УПРАВЛЕНИЕ ГЕКТОРОМ");
+                tutorialText.text=L("LMB Hector to select • RMB ground to move • Q/E/R/F or click HUD abilities.","ЛКМ по Гектору — выбрать • ПКМ по земле — идти • Q/E/R/F или кнопки в HUD.");
                 break;
             case 3:
                 tutorialIcon.sprite=TroyHudArt.Tower(TowerType.Cannon);
