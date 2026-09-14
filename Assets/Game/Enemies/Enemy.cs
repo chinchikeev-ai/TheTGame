@@ -26,7 +26,6 @@ public class Enemy : MonoBehaviour
     }
 
     readonly EnemyStatusState statuses = new EnemyStatusState();
-
     Transform[] waypoints;
     int waypointIndex;
     EnemyHealthBar healthBar;
@@ -89,14 +88,12 @@ public class Enemy : MonoBehaviour
     {
         if (!IsAlive || guard == null || !guard.IsAlive) return false;
         if (blockingGuard == guard) return guard.TryReserve(this);
-
         if (blockingGuard != null)
         {
             if (blockingGuard.IsAlive && blockingGuard.OwnsReservation(this)) return false;
             blockingGuard.Release(this);
             blockingGuard = null;
         }
-
         if (!guard.TryReserve(this)) return false;
         blockingGuard = guard;
         presentation?.SetMoving(false);
@@ -124,7 +121,6 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         if (dying || GameManager.Instance == null || GameManager.Instance.GameEnded || Health <= 0f) return;
-
         TickBurn();
         if (Health <= 0f) return;
 
@@ -143,18 +139,15 @@ public class Enemy : MonoBehaviour
 
         statuses.RefreshMovementModifiers(Time.time);
         speed = baseSpeed * statuses.SpeedMultiplier;
-
         if (TryHandleGuardCombat()) return;
         if (TryHandleHectorCombat()) return;
         if (TryHandleRangedGateCombat()) return;
-
         MoveAlongPath();
     }
 
     bool TryHandleGuardCombat()
     {
         if (blockingGuard == null) return false;
-
         float releaseRadius = blockingGuard.blockRadius * 1.35f;
         bool reservationValid = blockingGuard.IsAlive && blockingGuard.OwnsReservation(this) &&
                                 (transform.position - blockingGuard.transform.position).sqrMagnitude <= releaseRadius * releaseRadius;
@@ -178,11 +171,11 @@ public class Enemy : MonoBehaviour
                     LaunchArcherArrow(targetGuard.transform, Vector3.up * .75f, () =>
                     {
                         if (targetGuard == null || !targetGuard.IsAlive) return;
-                        targetGuard.TakeDamage(damage);
+                        targetGuard.TakeDamage(damage, transform.position);
                     });
                     return;
                 }
-                targetGuard.TakeDamage(damage);
+                targetGuard.TakeDamage(damage, transform.position);
             });
         }
         return true;
@@ -192,7 +185,6 @@ public class Enemy : MonoBehaviour
     {
         HectorController hector = HectorController.Instance;
         if (hector == null || hector.IsDowned) return false;
-
         float meleeRange = 1.35f + transform.localScale.x * .25f;
         float rangedRange = Archetype == EnemyArchetype.Archer && attackRange > 0f ? attackRange : 0f;
         float allowedRange = Mathf.Max(meleeRange, rangedRange);
@@ -211,11 +203,11 @@ public class Enemy : MonoBehaviour
                     LaunchArcherArrow(hector.transform, Vector3.up * .75f, () =>
                     {
                         if (hector == null || hector.IsDowned) return;
-                        hector.TakeDamage(damage);
+                        hector.TakeDamage(damage, transform.position);
                     });
                     return;
                 }
-                hector.TakeDamage(damage);
+                hector.TakeDamage(damage, transform.position);
             });
         }
         return true;
@@ -224,7 +216,6 @@ public class Enemy : MonoBehaviour
     bool TryHandleRangedGateCombat()
     {
         if (Archetype != EnemyArchetype.Archer || attackRange <= 0f) return false;
-
         Transform finalTarget = waypoints[waypoints.Length - 1];
         if ((transform.position - finalTarget.position).sqrMagnitude > attackRange * attackRange) return false;
 
@@ -259,12 +250,7 @@ public class Enemy : MonoBehaviour
 
     void PlayCombatAttack(Action impact)
     {
-        if (presentation == null)
-        {
-            impact?.Invoke();
-            return;
-        }
-
+        if (presentation == null) { impact?.Invoke(); return; }
         switch (Archetype)
         {
             case EnemyArchetype.Infantry:
@@ -288,13 +274,10 @@ public class Enemy : MonoBehaviour
         direction.y = 0f;
         bool moving = direction.sqrMagnitude > .001f;
         presentation?.SetMoving(moving);
-
         if (moving)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 10f * Time.deltaTime);
-
         transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
         if ((transform.position - target.position).sqrMagnitude > .0225f) return;
-
         waypointIndex++;
         if (waypointIndex >= waypoints.Length) ReachBase();
     }
@@ -312,7 +295,6 @@ public class Enemy : MonoBehaviour
     public void ReceiveDamage(DamagePacket packet)
     {
         if (!IsAlive) return;
-
         float currentArmor = statuses.CurrentArmor(armor, Time.time);
         Health -= EnemyDamageResolver.Resolve(packet, Archetype, currentArmor, arrowResistance);
         presentation?.PlayHit();
@@ -353,7 +335,6 @@ public class Enemy : MonoBehaviour
     {
         ReleaseGuardReservation();
         presentation?.SetMoving(false);
-
         if (GameManager.Instance != null)
         {
             int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
@@ -366,11 +347,9 @@ public class Enemy : MonoBehaviour
                 CombatImpactPresentation.GateHit(transform.position, true);
                 return;
             }
-
             GameManager.Instance.RecordLeak();
             GameManager.Instance.DamageBase(damage);
         }
-
         RuntimeEffects.Instance?.PlayDeathSound(Archetype == EnemyArchetype.BatteringRam);
         CombatImpactPresentation.EnemyBreach(transform.position, Archetype);
         Destroy(gameObject);
@@ -379,7 +358,6 @@ public class Enemy : MonoBehaviour
     void AttackGateOverTime()
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded || Time.time < nextAttack) return;
-
         nextAttack = Time.time + Mathf.Max(.65f, attackInterval);
         int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * statuses.DamageMultiplier));
         PlayCombatAttack(() =>

@@ -17,6 +17,11 @@ public sealed class HectorAbilityPresentation : MonoBehaviour
 
     public void PlayShieldWall(Vector3 center, Quaternion rotation)
     {
+        PlayShieldWall(center, rotation, ShieldVisualLifetime);
+    }
+
+    public void PlayShieldWall(Vector3 center, Quaternion rotation, float duration)
+    {
         GameObject root = new GameObject("Hector Shield Wall Visual");
         root.transform.position = center;
         root.transform.rotation = rotation;
@@ -26,7 +31,7 @@ public sealed class HectorAbilityPresentation : MonoBehaviour
 
         RuntimeEffects.Instance?.PlayHeroAbilitySound();
         CombatImpactPresentation.Pulse(center, ShieldWallColor, 3.8f, .48f);
-        Destroy(root, ShieldVisualLifetime);
+        Destroy(root, Mathf.Max(.2f, duration));
     }
 
     public void PlaySpearImpact(Vector3 point)

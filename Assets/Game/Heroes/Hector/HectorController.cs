@@ -1,6 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum HectorCombatAction
+{
+    None,
+    BasicAttack,
+    WarCry,
+    ShieldWall,
+    SpearThrow,
+    Ultimate,
+    Downed
+}
+
 public class HectorController : MonoBehaviour
 {
     public static HectorController Instance { get; private set; }
@@ -15,26 +26,33 @@ public class HectorController : MonoBehaviour
     public float attackRange = 2.4f;
     public float attackDamage = 45f;
     public float attackRate = 1.1f;
-
+    public float combatTurnSpeed = 900f;
+    public float basicAttackActionLock = .58f;
     public float warCryRadius = 5.2f;
     public float warCryDuration = 10f;
     public float warCryCooldown = 20f;
+    public float warCryActionLock = .72f;
     public float shieldWallCooldown = 22f;
     public float shieldWallDuration = 4f;
     public float shieldWallDamageMultiplier = .55f;
+    public float shieldWallFrontalDot = .05f;
+    public float shieldWallActionLock = .72f;
     public float spearThrowCooldown = 12f;
     public float spearThrowRange = 10f;
     public float spearThrowDamage = 220f;
+    public float spearThrowActionLock = .82f;
     public float ultimateCooldown = 75f;
     public float ultimateDuration = 12f;
     public float ultimateEnemyRadius = 8f;
+    public float ultimateDamage = 100f;
+    public float ultimateActionLock = .95f;
     public float downedDuration = 12f;
-    public float battlefieldMargin = 0.65f;
+    public float battlefieldMargin = .65f;
 
     readonly List<Enemy> enemySnapshot = new List<Enemy>(64);
-
     Vector3 destination;
     Vector3 spawnPosition;
+    Vector3 actionFacingPoint;
     float nextAttack;
     float nextWarCry;
     float nextShieldWall;
@@ -42,24 +60,24 @@ public class HectorController : MonoBehaviour
     float nextSpearThrow;
     float nextUltimate;
     float reviveAt;
+    float actionLockUntil;
+    int actionSerial;
+    bool hasActionFacingPoint;
     HectorPresentationBridge presentation;
 
     public bool ShieldWallActive => !IsDowned && Time.time < shieldWallUntil;
+    public HectorCombatAction CurrentAction { get; private set; } = HectorCombatAction.None;
+    public bool IsActionLocked => !IsDowned && CurrentAction != HectorCombatAction.None && Time.time < actionLockUntil;
+    public bool CanMove => !IsDowned && !IsActionLocked && !ShieldWallActive;
+    public bool CanAcceptCombatCommand => !IsDowned && !IsActionLocked && !ShieldWallActive;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
-    void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
-    }
+    void OnDestroy() { if (Instance == this) Instance = null; }
 
     void Start()
     {
@@ -68,19 +86,16 @@ public class HectorController : MonoBehaviour
         spawnPosition = transform.position;
         Health = maxHealth;
         presentation = GetComponent<HectorPresentationBridge>();
+        presentation?.Initialize(this);
         presentation?.SetSelected(Selected);
     }
 
     void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
-
-        if (IsDowned)
-        {
-            if (Time.time >= reviveAt) Revive();
-            return;
-        }
-
+        if (IsDowned) { if (Time.time >= reviveAt) Revive(); return; }
+        RefreshActionState();
+        UpdateActionFacing();
         Move();
         AutoAttack();
     }
@@ -95,7 +110,7 @@ public class HectorController : MonoBehaviour
 
     public void MoveTo(Vector3 worldPosition)
     {
-        if (IsDowned) return;
+        if (!CanMove) return;
         destination = worldPosition;
         destination.y = transform.position.y;
         destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
@@ -103,6 +118,7 @@ public class HectorController : MonoBehaviour
 
     void Move()
     {
+        if (!CanMove) return;
         destination = MapBuilder.ClampToPlayableArea(destination, battlefieldMargin);
         Vector3 delta = destination - transform.position;
         delta.y = 0f;
@@ -114,142 +130,167 @@ public class HectorController : MonoBehaviour
 
     void AutoAttack()
     {
-        if (Time.time < nextAttack) return;
+        if (!CanAcceptCombatCommand || Time.time < nextAttack) return;
+        if (presentation != null && !presentation.SpearAvailable) return;
         Enemy best = FindNearestEnemy(attackRange);
         if (best == null) return;
-
+        if (!TryBeginAction(HectorCombatAction.BasicAttack, basicAttackActionLock, best.transform.position, out int token)) return;
         nextAttack = Time.time + 1f / Mathf.Max(.01f, attackRate);
         Vector3 impactPoint = best.transform.position;
-        if (presentation == null)
-        {
-            best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
-            return;
-        }
-
+        if (presentation == null) { ApplyBasicAttackImpact(token, best); return; }
         presentation.PlayAttackImpact(impactPoint, () =>
         {
             if (IsDowned || best == null || !best.IsAlive) return;
-            best.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
+            ApplyBasicAttackImpact(token, best);
         });
     }
 
-    public void TakeDamage(float damage)
+    void ApplyBasicAttackImpact(int token, Enemy target)
     {
-        ApplyIncomingDamage(damage);
+        if (!ActionTokenValid(token) || target == null || !target.IsAlive) return;
+        target.ReceiveDamage(new DamagePacket(attackDamage, DamageType.Hero));
     }
 
-    public void TakeDamage(float damage, Vector3 sourcePoint)
-    {
-        ApplyIncomingDamage(damage);
-    }
+    public void TakeDamage(float damage) => ApplyIncomingDamage(damage, null);
+    public void TakeDamage(float damage, Vector3 sourcePoint) => ApplyIncomingDamage(damage, sourcePoint);
 
-    void ApplyIncomingDamage(float damage)
+    void ApplyIncomingDamage(float damage, Vector3? sourcePoint)
     {
         if (IsDowned || Health <= 0f) return;
         float incoming = Mathf.Max(1f, damage);
-        bool blocked = ShieldWallActive;
+        bool blocked = ShieldWallActive && (!sourcePoint.HasValue || IsFacingSource(sourcePoint.Value));
         float applied = blocked ? incoming * Mathf.Clamp(shieldWallDamageMultiplier, .05f, 1f) : incoming;
         Health -= applied;
-
-        if (blocked)
-        {
-            presentation?.PlayShieldBlockImpact(incoming);
-        }
-        else
-        {
-            presentation?.PlayDamageImpact(applied);
-        }
-
+        if (blocked) presentation?.PlayShieldBlockImpact(incoming);
+        else presentation?.PlayDamageImpact(applied);
         if (Health <= 0f) Down();
+    }
+
+    bool IsFacingSource(Vector3 sourcePoint)
+    {
+        Vector3 direction = sourcePoint - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= .001f) return true;
+        return Vector3.Dot(transform.forward, direction.normalized) >= shieldWallFrontalDot;
     }
 
     void Down()
     {
         Health = 0f;
         shieldWallUntil = 0f;
+        CancelActionState(HectorCombatAction.Downed);
         IsDowned = true;
         SetSelected(false);
         reviveAt = Time.time + downedDuration;
         destination = transform.position;
+        presentation?.SetDownedState(true);
         RuntimeFileLogger.Event("HECTOR", $"Downed; reviveIn={downedDuration:0.0}s");
     }
 
     void Revive()
     {
+        actionSerial++;
+        CurrentAction = HectorCombatAction.None;
+        actionLockUntil = 0f;
+        hasActionFacingPoint = false;
         IsDowned = false;
         Health = maxHealth * .50f;
         transform.position = MapBuilder.ClampToPlayableArea(spawnPosition, battlefieldMargin);
         destination = transform.position;
+        presentation?.SetDownedState(false);
+        presentation?.PlayReviveEffect();
         RuntimeFileLogger.Event("HECTOR", $"Revived hp={Health:0}/{maxHealth:0}");
     }
 
     public void UseWarCry()
     {
-        if (IsDowned || Time.time < nextWarCry) return;
+        if (Time.time < nextWarCry) return;
+        if (!TryBeginAction(HectorCombatAction.WarCry, warCryActionLock, null, out int token)) return;
         nextWarCry = Time.time + warCryCooldown;
+        if (presentation == null) ApplyWarCryImpact(token);
+        else presentation.PlayWarCryImpact(() => ApplyWarCryImpact(token));
+    }
 
+    void ApplyWarCryImpact(int token)
+    {
+        if (!ActionTokenValid(token)) return;
         int buffed = 0;
         float radiusSq = warCryRadius * warCryRadius;
         foreach (Tower tower in TowerRegistry.All)
         {
-            if (tower == null) continue;
-            if ((tower.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
+            if (tower == null || (tower.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
             tower.ApplyWarCry(warCryDuration, 1.15f, 1.30f);
             buffed++;
         }
-
         RuntimeFileLogger.Event("HECTOR", $"War Cry used; towersBuffed={buffed}");
-        presentation?.PlayWarCry(warCryRadius);
+        presentation?.PlayWarCryEffect(warCryRadius);
     }
 
     public void UseShieldWall()
     {
-        if (IsDowned || Time.time < nextShieldWall) return;
+        if (Time.time < nextShieldWall) return;
+        if (!TryBeginAction(HectorCombatAction.ShieldWall, shieldWallActionLock, null, out int token)) return;
         nextShieldWall = Time.time + shieldWallCooldown;
-        shieldWallUntil = Time.time + Mathf.Max(.2f, shieldWallDuration);
+        if (presentation == null) ApplyShieldWallImpact(token);
+        else presentation.PlayShieldWallImpact(() => ApplyShieldWallImpact(token));
+    }
 
+    void ApplyShieldWallImpact(int token)
+    {
+        if (!ActionTokenValid(token)) return;
+        float duration = Mathf.Max(.2f, shieldWallDuration);
+        shieldWallUntil = Time.time + duration;
         Vector3 center = transform.position + transform.forward * 2.2f;
-        HectorShieldWallFactory.Create(center, transform.rotation, shieldWallDuration);
-
-        RuntimeFileLogger.Event("HECTOR", $"Shield Wall used; duration={shieldWallDuration:0.0}s; damageMultiplier={shieldWallDamageMultiplier:0.00}");
-        presentation?.PlayShieldWall(center, shieldWallDuration);
+        HectorShieldWallFactory.Create(center, transform.rotation, duration);
+        presentation?.PlayShieldWallEffect(center, duration);
+        RuntimeFileLogger.Event("HECTOR", $"Shield Wall used; duration={duration:0.0}s; damageMultiplier={shieldWallDamageMultiplier:0.00}");
     }
 
     public void UseSpearThrow()
     {
-        if (IsDowned || Time.time < nextSpearThrow) return;
+        if (Time.time < nextSpearThrow) return;
+        if (presentation != null && !presentation.SpearAvailable) return;
         Enemy target = FindNearestEnemy(spearThrowRange);
         if (target == null) return;
-
+        if (!TryBeginAction(HectorCombatAction.SpearThrow, spearThrowActionLock, target.transform.position, out int token)) return;
         nextSpearThrow = Time.time + spearThrowCooldown;
         Vector3 impactPoint = target.transform.position;
-        if (presentation == null)
-        {
-            target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
-            if (target != null) target.ApplyArmorBreak(.25f, 6f);
-            RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
-            return;
-        }
-
+        if (presentation == null) { ApplySpearThrowFallback(token, target); return; }
         presentation.PlaySpearImpact(impactPoint, () =>
         {
             if (IsDowned || target == null || !target.IsAlive) return;
+            if (!ActionTokenValid(token)) return;
             presentation.LaunchSpearFlight(target.transform, point =>
             {
                 if (target == null || !target.IsAlive) return;
                 target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
-                if (target != null) target.ApplyArmorBreak(.25f, 6f);
+                target.ApplyArmorBreak(.25f, 6f);
                 RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}; impact={point}");
             });
         });
     }
 
+    void ApplySpearThrowFallback(int token, Enemy target)
+    {
+        if (!ActionTokenValid(token) || target == null || !target.IsAlive) return;
+        target.ReceiveDamage(new DamagePacket(spearThrowDamage, DamageType.Hero));
+        target.ApplyArmorBreak(.25f, 6f);
+        RuntimeFileLogger.Event("HECTOR", $"Spear Throw hit {target.name} damage={spearThrowDamage:0}");
+    }
+
     public void UseUltimate()
     {
-        if (IsDowned || Time.time < nextUltimate) return;
+        if (Time.time < nextUltimate) return;
+        if (!TryBeginAction(HectorCombatAction.Ultimate, ultimateActionLock, null, out int token)) return;
         nextUltimate = Time.time + ultimateCooldown;
-        Health = Mathf.Min(maxHealth, Health + maxHealth * .35f);
+        if (presentation == null) ApplyUltimateImpact(token);
+        else presentation.PlayUltimateImpact(() => ApplyUltimateImpact(token));
+    }
 
+    void ApplyUltimateImpact(int token)
+    {
+        if (!ActionTokenValid(token)) return;
+        Health = Mathf.Min(maxHealth, Health + maxHealth * .35f);
         int towersBuffed = 0;
         foreach (Tower tower in TowerRegistry.All)
         {
@@ -257,25 +298,64 @@ public class HectorController : MonoBehaviour
             tower.ApplyWarCry(ultimateDuration, 1.35f, 1.50f);
             towersBuffed++;
         }
-
         int enemiesHit = 0;
         float radiusSq = ultimateEnemyRadius * ultimateEnemyRadius;
         enemySnapshot.Clear();
         foreach (Enemy enemy in EnemyRegistry.All)
-            if (enemy != null) enemySnapshot.Add(enemy);
-
+            if (enemy != null && enemy.IsAlive) enemySnapshot.Add(enemy);
         for (int i = 0; i < enemySnapshot.Count; i++)
         {
             Enemy enemy = enemySnapshot[i];
-            if (enemy == null || (enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
-            enemy.ReceiveDamage(new DamagePacket(100f, DamageType.Hero));
-            if (enemy != null) enemy.ApplySlow(.70f, 4f);
+            if (enemy == null || !enemy.IsAlive || (enemy.transform.position - transform.position).sqrMagnitude > radiusSq) continue;
+            enemy.ReceiveDamage(new DamagePacket(ultimateDamage, DamageType.Hero));
+            enemy.ApplySlow(.70f, 4f);
             enemiesHit++;
         }
         enemySnapshot.Clear();
-
         RuntimeFileLogger.Event("HECTOR", $"For Troy ultimate used; towersBuffed={towersBuffed}, enemiesHit={enemiesHit}, hp={Health:0}/{maxHealth:0}");
-        presentation?.PlayUltimate(ultimateEnemyRadius);
+        presentation?.PlayUltimateEffect(ultimateEnemyRadius);
+    }
+
+    bool TryBeginAction(HectorCombatAction action, float lockDuration, Vector3? facingPoint, out int token)
+    {
+        token = actionSerial;
+        if (!CanAcceptCombatCommand) return false;
+        actionSerial++;
+        token = actionSerial;
+        CurrentAction = action;
+        actionLockUntil = Time.time + Mathf.Max(.05f, lockDuration);
+        hasActionFacingPoint = facingPoint.HasValue;
+        if (facingPoint.HasValue) actionFacingPoint = facingPoint.Value;
+        UpdateActionFacing();
+        return true;
+    }
+
+    bool ActionTokenValid(int token) => !IsDowned && token == actionSerial;
+
+    void RefreshActionState()
+    {
+        if (CurrentAction == HectorCombatAction.None || CurrentAction == HectorCombatAction.Downed || Time.time < actionLockUntil) return;
+        CurrentAction = HectorCombatAction.None;
+        actionLockUntil = 0f;
+        hasActionFacingPoint = false;
+    }
+
+    void CancelActionState(HectorCombatAction nextState)
+    {
+        actionSerial++;
+        CurrentAction = nextState;
+        actionLockUntil = 0f;
+        hasActionFacingPoint = false;
+    }
+
+    void UpdateActionFacing()
+    {
+        if (!hasActionFacingPoint || IsDowned) return;
+        Vector3 direction = actionFacingPoint - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= .001f) return;
+        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Mathf.Max(0f, combatTurnSpeed) * Time.deltaTime);
     }
 
     Enemy FindNearestEnemy(float radius)
@@ -284,7 +364,7 @@ public class HectorController : MonoBehaviour
         float bestSq = radius * radius;
         foreach (Enemy enemy in EnemyRegistry.All)
         {
-            if (enemy == null) continue;
+            if (enemy == null || !enemy.IsAlive) continue;
             float distanceSq = (enemy.transform.position - transform.position).sqrMagnitude;
             if (distanceSq >= bestSq) continue;
             bestSq = distanceSq;
@@ -293,6 +373,7 @@ public class HectorController : MonoBehaviour
         return best;
     }
 
+    public float ActionLockRemaining => IsActionLocked ? Mathf.Max(0f, actionLockUntil - Time.time) : 0f;
     public float WarCryCooldownRemaining => Mathf.Max(0f, nextWarCry - Time.time);
     public float ShieldWallCooldownRemaining => Mathf.Max(0f, nextShieldWall - Time.time);
     public float ShieldWallRemaining => ShieldWallActive ? Mathf.Max(0f, shieldWallUntil - Time.time) : 0f;

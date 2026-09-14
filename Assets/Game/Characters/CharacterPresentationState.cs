@@ -40,12 +40,19 @@ public class CharacterPresentationState : MonoBehaviour
         blocking = value;
         if (animator == null) return;
 
+        bool persistentParameter = false;
         if (HasParameter("Blocking", AnimatorControllerParameterType.Bool))
+        {
             animator.SetBool(Animator.StringToHash("Blocking"), value);
+            persistentParameter = true;
+        }
         if (HasParameter("IsBlocking", AnimatorControllerParameterType.Bool))
+        {
             animator.SetBool(Animator.StringToHash("IsBlocking"), value);
+            persistentParameter = true;
+        }
 
-        if (value && !dead) PlayBlock();
+        if (value && !dead && !persistentParameter) PlayBlock();
     }
 
     public void PlayAttack() => Trigger("Attack");
@@ -54,10 +61,13 @@ public class CharacterPresentationState : MonoBehaviour
     public void PlaySpearAttack(Action impact) => PlayTimedAttack("Poke", "Attack", impact, .48f, .34f);
     public void PlayCommand() => Trigger("Command", "Attack");
     public void PlayAbilityQ() => Trigger("AbilityQ", "Attack");
+    public void PlayAbilityQ(Action impact) => PlayTimedAttack("AbilityQ", "Attack", impact, .38f, .30f);
     public void PlayAbilityE() => Trigger("AbilityE", "Attack");
+    public void PlayAbilityE(Action impact) => PlayTimedAttack("AbilityE", "Attack", impact, .42f, .32f);
     public void PlayAbilityR() => Trigger("AbilityR", "Attack");
     public void PlayAbilityR(Action impact) => PlayTimedAttack("AbilityR", "Attack", impact, .52f, .38f);
     public void PlayAbilityF() => Trigger("AbilityF", "Attack");
+    public void PlayAbilityF(Action impact) => PlayTimedAttack("AbilityF", "Attack", impact, .50f, .40f);
     public void PlayBlock() => Trigger("Block", "Attack");
     public void PlayPoke() => PlaySpearAttack();
     public void PlayDraw() => Trigger("Draw", "Attack");
@@ -120,9 +130,28 @@ public class CharacterPresentationState : MonoBehaviour
         fallbackRoutine = StartCoroutine(HitPulse());
     }
 
+    public void CancelTimedActions()
+    {
+        if (impactRoutine != null)
+        {
+            StopCoroutine(impactRoutine);
+            impactRoutine = null;
+        }
+        if (bowRoutine != null)
+        {
+            StopCoroutine(bowRoutine);
+            bowRoutine = null;
+        }
+    }
+
     public void SetDowned(bool downed)
     {
-        if (downed) SetBlocking(false);
+        if (downed)
+        {
+            CancelTimedActions();
+            SetMoving(false);
+            SetBlocking(false);
+        }
         if (animator != null && HasParameter("IsDowned", AnimatorControllerParameterType.Bool))
             animator.SetBool(Animator.StringToHash("IsDowned"), downed);
     }
@@ -132,18 +161,8 @@ public class CharacterPresentationState : MonoBehaviour
         if (dead) return 0f;
         SetMoving(false);
         SetBlocking(false);
+        CancelTimedActions();
         dead = true;
-
-        if (bowRoutine != null)
-        {
-            StopCoroutine(bowRoutine);
-            bowRoutine = null;
-        }
-        if (impactRoutine != null)
-        {
-            StopCoroutine(impactRoutine);
-            impactRoutine = null;
-        }
 
         float duration = boss ? 1.25f : .70f;
         if (animator != null)
