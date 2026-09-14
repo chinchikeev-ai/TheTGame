@@ -22,6 +22,23 @@ Preferred language:
 
 The target is not "serious stylized realism". A player should read **Trojan War + cartoon adventure** immediately.
 
+## Current gameplay-camera contract
+
+Character production is designed for the **existing Chapter I tactical camera**, not for a separate close-up concept-art view.
+
+The current baseline is an orthographic, top-down/isometric-like battlefield view with approximately `73°` pitch and a default orthographic size around `10.6`.
+
+Implications:
+
+- silhouette and equipment hierarchy matter more than small facial detail;
+- helmets, crests, shields, bows, quivers, spears, capes and shoulder mass must remain legible from above;
+- upper-body and head shapes deserve more visual emphasis than tiny lower-body costume details;
+- faces should still carry personality in medium shots, but a role must never depend on seeing eyes, wrinkles or mouth detail;
+- faction and role must remain readable while units overlap and move;
+- final visual QA is performed from the actual gameplay camera before any close-up beauty review.
+
+The intended 3D presentation is **stylized tactical board / toy battlefield**: compact, bold, readable forms with cartoon personality. It is not a mandate for realistic materials or highly detailed hero models.
+
 ## Proportion and shape rules
 
 Characters may use:
@@ -37,7 +54,8 @@ Avoid:
 - tiny historically precise details that disappear at gameplay zoom;
 - grim, dirty, desaturated realism;
 - generic medieval plate armor;
-- silhouette dependence on color alone.
+- silhouette dependence on color alone;
+- designs that only read in portrait/close-up framing.
 
 ## Character acting
 
@@ -83,12 +101,26 @@ Gameplay timing remains authoritative. Animation may exaggerate presentation but
 - **Trojan Archer:** bow + quiver.
 - **Ballista Crew:** work/tool silhouette rather than frontline infantry; readable brace/heave/recoil poses.
 - **Priest of Apollo:** robe + sun staff/disc; clear casting silhouette.
-- **Fire Keeper:** pitch/fire handling equipment; expressive throw/stoke poses.
+- **Fire Keeper:** thrown fire-bottle / ignition-equipment silhouette; expressive throw/stoke poses.
 
 ### Heroes
 - **Hector:** long spear, large Trojan shield, red/gold hero crest and cape; heroic but approachable, not grim.
 - **Menelaus:** colder bronze/blue commander treatment with a broader comic-command presence.
 - **Achilles:** brighter heroic Greek treatment for later campaign use; exceptionally readable speed/elite silhouette.
+
+## Small-scale readability priority
+
+At default gameplay zoom, read order for a character is:
+
+1. faction color family;
+2. body mass / silhouette;
+3. primary weapon or shield;
+4. crest, cape or role prop;
+5. current action pose;
+6. facial personality;
+7. decorative detail.
+
+Any design that reverses this hierarchy is too detail-dependent for the current game.
 
 ## Equipment sources
 
@@ -123,6 +155,7 @@ Final art remains subject to the `DONE` gate in `MODEL_ART_INVENTORY.md`.
 6. Armor must be checked for clipping/deformation in locomotion, attack, hit and death states.
 7. Hero and boss silhouettes must remain readable at normal gameplay zoom.
 8. Comic acting must never obscure targetability, hit timing or navigation state.
+9. Final judgement uses the current Chapter I gameplay camera before close-up inspection.
 
 ## Build / QA workflow
 
@@ -131,7 +164,7 @@ Final art remains subject to the `DONE` gate in `MODEL_ART_INVENTORY.md`.
 3. Run the Chapter I equipment/source pass.
 4. Build role-specific Animator profiles.
 5. Inspect in real Play Mode at gameplay camera distance.
-6. Reject candidates that read as realistic/grim/generic even if technically functional.
+6. Reject candidates that read as realistic/grim/generic, or only work in close-up, even if technically functional.
 7. Only then promote status in `MODEL_ART_INVENTORY.md`.
 
 The runtime may retain generated/procedural fallbacks while final production art is replaced incrementally.
