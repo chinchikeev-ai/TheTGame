@@ -42,20 +42,51 @@ public class HectorControlUxTests
     }
 
     [UnityTest]
-    public IEnumerator HectorHud_HasMouseCommands()
+    public IEnumerator HectorHud_IsHiddenUntilHectorIsSelected_AndHasMouseCommands()
     {
         yield return null;
         yield return null;
 
+        HectorController hector = Object.FindFirstObjectByType<HectorController>();
         HectorHUD hud = Object.FindFirstObjectByType<HectorHUD>();
+        Assert.NotNull(hector);
         Assert.NotNull(hud);
 
+        hector.SetSelected(false);
+        yield return null;
+        Transform panel = hud.transform.Find("HectorHUDCanvas/HectorPanel");
+        Assert.NotNull(panel);
+        Assert.IsFalse(panel.gameObject.activeSelf, "Hector command menu must stay hidden until Hector is selected.");
+
+        hector.SetSelected(true);
+        yield return null;
+        Assert.IsTrue(panel.gameObject.activeSelf, "Selecting Hector must open the Hector command menu.");
+
         Button[] buttons = hud.GetComponentsInChildren<Button>(true);
-        Assert.GreaterOrEqual(buttons.Length, 5, "Hector HUD should expose portrait selection plus four clickable ability buttons.");
-        Assert.IsTrue(buttons.Any(b => b.name == "HectorPortrait"), "Hector portrait must be clickable to select the hero from HUD.");
+        Assert.GreaterOrEqual(buttons.Length, 5, "Hector HUD should expose portrait plus four clickable ability buttons.");
+        Assert.IsTrue(buttons.Any(b => b.name == "HectorPortrait"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_Q"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_E"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_R"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_F"));
+    }
+
+    [UnityTest]
+    public IEnumerator Hector_AlwaysHasAnAnimationPath()
+    {
+        HectorController hector = Object.FindFirstObjectByType<HectorController>();
+        Assert.NotNull(hector);
+        yield return null;
+
+        Animator animator = hector.GetComponentInChildren<Animator>(true);
+        bool authoredAnimatorActive = animator != null && animator.enabled && animator.runtimeAnimatorController != null;
+        HectorMotionFallbackAnimator fallback = hector.GetComponent<HectorMotionFallbackAnimator>();
+        Assert.NotNull(fallback, "Hector must have a runtime animation fallback component.");
+
+        if (!authoredAnimatorActive)
+        {
+            Assert.IsTrue(fallback.UsingProceduralFallback, "Fallback must activate when no authored Animator Controller is available.");
+            Assert.IsTrue(fallback.HasAnimationTargets, "Fallback must resolve Hector body/bone targets so the hero cannot remain static.");
+        }
     }
 }
