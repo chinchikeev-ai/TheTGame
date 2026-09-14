@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class ChapterOneAtmosphereController : MonoBehaviour
 {
@@ -13,6 +15,7 @@ public class ChapterOneAtmosphereController : MonoBehaviour
 
     Light sun;
     float phase;
+    VolumeProfile runtimeProfile;
 
     void Start()
     {
@@ -21,7 +24,7 @@ public class ChapterOneAtmosphereController : MonoBehaviour
         RenderSettings.fogMode = FogMode.Linear;
         RenderSettings.fogStartDistance = 27f;
         RenderSettings.fogEndDistance = 64f;
-        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+        RenderSettings.ambientMode = AmbientMode.Trilight;
         RenderSettings.ambientSkyColor = SkyAmbient;
         RenderSettings.ambientEquatorColor = EquatorAmbient;
         RenderSettings.ambientGroundColor = GroundAmbient;
@@ -34,6 +37,10 @@ public class ChapterOneAtmosphereController : MonoBehaviour
             cam.backgroundColor = new Color(.24f, .38f, .45f);
             cam.nearClipPlane = .25f;
             cam.farClipPlane = 140f;
+
+            UniversalAdditionalCameraData cameraData = cam.GetComponent<UniversalAdditionalCameraData>();
+            if (cameraData == null) cameraData = cam.gameObject.AddComponent<UniversalAdditionalCameraData>();
+            cameraData.renderPostProcessing = true;
         }
 
         GameObject sunObject = GameObject.Find("Directional Light");
@@ -50,8 +57,48 @@ public class ChapterOneAtmosphereController : MonoBehaviour
             sun.transform.rotation = Quaternion.Euler(50f, -35f, 0f);
         }
 
+        BuildPostProcessing();
         BuildBattlefieldAir();
         phase = Random.value * 10f;
+    }
+
+    void BuildPostProcessing()
+    {
+        if (GameObject.Find("Chapter01_GlobalVolume") != null) return;
+
+        GameObject volumeObject = new GameObject("Chapter01_GlobalVolume");
+        Volume volume = volumeObject.AddComponent<Volume>();
+        volume.isGlobal = true;
+        volume.priority = 40f;
+        volume.weight = 1f;
+
+        runtimeProfile = ScriptableObject.CreateInstance<VolumeProfile>();
+        runtimeProfile.name = "Chapter01_StylizedRuntimeProfile";
+        volume.sharedProfile = runtimeProfile;
+
+        Tonemapping tonemapping = runtimeProfile.Add<Tonemapping>(true);
+        tonemapping.mode.Override(TonemappingMode.ACES);
+
+        ColorAdjustments color = runtimeProfile.Add<ColorAdjustments>(true);
+        color.postExposure.Override(.08f);
+        color.contrast.Override(11f);
+        color.saturation.Override(9f);
+        color.colorFilter.Override(new Color(1f,.97f,.91f,1f));
+
+        WhiteBalance whiteBalance = runtimeProfile.Add<WhiteBalance>(true);
+        whiteBalance.temperature.Override(5f);
+        whiteBalance.tint.Override(1f);
+
+        Bloom bloom = runtimeProfile.Add<Bloom>(true);
+        bloom.threshold.Override(1.04f);
+        bloom.intensity.Override(.26f);
+        bloom.scatter.Override(.62f);
+
+        Vignette vignette = runtimeProfile.Add<Vignette>(true);
+        vignette.color.Override(new Color(.12f,.065f,.035f,1f));
+        vignette.intensity.Override(.115f);
+        vignette.smoothness.Override(.55f);
+        vignette.rounded.Override(false);
     }
 
     void BuildBattlefieldAir()
@@ -104,5 +151,10 @@ public class ChapterOneAtmosphereController : MonoBehaviour
         if (sun == null) return;
         sun.intensity = Mathf.Lerp(1.34f, 1.42f, drift);
         sun.color = Color.Lerp(SunWarm, SunLift, drift * .38f);
+    }
+
+    void OnDestroy()
+    {
+        if(runtimeProfile != null) Destroy(runtimeProfile);
     }
 }
