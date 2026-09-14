@@ -12,10 +12,13 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     HectorAbilityPresentation abilityPresentation;
     CharacterPresentationState characterPresentation;
     CharacterWeaponSocketResolver weaponSockets;
+    CharacterWeaponPresentation weaponPresentation;
     Renderer bodyRenderer;
     Vector3 previousPosition;
     bool previousDowned;
     bool selected;
+
+    public bool SpearAvailable => weaponPresentation == null || !weaponPresentation.SpearReleased;
 
     public void Initialize(HectorController controller)
     {
@@ -27,6 +30,9 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         weaponSockets = GetComponent<CharacterWeaponSocketResolver>();
         if (weaponSockets == null) weaponSockets = gameObject.AddComponent<CharacterWeaponSocketResolver>();
         weaponSockets.Refresh();
+        weaponPresentation = GetComponent<CharacterWeaponPresentation>();
+        if (weaponPresentation == null) weaponPresentation = gameObject.AddComponent<CharacterWeaponPresentation>();
+        weaponPresentation.Refresh();
         bodyRenderer = GetComponentInChildren<Renderer>();
         previousPosition = transform.position;
         previousDowned = hector != null && hector.IsDowned;
@@ -42,6 +48,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
     public void PlayAttackImpact(Vector3 point, Action impact)
     {
+        if (!SpearAvailable) return;
         if (characterPresentation == null)
         {
             impact?.Invoke();
@@ -51,7 +58,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
         characterPresentation.PlaySpearAttack(() =>
         {
-            if (hector == null || hector.IsDowned) return;
+            if (hector == null || hector.IsDowned || !SpearAvailable) return;
             impact?.Invoke();
             PlayMeleeImpact(point);
         });
@@ -76,9 +83,10 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         abilityPresentation?.PlayShieldWall(center, transform.rotation);
     }
 
-    // Kept as the animation-release hook for the existing Chapter I timing contract.
+    // Kept as the animation-release hook for the Chapter I timing contract.
     public void PlaySpearImpact(Vector3 point, Action impact)
     {
+        if (!SpearAvailable) return;
         if (characterPresentation == null)
         {
             impact?.Invoke();
@@ -87,19 +95,23 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
         characterPresentation.PlayAbilityR(() =>
         {
-            if (hector == null || hector.IsDowned) return;
+            if (hector == null || hector.IsDowned || !SpearAvailable) return;
             impact?.Invoke();
         });
     }
 
     public void LaunchSpearFlight(Transform target, Action<Vector3> impact)
     {
-        if (hector == null || hector.IsDowned || target == null) return;
-        Vector3 start = weaponSockets != null
-            ? weaponSockets.SpearReleasePoint()
-            : transform.TransformPoint(new Vector3(.22f, 1.10f, .42f));
+        if (hector == null || hector.IsDowned || target == null || !SpearAvailable) return;
+        Vector3 start = weaponPresentation != null
+            ? weaponPresentation.ReleaseSpear()
+            : weaponSockets != null
+                ? weaponSockets.SpearReleasePoint()
+                : transform.TransformPoint(new Vector3(.22f, 1.10f, .42f));
+
         CombatFlightPresentation.SpawnSpear(start, target, Vector3.up * .65f, point =>
         {
+            weaponPresentation?.RestoreSpear();
             impact?.Invoke(point);
             abilityPresentation?.PlaySpearImpact(point);
         });

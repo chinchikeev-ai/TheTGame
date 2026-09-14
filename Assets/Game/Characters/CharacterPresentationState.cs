@@ -55,6 +55,7 @@ public class CharacterPresentationState : MonoBehaviour
 
     public void PrepareBow()
     {
+        GetComponent<CharacterWeaponPresentation>()?.PrepareBow();
         Trigger("Draw");
     }
 
@@ -65,6 +66,19 @@ public class CharacterPresentationState : MonoBehaviour
 
     public void PlayBowShot(Action impact, float redrawDelay = .18f)
     {
+        CharacterWeaponPresentation weaponPresentation = GetComponent<CharacterWeaponPresentation>();
+        PlayBowShot(
+            () =>
+            {
+                weaponPresentation?.ReleaseArrow();
+                impact?.Invoke();
+            },
+            () => weaponPresentation?.RestoreArrow(),
+            redrawDelay);
+    }
+
+    public void PlayBowShot(Action impact, Action redraw, float redrawDelay = .18f)
+    {
         if (dead) return;
 
         string stateName = Trigger("Release", "Attack");
@@ -72,10 +86,8 @@ public class CharacterPresentationState : MonoBehaviour
         if (impact != null)
             impactRoutine = StartCoroutine(InvokeAtAnimationPhase(stateName, .40f, .30f, impact));
 
-        if (animator == null || !HasParameter("Draw", AnimatorControllerParameterType.Trigger)) return;
-
         if (bowRoutine != null) StopCoroutine(bowRoutine);
-        bowRoutine = StartCoroutine(RedrawBowAfterImpact(stateName, Mathf.Max(.01f, redrawDelay)));
+        bowRoutine = StartCoroutine(RedrawBowAfterImpact(stateName, Mathf.Max(.01f, redrawDelay), redraw));
     }
 
     public void PlayHit()
@@ -205,7 +217,7 @@ public class CharacterPresentationState : MonoBehaviour
         return next.shortNameHash == stateHash && next.normalizedTime >= normalizedImpact;
     }
 
-    IEnumerator RedrawBowAfterImpact(string releaseStateName, float redrawDelay)
+    IEnumerator RedrawBowAfterImpact(string releaseStateName, float redrawDelay, Action redraw)
     {
         float startedAt = Time.time;
         int stateHash = string.IsNullOrEmpty(releaseStateName) ? 0 : Animator.StringToHash(releaseStateName);
@@ -219,6 +231,7 @@ public class CharacterPresentationState : MonoBehaviour
         {
             yield return new WaitForSeconds(redrawDelay);
             Trigger("Draw");
+            redraw?.Invoke();
         }
         bowRoutine = null;
     }
