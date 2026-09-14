@@ -7,7 +7,7 @@ using UnityEngine;
 
 public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
 {
-    public const int CurrentReportSchemaVersion = 2;
+    public const int CurrentReportSchemaVersion = 3;
 
     [Serializable]
     public sealed class WaveReport
@@ -45,6 +45,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
         public string pacingVerdict;
         public bool nonOneXSpeedUsed;
         public float maxCombatSpeed = 1f;
+        public bool pauseUsed;
         public int finalScore;
         public int kills;
         public int leaks;
@@ -107,6 +108,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
             float combatSpeed = CombatControlsUI.CurrentSpeed;
             report.maxCombatSpeed = Mathf.Max(report.maxCombatSpeed, combatSpeed);
             if (Mathf.Abs(combatSpeed - 1f) > .01f) report.nonOneXSpeedUsed = true;
+            if (!game.GameEnded && Time.timeScale <= .001f) report.pauseUsed = true;
 
             frameCount++;
             observedSeconds += Time.unscaledDeltaTime;
@@ -143,7 +145,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
     {
         RuntimeFileLogger.Event(
             "RC_CHECKPOINT",
-            $"t={game.RunTime:0.0}s, wave={game.CurrentWave}/{game.MaxWaves}, waveActive={spawner.WaveActive}, alive={EnemyRegistry.AliveCount}, gold={game.Money}, earned={game.GoldEarned}, spent={game.GoldSpent}, gateHP={game.BaseHealth}/{game.MaxBaseHealth}, kills={game.Kills}, leaks={game.Leaks}, built={game.TowersBuilt}, sold={game.TowersSold}, bossDefeated={game.BossDefeated}, bossBreached={game.BossBreached}, combatSpeed={CombatControlsUI.CurrentSpeed:0.##}x, pacing={game.PacingVerdict()}");
+            $"t={game.RunTime:0.0}s, wave={game.CurrentWave}/{game.MaxWaves}, waveActive={spawner.WaveActive}, alive={EnemyRegistry.AliveCount}, gold={game.Money}, earned={game.GoldEarned}, spent={game.GoldSpent}, gateHP={game.BaseHealth}/{game.MaxBaseHealth}, kills={game.Kills}, leaks={game.Leaks}, built={game.TowersBuilt}, sold={game.TowersSold}, bossDefeated={game.BossDefeated}, bossBreached={game.BossBreached}, combatSpeed={CombatControlsUI.CurrentSpeed:0.##}x, pauseUsed={report.pauseUsed}, pacing={game.PacingVerdict()}");
     }
 
     void BeginWave(int wave)
@@ -226,7 +228,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
 
             RuntimeFileLogger.Event("RC_REPORT", $"Saved JSON={LastReportPath}");
             RuntimeFileLogger.Event("RC_REPORT", $"Saved CSV={LastCsvPath}");
-            RuntimeFileLogger.Event("RC_REPORT", $"Summary result={report.result}, time={report.actualDurationSeconds:0.0}s, pacing={report.pacingVerdict}, speedMax={report.maxCombatSpeed:0.##}x, non1x={report.nonOneXSpeedUsed}, score={report.finalScore}, kills={report.kills}, leaks={report.leaks}, goldEarned={report.goldEarned}, goldSpent={report.goldSpent}, finalMoney={report.finalMoney}, gateHP={report.gateHp}/{report.gateHpMax}, averageFPS={report.averageFps:0.0}");
+            RuntimeFileLogger.Event("RC_REPORT", $"Summary result={report.result}, time={report.actualDurationSeconds:0.0}s, pacing={report.pacingVerdict}, speedMax={report.maxCombatSpeed:0.##}x, non1x={report.nonOneXSpeedUsed}, pauseUsed={report.pauseUsed}, score={report.finalScore}, kills={report.kills}, leaks={report.leaks}, goldEarned={report.goldEarned}, goldSpent={report.goldSpent}, finalMoney={report.finalMoney}, gateHP={report.gateHp}/{report.gateHpMax}, averageFPS={report.averageFps:0.0}");
         }
         catch (Exception ex)
         {
