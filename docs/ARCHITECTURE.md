@@ -1,24 +1,34 @@
 # TheTroyGame Architecture
 
+Last reviewed: 2026-09-14
+
 ## Purpose
 Keep gameplay systems small, data-driven, testable, and easy for AI agents to modify safely.
 
 ## Runtime composition
-`GameBootstrap` creates and wires runtime systems.
+`GameBootstrap` is the generic composition root. It must not contain chapter-specific coast/map/cinematic/tutorial logic.
 
 Startup order:
 
-`GameBootstrap -> CampaignController -> ChapterController -> GameManager -> GameStateController -> Map/Spawner -> Hero/UI`
+`GameBootstrap -> CampaignController -> ChapterController -> GameManager -> ChapterRuntimeInstaller -> chapter runtime installer -> EnemySpawner -> shared UI`
+
+Current Chapter I branch:
+
+`ChapterRuntimeInstaller -> ChapterOneRuntimeInstaller -> MapBuilder / Hector / Landing / Atmosphere / Cinematic / Guidance`
 
 Ownership:
 - `CampaignController` — campaign-facing commands/progress.
 - `ChapterController` — active `ChapterData`.
+- `ChapterRuntimeInstaller` — selects the chapter runtime profile.
+- chapter-specific runtime installer — owns that chapter's map/presentation/runtime composition only.
 - `GameStateController` — explicit runtime state.
 - `GameManager` — compatibility/session facade only.
 - `EconomyController` — gold accounting.
 - `ScoreController` — chapter score.
-- `EnemySpawner` — wave lifecycle/spawning.
+- `EnemySpawner` — generic encounter lifecycle and authored spawn-plan execution.
 - `CampaignSave` — persistence implementation only.
+
+A new chapter should add a dedicated runtime profile/installer instead of adding `if (chapter == N)` branches to `GameBootstrap`.
 
 ## Dependency direction
 Primary direction:
@@ -29,7 +39,11 @@ UI may read gameplay state and issue public commands. UI must not write persiste
 
 Campaign flow:
 
-`CampaignController -> ChapterController -> ChapterData/WaveData -> EnemySpawner -> result -> CampaignController -> CampaignSave`
+`CampaignController -> ChapterController -> ChapterData -> EncounterData -> EnemySpawner -> result -> CampaignController -> CampaignSave`
+
+Encounter flow:
+
+`ChapterData.encounters -> EncounterData.spawnGroups -> EnemySpawner prepared plan -> EnemyData -> optional EnemyRuntimeBehaviorRegistry behavior`
 
 Input flow:
 
@@ -42,19 +56,21 @@ Combat flow:
 ## Runtime modules
 All runtime C# belongs under `Assets/Game`.
 
-- `Core/Bootstrap` — composition root.
+- `Core/Bootstrap` — generic composition root.
 - `Core/Input` — input facade.
 - `Core/Session` — session/economy/scoring facade.
 - `Core/State` — game-state machine.
-- `Core/Balance` — shared balance lookup/rules.
+- `Core/Balance` — shared reusable balance lookup/rules; never encounter composition.
 - `Core/Localization` — language selection/translation helper.
 - `Core/Logging` — runtime file logging.
-- `Campaign` — campaign/chapter runtime and persistent progress.
+- `Campaign/Data` — chapter and authored encounter contracts.
+- `Campaign/Runtime` — chapter runtime profile boundary/installers.
+- `Campaign/Persistence` — persistent campaign progress.
 - `Combat` — shared damage/projectile/targeting primitives.
 - `Towers` — tower data/runtime/placement/defense squads.
-- `Enemies` — enemy data/runtime/spawner/bosses.
+- `Enemies` — enemy data/runtime/spawner/boss behaviors.
 - `Heroes/Hector` — Hector runtime and abilities.
-- `World` — map/camera/environment/presentation.
+- `World` — map/camera/environment/presentation implementations.
 - `UI` — menus and generic HUD.
 - `Audio` — audio/music runtime.
 - `VFX` — runtime effects.
@@ -71,10 +87,51 @@ The runtime currently uses one assembly intentionally. Gameplay modules still ha
 
 ## Core contracts
 ### GameBootstrap
-Composition only. No balance/chapter gameplay logic.
+Composition only.
+
+Allowed responsibilities:
+- ensure campaign/chapter/session/shared services;
+- ensure a main camera exists;
+- call `ChapterRuntimeInstaller.Install`;
+- initialize the generic `EnemySpawner` with chapter-supplied runtime paths;
+- ensure shared UI.
+
+Forbidden responsibilities:
+- direct Chapter I coast/gate/cinematic/tutorial wiring;
+- encounter composition;
+- chapter balance.
+
+### ChapterRuntimeInstaller
+Maps a `ChapterData.runtimeProfile` to a dedicated chapter runtime installer.
+
+Unsupported profiles fail explicitly. A chapter is not enabled merely because a chapter number exists.
+
+### Chapter-specific runtime installer
+Owns chapter-specific map/presentation/runtime composition while reusing generic combat/economy/save/UI systems.
+
+`ChapterOneRuntimeInstaller` currently owns the Landing map, Hector placement, coast/Troy presentation, Chapter I cinematic, guidance and telemetry reporter.
+
+### EnemySpawner
+Executes the active chapter's authored `EncounterData`.
+
+It may:
+- apply difficulty scaling to the authored plan;
+- resolve fixed/round-robin routes;
+- execute spawn timing;
+- attach explicitly requested runtime behavior profiles.
+
+It must not:
+- infer enemy archetypes from encounter number or spawn index;
+- hardcode Menelaus as the final enemy;
+- own chapter-specific reinforcement composition.
+
+### EnemyRuntimeBehaviorRegistry
+Attaches explicitly named special runtime behaviors such as `menelaus`.
+
+An unknown behavior id is a configuration error, not a silent fallback.
 
 ### GameManager
-Session facade. Do not add new unrelated responsibilities.
+Session facade. Do not add new unrelated responsibilities. Chapter-specific objective rules should continue moving out of this class as later chapter objective contracts are introduced.
 
 ### GameInput
 Only location allowed to access concrete mouse/keyboard APIs for gameplay input.
@@ -97,28 +154,31 @@ Future Stun/Fear should extend the shared layer rather than create one-off imple
 ## Data ownership
 - Tower balance -> `TowerData`.
 - Enemy balance -> `EnemyData`.
-- Wave balance -> `WaveData`.
-- Chapter setup -> `ChapterData`.
+- Encounter composition/pacing/routes -> `EncounterData`.
+- Chapter sequencing/runtime profile/objectives -> `ChapterData`.
 - Difficulty tuning -> shared difficulty rules/data.
+- `WaveData` -> legacy compatibility only; not runtime encounter authority.
 
 Chapter content should be authored from data. Unique chapter scripts may orchestrate set pieces but must not fork generic combat/save systems.
 
-## Automated architecture guardrails
-`ArchitectureSmokeValidator` verifies:
+## Architecture guardrails
+`ArchitectureSmokeValidator`, `ChapterOneReleaseValidator` and contract tests protect:
 - canonical module paths;
 - absence of legacy `Assets/Scripts`;
 - required asmdefs;
 - no direct mouse/keyboard APIs outside `GameInput`;
 - no scene-wide `FindObjects*` gameplay searches;
 - no direct `CampaignSave` calls from UI;
-- Chapter I/Tower/Enemy/Wave data contracts;
+- Chapter I/Tower/Enemy/Encounter data contracts;
+- authored encounter composition instead of hidden `BalanceCatalog` formulas;
+- generic `GameBootstrap` -> chapter runtime installer boundary;
 - Economy/Score contracts.
 
 EditMode and PlayMode test assemblies provide contract and runtime-graph smoke tests.
 
 ## Refactor policy
 1. Define ownership/contract.
-2. Add new owner while preserving public API.
+2. Add new owner while preserving public behavior.
 3. Delegate old implementation.
 4. Add automated validation/tests.
 5. Move/rename with `.meta` GUID preservation.
