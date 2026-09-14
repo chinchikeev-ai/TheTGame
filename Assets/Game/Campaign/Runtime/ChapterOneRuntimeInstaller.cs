@@ -3,6 +3,7 @@ using UnityEngine;
 public static class ChapterOneRuntimeInstaller
 {
     public const string ProfileId = "chapter01_landing";
+    const string HectorSelectionTargetName = "HectorSelectionTarget";
 
     public static ChapterRuntimeContext Install(ChapterData chapter, Camera camera)
     {
@@ -67,13 +68,7 @@ public static class ChapterOneRuntimeInstaller
             hector = controller.gameObject;
         }
 
-        if (hector.GetComponentInChildren<Collider>() == null)
-        {
-            CapsuleCollider collider = hector.AddComponent<CapsuleCollider>();
-            collider.center = new Vector3(0f, .9f, 0f);
-            collider.height = 1.8f;
-            collider.radius = .35f;
-        }
+        EnsureHectorSelectionTarget(hector.transform);
 
         HectorPresentationBridge presentation = hector.GetComponent<HectorPresentationBridge>();
         if (presentation == null) presentation = hector.AddComponent<HectorPresentationBridge>();
@@ -82,6 +77,31 @@ public static class ChapterOneRuntimeInstaller
         HectorInputDriver input = hector.GetComponent<HectorInputDriver>();
         if (input == null) input = hector.AddComponent<HectorInputDriver>();
         input.Initialize(controller, camera);
+    }
+
+    static void EnsureHectorSelectionTarget(Transform hector)
+    {
+        Transform target = hector.Find(HectorSelectionTargetName);
+        if (target == null)
+        {
+            GameObject go = new GameObject(HectorSelectionTargetName);
+            target = go.transform;
+            target.SetParent(hector, false);
+        }
+
+        target.localPosition = Vector3.zero;
+        target.localRotation = Quaternion.identity;
+        target.localScale = Vector3.one;
+        target.gameObject.SetActive(true);
+
+        CapsuleCollider collider = target.GetComponent<CapsuleCollider>();
+        if (collider == null) collider = target.gameObject.AddComponent<CapsuleCollider>();
+        collider.enabled = true;
+        collider.isTrigger = true;
+        collider.center = new Vector3(0f, .9f, 0f);
+        collider.height = 1.9f;
+        collider.radius = .48f;
+        collider.direction = 1;
     }
 
     static void ConfigureCameraAndLighting(Camera camera)
