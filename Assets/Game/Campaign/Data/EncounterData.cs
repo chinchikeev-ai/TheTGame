@@ -4,9 +4,11 @@ using UnityEngine;
 [Serializable]
 public sealed class EncounterSpawnGroup
 {
-    [Tooltip("Enemy pattern repeated by this group. Use a single entry for a homogeneous group.")]
+    [Tooltip("Ordered enemy pattern. Difficulty scaling consumes this pattern from the front and may cycle it only if pressure exceeds the authored pattern length.")]
     public EnemyArchetype[] pattern = { EnemyArchetype.Infantry };
     [Min(1)] public int repeats = 1;
+    [Tooltip("Optional nominal count used for difficulty scaling. 0 = pattern length x repeats.")]
+    [Min(0)] public int baseCount;
     [Tooltip("-1 = alternate/round-robin across available routes using global spawn order.")]
     public int route = -1;
     public int routeOffset;
@@ -18,14 +20,16 @@ public sealed class EncounterSpawnGroup
     [Tooltip("Optional runtime behavior profile, for example 'menelaus'.")]
     public string behaviorId;
 
-    public int BaseCount
+    public int PatternCount
     {
         get
         {
-            int patternCount = pattern != null ? pattern.Length : 0;
-            return Mathf.Max(0, patternCount * Mathf.Max(1, repeats));
+            int patternLength = pattern != null ? pattern.Length : 0;
+            return Mathf.Max(0, patternLength * Mathf.Max(1, repeats));
         }
     }
+
+    public int BaseCount => baseCount > 0 ? baseCount : PatternCount;
 }
 
 [CreateAssetMenu(menuName = "TheTroyGame/Encounter Data")]
