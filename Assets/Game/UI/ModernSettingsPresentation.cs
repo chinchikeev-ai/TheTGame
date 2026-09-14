@@ -111,7 +111,12 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     {
         activeTab = tab;
         if (contentRoot == null) return;
-        for (int i = contentRoot.transform.childCount - 1; i >= 0; i--) Destroy(contentRoot.transform.GetChild(i).gameObject);
+        for (int i = contentRoot.transform.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = contentRoot.transform.GetChild(i).gameObject;
+            child.SetActive(false);
+            Destroy(child);
+        }
 
         for (int i = 0; i < tabs.Length; i++)
         {
@@ -133,44 +138,44 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void BuildAudio()
     {
         SetHeader(L("AUDIO", "ЗВУК"), L("Balance music and overall game volume.", "Настройте музыку и общую громкость игры."));
-        MakeSliderRow(L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"), 160, GameUserSettings.MasterVolume, value => GameUserSettings.MasterVolume = value);
-        MakeSliderRow(L("MUSIC", "МУЗЫКА"), 45, GameUserSettings.MusicVolume, value => GameUserSettings.MusicVolume = value);
-        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-120));
+        MakeSliderRow(L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"), 105, GameUserSettings.MasterVolume, value => GameUserSettings.MasterVolume = value);
+        MakeSliderRow(L("MUSIC", "МУЗЫКА"), -35, GameUserSettings.MusicVolume, value => GameUserSettings.MusicVolume = value);
+        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-150));
     }
 
     void BuildVideo()
     {
         SetHeader(L("VIDEO", "ВИДЕО"), L("Display, frame pacing and graphics quality.", "Экран, частота кадров и качество графики."));
-        MakeSelectorRow(L("WINDOW MODE", "РЕЖИМ ЭКРАНА"), 175, () => GameUserSettings.Fullscreen ? L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН") : L("WINDOWED", "ОКОННЫЙ"), () => { GameUserSettings.Fullscreen = !GameUserSettings.Fullscreen; ShowTab(Tab.Video); });
-        MakeSelectorRow(L("RESOLUTION", "РАЗРЕШЕНИЕ"), 85, ResolutionLabel, CycleResolution);
-        MakeSelectorRow("VSync", -5, () => GameUserSettings.VSync ? L("ON", "ВКЛ") : L("OFF", "ВЫКЛ"), () => { GameUserSettings.VSync = !GameUserSettings.VSync; ShowTab(Tab.Video); });
-        MakeSelectorRow(L("FPS LIMIT", "ЛИМИТ FPS"), -95, () => GameUserSettings.FpsLimit <= 0 ? L("UNLIMITED", "БЕЗ ЛИМИТА") : GameUserSettings.FpsLimit.ToString(), CycleFps);
-        MakeSelectorRow(L("GRAPHICS QUALITY", "КАЧЕСТВО ГРАФИКИ"), -185, QualityLabel, CycleQuality);
+        MakeSelectorRow(L("WINDOW MODE", "РЕЖИМ ЭКРАНА"), 115, () => GameUserSettings.Fullscreen ? L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН") : L("WINDOWED", "ОКОННЫЙ"), () => { GameUserSettings.Fullscreen = !GameUserSettings.Fullscreen; ShowTab(Tab.Video); });
+        MakeSelectorRow(L("RESOLUTION", "РАЗРЕШЕНИЕ"), 35, ResolutionLabel, CycleResolution);
+        MakeSelectorRow("VSync", -45, () => GameUserSettings.VSync ? L("ON", "ВКЛ") : L("OFF", "ВЫКЛ"), () => { GameUserSettings.VSync = !GameUserSettings.VSync; ShowTab(Tab.Video); });
+        MakeSelectorRow(L("FPS LIMIT", "ЛИМИТ FPS"), -125, () => GameUserSettings.FpsLimit <= 0 ? L("UNLIMITED", "БЕЗ ЛИМИТА") : GameUserSettings.FpsLimit.ToString(), CycleFps);
+        MakeSelectorRow(L("GRAPHICS QUALITY", "КАЧЕСТВО ГРАФИКИ"), -205, QualityLabel, CycleQuality);
     }
 
     void BuildGameplay()
     {
         SetHeader(L("GAMEPLAY", "ИГРА"), L("Campaign preferences and language.", "Параметры кампании и язык."));
-        MakeSelectorRow(L("LANGUAGE", "ЯЗЫК"), 145, () => GameLanguage.Russian ? "Русский" : "English", ToggleLanguage);
-        MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), 35, () => DifficultyRules.Label(CurrentDifficulty), CycleDifficulty);
-        AddHint(L("Difficulty changes campaign combat rules. Language change rebuilds the menu.", "Сложность меняет правила боя. Смена языка перестраивает меню."), new Vector2(0,-115));
+        MakeSelectorRow(L("LANGUAGE", "ЯЗЫК"), 105, () => GameLanguage.Russian ? "Русский" : "English", ToggleLanguage);
+        MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), -15, () => DifficultyRules.Label(CurrentDifficulty), CycleDifficulty);
+        AddHint(L("Difficulty changes campaign combat rules. Language change rebuilds the menu.", "Сложность меняет правила боя. Смена языка перестраивает меню."), new Vector2(0,-135));
     }
 
     void BuildControls()
     {
         SetHeader(L("CONTROLS", "УПРАВЛЕНИЕ"), L("PC keyboard and mouse controls.", "Управление на ПК: клавиатура и мышь."));
-        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 160);
-        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 82);
-        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), 4);
-        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -74);
-        MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC", -152);
-        AddHint(L("Tower hotkeys: 1–6. Hector abilities: Q / E / R / F.", "Оборона: 1–6. Способности Гектора: Q / E / R / F."), new Vector2(0,-222));
+        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 110);
+        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 40);
+        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), -30);
+        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -100);
+        MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC", -170);
+        AddHint(L("Tower hotkeys: 1–6. Hector: click to select, RMB to move, Q / E / R / F abilities.", "Оборона: 1–6. Гектор: ЛКМ выбрать, ПКМ двигаться, способности Q / E / R / F."), new Vector2(0,-240));
     }
 
     void SetHeader(string title, string description)
     {
-        titleText = AddText(contentRoot.transform, title, new Vector2(-245,225), new Vector2(580,48), 28, new Color(1f,.72f,.30f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        AddText(contentRoot.transform, description, new Vector2(-245,188), new Vector2(620,40), 15, new Color(.76f,.68f,.59f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
+        titleText = AddText(contentRoot.transform, title, new Vector2(-245,226), new Vector2(580,48), 28, new Color(1f,.72f,.30f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddText(contentRoot.transform, description, new Vector2(-245,178), new Vector2(620,38), 15, new Color(.76f,.68f,.59f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
         if (descriptionText != null) descriptionText.text = description;
     }
 
@@ -201,7 +206,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         AddText(contentRoot.transform,value,new Vector2(205,y),new Vector2(300,44),15,new Color(1f,.72f,.30f,1f),TextAnchor.MiddleRight,FontStyle.Bold);
     }
 
-    void AddHint(string text, Vector2 pos) => AddText(contentRoot.transform,text,pos,new Vector2(650,76),13,new Color(.68f,.61f,.54f,.9f),TextAnchor.UpperLeft,FontStyle.Normal);
+    void AddHint(string text, Vector2 pos) => AddText(contentRoot.transform,text,pos,new Vector2(650,54),13,new Color(.68f,.61f,.54f,.9f),TextAnchor.UpperLeft,FontStyle.Normal);
 
     void CycleResolution() { resolutionIndex=(resolutionIndex+1)%Resolutions.Length; Vector2 r=Resolutions[resolutionIndex]; GameUserSettings.SetResolution((int)r.x,(int)r.y); ShowTab(Tab.Video); }
     void CycleFps() { fpsIndex=(fpsIndex+1)%FpsOptions.Length; GameUserSettings.FpsLimit=FpsOptions[fpsIndex]; ShowTab(Tab.Video); }
