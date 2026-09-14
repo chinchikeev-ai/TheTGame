@@ -109,21 +109,23 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildWaveBar(Transform parent)
     {
-        waveBar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(720, 118), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        waveText = Text(waveBar.transform, "WAVE", new Vector2(-68, 38), new Vector2(470, 28), 19, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        threatText = Text(waveBar.transform, "THREAT", new Vector2(-68, 10), new Vector2(470, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
-        wavePreviewText = Text(waveBar.transform, "", new Vector2(-68, -28), new Vector2(470, 24), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        waveBar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(760, 142), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
+        waveText = Text(waveBar.transform, "WAVE", new Vector2(-82, 48), new Vector2(470, 28), 19, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        threatText = Text(waveBar.transform, "THREAT", new Vector2(-82, 20), new Vector2(470, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
+        wavePreviewText = Text(waveBar.transform, "", new Vector2(-82, -8), new Vector2(470, 24), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         wavePreviewText.enabled = false;
-        startWaveButton = Button(waveBar.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(276, 0), new Vector2(142, 70), StartWave, true);
+
+        Button(waveBar.transform, "−", new Vector2(-58, -48), new Vector2(42, 38), DecreaseSpeed, false);
+        speedText = Text(waveBar.transform, "1x", new Vector2(0, -48), new Vector2(64, 38), 15, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        Button(waveBar.transform, "+", new Vector2(58, -48), new Vector2(42, 38), IncreaseSpeed, false);
+
+        startWaveButton = Button(waveBar.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(292, 3), new Vector2(150, 82), StartWave, true);
     }
 
     void BuildActionPanel(Transform parent)
     {
         GameObject panel = Panel(parent, "CombatActions", new Vector2(-24, -24), new Vector2(330, 124), new Color(.035f, .022f, .016f, .92f), new Vector2(1, 1), new Vector2(1, 1));
-        Button(panel.transform, "-", new Vector2(-132, 23), new Vector2(42, 42), DecreaseSpeed, false);
-        speedText = Text(panel.transform, "1x", new Vector2(-86, 23), new Vector2(48, 42), 15, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        Button(panel.transform, "+", new Vector2(-40, 23), new Vector2(42, 42), IncreaseSpeed, false);
-        magicButton = Button(panel.transform, "", new Vector2(74, 23), new Vector2(158, 42), () => GameManager.Instance?.UseMagic(), true);
+        magicButton = Button(panel.transform, "", new Vector2(0, 25), new Vector2(282, 42), () => GameManager.Instance?.UseMagic(), true);
         magicText = magicButton.GetComponentInChildren<Text>();
         giftButton = Button(panel.transform, "", new Vector2(0, -32), new Vector2(282, 36), () => GameManager.Instance?.UseGift(), false);
         giftText = giftButton.GetComponentInChildren<Text>();
