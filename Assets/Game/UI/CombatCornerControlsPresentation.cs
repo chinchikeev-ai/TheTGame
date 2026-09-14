@@ -88,13 +88,11 @@ public sealed class CombatCornerControlsPresentation : MonoBehaviour
     {
         Transform existing = root.Find("MagicCornerControls");
         if (existing != null)
-        {
             Destroy(existing.gameObject);
-        }
 
-        GameObject container = new GameObject("MagicCornerControls");
+        GameObject container = new GameObject("MagicCornerControls", typeof(RectTransform));
         container.transform.SetParent(root, false);
-        RectTransform containerRect = container.AddComponent<RectTransform>();
+        RectTransform containerRect = container.GetComponent<RectTransform>();
         containerRect.anchorMin = Vector2.zero;
         containerRect.anchorMax = Vector2.one;
         containerRect.offsetMin = Vector2.zero;
