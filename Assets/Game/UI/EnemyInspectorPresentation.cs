@@ -10,6 +10,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
     Camera gameCamera;
     Canvas canvas;
     GameObject panel;
+    Image portrait;
     Text title;
     Text stats;
     Enemy selected;
@@ -75,6 +76,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
     {
         if (selected == null || panel == null) return;
         panel.SetActive(true);
+        portrait.sprite = EnemyPortrait(selected.Archetype);
         title.text = selected.name.ToUpperInvariant() + "  •  " + selected.Archetype;
 
         string blocked = selected.IsBlockedByGuard
@@ -114,19 +116,45 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         panel = new GameObject("EnemyInspectorPanel");
         panel.transform.SetParent(canvasObject.transform, false);
         Image image = panel.AddComponent<Image>();
-        image.color = new Color(.035f, .02f, .014f, .96f);
+        image.sprite = TroyHudArt.Panel();
+        image.type = Image.Type.Sliced;
+        image.color = Color.white;
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, .5f);
-        rt.anchoredPosition = new Vector2(-24f, -20f);
+        rt.anchoredPosition = new Vector2(-24f, 20f);
         rt.sizeDelta = new Vector2(360f, 330f);
-        Outline outline = panel.AddComponent<Outline>();
-        outline.effectColor = new Color(.72f, .31f, .10f, .72f);
-        outline.effectDistance = new Vector2(2f, -2f);
-
-        title = MakeText(panel.transform, "ENEMY", new Vector2(0, 132), new Vector2(320, 46), 20, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(1f, .69f, .24f, 1f));
-        MakeText(panel.transform, GameLanguage.T("ENEMY CHARACTERISTICS", "ХАРАКТЕРИСТИКИ ПРОТИВНИКА"), new Vector2(0, 95), new Vector2(320, 26), 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.73f, .66f, .58f, 1f));
-        stats = MakeText(panel.transform, "", new Vector2(0, -30), new Vector2(300, 220), 15, FontStyle.Bold, TextAnchor.UpperLeft, new Color(.94f, .85f, .72f, 1f));
+        portrait = MakeImage(panel.transform, "EnemyPortrait", new Vector2(-138f, 112f), new Vector2(66f, 66f), TroyHudArt.Icon("enemy"));
+        title = MakeText(panel.transform, "ENEMY", new Vector2(38f, 128f), new Vector2(244f, 34f), 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(1f, .69f, .24f, 1f));
+        MakeText(panel.transform, GameLanguage.T("ENEMY CHARACTERISTICS", "ХАРАКТЕРИСТИКИ ПРОТИВНИКА"), new Vector2(38f, 99f), new Vector2(244f, 24f), 10, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(.73f, .66f, .58f, 1f));
+        stats = MakeText(panel.transform, "", new Vector2(0, -46), new Vector2(300, 226), 15, FontStyle.Bold, TextAnchor.UpperLeft, new Color(.94f, .85f, .72f, 1f));
         panel.SetActive(false);
+    }
+
+    static Sprite EnemyPortrait(EnemyArchetype archetype)
+    {
+        switch (archetype)
+        {
+            case EnemyArchetype.Runner: return TroyHudArt.Enemy("runner");
+            case EnemyArchetype.HeavyHoplite: return TroyHudArt.Enemy("heavy");
+            case EnemyArchetype.ShieldBearer: return TroyHudArt.Enemy("shield");
+            case EnemyArchetype.Archer: return TroyHudArt.Enemy("archer");
+            case EnemyArchetype.Boss: return TroyHudArt.Enemy("boss");
+            default: return TroyHudArt.Enemy("infantry");
+        }
+    }
+
+    Image MakeImage(Transform parent, string name, Vector2 pos, Vector2 size, Sprite sprite)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>();
+        image.sprite = sprite;
+        image.raycastTarget = false;
+        RectTransform rt = image.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = size;
+        return image;
     }
 
     Text MakeText(Transform parent, string value, Vector2 pos, Vector2 size, int fontSize, FontStyle style, TextAnchor anchor, Color color)

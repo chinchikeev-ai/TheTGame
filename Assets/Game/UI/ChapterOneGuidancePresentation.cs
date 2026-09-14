@@ -46,13 +46,13 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         group.interactable = false;
         group.blocksRaycasts = false;
 
-        objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(24f, -112f), new Vector2(450f, 104f), new Vector2(0f,1f), new Vector2(0f,1f));
+        objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(24f, -176f), new Vector2(450f, 104f), new Vector2(0f,1f), new Vector2(0f,1f));
         objectiveIcon = AddIcon(objectiveCard.transform,"ObjectiveIcon",new Vector2(-194f,0f),44,TroyHudArt.Icon("gate"));
         chapterText = AddText(objectiveCard.transform, "", new Vector2(74f, -14f), new Vector2(352f, 22f), 11, new Color(1f, .69f, .23f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         objectiveText = AddText(objectiveCard.transform, "", new Vector2(74f, -38f), new Vector2(352f, 28f), 16, new Color(.96f, .88f, .75f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         progressText = AddText(objectiveCard.transform, "", new Vector2(74f, -72f), new Vector2(352f, 22f), 11, new Color(.77f, .69f, .59f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
 
-        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, -232f), new Vector2(450f, 116f), new Vector2(0f,1f), new Vector2(0f,1f));
+        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, -296f), new Vector2(450f, 116f), new Vector2(0f,1f), new Vector2(0f,1f));
         tutorialIcon = AddIcon(tutorialCard.transform,"TutorialIcon",new Vector2(-190f,0f),48,TroyHudArt.Tower(TowerType.MachineGun));
         tutorialTitle = AddText(tutorialCard.transform, "", new Vector2(72f, -16f), new Vector2(354f, 22f), 12, new Color(1f, .70f, .24f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         tutorialText = AddText(tutorialCard.transform, "", new Vector2(72f, -43f), new Vector2(354f, 58f), 13, new Color(.93f, .86f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));

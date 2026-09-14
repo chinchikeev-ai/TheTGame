@@ -143,6 +143,8 @@ Exact manual protocols:
 Implemented presentation work includes:
 
 - responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
+- unified Trojan combat HUD cards using the same dark-stone, bronze-framed, portrait-led language as the Hector block;
+- one direct Divine Power action with effect/readiness copy instead of competing duplicate controls;
 - separate encounter, boss, Hector, build and selected-unit regions;
 - selected-defense contextual menu around the unit;
 - selected patron portrait and event commentary in a dedicated upper-right battlefield observer panel;

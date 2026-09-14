@@ -83,7 +83,9 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
         GameObject bubbleObject = new GameObject("PatronSpeechBubble");
         bubbleObject.transform.SetParent(panelObject.transform, false);
         Image bubble = bubbleObject.AddComponent<Image>();
-        bubble.color = new Color(.035f, .022f, .016f, .96f);
+        bubble.sprite = TroyHudArt.Panel();
+        bubble.type = Image.Type.Sliced;
+        bubble.color = Color.white;
         bubble.raycastTarget = false;
         RectTransform bubbleRect = bubble.rectTransform;
         bubbleRect.anchorMin = bubbleRect.anchorMax = bubbleRect.pivot = new Vector2(.5f, .5f);

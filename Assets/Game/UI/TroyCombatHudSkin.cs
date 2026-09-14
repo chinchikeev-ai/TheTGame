@@ -55,18 +55,18 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
                 Image coinImage = coin.GetComponent<Image>();
                 if (coinImage != null) coinImage.sprite = TroyHudArt.Icon("gold");
             }
-            EnsureIcon(top,"ArtGate",new Vector2(178,0),42,TroyHudArt.Icon("gate"));
-            EnsureIcon(top,"ArtEnemy",new Vector2(385,0),42,TroyHudArt.Icon("enemy"));
+            Transform gate = top.Find("GateIcon");
+            if (gate != null && gate.TryGetComponent(out Image gateImage)) gateImage.sprite = TroyHudArt.Icon("gate");
         }
 
         Transform wave = hud.Find("WaveStatus");
-        if (wave != null) EnsureIcon(wave,"WaveCrest",new Vector2(-390,0),56,TroyHudArt.Icon("sword"));
+        if (wave != null) EnsureIcon(wave,"WaveCrest",new Vector2(-338,28),58,TroyHudArt.Icon("sword"));
 
         Transform actions = hud.Find("CombatActions");
         if (actions != null)
         {
-            EnsureIcon(actions,"MagicIcon",new Vector2(54,28),42,TroyHudArt.Ability("magic"));
-            EnsureIcon(actions,"GiftIcon",new Vector2(54,-42),40,TroyHudArt.Ability("gift"));
+            Transform magic = actions.Find("Magic_Primary/MagicIcon");
+            if (magic != null && magic.TryGetComponent(out Image magicImage)) magicImage.sprite = TroyHudArt.Ability("magic");
         }
 
         Transform dock = hud.Find("BuildDock");
