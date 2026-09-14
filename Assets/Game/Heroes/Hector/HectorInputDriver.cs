@@ -29,16 +29,16 @@ public sealed class HectorInputDriver : MonoBehaviour
         if (!pointerOverUi && GameInput.PrimaryPressed())
             UpdateSelection(cam);
 
-        if (hector.Selected)
-        {
-            if (!pointerOverUi && GameInput.SecondaryPressed())
-                MoveSelectedHector(cam);
+        if (!hector.Selected) return;
 
-            if (GameInput.Ability1Pressed()) hector.UseWarCry();
-            if (GameInput.Ability2Pressed()) hector.UseShieldWall();
-            if (GameInput.Ability3Pressed()) hector.UseSpearThrow();
-            if (GameInput.UltimatePressed()) hector.UseUltimate();
-        }
+        if (!pointerOverUi && hector.CanMove && GameInput.SecondaryPressed())
+            MoveSelectedHector(cam);
+
+        if (!hector.CanAcceptCombatCommand) return;
+        if (GameInput.Ability1Pressed()) hector.UseWarCry();
+        if (GameInput.Ability2Pressed()) hector.UseShieldWall();
+        if (GameInput.Ability3Pressed()) hector.UseSpearThrow();
+        if (GameInput.UltimatePressed()) hector.UseUltimate();
     }
 
     void UpdateSelection(Camera cam)
