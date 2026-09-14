@@ -21,7 +21,7 @@ public static class ChapterOneGameplayFreezeValidator
         string reportPath = FindLatestReport(logsDirectory);
         if (string.IsNullOrEmpty(reportPath))
         {
-            Debug.LogError($"[CHAPTER I GAMEPLAY FREEZE] BLOCKED - no ChapterI_Playthrough_*.json found in {logsDirectory}. Complete one clean Story run at 1x first.");
+            Debug.LogError($"[CHAPTER I GAMEPLAY FREEZE] BLOCKED - no ChapterI_Playthrough_*.json found in {logsDirectory}. Complete one clean Story run at 1x without pausing first.");
             return;
         }
 
@@ -39,14 +39,14 @@ public static class ChapterOneGameplayFreezeValidator
         if (report == null)
             throw new InvalidDataException($"Could not parse Chapter I playthrough report: {reportPath}");
 
-        bool hasVerifiedSpeedTelemetry =
+        bool hasVerifiedRunTelemetry =
             json.Contains("\"schemaVersion\"") &&
             json.Contains("\"nonOneXSpeedUsed\"") &&
-            json.Contains("\"maxCombatSpeed\"");
+            json.Contains("\"maxCombatSpeed\"") &&
+            json.Contains("\"pauseUsed\"");
 
-        List<string> blockers = EvaluateBlockers(report, hasVerifiedSpeedTelemetry);
+        List<string> blockers = EvaluateBlockers(report, hasVerifiedRunTelemetry);
 
-        // Always generate the detailed tuning report beside the freeze decision.
         string analysisPath = ChapterOnePlaythroughAnalyzer.Analyze(reportPath, false);
         string outputPath = WriteReadinessReport(reportPath, analysisPath, report, blockers);
 
@@ -66,12 +66,12 @@ public static class ChapterOneGameplayFreezeValidator
         return blockers.Count == 0;
     }
 
-    static List<string> EvaluateBlockers(ChapterOnePlaythroughReporter.PlaythroughReport report, bool hasVerifiedSpeedTelemetry)
+    static List<string> EvaluateBlockers(ChapterOnePlaythroughReporter.PlaythroughReport report, bool hasVerifiedRunTelemetry)
     {
         List<string> blockers = new List<string>();
 
-        if (!hasVerifiedSpeedTelemetry)
-            blockers.Add("Telemetry file does not contain the required 1x verification fields. Run Chapter I again with the current reporter.");
+        if (!hasVerifiedRunTelemetry)
+            blockers.Add("Telemetry file does not contain the required 1x/no-pause verification fields. Run Chapter I again with the current reporter.");
         if (report.schemaVersion < ChapterOnePlaythroughReporter.CurrentReportSchemaVersion)
             blockers.Add($"Telemetry schema is too old for freeze acceptance: report={report.schemaVersion}, required={ChapterOnePlaythroughReporter.CurrentReportSchemaVersion}. Run Chapter I again with the current build.");
         if (report.map != 1) blockers.Add($"Report map must be Chapter I; map={report.map}.");
@@ -79,6 +79,8 @@ public static class ChapterOneGameplayFreezeValidator
             blockers.Add($"Freeze baseline must use Story difficulty; difficulty={report.difficulty}.");
         if (report.nonOneXSpeedUsed || report.maxCombatSpeed > 1.01f)
             blockers.Add($"Freeze baseline must remain at 1x for the full run; nonOneXSpeedUsed={report.nonOneXSpeedUsed}, maxCombatSpeed={report.maxCombatSpeed:0.##}x.");
+        if (report.pauseUsed)
+            blockers.Add("Freeze baseline must be completed without pausing after the run starts because Chapter I duration uses unscaled wall-clock time.");
         if (!string.Equals(report.result, "VICTORY", StringComparison.OrdinalIgnoreCase))
             blockers.Add($"Run must end in VICTORY; result={report.result}.");
         if (!report.menelausDefeated) blockers.Add("Menelaus was not recorded as defeated.");
@@ -131,6 +133,7 @@ public static class ChapterOneGameplayFreezeValidator
         sb.AppendLine($"- Difficulty: `{report.difficulty}`");
         sb.AppendLine($"- Max combat speed: `{report.maxCombatSpeed:0.##}x`");
         sb.AppendLine($"- Non-1x speed used: `{report.nonOneXSpeedUsed}`");
+        sb.AppendLine($"- Pause used: `{report.pauseUsed}`");
         sb.AppendLine($"- Result: `{report.result}`");
         sb.AppendLine($"- Duration: `{FormatTime(report.actualDurationSeconds)}`");
         sb.AppendLine($"- Gate: `{report.gateHp}/{report.gateHpMax}`");
@@ -143,7 +146,7 @@ public static class ChapterOneGameplayFreezeValidator
         {
             sb.AppendLine("## Verdict: READY FOR HUMAN ACCEPTANCE");
             sb.AppendLine();
-            sb.AppendLine("All hard gameplay-freeze gates pass, including verified 1x telemetry. This does **not** automatically freeze the baseline.");
+            sb.AppendLine("All hard gameplay-freeze gates pass, including verified 1x/no-pause telemetry. This does **not** automatically freeze the baseline.");
             sb.AppendLine("Review analyzer WARN findings and perform the required real Play Mode visual/readability inspection before recording human acceptance.");
         }
         else
