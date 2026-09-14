@@ -37,23 +37,27 @@ The current approved menu exposes PLAY / HEROES / TOWERS / UPGRADES / SHOP plus 
 
 ## Acceptance criteria
 - [x] Main menu exposes only four active choices: PLAY, ARMY, SETTINGS, EXIT.
+- [x] PLAY is visually dominant; ARMY is secondary; SETTINGS / EXIT are compact utility actions.
 - [x] Legacy HEROES / TOWERS / UPGRADES / SHOP actions are blocked from interaction and their baked navigation area is visually covered.
-- [x] ARMY is a single lightweight screen with Hector / Defenders / Enemies tabs.
+- [x] ARMY is one screen with Hector / Defenders / Enemies navigation and a separate content card.
+- [x] ARMY uses player-facing copy only; no development-placeholder copy remains.
+- [x] Active ARMY tab is visually highlighted.
 - [x] PLAY keeps the existing campaign map.
 - [x] Chapter I selection opens difficulty selection before Patron selection.
 - [x] Difficulty is selected explicitly as Story / Strategos / Legendary through `CampaignController`.
 - [x] Patron selection remains mandatory before the map begins and cannot be changed after start.
-- [ ] No architecture guard violations.
+- [ ] No architecture guard violations confirmed in an executable environment.
 
 ## Automated validation
-- [ ] `python tools/check-architecture.py` — not executed in this GitHub-only edit session.
+- [ ] `python tools/check-architecture.py` — attempted from the available container after the polish pass, but the environment could not resolve `github.com`, so the repository clone required to run the check failed before the checker executed.
 - [x] EditMode coverage already exists for difficulty save round-trip/reset in `CampaignSaveTests`; no save schema was changed.
 - [ ] PlayMode — not run in this task.
 - [ ] Full Unity validation — not run; Unity CI remains manual-only.
 
 ## Manual validation
 - Main menu shows only PLAY / ARMY / SETTINGS / EXIT as usable navigation.
-- ARMY opens and all three tabs switch content; Back/Escape returns to main menu.
+- PLAY is the strongest visual action; Settings/Exit do not compete with it.
+- ARMY opens and all three tabs switch content; active tab is obvious; Back/Escape returns to main menu.
 - PLAY -> Chapter I -> Difficulty -> Patron -> Battle works.
 - Back from Patron returns to Difficulty; Back from Difficulty returns to Chapter Select.
 - Settings and Exit still work.
@@ -69,9 +73,9 @@ The approved background image still contains historical baked artwork, but the o
   - `Assets/Game/Campaign/CampaignController.cs`
   - `docs/TODO.md`
   - this task contract
-- validation actually executed: source/main verification only; no Unity compile/tests/CI
+- validation actually executed: source/main verification; architecture check attempt blocked by container network/DNS before execution; no Unity compile/tests/CI
 - remaining manual checks: navigation, RU/EN fit, resolutions, restart flow
-- latest implementation commit SHA: `2d13a06403807ac979fca501dcf4770eabf70e77`
+- latest menu polish commit SHA: `e4670f034a50137ebcac201f424fada3a08399f9`
 
 ## Status
 `IN_PROGRESS` — implementation is in `main`; real Unity/manual QA remains.
