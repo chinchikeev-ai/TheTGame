@@ -31,6 +31,7 @@ public class Enemy : MonoBehaviour
     int waypointIndex;
     EnemyHealthBar healthBar;
     CharacterPresentationState presentation;
+    CharacterWeaponSocketResolver weaponSockets;
     float baseSpeed;
     float armor;
     float arrowResistance;
@@ -72,6 +73,9 @@ public class Enemy : MonoBehaviour
         dying = false;
         presentation = GetComponent<CharacterPresentationState>();
         if (presentation == null) presentation = gameObject.AddComponent<CharacterPresentationState>();
+        weaponSockets = GetComponent<CharacterWeaponSocketResolver>();
+        if (weaponSockets == null) weaponSockets = gameObject.AddComponent<CharacterWeaponSocketResolver>();
+        weaponSockets.Refresh();
         if (Archetype == EnemyArchetype.Archer) presentation.PrepareBow();
         healthBar = gameObject.AddComponent<EnemyHealthBar>();
         HeavyEnemyGroundVfx.Attach(this);
@@ -243,7 +247,9 @@ public class Enemy : MonoBehaviour
     void LaunchArcherArrow(Transform target, Vector3 targetOffset, Action impact)
     {
         if (!IsAlive || target == null) return;
-        Vector3 start = transform.position + Vector3.up * .95f + transform.forward * .28f;
+        Vector3 start = weaponSockets != null
+            ? weaponSockets.ArrowReleasePoint()
+            : transform.TransformPoint(new Vector3(.18f, .95f, .28f));
         CombatFlightPresentation.SpawnArrow(start, target, targetOffset, _ => impact?.Invoke());
     }
 

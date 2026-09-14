@@ -13,6 +13,8 @@ public static class ChapterOneProductionEquipmentBuilder
     const string TrojanArcherPath = TrojanRoot + "Trojan_Archer.prefab";
     const string SourceBowName = "SourceBow_Quaternius_MedievalWeapons";
     const string SourceSpearName = "SourceSpear_Quaternius_MedievalWeapons";
+    const string ArrowSocketName = "Socket_ArrowRelease";
+    const string SpearSocketName = "Socket_SpearRelease";
 
     static readonly string[] SpearBearerPaths =
     {
@@ -50,7 +52,7 @@ public static class ChapterOneProductionEquipmentBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Chapter I equipment pass upgraded " + upgradedArchers + " archer prefab(s), " + upgradedSpearBearers + " spear-bearer prefab(s), and applied authored Late Bronze Age shield/armor candidates. Final materials, rig clearance and gameplay-camera QA are still required.");
+        Debug.Log("Chapter I equipment pass upgraded " + upgradedArchers + " archer prefab(s), " + upgradedSpearBearers + " spear-bearer prefab(s), added weapon release sockets, and applied authored Late Bronze Age shield/armor candidates. Final materials, grip clearance, socket offsets and gameplay-camera QA are still required.");
     }
 
     static bool UpgradeArcher(string prefabPath, GameObject bowSource, float scale)
@@ -73,6 +75,7 @@ public static class ChapterOneProductionEquipmentBuilder
             bow.transform.localPosition = new Vector3(.03f, .02f, .05f);
             bow.transform.localRotation = Quaternion.Euler(4f, 8f, 88f);
             bow.transform.localScale = Vector3.one * scale;
+            CreateReleaseSocket(bow.transform, ArrowSocketName, new Vector3(0f, 0f, .18f));
             ValidateDecorativeSource(bow, "bow");
 
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
@@ -117,6 +120,7 @@ public static class ChapterOneProductionEquipmentBuilder
             spear.transform.localPosition = localPosition;
             spear.transform.localRotation = localRotation;
             spear.transform.localScale = localScale;
+            CreateReleaseSocket(spear.transform, SpearSocketName, new Vector3(0f, 0f, .10f));
             ValidateDecorativeSource(spear, "spear");
 
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
@@ -137,6 +141,29 @@ public static class ChapterOneProductionEquipmentBuilder
         item.name = sourceName;
         item.transform.SetParent(parent, false);
         return item;
+    }
+
+    static void CreateReleaseSocket(Transform weaponRoot, string socketName, Vector3 localPosition)
+    {
+        Transform existing = null;
+        foreach (Transform child in weaponRoot)
+        {
+            if (!string.Equals(child.name, socketName, StringComparison.Ordinal)) continue;
+            existing = child;
+            break;
+        }
+
+        Transform socket = existing;
+        if (socket == null)
+        {
+            GameObject marker = new GameObject(socketName);
+            socket = marker.transform;
+            socket.SetParent(weaponRoot, false);
+        }
+
+        socket.localPosition = localPosition;
+        socket.localRotation = Quaternion.identity;
+        socket.localScale = Vector3.one;
     }
 
     static void ValidateDecorativeSource(GameObject item, string label)
@@ -217,6 +244,13 @@ public static class ChapterOneProductionEquipmentBuilder
 
     static Transform FindRightHand(GameObject root)
     {
+        Animator animator = root.GetComponentInChildren<Animator>(true);
+        if (animator != null && animator.isHuman)
+        {
+            Transform humanoidHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (humanoidHand != null) return humanoidHand;
+        }
+
         string[] hints = { "righthand", "right_hand", "hand_r", "mixamorig:righthand", "hand.r" };
         Transform[] all = root.GetComponentsInChildren<Transform>(true);
         foreach (string hint in hints)

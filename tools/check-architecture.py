@@ -13,6 +13,8 @@ REQUIRED = [
     "Assets/Game/Campaign/ChapterController.cs",
     "Assets/Game/Campaign/Persistence/CampaignSave.cs",
     "Assets/Game/Combat/CombatDamage.cs",
+    "Assets/Game/Characters/CharacterWeaponSocketResolver.cs",
+    "Assets/Game/Characters/CharacterWeaponSocketResolver.cs.meta",
     "Assets/Game/Towers/Tower.cs",
     "Assets/Game/Enemies/Enemy.cs",
     "Assets/Game/Heroes/Hector/HectorController.cs",
@@ -146,6 +148,11 @@ if EQUIPMENT.exists():
         "Hero_Hector.prefab",
         "SourceBow_Quaternius_MedievalWeapons",
         "SourceSpear_Quaternius_MedievalWeapons",
+        'ArrowSocketName = "Socket_ArrowRelease"',
+        'SpearSocketName = "Socket_SpearRelease"',
+        "CreateReleaseSocket(bow.transform, ArrowSocketName",
+        "CreateReleaseSocket(spear.transform, SpearSocketName",
+        "HumanBodyBones.RightHand",
         "RemoveProceduralBow",
         "FindProceduralSpear",
         'HasChild(transform, "Shaft")',
@@ -222,11 +229,31 @@ if PRESENTATION.exists():
         if token not in presentation_text:
             errors.append(f"Chapter I character impact-timing contract missing token: {token}")
 
+SOCKETS = ROOT / "Assets" / "Game" / "Characters" / "CharacterWeaponSocketResolver.cs"
+if SOCKETS.exists():
+    socket_text = SOCKETS.read_text(encoding="utf-8")
+    for token in (
+        'ArrowSocketName = "Socket_ArrowRelease"',
+        'SpearSocketName = "Socket_SpearRelease"',
+        'SourceBowName = "SourceBow_Quaternius_MedievalWeapons"',
+        'SourceSpearName = "SourceSpear_Quaternius_MedievalWeapons"',
+        "public Vector3 ArrowReleasePoint()",
+        "public Vector3 SpearReleasePoint()",
+        "animator.GetBoneTransform(HumanBodyBones.RightHand)",
+        "return transform.TransformPoint(new Vector3(.18f, .95f, .28f));",
+        "return transform.TransformPoint(new Vector3(.22f, 1.10f, .42f));",
+    ):
+        if token not in socket_text:
+            errors.append(f"Chapter I weapon-socket contract missing token: {token}")
+
 ENEMY = ROOT / "Assets" / "Game" / "Enemies" / "Enemy.cs"
 if ENEMY.exists():
     enemy_text = ENEMY.read_text(encoding="utf-8")
     for token in (
         "if (Archetype == EnemyArchetype.Archer) presentation.PrepareBow();",
+        "CharacterWeaponSocketResolver weaponSockets;",
+        "weaponSockets.Refresh();",
+        "weaponSockets.ArrowReleasePoint()",
         "void PlayCombatAttack(Action impact)",
         "case EnemyArchetype.Infantry:",
         "case EnemyArchetype.HeavyHoplite:",
@@ -249,6 +276,9 @@ if HECTOR_PRESENTATION.exists():
         "characterPresentation.PlaySpearAttack(() =>",
         "public void PlaySpearImpact(Vector3 point, Action impact)",
         "characterPresentation.PlayAbilityR(() =>",
+        "CharacterWeaponSocketResolver weaponSockets;",
+        "weaponSockets.Refresh();",
+        "weaponSockets.SpearReleasePoint()",
     ):
         if token not in hector_presentation_text:
             errors.append(f"Hector animation-phase impact contract missing token: {token}")
