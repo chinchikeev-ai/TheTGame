@@ -66,8 +66,8 @@ public static class CombatHudTowerPanelPresenter
             return;
         }
 
-        selectedTitle.text = $"{tower.DisplayName}   LV {tower.Level}/3";
-        selectedStats.text = $"{L("DAMAGE", "УРОН")}     {tower.damage:0}\n{L("RANGE", "ДАЛЬНОСТЬ")}       {tower.range:0.0}\n{L("ATTACK RATE", "СКОРОСТЬ АТАКИ")}   {tower.fireRate:0.00}/s\n{L("SELL VALUE", "ЦЕНА ПРОДАЖИ")}      {tower.SellValue}";
+        selectedTitle.text = $"{CombatHudTowerCatalog.TowerDisplayName(tower.Type)}   {L("LV", "УР")}. {tower.Level}/3";
+        selectedStats.text = $"{L("DAMAGE", "УРОН")}     {tower.damage:0}\n{L("RANGE", "ДАЛЬНОСТЬ")}       {tower.range:0.0}\n{L("ATTACK RATE", "СКОРОСТЬ АТАКИ")}   {tower.fireRate:0.00}{L("/s", "/с")}\n{L("SELL VALUE", "ЦЕНА ПРОДАЖИ")}      {tower.SellValue}";
 
         if (tower.Level >= 3)
         {
@@ -78,12 +78,12 @@ public static class CombatHudTowerPanelPresenter
             float nextDamage = tower.damage * 1.32f;
             float nextRange = tower.range * 1.10f;
             float nextRate = tower.fireRate * 1.12f;
-            selectedUpgradePreview.text = $"{L("NEXT UPGRADE", "СЛЕДУЮЩЕЕ УЛУЧШЕНИЕ")}   {tower.UpgradeCost} {L("GOLD", "ЗОЛОТА")}\n{tower.damage:0} → {nextDamage:0} DMG   •   {tower.range:0.0} → {nextRange:0.0} RNG   •   {tower.fireRate:0.00} → {nextRate:0.00}/s";
+            selectedUpgradePreview.text = $"{L("NEXT UPGRADE", "СЛЕДУЮЩЕЕ УЛУЧШЕНИЕ")}   {tower.UpgradeCost} {L("GOLD", "ЗОЛОТА")}\n{tower.damage:0} → {nextDamage:0} {L("DMG", "УРОН")}   •   {tower.range:0.0} → {nextRange:0.0} {L("RNG", "ДАЛЬН")}   •   {tower.fireRate:0.00} → {nextRate:0.00}{L("/s", "/с")}";
         }
 
         selectedPriority.text = tower.Type == TowerType.TrojanGuard
             ? L("ROLE: BLOCKING SQUAD", "РОЛЬ: БЛОКИРУЮЩИЙ ОТРЯД")
-            : $"{L("TARGETING", "ПРИОРИТЕТ")}: {tower.Priority}";
+            : $"{L("TARGETING", "ПРИОРИТЕТ")}: {CombatHudTowerCatalog.TargetPriorityLabel(tower.Priority)}";
 
         GameManager gm = GameManager.Instance;
         upgradeButton.interactable = tower.Level < 3 && gm != null && gm.Money >= tower.UpgradeCost;
