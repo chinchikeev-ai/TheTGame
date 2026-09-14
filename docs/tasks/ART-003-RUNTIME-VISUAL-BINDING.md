@@ -49,6 +49,7 @@ The current `main` runtime attempts to load production/generated character prefa
 ## Automated validation
 - [ ] `python tools/check-architecture.py`
 - [x] EditMode contract test added for role-specific collider-free Trojan fallback crew.
+- [ ] EditMode tests actually executed in Unity.
 - [ ] PlayMode visual-source and camera inspection.
 - [ ] Full project validation when Unity is available.
 
@@ -63,7 +64,19 @@ The current `main` runtime attempts to load production/generated character prefa
 Procedural fallback art remains `PROCEDURAL`; it is a reliable runtime presentation layer, not final production art. Final authored prefabs should automatically supersede it when present under the existing resource paths.
 
 ## Result
-Root cause confirmed: production/generated resource folders referenced by runtime do not contain tracked character prefabs in current `main`, while `TowerArtDirector.AddProductionCrew` previously returned without adding a crew when both loads failed. This change provides an explicit runtime fallback and source audit instead of a silent empty binding.
+Root cause confirmed: production/generated resource folders referenced by runtime do not contain tracked character prefabs in current `main`, while `TowerArtDirector.AddProductionCrew` previously returned without adding a crew when both loads failed.
+
+Implemented:
+- role-specific procedural Archer, Spearman and Guard fallback figures;
+- production -> generated -> procedural runtime source selection for Trojan tower crews;
+- actual visual-source logging for Trojan tower crews, heroes and Greek enemies;
+- collider-free fallback contract tests;
+- Unity `.meta` files for all new runtime/test scripts;
+- project status note documenting the runtime binding behavior.
+
+No Unity compile, EditMode execution, PlayMode run or architecture-script execution is claimed from this session; those remain the required local validation steps.
+
+Latest implementation/status commit in this task sequence: `20ee1bba28679e141d35c2b1b10abf536f0dc8f9`.
 
 ## Status
 `IN_PROGRESS`
