@@ -3,7 +3,10 @@ using UnityEngine.UI;
 
 public sealed class ChapterOneWavePresentation : MonoBehaviour
 {
+    static readonly string[] BlockingMenuNames = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu" };
+
     CanvasGroup group;
+    Canvas menuCanvas;
     Image portrait;
     Text kicker;
     Text title;
@@ -48,24 +51,24 @@ public sealed class ChapterOneWavePresentation : MonoBehaviour
         bg.color = Color.white;
         RectTransform cr = bg.rectTransform;
         cr.anchorMin = cr.anchorMax = cr.pivot = new Vector2(.5f,.5f);
-        cr.anchoredPosition = new Vector2(0,160);
-        cr.sizeDelta = new Vector2(700,146);
+        cr.anchoredPosition = new Vector2(0,120);
+        cr.sizeDelta = new Vector2(660,136);
 
         group = card.AddComponent<CanvasGroup>();
         group.alpha = 0f;
         group.interactable = false;
         group.blocksRaycasts = false;
 
-        portrait = AddImage(card.transform,"Portrait",new Vector2(-292,0),new Vector2(104,104),TroyHudArt.Enemy("infantry"));
-        kicker = AddText(card.transform,"",new Vector2(-215,38),new Vector2(450,24),12,new Color(1f,.61f,.18f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
-        title = AddText(card.transform,"",new Vector2(-215,6),new Vector2(450,38),25,new Color(1f,.88f,.68f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
-        subtitle = AddText(card.transform,"",new Vector2(-215,-34),new Vector2(450,42),13,new Color(.80f,.71f,.61f,1f),TextAnchor.MiddleLeft,FontStyle.Normal);
+        portrait = AddImage(card.transform,"Portrait",new Vector2(-274,0),new Vector2(94,94),TroyHudArt.Enemy("infantry"));
+        kicker = AddText(card.transform,"",new Vector2(-202,34),new Vector2(420,22),11,new Color(1f,.61f,.18f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        title = AddText(card.transform,"",new Vector2(-202,4),new Vector2(420,34),23,new Color(1f,.88f,.68f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        subtitle = AddText(card.transform,"",new Vector2(-202,-31),new Vector2(420,38),12,new Color(.80f,.71f,.61f,1f),TextAnchor.MiddleLeft,FontStyle.Normal);
     }
 
     void Update()
     {
         GameManager gm = GameManager.Instance;
-        if (gm == null || gm.MapNumber != 1 || gm.GameEnded)
+        if (gm == null || gm.MapNumber != 1 || gm.GameEnded || IsMenuBlockingCombat())
         {
             if (group != null) group.alpha = 0f;
             return;
@@ -94,6 +97,23 @@ public sealed class ChapterOneWavePresentation : MonoBehaviour
 
         float target = Time.unscaledTime < hideAt ? 1f : 0f;
         group.alpha = Mathf.MoveTowards(group.alpha, target, Time.unscaledDeltaTime * 3.8f);
+    }
+
+    bool IsMenuBlockingCombat()
+    {
+        if (menuCanvas == null)
+        {
+            GameObject menu = GameObject.Find("MenuCanvas");
+            menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
+        }
+        if (menuCanvas == null) return false;
+
+        for (int i = 0; i < BlockingMenuNames.Length; i++)
+        {
+            Transform screen = menuCanvas.transform.Find(BlockingMenuNames[i]);
+            if (screen != null && screen.gameObject.activeInHierarchy) return true;
+        }
+        return false;
     }
 
     void ShowWave(int wave, int max)
