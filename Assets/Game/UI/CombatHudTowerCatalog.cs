@@ -41,7 +41,7 @@ public static class CombatHudTowerCatalog
             case TowerType.SpearThrower: return L("ARMOR PIERCE • ANTI-HEAVY", "БРОНЕБОЙНЫЙ • ПРОТИВ ТЯЖЁЛЫХ");
             case TowerType.Cannon: return L("HEAVY SINGLE TARGET • ANTI-SIEGE", "ТЯЖЁЛЫЙ УРОН • ПРОТИВ ОСАДЫ");
             case TowerType.Slow: return L("SUPPORT • CONTROL", "ПОДДЕРЖКА • КОНТРОЛЬ");
-            case TowerType.FireTower: return L("AOE • BURN • AREA DENIAL", "AOE • ГОРЕНИЕ • КОНТРОЛЬ ЗОНЫ");
+            case TowerType.FireTower: return L("AOE • BURN • AREA DENIAL", "ПО ПЛОЩАДИ • ГОРЕНИЕ • КОНТРОЛЬ ЗОНЫ");
             case TowerType.TrojanGuard: return L("BLOCKER • FRONTLINE", "БЛОКИРОВКА • ПЕРЕДОВАЯ");
             default: return "";
         }
@@ -51,13 +51,25 @@ public static class CombatHudTowerCatalog
     {
         switch (type)
         {
-            case TowerType.MachineGun: return "[RANGED]   [LIGHT]";
-            case TowerType.SpearThrower: return "[ARMOR]   [HEAVY]";
-            case TowerType.Cannon: return "[SIEGE]   [BOSS]   [PIERCE]";
-            case TowerType.Slow: return "[SLOW]   [SUPPORT]";
-            case TowerType.FireTower: return "[AOE]   [BURN]   [ZONE]";
-            case TowerType.TrojanGuard: return "[BLOCK]   [FRONTLINE]";
+            case TowerType.MachineGun: return L("[RANGED]   [LIGHT]", "[ДАЛЬНИЙ]   [ЛЁГКИЕ]");
+            case TowerType.SpearThrower: return L("[ARMOR]   [HEAVY]", "[БРОНЯ]   [ТЯЖЁЛЫЕ]");
+            case TowerType.Cannon: return L("[SIEGE]   [BOSS]   [PIERCE]", "[ОСАДА]   [БОСС]   [БРОНЕБОЙ]");
+            case TowerType.Slow: return L("[SLOW]   [SUPPORT]", "[ЗАМЕДЛ.]   [ПОДДЕРЖКА]");
+            case TowerType.FireTower: return L("[AOE]   [BURN]   [ZONE]", "[ПЛОЩАДЬ]   [ОГОНЬ]   [ЗОНА]");
+            case TowerType.TrojanGuard: return L("[BLOCK]   [FRONTLINE]", "[БЛОК]   [ПЕРЕДОВАЯ]");
             default: return "";
+        }
+    }
+
+    public static string TargetPriorityLabel(TargetPriority priority)
+    {
+        switch (priority)
+        {
+            case TargetPriority.Last: return L("LAST", "ПОСЛЕДНИЙ");
+            case TargetPriority.Strongest: return L("STRONGEST", "СИЛЬНЕЙШИЙ");
+            case TargetPriority.Weakest: return L("WEAKEST", "СЛАБЕЙШИЙ");
+            case TargetPriority.Closest: return L("CLOSEST", "БЛИЖАЙШИЙ");
+            default: return L("FIRST", "ПЕРВЫЙ");
         }
     }
 
