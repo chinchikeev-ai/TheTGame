@@ -48,39 +48,46 @@ Make the approved Chapter I Trojan roster readable as distinct characters and co
 - substantially shorter and thinner visual body;
 - soldier armour hidden for the support candidate;
 - old bald head, long grey beard, age brow and long nose;
-- white/gold robe and sun staff provide support-role readability.
+- white/gold robe and sun staff provide support-role readability;
+- head details follow the head bone; robe/stoles follow torso; staff/disc follow the right hand when candidate rig bones are available.
 
 ### Fire Keeper / Fire Thrower
 
 - pitch-pot/ladle presentation replaced by flaming-bottle language;
 - bottle satchel plus multiple bottles, including a lit throwing bottle;
 - manic eyes, pupils, brows and wild hair create the approved pyromaniac face read;
-- base soldier armour hidden for the support candidate.
+- base soldier armour hidden for the support candidate;
+- face details follow the head bone, belt props follow the torso and the lit bottle follows the throwing hand.
 
 ### Ballista Crew
 
 - crew split into two visual characters while keeping the compatibility prefab:
   - lean/nervous engineer with winch/measuring tools;
   - broader loader with heavy bolt bundle and beard;
-- tower production binder now uses Engineer + Loader when available and falls back to the legacy shared crew prefab otherwise.
+- tower production binder uses Engineer + Loader when available and falls back to the legacy shared crew prefab otherwise;
+- both distinct crew variants are normalized to the shared `Trojan_BallistaCrew` animation identity so Fire/Reload/Tension profiles bind consistently;
+- engineer tools are rig-bound to the hands where available, while harness/bolt bundle follow the torso.
 
 ### Cyclops
 
 - club removed from the generated concept direction;
 - oversized irregular boulder becomes the primary weapon/role marker;
 - single eye moved to the face side and enlarged;
-- extra asymmetrical shoulder mass reinforces a giant-monster silhouette.
+- extra asymmetrical shoulder mass reinforces a giant-monster silhouette;
+- eye/brow follow the head and the throwing boulder follows the right hand where the candidate rig exposes one.
 
 ## Safety / architecture constraints
 
 - Core-unit body differentiation operates on the child `Visual` / presentation kit rather than changing the root gameplay collider.
 - Added procedural presentation primitives remove their colliders immediately.
 - Ballista crew instances continue to have colliders/rigidbodies disabled when attached as tower decoration.
+- Rig-binding preserves world pose when generated presentation props are reparented.
 - No tower damage, enemy stats, hero abilities, routes, encounter timings or map layout were intentionally changed.
 
 ## Files
 
 - `Assets/Editor/TrojanCoreUnitVisualPass.cs`
+- `Assets/Editor/TrojanRosterRefinementPass.cs`
 - `Assets/Editor/MythicAndSupportArtCandidateBuilder.cs`
 - `Assets/Editor/ChapterOneShieldCandidateBuilder.cs`
 - `Assets/Game/Characters/RuntimeWarriorVisualFactory.cs`
@@ -93,9 +100,8 @@ Make the approved Chapter I Trojan roster readable as distinct characters and co
 2. `The Troy Game/Characters/Apply Trojan Unit Visual Identity Pass`
 3. `The Troy Game/Characters/Bind Late Bronze Age Shield Candidates`
 4. `The Troy Game/Characters/Build Mythic and Trojan Support Candidates`
-5. run the existing Chapter I animation/equipment builders as required by the normal production pipeline
 
-`Build Mythic and Trojan Support Candidates` also reapplies the core Trojan identity pass before cloning support characters.
+The support builder now reapplies the core Trojan identity pass, generates support/mythic candidates, runs the roster refinement pass and refreshes the Chapter I animation profiles. `Apply Trojan Roster Refinement Pass` also remains available as a standalone repair/rebind command after manual prefab edits.
 
 ## Remaining acceptance work
 
@@ -104,6 +110,7 @@ The code/generation pass is not equivalent to final production art. Before any u
 - rebuild candidates in a real Unity Editor checkout;
 - run EditMode/PlayMode tests;
 - inspect all units together at Chapter I gameplay camera distance and target 16:9 framing;
-- verify face overlays, shield orientation, weapon grip, animation clipping and top-down silhouette;
+- verify face overlays, shield orientation, hand-attached props, weapon grip, animation clipping and top-down silhouette;
+- specifically verify Fire Keeper bottle motion, Priest staff motion, Ballista crew hand tools and Cyclops boulder during their candidate actions;
 - tune presentation-only offsets/scales after inspection;
 - replace generated/procedural elements with final authored/skinned art where required by `docs/MODEL_ART_INVENTORY.md` acceptance rules.
