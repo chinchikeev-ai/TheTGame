@@ -5,7 +5,7 @@
     "sourceReportFile": "",
     "sourceReportSha256": "",
     "warningsReviewed": false,
-    "warningsDecisionNotes": "",
+    "warningsDecisionNotes": "Review every Story analyzer WARN against Assets/Game/QA/CHAPTER_I_WARN_POLICY.md. Record each finding as FIXED with replacement session or ACCEPTED with a specific design reason.",
     "humanAccepted": false,
     "acceptedBy": "",
     "acceptedUtc": ""
@@ -23,5 +23,5 @@
     "notes": ""
   },
   "gameplayFrozen": false,
-  "freezeNotes": "Do not set gameplayFrozen=true until the Story baseline, WARN review, Strategos/Legendary pressure review, and all four RU/EN visual-fit checks are complete."
+  "freezeNotes": "Do not set gameplayFrozen=true until the Story baseline, WARN review per CHAPTER_I_WARN_POLICY.md, Strategos/Legendary pressure review, and all four RU/EN visual-fit checks are complete."
 }
