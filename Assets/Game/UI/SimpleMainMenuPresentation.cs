@@ -71,6 +71,10 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
         RectTransform layerRect = layer.AddComponent<RectTransform>();
         Stretch(layerRect);
 
+        // The approved reference image still contains the old five-section button art.
+        // Cover that right-side navigation area so the player sees one clear four-action menu.
+        MakeMask(layer.transform, new Vector2(520f, 0f), new Vector2(880f, 1080f), new Color(.025f, .011f, .005f, .94f));
+
         GameObject panel = MakePanel(layer.transform, "MainActions", new Vector2(455f, 0f), new Vector2(610f, 690f), new Color(.045f, .020f, .009f, .96f));
         AddText(panel.transform, "THE TROY GAME", new Vector2(0f, 260f), new Vector2(540f, 72f), 42, FontStyle.Bold, new Color(1f, .66f, .16f, 1f));
         AddText(panel.transform, "GODS DEFENSE", new Vector2(0f, 215f), new Vector2(500f, 42f), 19, FontStyle.Bold, new Color(.86f, .70f, .48f, 1f));
@@ -170,6 +174,20 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
     }
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
+
+    GameObject MakeMask(Transform parent, Vector2 position, Vector2 size, Color color)
+    {
+        GameObject go = new GameObject("LegacyMenuMask");
+        go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>();
+        image.color = color;
+        image.raycastTarget = true;
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        return go;
+    }
 
     GameObject MakePanel(Transform parent, string name, Vector2 position, Vector2 size, Color color)
     {
