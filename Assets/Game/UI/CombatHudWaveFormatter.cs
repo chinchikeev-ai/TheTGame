@@ -11,8 +11,11 @@ public static class CombatHudWaveFormatter
         any |= Append(ref preview, GameLanguage.T("HEAVY", "ТЯЖ"), spawner.NextWaveHeavyCount, any);
         any |= Append(ref preview, GameLanguage.T("SHIELD", "ЩИТ"), spawner.NextWaveShieldCount, any);
         any |= Append(ref preview, GameLanguage.T("ARCHER", "ЛУК"), spawner.NextWaveArcherCount, any);
-        any |= Append(ref preview, GameLanguage.T("MENELAUS", "МЕНЕЛАЙ"), spawner.NextWaveBossCount, any);
-        return any ? preview : GameLanguage.T("NEXT WAVE DATA PREPARING", "ПОДГОТОВКА ДАННЫХ ВОЛНЫ");
+        string bossLabel = string.IsNullOrWhiteSpace(spawner.NextWaveBossDisplayName)
+            ? GameLanguage.T("BOSS", "БОСС")
+            : spawner.NextWaveBossDisplayName.ToUpperInvariant();
+        any |= Append(ref preview, bossLabel, spawner.NextWaveBossCount, any);
+        return any ? preview : GameLanguage.T("NEXT ENCOUNTER DATA PREPARING", "ПОДГОТОВКА ДАННЫХ БОЯ");
     }
 
     static bool Append(ref string text, string label, int count, bool alreadyHas)
