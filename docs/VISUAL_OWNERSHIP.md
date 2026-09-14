@@ -22,14 +22,14 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Main combat HUD layout/content, controls, wave strip, contextual selected-defense panel, build details, corner magic controls | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
+| Main combat HUD layout/content, controls, encounter strip, contextual selected-defense panel, build details, corner magic controls | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
 | Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
 | Settings UI including audio layout | `ModernSettingsPresentation` | Runtime layout polishers or duplicate settings canvases |
 | Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Secondary tutorial/objective canvas |
 | Hector health and ability HUD | `HectorHUD` | Main combat resources/build UI |
 | Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
-| Wave intro/boss warning card | `ChapterOneWavePresentation` | Persistent wave status bar |
-| Visual next-wave enemy cards | `VisualWavePreviewPresentation` | General combat HUD |
+| Encounter intro/boss warning card | `ChapterOneEncounterPresentation` | Persistent encounter status bar |
+| Visual next-encounter enemy cards | `VisualEncounterPreviewPresentation` | General combat HUD |
 | Combat notifications | `CombatNotificationPresentation` | Objective/tutorial card |
 | End-of-battle menu and detailed results | `GameMenuController` | Extra result canvases or compatibility result builders |
 
@@ -37,6 +37,7 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 
 - `CombatControlsUI` owns combat-speed state/actions only. Graphics belong to `ModernCombatHud`.
 - `GameStateController` owns session-state transitions; it is not a HUD owner.
+- `EncounterRuntime` is the canonical compatibility facade for encounter state while legacy Wave-prefixed spawner/session members remain during serialization-safe migration.
 
 ## Migration debt
 
@@ -44,12 +45,13 @@ These components are still active or intentionally retained during a cutover. Th
 
 - `HectorMotionFallbackAnimator` is a runtime animation safety net until Hector's production Animator is frozen. Authored animation wins when available.
 - Procedural character/environment visual factories remain fallback paths until production-art freeze; they are not the preferred production source.
+- Wave-prefixed members retained inside `EnemySpawner`, `GameManager`, and historical playthrough-report schemas are compatibility debt only. New runtime consumers must use Encounter terminology; see `docs/ENCOUNTER_TERMINOLOGY_MIGRATION.md`.
 
 `CombatCornerControlsPresentation` has been removed. Its BuildDock placement, compact gift panel and corner magic UX are now owned directly by `ModernCombatHud`.
 
 `AudioSettingsLayoutPolisher` has been removed. The audio cards, labels, sliders and percentages are now authored directly by `ModernSettingsPresentation`.
 
-Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, `ExtendedBalanceUI`, `CombatCornerControlsPresentation`, or `AudioSettingsLayoutPolisher`.
+Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, `ExtendedBalanceUI`, `CombatCornerControlsPresentation`, `AudioSettingsLayoutPolisher`, `ChapterOneWavePresentation`, or `VisualWavePreviewPresentation`.
 
 ## Editor art tooling
 
