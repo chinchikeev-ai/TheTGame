@@ -33,12 +33,18 @@ public static class ChapterOneGameplayFreezeValidator
         if (string.IsNullOrWhiteSpace(reportPath) || !File.Exists(reportPath))
             throw new FileNotFoundException("Chapter I playthrough report not found.", reportPath);
 
+        string json = File.ReadAllText(reportPath);
         ChapterOnePlaythroughReporter.PlaythroughReport report =
-            JsonUtility.FromJson<ChapterOnePlaythroughReporter.PlaythroughReport>(File.ReadAllText(reportPath));
+            JsonUtility.FromJson<ChapterOnePlaythroughReporter.PlaythroughReport>(json);
         if (report == null)
             throw new InvalidDataException($"Could not parse Chapter I playthrough report: {reportPath}");
 
-        List<string> blockers = EvaluateBlockers(report);
+        bool hasVerifiedSpeedTelemetry =
+            json.Contains("\"schemaVersion\"") &&
+            json.Contains("\"nonOneXSpeedUsed\"") &&
+            json.Contains("\"maxCombatSpeed\"");
+
+        List<string> blockers = EvaluateBlockers(report, hasVerifiedSpeedTelemetry);
 
         // Always generate the detailed tuning report beside the freeze decision.
         string analysisPath = ChapterOnePlaythroughAnalyzer.Analyze(reportPath, false);
@@ -60,10 +66,12 @@ public static class ChapterOneGameplayFreezeValidator
         return blockers.Count == 0;
     }
 
-    static List<string> EvaluateBlockers(ChapterOnePlaythroughReporter.PlaythroughReport report)
+    static List<string> EvaluateBlockers(ChapterOnePlaythroughReporter.PlaythroughReport report, bool hasVerifiedSpeedTelemetry)
     {
         List<string> blockers = new List<string>();
 
+        if (!hasVerifiedSpeedTelemetry)
+            blockers.Add("Telemetry file does not contain the required 1x verification fields. Run Chapter I again with the current reporter.");
         if (report.schemaVersion < ChapterOnePlaythroughReporter.CurrentReportSchemaVersion)
             blockers.Add($"Telemetry schema is too old for freeze acceptance: report={report.schemaVersion}, required={ChapterOnePlaythroughReporter.CurrentReportSchemaVersion}. Run Chapter I again with the current build.");
         if (report.map != 1) blockers.Add($"Report map must be Chapter I; map={report.map}.");
