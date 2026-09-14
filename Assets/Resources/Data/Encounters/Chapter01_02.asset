@@ -15,8 +15,8 @@ MonoBehaviour:
   encounterId: chapter_01_02
   encounterNumber: 2
   preparationTime: 20
-  targetDuration: 80
-  spawnInterval: 4.25
+  targetDuration: 95
+  spawnInterval: 5
   hpMultiplier: 1.3
   speedMultiplier: 1.04
   spawnGroups:
@@ -26,6 +26,7 @@ MonoBehaviour:
     - 0
     - 0
     repeats: 3
+    baseCount: 20
     route: -1
     routeOffset: 0
     startDelay: 0
