@@ -10,8 +10,10 @@ public static class DefaultDataAssetGenerator
 
     static DefaultDataAssetGenerator()
     {
-        // Missing assets may be created automatically for a fresh checkout.
+        // Low-level catalog assets may be created automatically for a fresh checkout.
         // Existing authored assets are NEVER overwritten here.
+        // Chapter encounters are intentionally not regenerated: their GUID-backed references
+        // and spawn plans are authored campaign content and must fail validation if missing.
         EditorApplication.delayCall += EnsureMissingAssets;
     }
 
@@ -22,11 +24,10 @@ public static class DefaultDataAssetGenerator
         EnsureFolder(Root);
         EnsureFolder(Root + "/Towers");
         EnsureFolder(Root + "/Enemies");
-        EnsureFolder(Root + "/Waves");
+        EnsureFolder(Root + "/Encounters");
 
         foreach (TowerType type in System.Enum.GetValues(typeof(TowerType))) CreateTowerIfMissing(type);
         foreach (EnemyArchetype type in System.Enum.GetValues(typeof(EnemyArchetype))) CreateEnemyIfMissing(type);
-        for (int wave = 1; wave <= 5; wave++) CreateWaveIfMissing(wave);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -56,19 +57,6 @@ public static class DefaultDataAssetGenerator
         AssetDatabase.CreateAsset(asset, path);
         Object.DestroyImmediate(source);
         Debug.Log($"[DATA] Created missing EnemyData: {path}");
-    }
-
-    static void CreateWaveIfMissing(int wave)
-    {
-        string path = $"{Root}/Waves/Wave_{wave:00}.asset";
-        if (AssetDatabase.LoadAssetAtPath<WaveData>(path) != null) return;
-
-        WaveData source = BalanceCatalog.GetWaveRuntimeDefault(wave, 5);
-        WaveData asset = ScriptableObject.CreateInstance<WaveData>();
-        EditorUtility.CopySerialized(source, asset);
-        AssetDatabase.CreateAsset(asset, path);
-        Object.DestroyImmediate(source);
-        Debug.Log($"[DATA] Created missing WaveData: {path}");
     }
 
     static void EnsureFolder(string path)
