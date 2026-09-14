@@ -116,6 +116,18 @@ Current runtime cues added/strengthened:
 - strengthen role-specific release/recoil/cast/brace/throw feedback;
 - add humor/grotesque through animation and silhouette rather than extra visual noise.
 
+Implementation status: **implemented in `TroyCombatHudSkin` and `TowerSupportMechanismPresentation`; awaiting real Play Mode screenshot QA.**
+
+Current runtime cues added/strengthened:
+- HUD panels/buttons moved to a quieter charcoal/stone base with bronze hover/selection and Trojan-red press accents.
+- HUD text hierarchy uses warm pale-gold for titles and softer parchment text for secondary information; icons were slightly reduced so the battlefield stays dominant.
+- Archer attacks now include a short bow snap plus restrained release flash.
+- Spear Wall attacks visibly thrust the aimed spear forward with a small bronze flash.
+- Ballista recoil/reload is stronger and now recognizes the renamed Pass-B ballista objects (`Role_Ballista_MainBow`, `Role_Ballista_Bolt`).
+- Priest cast rotates the enlarged Apollo disc with a stronger solar pulse and now recognizes `Role_Priest_ApolloDisc`.
+- Fire attack drives the enlarged Pass-B main flame and adds a short fire burst; it now recognizes `Role_Fire_MainFlame`.
+- Attack accents are presentation-only primitive effects with colliders removed and short lifetimes.
+
 ## Acceptance criteria
 - [ ] Unselected build points are visibly secondary to units/towers/roads.
 - [ ] All six Chapter I defensive roles can be identified from the default gameplay camera without reading UI labels.
@@ -134,4 +146,4 @@ Current runtime cues added/strengthened:
 - Production-art status remains governed by `MODEL_ART_INVENTORY.md`; passing this task does not automatically mean `DONE`.
 
 ## Status
-`IN_PROGRESS — PASS A + PASS B + PASS C + PASS D IMPLEMENTED, PLAY MODE QA PENDING`
+`IN_PROGRESS — PASS A + PASS B + PASS C + PASS D + PASS E IMPLEMENTED, PLAY MODE QA PENDING`
