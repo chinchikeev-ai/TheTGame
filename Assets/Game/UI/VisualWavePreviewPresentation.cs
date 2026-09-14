@@ -54,7 +54,7 @@ public sealed class VisualWavePreviewPresentation : MonoBehaviour
         }
 
         row.SetActive(true);
-        float start = -((visible - 1) * 78f) * .5f;
+        float start = -((visible - 1) * 66f) * .5f;
         int shown = 0;
         for (int i=0;i<cards.Length;i++)
         {
@@ -62,7 +62,7 @@ public sealed class VisualWavePreviewPresentation : MonoBehaviour
             cards[i].SetActive(active);
             if (!active) continue;
             RectTransform rt = cards[i].GetComponent<RectTransform>();
-            rt.anchoredPosition = new Vector2(start + shown * 78f, -28f);
+            rt.anchoredPosition = new Vector2(start + shown * 66f, 0f);
             counts[i].text = "×" + values[i];
             shown++;
         }
@@ -70,14 +70,12 @@ public sealed class VisualWavePreviewPresentation : MonoBehaviour
 
     void Build(Transform wave)
     {
-        HideLegacyPreview(wave);
-
         row = new GameObject("EnemyCardRow");
         row.transform.SetParent(wave,false);
         RectTransform rowRt = row.AddComponent<RectTransform>();
         rowRt.anchorMin = rowRt.anchorMax = rowRt.pivot = new Vector2(.5f,.5f);
-        rowRt.anchoredPosition = new Vector2(-75f,0f);
-        rowRt.sizeDelta = new Vector2(470f,76f);
+        rowRt.anchoredPosition = new Vector2(-68f,-28f);
+        rowRt.sizeDelta = new Vector2(410f,54f);
 
         for (int i=0;i<cards.Length;i++)
         {
@@ -89,28 +87,14 @@ public sealed class VisualWavePreviewPresentation : MonoBehaviour
             bg.color = i == 5 ? new Color(.55f,.12f,.045f,1f) : new Color(.31f,.18f,.08f,1f);
             RectTransform rt = bg.rectTransform;
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f,.5f);
-            rt.sizeDelta = new Vector2(i == 5 ? 92f : 70f,68f);
+            rt.sizeDelta = new Vector2(i == 5 ? 78f : 58f,52f);
 
-            AddImage(card.transform,"Portrait",new Vector2(0,9),new Vector2(38,38),TroyHudArt.Enemy(keys[i]));
-            AddText(card.transform,GameLanguage.T(en[i],ru[i]),new Vector2(0,-18),new Vector2(i==5?88:66,16),i==5?8:9,new Color(1f,.82f,.52f,1f));
-            counts[i] = AddText(card.transform,"×0",new Vector2(21,21),new Vector2(28,18),11,Color.white);
+            AddImage(card.transform,"Portrait",new Vector2(0,7),new Vector2(30,30),TroyHudArt.Enemy(keys[i]));
+            AddText(card.transform,GameLanguage.T(en[i],ru[i]),new Vector2(0,-16),new Vector2(i==5?74:54,14),i==5?7:8,new Color(1f,.82f,.52f,1f));
+            counts[i] = AddText(card.transform,"×0",new Vector2(18,17),new Vector2(24,16),10,Color.white);
             counts[i].alignment = TextAnchor.MiddleCenter;
             counts[i].fontStyle = FontStyle.Bold;
             cards[i] = card;
-        }
-    }
-
-    void HideLegacyPreview(Transform wave)
-    {
-        Text[] texts = wave.GetComponentsInChildren<Text>(true);
-        for (int i=0;i<texts.Length;i++)
-        {
-            RectTransform rt = texts[i].rectTransform;
-            if (Vector2.Distance(rt.anchoredPosition,new Vector2(-90f,-28f)) < 4f)
-            {
-                texts[i].enabled = false;
-                break;
-            }
         }
     }
 
