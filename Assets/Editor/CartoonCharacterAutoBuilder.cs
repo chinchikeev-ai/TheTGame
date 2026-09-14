@@ -1,47 +1,46 @@
 using UnityEditor;
 using UnityEngine;
 
-[InitializeOnLoad]
 public static class CartoonCharacterAutoBuilder
 {
     const string SourceRoot = "Assets/ThirdParty/KayKitAdventurers";
     const string ProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Greek/Enemy_Infantry.prefab";
     const string SupportProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Trojan/Trojan_BallistaCrew.prefab";
     const string AnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_BallistaCrew.controller";
-    const string SessionKey = "TheTroyGame.CartoonCharacters.AutoBuildAttempted";
 
-    static CartoonCharacterAutoBuilder()
+    [MenuItem("Tools/TheTroyGame/Art/Build Missing Chapter I Art")]
+    public static void BuildMissing()
     {
-        EditorApplication.delayCall += TryBuild;
-    }
-
-    static void TryBuild()
-    {
-        if (SessionState.GetBool(SessionKey, false)) return;
-        SessionState.SetBool(SessionKey, true);
-
         if (!AssetDatabase.IsValidFolder(SourceRoot))
         {
-            Debug.LogWarning("Troy characters: KayKit submodule is not checked out. Using runtime fallback visuals until production candidates can be generated.");
+            Debug.LogWarning("Troy characters: KayKit submodule is not checked out. No art candidates were generated.");
             return;
         }
 
+        bool changed = false;
+
         if (AssetDatabase.LoadAssetAtPath<GameObject>(ProbePrefab) == null)
         {
-            Debug.Log("Troy characters: KayKit source found, generating Chapter I production candidates automatically.");
+            Debug.Log("Troy characters: generating missing Chapter I production candidates.");
             CartoonCharacterPrefabBuilder.BuildAll();
+            changed = true;
         }
 
         if (AssetDatabase.LoadAssetAtPath<GameObject>(SupportProbePrefab) == null)
         {
-            Debug.Log("Troy characters: generating Chapter I Trojan support candidates automatically.");
+            Debug.Log("Troy characters: generating missing Chapter I Trojan support candidates.");
             MythicAndSupportArtCandidateBuilder.BuildAll();
+            changed = true;
         }
 
         if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AnimationProfileProbe) == null)
         {
-            Debug.Log("Troy characters: building role-specific Chapter I animation profiles from imported KayKit clips.");
+            Debug.Log("Troy characters: building missing role-specific Chapter I animation profiles.");
             ChapterOneCharacterAnimationBuilder.BuildAll();
+            changed = true;
         }
+
+        if (!changed)
+            Debug.Log("Troy characters: Chapter I generated art candidates are already present. Nothing to build.");
     }
 }
