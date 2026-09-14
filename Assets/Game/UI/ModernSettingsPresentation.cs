@@ -82,27 +82,26 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         FindResolution();
         FindFps();
 
-        modernPanel = MakePanel(settingsRoot.transform, "ModernSettingsPanel", Vector2.zero, new Vector2(1480, 900), new Color(.055f,.03f,.018f,.985f));
-        AddText(modernPanel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(-520, 385), new Vector2(360,60), 42, new Color(1f,.62f,.18f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        AddText(modernPanel.transform, L("Customize your experience", "Настройте игру под себя"), new Vector2(-520, 342), new Vector2(430,36), 17, new Color(.78f,.69f,.60f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
+        modernPanel = MakePanel(settingsRoot.transform, "ModernSettingsPanel", Vector2.zero, new Vector2(1320, 800), new Color(.055f,.03f,.018f,.985f));
+        AddText(modernPanel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(-455, 335), new Vector2(360,56), 38, new Color(1f,.62f,.18f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddText(modernPanel.transform, L("Customize your experience", "Настройте игру под себя"), new Vector2(-455, 296), new Vector2(430,32), 16, new Color(.78f,.69f,.60f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
 
-        GameObject nav = MakePanel(modernPanel.transform, "Navigation", new Vector2(-545, -20), new Vector2(300, 650), new Color(.075f,.042f,.026f,.92f));
-        tabs[(int)Tab.Audio] = MakeButton(nav.transform, L("AUDIO", "ЗВУК"), new Vector2(0, 230), () => ShowTab(Tab.Audio), new Vector2(245,62), true);
-        tabs[(int)Tab.Video] = MakeButton(nav.transform, L("VIDEO", "ВИДЕО"), new Vector2(0, 150), () => ShowTab(Tab.Video), new Vector2(245,62), false);
-        tabs[(int)Tab.Gameplay] = MakeButton(nav.transform, L("GAMEPLAY", "ИГРА"), new Vector2(0, 70), () => ShowTab(Tab.Gameplay), new Vector2(245,62), false);
-        tabs[(int)Tab.Controls] = MakeButton(nav.transform, L("CONTROLS", "УПРАВЛЕНИЕ"), new Vector2(0, -10), () => ShowTab(Tab.Controls), new Vector2(245,62), false);
+        GameObject nav = MakePanel(modernPanel.transform, "Navigation", new Vector2(-475, -5), new Vector2(260, 550), new Color(.075f,.042f,.026f,.92f));
+        tabs[(int)Tab.Audio] = MakeButton(nav.transform, L("AUDIO", "ЗВУК"), new Vector2(0, 190), () => ShowTab(Tab.Audio), new Vector2(215,56), true);
+        tabs[(int)Tab.Video] = MakeButton(nav.transform, L("VIDEO", "ВИДЕО"), new Vector2(0, 120), () => ShowTab(Tab.Video), new Vector2(215,56), false);
+        tabs[(int)Tab.Gameplay] = MakeButton(nav.transform, L("GAMEPLAY", "ИГРА"), new Vector2(0, 50), () => ShowTab(Tab.Gameplay), new Vector2(215,56), false);
+        tabs[(int)Tab.Controls] = MakeButton(nav.transform, L("CONTROLS", "УПРАВЛЕНИЕ"), new Vector2(0, -20), () => ShowTab(Tab.Controls), new Vector2(215,56), false);
+        descriptionText = AddText(nav.transform, "", new Vector2(0,-175), new Vector2(215,130), 14, new Color(.72f,.64f,.56f,.92f), TextAnchor.UpperLeft, FontStyle.Normal);
 
-        descriptionText = AddText(nav.transform, "", new Vector2(0,-190), new Vector2(245,150), 15, new Color(.72f,.64f,.56f,.92f), TextAnchor.UpperLeft, FontStyle.Normal);
-
-        GameObject contentPanel = MakePanel(modernPanel.transform, "ContentPanel", new Vector2(230, -20), new Vector2(900, 650), new Color(.035f,.022f,.016f,.92f));
+        GameObject contentPanel = MakePanel(modernPanel.transform, "ContentPanel", new Vector2(170, -5), new Vector2(800, 550), new Color(.035f,.022f,.016f,.92f));
         contentRoot = new GameObject("ContentRoot");
         contentRoot.transform.SetParent(contentPanel.transform, false);
         RectTransform cr = contentRoot.AddComponent<RectTransform>();
         cr.anchorMin = Vector2.zero; cr.anchorMax = Vector2.one; cr.offsetMin = cr.offsetMax = Vector2.zero;
 
-        MakeButton(modernPanel.transform, L("APPLY", "ПРИМЕНИТЬ"), new Vector2(445,-400), ApplyAndBack, new Vector2(260,58), true);
-        MakeButton(modernPanel.transform, L("BACK", "НАЗАД"), new Vector2(145,-400), Back, new Vector2(260,58), false);
-        MakeButton(modernPanel.transform, L("RESET DEFAULTS", "СБРОСИТЬ"), new Vector2(-205,-400), ResetDefaults, new Vector2(310,58), false);
+        MakeButton(modernPanel.transform, L("RESET DEFAULTS", "СБРОСИТЬ"), new Vector2(-250,-350), ResetDefaults, new Vector2(270,54), false);
+        MakeButton(modernPanel.transform, L("BACK", "НАЗАД"), new Vector2(80,-350), Back, new Vector2(240,54), false);
+        MakeButton(modernPanel.transform, L("APPLY", "ПРИМЕНИТЬ"), new Vector2(370,-350), ApplyAndBack, new Vector2(250,54), true);
 
         ShowTab(activeTab);
         built = true;
@@ -134,75 +133,75 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void BuildAudio()
     {
         SetHeader(L("AUDIO", "ЗВУК"), L("Balance music and overall game volume.", "Настройте музыку и общую громкость игры."));
-        MakeSliderRow(L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"), 190, GameUserSettings.MasterVolume, value => GameUserSettings.MasterVolume = value);
-        MakeSliderRow(L("MUSIC", "МУЗЫКА"), 70, GameUserSettings.MusicVolume, value => GameUserSettings.MusicVolume = value);
-        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-125));
+        MakeSliderRow(L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"), 160, GameUserSettings.MasterVolume, value => GameUserSettings.MasterVolume = value);
+        MakeSliderRow(L("MUSIC", "МУЗЫКА"), 45, GameUserSettings.MusicVolume, value => GameUserSettings.MusicVolume = value);
+        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-120));
     }
 
     void BuildVideo()
     {
         SetHeader(L("VIDEO", "ВИДЕО"), L("Display, frame pacing and graphics quality.", "Экран, частота кадров и качество графики."));
-        MakeSelectorRow(L("WINDOW MODE", "РЕЖИМ ЭКРАНА"), 210, () => GameUserSettings.Fullscreen ? L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН") : L("WINDOWED", "ОКОННЫЙ"), () => { GameUserSettings.Fullscreen = !GameUserSettings.Fullscreen; ShowTab(Tab.Video); });
-        MakeSelectorRow(L("RESOLUTION", "РАЗРЕШЕНИЕ"), 110, ResolutionLabel, CycleResolution);
-        MakeSelectorRow("VSync", 10, () => GameUserSettings.VSync ? L("ON", "ВКЛ") : L("OFF", "ВЫКЛ"), () => { GameUserSettings.VSync = !GameUserSettings.VSync; ShowTab(Tab.Video); });
-        MakeSelectorRow(L("FPS LIMIT", "ЛИМИТ FPS"), -90, () => GameUserSettings.FpsLimit <= 0 ? L("UNLIMITED", "БЕЗ ЛИМИТА") : GameUserSettings.FpsLimit.ToString(), CycleFps);
-        MakeSelectorRow(L("GRAPHICS QUALITY", "КАЧЕСТВО ГРАФИКИ"), -190, QualityLabel, CycleQuality);
+        MakeSelectorRow(L("WINDOW MODE", "РЕЖИМ ЭКРАНА"), 175, () => GameUserSettings.Fullscreen ? L("FULLSCREEN", "ПОЛНЫЙ ЭКРАН") : L("WINDOWED", "ОКОННЫЙ"), () => { GameUserSettings.Fullscreen = !GameUserSettings.Fullscreen; ShowTab(Tab.Video); });
+        MakeSelectorRow(L("RESOLUTION", "РАЗРЕШЕНИЕ"), 85, ResolutionLabel, CycleResolution);
+        MakeSelectorRow("VSync", -5, () => GameUserSettings.VSync ? L("ON", "ВКЛ") : L("OFF", "ВЫКЛ"), () => { GameUserSettings.VSync = !GameUserSettings.VSync; ShowTab(Tab.Video); });
+        MakeSelectorRow(L("FPS LIMIT", "ЛИМИТ FPS"), -95, () => GameUserSettings.FpsLimit <= 0 ? L("UNLIMITED", "БЕЗ ЛИМИТА") : GameUserSettings.FpsLimit.ToString(), CycleFps);
+        MakeSelectorRow(L("GRAPHICS QUALITY", "КАЧЕСТВО ГРАФИКИ"), -185, QualityLabel, CycleQuality);
     }
 
     void BuildGameplay()
     {
         SetHeader(L("GAMEPLAY", "ИГРА"), L("Campaign preferences and language.", "Параметры кампании и язык."));
-        MakeSelectorRow(L("LANGUAGE", "ЯЗЫК"), 170, () => GameLanguage.Russian ? "Русский" : "English", ToggleLanguage);
-        MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), 50, () => DifficultyRules.Label(CurrentDifficulty), CycleDifficulty);
-        AddHint(L("Difficulty changes campaign combat rules. Language change rebuilds the menu.", "Сложность меняет правила боя. Смена языка перестраивает меню."), new Vector2(0,-100));
+        MakeSelectorRow(L("LANGUAGE", "ЯЗЫК"), 145, () => GameLanguage.Russian ? "Русский" : "English", ToggleLanguage);
+        MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), 35, () => DifficultyRules.Label(CurrentDifficulty), CycleDifficulty);
+        AddHint(L("Difficulty changes campaign combat rules. Language change rebuilds the menu.", "Сложность меняет правила боя. Смена языка перестраивает меню."), new Vector2(0,-115));
     }
 
     void BuildControls()
     {
         SetHeader(L("CONTROLS", "УПРАВЛЕНИЕ"), L("PC keyboard and mouse controls.", "Управление на ПК: клавиатура и мышь."));
-        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 190);
-        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 95);
-        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), 0);
-        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -95);
-        MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC", -190);
-        AddHint(L("Tower hotkeys: 1–6. Hector abilities: Q / E / R / F. Console controls are deferred.", "Горячие клавиши обороны: 1–6. Способности Гектора: Q / E / R / F. Управление для приставок отложено."), new Vector2(0,-270));
+        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 160);
+        MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 82);
+        MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), 4);
+        MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -74);
+        MakeControlRow(L("PAUSE / BACK", "ПАУЗА / НАЗАД"), "ESC", -152);
+        AddHint(L("Tower hotkeys: 1–6. Hector abilities: Q / E / R / F.", "Оборона: 1–6. Способности Гектора: Q / E / R / F."), new Vector2(0,-222));
     }
 
     void SetHeader(string title, string description)
     {
-        titleText = AddText(contentRoot.transform, title, new Vector2(-300,255), new Vector2(650,55), 30, new Color(1f,.72f,.30f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        AddText(contentRoot.transform, description, new Vector2(-300,215), new Vector2(720,45), 16, new Color(.76f,.68f,.59f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
+        titleText = AddText(contentRoot.transform, title, new Vector2(-245,225), new Vector2(580,48), 28, new Color(1f,.72f,.30f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddText(contentRoot.transform, description, new Vector2(-245,188), new Vector2(620,40), 15, new Color(.76f,.68f,.59f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
         if (descriptionText != null) descriptionText.text = description;
     }
 
     void MakeSliderRow(string label, float y, float initial, Action<float> onChanged)
     {
-        AddText(contentRoot.transform, label, new Vector2(-265,y+28), new Vector2(420,36), 17, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
+        AddText(contentRoot.transform, label, new Vector2(-230,y+26), new Vector2(330,34), 16, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
         GameObject go = new GameObject(label + " Slider"); go.transform.SetParent(contentRoot.transform,false);
-        Slider slider = go.AddComponent<Slider>(); RectTransform rt = go.GetComponent<RectTransform>(); rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=new Vector2(-70,y-18); rt.sizeDelta=new Vector2(540,30);
-        GameObject bg = MakeRect(go.transform,"Background",Vector2.zero,new Vector2(540,12),new Color(.18f,.11f,.075f,1f));
-        GameObject fill = MakeRect(go.transform,"Fill",Vector2.zero,new Vector2(540,12),new Color(.72f,.20f,.06f,1f));
+        Slider slider = go.AddComponent<Slider>(); RectTransform rt = go.GetComponent<RectTransform>(); rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=new Vector2(-35,y-16); rt.sizeDelta=new Vector2(470,28);
+        GameObject bg = MakeRect(go.transform,"Background",Vector2.zero,new Vector2(470,12),new Color(.18f,.11f,.075f,1f));
+        GameObject fill = MakeRect(go.transform,"Fill",Vector2.zero,new Vector2(470,12),new Color(.72f,.20f,.06f,1f));
         slider.fillRect = fill.GetComponent<RectTransform>();
-        GameObject handle = MakeRect(go.transform,"Handle",Vector2.zero,new Vector2(22,36),new Color(1f,.72f,.25f,1f));
+        GameObject handle = MakeRect(go.transform,"Handle",Vector2.zero,new Vector2(22,34),new Color(1f,.72f,.25f,1f));
         slider.handleRect = handle.GetComponent<RectTransform>(); slider.targetGraphic=handle.GetComponent<Image>(); slider.minValue=0; slider.maxValue=1; slider.value=initial;
-        Text value = AddText(contentRoot.transform, Mathf.RoundToInt(initial*100)+"%", new Vector2(280,y-18), new Vector2(100,36), 17, new Color(1f,.82f,.52f,1f), TextAnchor.MiddleRight, FontStyle.Bold);
+        Text value = AddText(contentRoot.transform, Mathf.RoundToInt(initial*100)+"%", new Vector2(255,y-16), new Vector2(90,34), 16, new Color(1f,.82f,.52f,1f), TextAnchor.MiddleRight, FontStyle.Bold);
         slider.onValueChanged.AddListener(v => { value.text=Mathf.RoundToInt(v*100)+"%"; onChanged(v); });
     }
 
     void MakeSelectorRow(string label, float y, Func<string> value, UnityAction action)
     {
-        AddText(contentRoot.transform,label,new Vector2(-270,y),new Vector2(350,50),17,Color.white,TextAnchor.MiddleLeft,FontStyle.Bold);
-        MakeButton(contentRoot.transform,value(),new Vector2(200,y),action,new Vector2(360,56),false);
+        AddText(contentRoot.transform,label,new Vector2(-230,y),new Vector2(300,46),16,Color.white,TextAnchor.MiddleLeft,FontStyle.Bold);
+        MakeButton(contentRoot.transform,value(),new Vector2(160,y),action,new Vector2(300,52),false);
     }
 
     void MakeControlRow(string label, string value, float y)
     {
-        MakeRect(contentRoot.transform,"ControlRow",new Vector2(0,y),new Vector2(760,66),new Color(.075f,.047f,.032f,.95f));
-        AddText(contentRoot.transform,label,new Vector2(-230,y),new Vector2(330,50),16,new Color(.94f,.88f,.80f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
-        AddText(contentRoot.transform,value,new Vector2(220,y),new Vector2(330,50),16,new Color(1f,.72f,.30f,1f),TextAnchor.MiddleRight,FontStyle.Bold);
+        MakeRect(contentRoot.transform,"ControlRow",new Vector2(0,y),new Vector2(690,58),new Color(.075f,.047f,.032f,.95f));
+        AddText(contentRoot.transform,label,new Vector2(-205,y),new Vector2(300,44),15,new Color(.94f,.88f,.80f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
+        AddText(contentRoot.transform,value,new Vector2(205,y),new Vector2(300,44),15,new Color(1f,.72f,.30f,1f),TextAnchor.MiddleRight,FontStyle.Bold);
     }
 
-    void AddHint(string text, Vector2 pos) => AddText(contentRoot.transform,text,pos,new Vector2(720,90),14,new Color(.68f,.61f,.54f,.9f),TextAnchor.UpperLeft,FontStyle.Normal);
+    void AddHint(string text, Vector2 pos) => AddText(contentRoot.transform,text,pos,new Vector2(650,76),13,new Color(.68f,.61f,.54f,.9f),TextAnchor.UpperLeft,FontStyle.Normal);
 
     void CycleResolution() { resolutionIndex=(resolutionIndex+1)%Resolutions.Length; Vector2 r=Resolutions[resolutionIndex]; GameUserSettings.SetResolution((int)r.x,(int)r.y); ShowTab(Tab.Video); }
     void CycleFps() { fpsIndex=(fpsIndex+1)%FpsOptions.Length; GameUserSettings.FpsLimit=FpsOptions[fpsIndex]; ShowTab(Tab.Video); }
