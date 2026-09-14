@@ -2,9 +2,10 @@ using UnityEngine;
 
 public sealed class ChapterOneShoreLife : MonoBehaviour
 {
-    static readonly Color Foam = new Color(.86f,.90f,.86f);
-    static readonly Color ThinFoam = new Color(.66f,.78f,.76f);
-    static readonly Color SeaGlint = new Color(.20f,.46f,.52f);
+    static readonly Color Foam = new Color(.91f,.94f,.89f);
+    static readonly Color ThinFoam = new Color(.70f,.84f,.82f);
+    static readonly Color SeaGlint = new Color(.24f,.56f,.64f);
+    static readonly Color SeaMist = new Color(.54f,.72f,.73f);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -21,6 +22,7 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
         BuildFoam(root.transform);
         BuildSeaGlints(root.transform);
         BuildShipWakes(root.transform);
+        BuildSeaMist(root.transform);
         BuildCampfires(root.transform);
     }
 
@@ -96,6 +98,24 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
         }
     }
 
+    void BuildSeaMist(Transform parent)
+    {
+        Vector3[] wisps =
+        {
+            new Vector3(-13.45f,.16f,-7.2f), new Vector3(-13.65f,.13f,-2.8f),
+            new Vector3(-13.38f,.15f,1.7f), new Vector3(-13.62f,.12f,5.9f),
+            new Vector3(-15.1f,.08f,-5.0f), new Vector3(-15.25f,.09f,4.2f)
+        };
+        for(int i=0;i<wisps.Length;i++)
+        {
+            GameObject wisp=Primitive(parent,"Sea Spray Wisp",PrimitiveType.Sphere,wisps[i],
+                new Vector3(.48f+(i%3)*.12f,.045f,.92f+(i%2)*.26f),SeaMist*(.82f+(i%2)*.07f),Quaternion.Euler(0f,-8f+i*7f,0f));
+            ChapterOneAmbientMotion motion=wisp.AddComponent<ChapterOneAmbientMotion>();
+            motion.kind=ChapterOneAmbientMotion.MotionKind.Dust;
+            motion.phase=.4f+i*.73f;
+        }
+    }
+
     void BuildCampfires(Transform parent)
     {
         CreateCampfire(parent,new Vector3(-11.3f,.05f,4.9f));
@@ -111,7 +131,7 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
         for(int i=0;i<3;i++)
             Primitive(root.transform,"Log",PrimitiveType.Cylinder,new Vector3(0f,.10f,0f),new Vector3(.035f,.34f,.035f),new Color(.18f,.10f,.05f),Quaternion.Euler(82f,i*60f+25f,0f));
 
-        GameObject flame = Primitive(root.transform,"Flame",PrimitiveType.Sphere,new Vector3(0f,.32f,0f),new Vector3(.15f,.25f,.15f),new Color(1f,.34f,.05f));
+        GameObject flame = Primitive(root.transform,"Flame",PrimitiveType.Sphere,new Vector3(0f,.32f,0f),new Vector3(.15f,.25f,.15f),new Color(1f,.38f,.045f));
         ChapterOneAmbientMotion flameMotion = flame.AddComponent<ChapterOneAmbientMotion>();
         flameMotion.kind = ChapterOneAmbientMotion.MotionKind.Flame;
 
@@ -126,11 +146,21 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
             smokeMotion.phase = .6f+i*1.2f;
         }
 
+        for(int i=0;i<4;i++)
+        {
+            GameObject ember=Primitive(root.transform,"Campfire Ember",PrimitiveType.Sphere,
+                new Vector3((i-1.5f)*.045f,.42f,(i%2==0?.05f:-.04f)),Vector3.one*(.025f+(i%2)*.008f),
+                i%2==0?new Color(1f,.56f,.08f):new Color(1f,.30f,.03f));
+            ChapterOneAmbientMotion emberMotion=ember.AddComponent<ChapterOneAmbientMotion>();
+            emberMotion.kind=ChapterOneAmbientMotion.MotionKind.Ember;
+            emberMotion.phase=i*.61f;
+        }
+
         Light light = root.AddComponent<Light>();
         light.type = LightType.Point;
-        light.color = new Color(1f,.42f,.11f);
-        light.range = 3.2f;
-        light.intensity = 1.2f;
+        light.color = new Color(1f,.46f,.12f);
+        light.range = 3.4f;
+        light.intensity = 1.25f;
     }
 
     static void AddSeaMotion(GameObject go,float phase)
