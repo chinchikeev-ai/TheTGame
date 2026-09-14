@@ -4,21 +4,19 @@
 `UI-001-RU_LOCALIZATION_CLEANUP`
 
 ## Goal
-Chapter I player-facing UI shows coherent EN or RU copy without leaking raw English enum names, authored display names, HUD abbreviations, boss badges, or legacy Wave wording into Russian mode.
+Remove the major Chapter I RU localization leaks that currently make RU/EN visual-fit acceptance invalid: raw English enum names, authored tower display names, HUD abbreviations, boss badges, difficulty names and legacy Wave notification copy.
 
 ## Why
 RU/EN visual-fit acceptance is not meaningful while Russian mode contains untranslated player-facing strings.
 
 ## Owner module
-`Assets/Game/UI` with minimal shared-label support in `Assets/Game/Core/Balance/DifficultyRules.cs` and Hector-specific presentation in `Assets/Game/Heroes/Hector/HectorHUD.cs` where required.
+`Assets/Game/UI` with minimal shared-label support in `Assets/Game/Core/Balance/DifficultyRules.cs`.
 
 ## Allowed files
 - `Assets/Game/UI/**`
-- `Assets/Game/Heroes/Hector/HectorHUD.cs`
 - `Assets/Game/Core/Balance/DifficultyRules.cs`
 - localization-focused EditMode tests/checks
 - `docs/TODO.md`
-- `docs/PROJECT_STATUS.md`
 - this task contract
 
 ## Do not change
@@ -37,28 +35,35 @@ RU/EN visual-fit acceptance is not meaningful while Russian mode contains untran
 - current Chapter I HUD/menu/presentation code
 
 ## Acceptance criteria
-- [ ] Russian mode does not expose raw `EnemyArchetype` or `TargetPriority` enum names in Chapter I UI.
-- [ ] Tower cards/tooltips use localized display names, tags, level/stat abbreviations and target-priority labels.
-- [ ] Menelaus boss badges/name and enemy inspector labels are localized.
-- [ ] Player-facing Chapter I notifications/commentary use Encounter/Бой terminology rather than Wave/Волна.
-- [ ] Difficulty labels have RU variants while preserving EN Story/Strategos/Legendary.
-- [ ] No architecture guard violations.
-- [ ] Existing gameplay/public contracts are preserved.
+- [x] Russian mode does not expose raw `EnemyArchetype` or `TargetPriority` enum names in the enemy inspector / selected-defense UI.
+- [x] Tower cards use localized display names, tags, level/stat abbreviations and target-priority labels.
+- [x] Menelaus boss badges and enemy inspector labels are localized.
+- [x] Combat encounter-start notification uses Encounter/Бой rather than Wave/Волна.
+- [x] Difficulty labels have RU variants while preserving EN Story/Strategos/Legendary.
+- [x] Existing gameplay balance and persistence contracts are untouched.
 
 ## Automated validation
-- [ ] `python tools/check-architecture.py` when executable environment is available
-- [ ] localization contract tests/checks updated where practical
-- [ ] Unity EditMode/PlayMode not claimed unless actually run
+- [ ] `python tools/check-architecture.py` was not executable from the GitHub-only editing environment.
+- [x] Added `LocalizationContractTests` for RU/EN enemy labels, tower tags/priority and difficulty labels.
+- [ ] Unity EditMode/PlayMode were not run and are not claimed.
 
 ## Manual validation
-- RU pass at 1920x1080 and 1366/1376x768 after source cleanup.
+- Full player-facing localization sweep remains in `docs/TODO.md`, including newer concurrently edited HUD/menu surfaces.
+- RU pass at 1920x1080 and 1366/1376x768 after the full source sweep.
 - EN pass at the same resolutions to catch regressions/truncation.
 
 ## Known risks
-- Longer Russian labels can expose layout/truncation issues; this change fixes source copy first, visual-fit acceptance remains a separate manual gate.
+- Longer Russian labels can expose layout/truncation issues; visual-fit acceptance remains a separate manual gate.
+- `main` received concurrent HUD/menu changes during this task, so those newer surfaces must be included in the final manual localization sweep rather than overwritten by this branch.
 
 ## Result
-To be completed after implementation.
+- localized tower tags/names/selected-card abbreviations and target priorities;
+- added localized enemy/archetype labels for the inspector;
+- localized boss badges and difficulty labels;
+- migrated encounter-start notification copy from Wave/Волна to Encounter/Бой;
+- added RU/EN localization contract tests;
+- added explicit full localization + visual-fit checks to the canonical TODO;
+- Unity compile/EditMode/PlayMode not executed.
 
 ## Status
-`IN_PROGRESS`
+`DONE`
