@@ -46,14 +46,14 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         group.interactable = false;
         group.blocksRaycasts = false;
 
-        objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(24f, -112f), new Vector2(450f, 104f), new Vector2(0f,1f), new Vector2(0f,1f));
-        objectiveIcon = AddIcon(objectiveCard.transform,"ObjectiveIcon",new Vector2(-194f,0f),44,TroyHudArt.Icon("gate"));
+        objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(24f, -112f), new Vector2(450f, 104f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+        objectiveIcon = AddIcon(objectiveCard.transform, "ObjectiveIcon", new Vector2(-194f, 0f), 44, TroyHudArt.Icon("gate"));
         chapterText = AddText(objectiveCard.transform, "", new Vector2(74f, -14f), new Vector2(352f, 22f), 11, new Color(1f, .69f, .23f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         objectiveText = AddText(objectiveCard.transform, "", new Vector2(74f, -38f), new Vector2(352f, 28f), 16, new Color(.96f, .88f, .75f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         progressText = AddText(objectiveCard.transform, "", new Vector2(74f, -72f), new Vector2(352f, 22f), 11, new Color(.77f, .69f, .59f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
 
-        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, -232f), new Vector2(450f, 116f), new Vector2(0f,1f), new Vector2(0f,1f));
-        tutorialIcon = AddIcon(tutorialCard.transform,"TutorialIcon",new Vector2(-190f,0f),48,TroyHudArt.Tower(TowerType.MachineGun));
+        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, -232f), new Vector2(450f, 116f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+        tutorialIcon = AddIcon(tutorialCard.transform, "TutorialIcon", new Vector2(-190f, 0f), 48, TroyHudArt.Tower(TowerType.MachineGun));
         tutorialTitle = AddText(tutorialCard.transform, "", new Vector2(72f, -16f), new Vector2(354f, 22f), 12, new Color(1f, .70f, .24f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         tutorialText = AddText(tutorialCard.transform, "", new Vector2(72f, -43f), new Vector2(354f, 58f), 13, new Color(.93f, .86f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
         tutorialCard.SetActive(false);
@@ -89,26 +89,64 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     {
         chapterText.text = L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА");
 
+        int currentEncounter = EncounterRuntime.CurrentEncounter(spawner);
+        int maxEncounters = Mathf.Max(1, EncounterRuntime.MaxEncounters);
+        bool active = EncounterRuntime.EncounterActive(spawner);
+        bool between = EncounterRuntime.BetweenEncounters(spawner);
+        bool finalEncounter = currentEncounter >= maxEncounters || EncounterRuntime.NextEncounterHasBoss(spawner);
+
         if (gm.BossDefeated)
         {
             objectiveIcon.sprite = TroyHudArt.Icon("gate");
             objectiveText.text = L("OBJECTIVE COMPLETE", "ЦЕЛЬ ВЫПОЛНЕНА");
-            progressText.text = L("Menelaus defeated • clear the battlefield", "Менелай повержен • зачистите поле боя");
+            progressText.text = L("MENELAUS DOWN • CLEAR THE FIELD", "МЕНЕЛАЙ ПОВЕРЖЕН • ЗАЧИСТИТЕ ПОЛЕ");
             return;
         }
 
-        if (spawner != null && (spawner.NextWaveHasBoss || gm.CurrentWave >= gm.MaxWaves))
+        if (finalEncounter)
         {
             objectiveIcon.sprite = TroyHudArt.Portrait("menelaus");
             objectiveText.text = L("FINAL OBJECTIVE • DEFEAT MENELAUS", "ФИНАЛЬНАЯ ЦЕЛЬ • ПОБЕДИТЕ МЕНЕЛАЯ");
-            progressText.text = L("Commander Aura • periodic reinforcements", "Аура командира • периодические подкрепления");
+            progressText.text = L("AURA + REINFORCEMENTS • PROTECT THE GATE", "АУРА + ПОДКРЕПЛЕНИЯ • ЗАЩИТИТЕ ВОРОТА");
             return;
         }
 
         objectiveIcon.sprite = TroyHudArt.Icon("gate");
+
+        if (currentEncounter == 0 && !active)
+        {
+            int seconds = Mathf.Max(0, Mathf.CeilToInt(EncounterRuntime.InterEncounterCountdown(spawner)));
+            objectiveText.text = L("FORTIFY THE LANDING", "УКРЕПИТЕ БЕРЕГ");
+            string attack = seconds > 0
+                ? $"{L("ATTACK", "АТАКА")} {seconds}{L("s", "с")}"
+                : L("ASSAULT FORMING", "ШТУРМ ГОТОВИТСЯ");
+            progressText.text = $"{PatronName(gm)} • {attack} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+            return;
+        }
+
+        if (active)
+        {
+            objectiveText.text = currentEncounter == 1
+                ? L("HOLD THE LANDING", "УДЕРЖИТЕ БЕРЕГ")
+                : L("DEFEND THE GATE", "ЗАЩИТИТЕ ВОРОТА");
+            int resolved = EncounterRuntime.CurrentEncounterResolvedEnemies(spawner);
+            int total = EncounterRuntime.CurrentEncounterTotalEnemies(spawner);
+            progressText.text = $"{L("ENCOUNTER", "БОЙ")} {currentEncounter}/{maxEncounters} • {resolved}/{total} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+            return;
+        }
+
+        if (between)
+        {
+            int nextEncounter = Mathf.Min(currentEncounter + 1, maxEncounters);
+            objectiveText.text = currentEncounter == 1
+                ? L("FIRST ASSAULT REPELLED", "ПЕРВЫЙ ШТУРМ ОТБИТ")
+                : L("REGROUP AND REINFORCE", "ПЕРЕГРУППИРУЙТЕСЬ");
+            progressText.text = $"{L("NEXT", "ДАЛЕЕ")} {nextEncounter}/{maxEncounters} • {EncounterRuntime.NextEncounterEnemyCount(spawner)} {L("ENEMIES", "ВРАГОВ")} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+            return;
+        }
+
         objectiveText.text = L("DEFEND THE GATE", "ЗАЩИТИТЕ ВОРОТА");
-        int wave = Mathf.Clamp(gm.CurrentWave, 0, gm.MaxWaves);
-        progressText.text = $"{L("WAVES", "ВОЛНЫ")} {wave}/{gm.MaxWaves}   •   {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+        progressText.text = $"{L("ENCOUNTER", "БОЙ")} {Mathf.Clamp(currentEncounter, 0, maxEncounters)}/{maxEncounters} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
     }
 
     void UpdateTutorial(GameManager gm)
@@ -120,6 +158,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
             tutorialShownAt = Time.unscaledTime;
             ApplyTutorial(stage);
         }
+
         bool persistent = stage == 0 || stage == 4;
         bool visible = stage >= 0 && (persistent || Time.unscaledTime - tutorialShownAt < 10f);
         tutorialCard.SetActive(visible);
@@ -128,11 +167,23 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     int TutorialStage(GameManager gm)
     {
         if (gm.BossDefeated) return -1;
-        if (gm.TowersBuilt == 0) return 0;
-        if (gm.CurrentWave == 0 && spawner != null && !spawner.WaveActive) return 1;
-        if (gm.CurrentWave == 1 && spawner != null && spawner.WaveActive) return 2;
-        if (gm.CurrentWave >= 2 && gm.CurrentWave < gm.MaxWaves && gm.TowersBuilt > 0) return 3;
-        if (spawner != null && spawner.NextWaveHasBoss) return 4;
+
+        int currentEncounter = EncounterRuntime.CurrentEncounter(spawner);
+        int maxEncounters = Mathf.Max(1, EncounterRuntime.MaxEncounters);
+        bool active = EncounterRuntime.EncounterActive(spawner);
+
+        if (EncounterRuntime.NextEncounterHasBoss(spawner) || currentEncounter >= maxEncounters)
+            return 4;
+        if (gm.TowersBuilt == 0)
+            return 0;
+        if (currentEncounter == 0 && spawner != null && !active)
+            return 1;
+        if (currentEncounter == 1 && active)
+            return 2;
+        if (currentEncounter == 1 && EncounterRuntime.BetweenEncounters(spawner))
+            return 5;
+        if (currentEncounter >= 2 && currentEncounter < maxEncounters && gm.TowersBuilt > 0)
+            return 3;
         return -1;
     }
 
@@ -141,33 +192,52 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         switch (stage)
         {
             case 0:
-                tutorialIcon.sprite=TroyHudArt.Tower(TowerType.MachineGun);
-                tutorialTitle.text=L("FIRST DEFENSE","ПЕРВАЯ ОБОРОНА");
-                tutorialText.text=L("Choose 1–6, hover for counters, then click a build point.","Выберите 1–6, наведите для контрмер и нажмите точку строительства.");
+                tutorialIcon.sprite = TroyHudArt.Tower(TowerType.MachineGun);
+                tutorialTitle.text = L("FIRST DEFENSE", "ПЕРВАЯ ОБОРОНА");
+                tutorialText.text = L("Choose 1–6, inspect counters, then place your first defense on a build point.", "Выберите 1–6, изучите контрмеры и поставьте первую оборону на точке строительства.");
                 break;
             case 1:
-                tutorialIcon.sprite=TroyHudArt.Icon("enemy");
-                tutorialTitle.text=L("PREPARE THE LANDING","ПОДГОТОВЬТЕСЬ К ВЫСАДКЕ");
-                tutorialText.text=L("Read the next wave, build counters, then START WAVE.","Изучите следующую волну, постройте контрмеры и запустите её.");
+                tutorialIcon.sprite = TroyHudArt.Icon("enemy");
+                tutorialTitle.text = L("PREPARE THE SHORE", "ПОДГОТОВЬТЕ БЕРЕГ");
+                tutorialText.text = L("Read the enemy roster and deploy counters. The first assault begins when preparation ends.", "Изучите состав врага и расставьте контрмеры. Первый штурм начнётся после подготовки.");
                 break;
             case 2:
-                tutorialIcon.sprite=TroyHudArt.Portrait("hector");
-                tutorialTitle.text=L("COMMAND HECTOR","УПРАВЛЕНИЕ ГЕКТОРОМ");
-                tutorialText.text=L("LMB Hector to select • RMB ground to move • Q/E/R/F or click HUD abilities.","ЛКМ по Гектору — выбрать • ПКМ по земле — идти • Q/E/R/F или кнопки в HUD.");
+                tutorialIcon.sprite = TroyHudArt.Portrait("hector");
+                tutorialTitle.text = L("COMMAND HECTOR", "УПРАВЛЕНИЕ ГЕКТОРОМ");
+                tutorialText.text = L("LMB Hector to select • RMB road to move • Q/E/R/F or use the HUD abilities.", "ЛКМ по Гектору — выбрать • ПКМ по дороге — идти • Q/E/R/F или способности в HUD.");
                 break;
             case 3:
-                tutorialIcon.sprite=TroyHudArt.Tower(TowerType.Cannon);
-                tutorialTitle.text=L("ADAPT THE DEFENSE","АДАПТИРУЙТЕ ОБОРОНУ");
-                tutorialText.text=L("Select deployed units to upgrade, sell or change target priority.","Выбирайте оборону: улучшайте, продавайте и меняйте приоритет целей.");
+                tutorialIcon.sprite = TroyHudArt.Tower(TowerType.Cannon);
+                tutorialTitle.text = L("ADAPT THE DEFENSE", "АДАПТИРУЙТЕ ОБОРОНУ");
+                tutorialText.text = L("Upgrade, sell and change target priority as the Greek assault changes.", "Улучшайте, продавайте и меняйте приоритет целей по мере изменения греческого штурма.");
                 break;
             case 4:
-                tutorialIcon.sprite=TroyHudArt.Portrait("menelaus");
-                tutorialTitle.text=L("BOSS • MENELAUS","БОСС • МЕНЕЛАЙ");
-                tutorialText.text=L("Aura buffs nearby Greeks. Focus Ballista/Spears and control his escort.","Аура усиливает греков рядом. Фокусируйте баллисты/копья и контролируйте сопровождение.");
+                tutorialIcon.sprite = TroyHudArt.Portrait("menelaus");
+                tutorialTitle.text = L("BOSS • MENELAUS", "БОСС • МЕНЕЛАЙ");
+                tutorialText.text = L("His aura strengthens nearby Greeks. Control the escort and focus your strongest anti-heavy defenses.", "Его аура усиливает греков рядом. Сдерживайте сопровождение и сфокусируйте сильнейшую тяжёлую оборону.");
+                break;
+            case 5:
+                tutorialIcon.sprite = TroyHudArt.Icon("gate");
+                tutorialTitle.text = L("THE FIRST LINE HOLDS", "ПЕРВАЯ АТАКА ОТБИТА");
+                tutorialText.text = L("Use the lull to reinforce weak routes and inspect the next enemy group before battle two.", "Используйте передышку: усилите слабые дороги и изучите следующую группу врагов перед вторым боем.");
                 break;
             default:
                 tutorialCard.SetActive(false);
                 break;
+        }
+    }
+
+    string PatronName(GameManager gm)
+    {
+        if (!gm.GiftSelected) return L("NO PATRON", "НЕТ ПОКРОВИТЕЛЯ");
+
+        switch (gm.SelectedGift)
+        {
+            case DivineGiftType.Ares: return L("ARES", "АРЕС");
+            case DivineGiftType.Athena: return L("ATHENA", "АФИНА");
+            case DivineGiftType.Apollo: return L("APOLLO", "АПОЛЛОН");
+            case DivineGiftType.Poseidon: return L("POSEIDON", "ПОСЕЙДОН");
+            default: return L("PATRON", "ПОКРОВИТЕЛЬ");
         }
     }
 
@@ -192,20 +262,20 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
 
     GameObject Panel(Transform parent, string name, Vector2 pos, Vector2 size, Vector2 anchor, Vector2 pivot)
     {
-        GameObject go = new GameObject(name); go.transform.SetParent(parent,false);
-        Image image = go.AddComponent<Image>(); image.sprite=TroyHudArt.Panel(); image.type=Image.Type.Sliced; image.color=Color.white; image.raycastTarget=false;
-        RectTransform rt=image.rectTransform; rt.anchorMin=rt.anchorMax=anchor; rt.pivot=pivot; rt.anchoredPosition=pos; rt.sizeDelta=size; return go;
+        GameObject go = new GameObject(name); go.transform.SetParent(parent, false);
+        Image image = go.AddComponent<Image>(); image.sprite = TroyHudArt.Panel(); image.type = Image.Type.Sliced; image.color = Color.white; image.raycastTarget = false;
+        RectTransform rt = image.rectTransform; rt.anchorMin = rt.anchorMax = anchor; rt.pivot = pivot; rt.anchoredPosition = pos; rt.sizeDelta = size; return go;
     }
 
-    Image AddIcon(Transform parent,string name,Vector2 pos,float size,Sprite sprite)
+    Image AddIcon(Transform parent, string name, Vector2 pos, float size, Sprite sprite)
     {
-        GameObject go=new GameObject(name); go.transform.SetParent(parent,false); Image image=go.AddComponent<Image>(); image.sprite=sprite; image.raycastTarget=false; RectTransform rt=image.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(size,size); return image;
+        GameObject go = new GameObject(name); go.transform.SetParent(parent, false); Image image = go.AddComponent<Image>(); image.sprite = sprite; image.raycastTarget = false; RectTransform rt = image.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f); rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(size, size); return image;
     }
 
     Text AddText(Transform parent, string value, Vector2 pos, Vector2 size, int fontSize, Color color, TextAnchor alignment, FontStyle style, Vector2 anchor)
     {
-        GameObject go = new GameObject("Text"); go.transform.SetParent(parent,false);
-        Text text=go.AddComponent<Text>(); text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.text=value; text.fontSize=fontSize; text.color=color; text.alignment=alignment; text.fontStyle=style; text.horizontalOverflow=HorizontalWrapMode.Wrap; text.verticalOverflow=VerticalWrapMode.Truncate; text.raycastTarget=false;
-        RectTransform rt=text.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=anchor; rt.anchoredPosition=pos; rt.sizeDelta=size; return text;
+        GameObject go = new GameObject("Text"); go.transform.SetParent(parent, false);
+        Text text = go.AddComponent<Text>(); text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.text = value; text.fontSize = fontSize; text.color = color; text.alignment = alignment; text.fontStyle = style; text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate; text.raycastTarget = false;
+        RectTransform rt = text.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = anchor; rt.anchoredPosition = pos; rt.sizeDelta = size; return text;
     }
 }
