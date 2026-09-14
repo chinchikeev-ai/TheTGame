@@ -24,6 +24,7 @@ public class LocalizationContractTests
         Assert.AreEqual("ТЯЖЁЛЫЙ ГОПЛИТ", CombatUiLabels.ArchetypeLabel(EnemyArchetype.HeavyHoplite));
         Assert.AreEqual("ЩИТОНОСЕЦ", CombatUiLabels.ArchetypeLabel(EnemyArchetype.ShieldBearer));
         Assert.AreEqual("МЕНЕЛАЙ", CombatUiLabels.EnemyName(EnemyArchetype.Boss));
+        Assert.AreEqual("МЕНЕЛАЙ", CombatHudEncounterFormatter.BossLabel("Menelaus"));
         Assert.AreEqual("СИЛЬНЕЙШИЙ", CombatHudTowerCatalog.TargetPriorityLabel(TargetPriority.Strongest));
         StringAssert.Contains("ДАЛЬНИЙ", CombatHudTowerCatalog.TowerTags(TowerType.MachineGun));
         Assert.AreEqual("ЛЕГЕНДАРНАЯ", DifficultyRules.Label(CampaignDifficulty.Legendary));
@@ -36,6 +37,7 @@ public class LocalizationContractTests
 
         Assert.AreEqual("HEAVY HOPLITE", CombatUiLabels.ArchetypeLabel(EnemyArchetype.HeavyHoplite));
         Assert.AreEqual("MENELAUS", CombatUiLabels.EnemyName(EnemyArchetype.Boss));
+        Assert.AreEqual("MENELAUS", CombatHudEncounterFormatter.BossLabel("Menelaus"));
         Assert.AreEqual("STRONGEST", CombatHudTowerCatalog.TargetPriorityLabel(TargetPriority.Strongest));
         StringAssert.Contains("RANGED", CombatHudTowerCatalog.TowerTags(TowerType.MachineGun));
         Assert.AreEqual("LEGENDARY", DifficultyRules.Label(CampaignDifficulty.Legendary));

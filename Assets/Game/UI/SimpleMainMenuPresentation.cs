@@ -86,8 +86,9 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
             new Vector2(600f, 620f),
             new Color(.045f, .020f, .009f, .97f));
 
+        // Product title is intentionally language-neutral branding.
         AddText(panel.transform, "THE TROY GAME", new Vector2(0f, 235f), new Vector2(540f, 72f), 44, FontStyle.Bold, new Color(1f, .66f, .16f, 1f));
-        AddText(panel.transform, "GODS DEFENSE", new Vector2(0f, 190f), new Vector2(500f, 38f), 18, FontStyle.Bold, new Color(.86f, .70f, .48f, 1f));
+        AddText(panel.transform, L("GODS DEFENSE", "ЗАЩИТА БОГОВ"), new Vector2(0f, 190f), new Vector2(500f, 38f), 18, FontStyle.Bold, new Color(.86f, .70f, .48f, 1f));
         MakeLine(panel.transform, new Vector2(0f, 153f), 455f);
 
         MakeButton(panel.transform, L("PLAY", "ИГРАТЬ"), new Vector2(0f, 80f), new Vector2(500f, 92f), () => InvokeController("ShowLevels"), true, 29);
@@ -200,7 +201,7 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
                 armyTitle.text = L("HECTOR • PRINCE OF TROY", "ГЕКТОР • ПРИНЦ ТРОИ");
                 armyBody.text = L(
                     "FRONT-LINE HERO • MOBILE COMMANDER\n\nQ  WAR CRY\nE  SHIELD WALL\nR  SPEAR THROW\nF  ULTIMATE\n\nMove Hector with RMB along battlefield roads. He attacks nearby enemies automatically and returns to battle after being downed.",
-                    "ГЕРОЙ ПЕРЕДОВОЙ • МОБИЛЬНЫЙ КОМАНДИР\n\nQ  БОЕВОЙ КЛИЧ\nE  СТЕНА ЩИТОВ\nR  БРОСОК КОПЬЯ\nF  УЛЬТИМЕЙТ\n\nПеремещайте Гектора ПКМ по дорогам поля боя. Он автоматически атакует ближайших врагов и возвращается в бой после падения.");
+                    "ГЕРОЙ ПЕРЕДОВОЙ • МОБИЛЬНЫЙ КОМАНДИР\n\nQ  БОЕВОЙ КЛИЧ\nE  СТЕНА ЩИТОВ\nR  БРОСОК КОПЬЯ\nF  ГЛАВНАЯ СПОСОБНОСТЬ\n\nПеремещайте Гектора ПКМ по дорогам поля боя. Он автоматически атакует ближайших врагов и возвращается в бой после падения.");
                 break;
 
             case 1:
@@ -214,7 +215,7 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
                 armyTitle.text = L("KNOWN ENEMIES", "ИЗВЕСТНЫЕ ВРАГИ");
                 armyBody.text = L(
                     "GREEK INFANTRY\nRUNNERS\nHEAVY HOPLITES\nSHIELD BEARERS\nARCHERS\nBATTERING RAM\nMENELAUS\n\nClick an enemy during battle to inspect its current HP, speed, armor, arrow resistance, gate damage and reward.",
-                    "ГРЕЧЕСКАЯ ПЕХОТА\nБЕГУНЫ\nТЯЖЁЛЫЕ ГОПЛИТЫ\nЩИТОНОСЦЫ\nЛУЧНИКИ\nТАРАН\nМЕНЕЛАЙ\n\nНажмите на врага во время боя, чтобы увидеть его HP, скорость, броню, защиту от стрел, урон воротам и награду.");
+                    "ГРЕЧЕСКАЯ ПЕХОТА\nБЕГУНЫ\nТЯЖЁЛЫЕ ГОПЛИТЫ\nЩИТОНОСЦЫ\nЛУЧНИКИ\nТАРАН\nМЕНЕЛАЙ\n\nНажмите на врага во время боя, чтобы увидеть его здоровье, скорость, броню, защиту от стрел, урон воротам и награду.");
                 break;
         }
     }

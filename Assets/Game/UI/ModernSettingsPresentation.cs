@@ -250,7 +250,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void BuildControls()
     {
         SetHeader(L("CONTROLS", "УПРАВЛЕНИЕ"), L("PC keyboard and mouse controls.", "Управление на ПК: клавиатура и мышь."));
-        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), "WASD / ARROWS", 130);
+        MakeControlRow(L("CAMERA MOVE", "КАМЕРА"), L("WASD / ARROWS", "WASD / СТРЕЛКИ"), 130);
         MakeControlRow(L("SELECT / BUILD", "ВЫБОР / СТРОИТЕЛЬСТВО"), L("LEFT MOUSE BUTTON", "ЛЕВАЯ КНОПКА МЫШИ"), 70);
         MakeControlRow(L("HECTOR MOVE", "ДВИЖЕНИЕ ГЕКТОРА"), L("RIGHT MOUSE BUTTON", "ПРАВАЯ КНОПКА МЫШИ"), 10);
         MakeControlRow(L("ZOOM", "МАСШТАБ"), L("MOUSE WHEEL", "КОЛЕСО МЫШИ"), -50);
@@ -288,7 +288,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
     void ToggleLanguage() { if(menu!=null) menu.SendMessage("ToggleLanguage",SendMessageOptions.DontRequireReceiver); built=false; StartCoroutine(RebindAfterLanguage()); }
     IEnumerator RebindAfterLanguage(){ yield return null; yield return null; Bind(); }
     string ResolutionLabel(){ Vector2 r=Resolutions[Mathf.Clamp(resolutionIndex,0,Resolutions.Length-1)]; return $"{(int)r.x} × {(int)r.y}"; }
-    string QualityLabel(){ string[] n=QualitySettings.names; return n.Length>0?n[Mathf.Clamp(QualitySettings.GetQualityLevel(),0,n.Length-1)]:"Default"; }
+    string QualityLabel(){ string[] n=QualitySettings.names; int index=Mathf.Clamp(QualitySettings.GetQualityLevel(),0,Mathf.Max(0,n.Length-1)); if(n.Length==0) return L("Default","ПО УМОЛЧАНИЮ"); return GameLanguage.Russian ? $"УРОВЕНЬ {index+1}" : n[index]; }
 
     void FindResolution(){ float best=float.MaxValue; for(int i=0;i<Resolutions.Length;i++){ float d=Mathf.Abs(Resolutions[i].x-GameUserSettings.ResolutionWidth)+Mathf.Abs(Resolutions[i].y-GameUserSettings.ResolutionHeight); if(d<best){best=d;resolutionIndex=i;}} }
     void FindFps(){ fpsIndex=1; for(int i=0;i<FpsOptions.Length;i++) if(FpsOptions[i]==GameUserSettings.FpsLimit){fpsIndex=i;break;} }
