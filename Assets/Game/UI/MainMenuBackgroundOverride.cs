@@ -3,6 +3,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class MainMenuBackgroundOverride : MonoBehaviour
@@ -15,15 +16,41 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
     GameObject appliedMainMenu;
     GameMenuController controller;
-    GameObject toast;
-    Text toastText;
     Texture2D approvedTexture;
+
+    GameObject featureOverlay;
+    Text featureTitle;
+    Text featureBody;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoStart()
     {
         if (FindFirstObjectByType<MainMenuBackgroundOverride>() == null)
             new GameObject("ApprovedMainMenuPresenter").AddComponent<MainMenuBackgroundOverride>();
+    }
+
+    void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ClearRuntimeSprites();
+        appliedMainMenu = null;
+        controller = null;
+        featureOverlay = null;
+        featureTitle = null;
+        featureBody = null;
+        approvedTexture = null;
+        RuntimeFileLogger.Event("MENU", $"Approved main-menu presenter rebound after scene load: {scene.name}");
+    }
+
+    void Update()
+    {
+        if (featureOverlay != null && featureOverlay.activeSelf && GameInput.PausePressed())
+            HideFeature();
     }
 
     void LateUpdate()
@@ -41,7 +68,7 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
         BuildApprovedMenu(mainMenu);
         appliedMainMenu = mainMenu.gameObject;
-        RuntimeFileLogger.Event("MENU", "Applied approved main-menu art with animated button feedback");
+        RuntimeFileLogger.Event("MENU", "Applied approved main-menu art with stable navigation lifecycle");
     }
 
     void BuildApprovedMenu(Transform mainMenu)
@@ -56,14 +83,14 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         BuildApprovedArt(root.transform);
 
         CreateAnimatedButton(root.transform, "PLAY", new Vector2(437f, 286f), new Vector2(548f, 203f), () => InvokeController("ShowLevels"), .24f);
-        CreateAnimatedButton(root.transform, "HEROES", new Vector2(454f, 127f), new Vector2(457f, 116f), () => ShowComingSoon("HEROES"), .16f);
-        CreateAnimatedButton(root.transform, "TOWERS", new Vector2(454f, 8f), new Vector2(457f, 112f), () => ShowComingSoon("TOWERS"), .16f);
-        CreateAnimatedButton(root.transform, "UPGRADES", new Vector2(454f, -106f), new Vector2(457f, 110f), () => ShowComingSoon("UPGRADES"), .16f);
-        CreateAnimatedButton(root.transform, "SHOP", new Vector2(454f, -217f), new Vector2(457f, 106f), () => ShowComingSoon("SHOP"), .16f);
+        CreateAnimatedButton(root.transform, "HEROES", new Vector2(454f, 127f), new Vector2(457f, 116f), () => ShowFeature("HEROES"), .16f);
+        CreateAnimatedButton(root.transform, "TOWERS", new Vector2(454f, 8f), new Vector2(457f, 112f), () => ShowFeature("TOWERS"), .16f);
+        CreateAnimatedButton(root.transform, "UPGRADES", new Vector2(454f, -106f), new Vector2(457f, 110f), () => ShowFeature("UPGRADES"), .16f);
+        CreateAnimatedButton(root.transform, "SHOP", new Vector2(454f, -217f), new Vector2(457f, 106f), () => ShowFeature("SHOP"), .16f);
         CreateAnimatedButton(root.transform, "SETTINGS", new Vector2(861f, 473f), new Vector2(104f, 100f), () => InvokeController("ShowSettingsFromMain"), .20f);
         CreateAnimatedButton(root.transform, "EXIT", new Vector2(791f, -469f), new Vector2(208f, 118f), () => InvokeController("QuitGame"), .18f);
 
-        BuildToast(root.transform);
+        BuildFeatureOverlay(root.transform);
     }
 
     void BuildApprovedArt(Transform parent)
@@ -181,48 +208,101 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         return sprite;
     }
 
-    void BuildToast(Transform parent)
+    void BuildFeatureOverlay(Transform parent)
     {
-        toast = new GameObject("ComingSoonToast");
-        toast.transform.SetParent(parent, false);
-        Image image = toast.AddComponent<Image>();
-        image.color = new Color(.11f, .04f, .012f, .95f);
-        image.raycastTarget = false;
+        featureOverlay = new GameObject("FeatureOverlay");
+        featureOverlay.transform.SetParent(parent, false);
+
+        Image blocker = featureOverlay.AddComponent<Image>();
+        blocker.color = new Color(.025f, .012f, .006f, .96f);
+        blocker.raycastTarget = true;
+        Stretch(blocker.rectTransform);
+
+        GameObject panel = new GameObject("FeatureCard");
+        panel.transform.SetParent(featureOverlay.transform, false);
+        Image panelImage = panel.AddComponent<Image>();
+        panelImage.color = new Color(.10f, .045f, .018f, .98f);
+        panelImage.raycastTarget = false;
+
+        RectTransform panelRect = panelImage.rectTransform;
+        panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(.5f, .5f);
+        panelRect.sizeDelta = new Vector2(760f, 430f);
+
+        Outline outline = panel.AddComponent<Outline>();
+        outline.effectColor = new Color(.95f, .54f, .14f, .85f);
+        outline.effectDistance = new Vector2(3f, -3f);
+
+        featureTitle = AddOverlayText(panel.transform, "", new Vector2(0f, 105f), new Vector2(620f, 80f), 44, FontStyle.Bold, new Color(1f, .68f, .18f, 1f));
+        featureBody = AddOverlayText(panel.transform, "", new Vector2(0f, 20f), new Vector2(620f, 110f), 20, FontStyle.Normal, new Color(.90f, .80f, .66f, 1f));
+
+        CreateOverlayButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0f, -125f), HideFeature);
+        featureOverlay.SetActive(false);
+    }
+
+    Text AddOverlayText(Transform parent, string value, Vector2 position, Vector2 size, int fontSize, FontStyle style, Color color)
+    {
+        GameObject go = new GameObject("Text");
+        go.transform.SetParent(parent, false);
+
+        Text text = go.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.text = value;
+        text.fontSize = fontSize;
+        text.fontStyle = style;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.color = color;
+        text.raycastTarget = false;
+
+        RectTransform rect = text.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        return text;
+    }
+
+    void CreateOverlayButton(Transform parent, string label, Vector2 position, UnityAction action)
+    {
+        GameObject go = new GameObject("BackButton");
+        go.transform.SetParent(parent, false);
+
+        Image image = go.AddComponent<Image>();
+        image.color = new Color(.65f, .16f, .045f, 1f);
 
         RectTransform rect = image.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-        rect.anchoredPosition = new Vector2(270f, -405f);
-        rect.sizeDelta = new Vector2(500f, 64f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = new Vector2(280f, 66f);
 
-        Outline outline = toast.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, .58f, .15f, .9f);
-        outline.effectDistance = new Vector2(2f, -2f);
+        Outline outline = go.AddComponent<Outline>();
+        outline.effectColor = new Color(1f, .62f, .16f, .95f);
+        outline.effectDistance = new Vector2(3f, -3f);
 
-        GameObject textObject = new GameObject("Text");
-        textObject.transform.SetParent(toast.transform, false);
-        toastText = textObject.AddComponent<Text>();
-        toastText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        toastText.fontSize = 19;
-        toastText.fontStyle = FontStyle.Bold;
-        toastText.alignment = TextAnchor.MiddleCenter;
-        toastText.color = new Color(1f, .88f, .56f, 1f);
-        toastText.raycastTarget = false;
-        Stretch(toastText.rectTransform);
-        toast.SetActive(false);
+        Button button = go.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(action);
+        go.AddComponent<MenuButtonFeedback>();
+
+        Text labelText = AddOverlayText(go.transform, label, Vector2.zero, new Vector2(260f, 58f), 24, FontStyle.Bold, Color.white);
+        labelText.raycastTarget = false;
     }
 
-    void ShowComingSoon(string feature)
+    void ShowFeature(string feature)
     {
-        if (toast == null || toastText == null) return;
-        toastText.text = GameLanguage.T(feature + " - IN DEVELOPMENT", feature + " - В РАЗРАБОТКЕ");
-        toast.SetActive(true);
-        CancelInvoke(nameof(HideToast));
-        Invoke(nameof(HideToast), 1.5f);
+        if (featureOverlay == null || featureTitle == null || featureBody == null) return;
+
+        featureTitle.text = feature;
+        featureBody.text = GameLanguage.T(
+            "This section is prepared for a later production pass.",
+            "Этот раздел будет подключён на следующем этапе разработки.");
+        featureOverlay.SetActive(true);
+        RuntimeFileLogger.Event("MENU", $"Opened main-menu section: {feature}");
     }
 
-    void HideToast()
+    void HideFeature()
     {
-        if (toast != null) toast.SetActive(false);
+        if (featureOverlay == null) return;
+        featureOverlay.SetActive(false);
+        RuntimeFileLogger.Event("MENU", "Returned from main-menu section to approved main menu");
     }
 
     void InvokeController(string methodName)
@@ -243,6 +323,16 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         method.Invoke(controller, null);
     }
 
+    void ClearRuntimeSprites()
+    {
+        for (int i = 0; i < runtimeButtonSprites.Count; i++)
+        {
+            if (runtimeButtonSprites[i] != null)
+                Destroy(runtimeButtonSprites[i]);
+        }
+        runtimeButtonSprites.Clear();
+    }
+
     static void Stretch(RectTransform rect)
     {
         rect.anchorMin = Vector2.zero;
@@ -253,12 +343,8 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
     void OnDestroy()
     {
-        for (int i = 0; i < runtimeButtonSprites.Count; i++)
-        {
-            if (runtimeButtonSprites[i] != null)
-                Destroy(runtimeButtonSprites[i]);
-        }
-        runtimeButtonSprites.Clear();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        ClearRuntimeSprites();
     }
 }
 
