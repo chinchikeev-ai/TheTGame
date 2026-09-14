@@ -34,6 +34,7 @@ public class GameBootstrap : MonoBehaviour
         EnsureComponent<CampaignMapPresentation>("CampaignMapPresentation");
         EnsureComponent<MainMenuAmbientPresentation>("MainMenuAmbientPresentation");
         EnsureComponent<ModernSettingsPresentation>("ModernSettingsPresentation");
+        EnsureComponent<GameScreenshotController>("GameScreenshotController");
 
         RuntimeFileLogger.Event(
             "BOOT",
