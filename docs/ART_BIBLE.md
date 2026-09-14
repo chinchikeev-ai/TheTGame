@@ -481,28 +481,228 @@ Gameplay timing, hit windows and telegraphs remain authoritative. Animation may 
 
 ## 14. UI direction
 
-UI belongs to the same world as the battlefield.
+UI belongs to the same world as the battlefield. It must feel like a **painted Bronze Age cartoon command frame**, not a neutral software overlay.
+
+The approved combat-HUD direction is a perimeter-based composition that frames the battlefield while leaving the tactical center readable. Permanent information belongs around the edges; only encounter/boss information may occupy the upper center.
+
+### 14.1 Visual language
 
 Use:
 
-- dark stone/charcoal panels;
-- bronze/gold framing;
-- Trojan red primary action accents;
-- clear spacing and grid hierarchy;
-- readable icon silhouettes;
-- restrained fire/ember accents;
-- minimal visual noise during combat.
+- dark warm stone / charcoal / dark-brown panel bodies;
+- bronze and selective gold framing;
+- Trojan red cloth, ribbons and primary-action accents;
+- parchment only for advice/information panels that should read as a field note;
+- sculpted shield, column, spear, laurel, banner and fortress motifs;
+- bold illustrated icons rather than thin software glyphs;
+- warm highlights and restrained fire/ember accents;
+- exaggerated but readable cartoon bevels, shadows and silhouettes;
+- clear separation between frame, content and interactive state.
 
-Combat HUD priorities:
+The HUD should look hand-authored and theatrical, but **never obscure the battle to prove that it is decorative**.
 
-- economy/gate readable quickly;
-- encounter/boss state readable centrally;
-- build controls compact;
-- selected-unit controls clearly separated;
-- RU/EN text fits the same containers;
-- no duplicate information competing for attention.
+Avoid:
 
-Avoid plain prototype blue panels and decorative clutter that reduces tactical readability.
+- plain prototype rectangles;
+- generic blue sci-fi panels;
+- flat modern-mobile cards with no world language;
+- excessive gradients or glassmorphism;
+- tiny gray text;
+- decorative elements that compete with enemies, projectiles or placement circles;
+- large opaque blocks over the center of the battlefield.
+
+### 14.2 Combat HUD layout contract
+
+The canonical combat HUD uses the following screen zones.
+
+**Top-left — economy and utility cluster**
+
+- Gold is the first and most immediate value.
+- **Speed control and Settings sit directly to the right of Gold in the same horizontal utility cluster.**
+- Speed must show its active value (`1x`, `2x`, etc.) without opening a menu.
+- Settings is a compact gear/control button, not a separate large panel.
+- Gate/Fortress health sits below this cluster and is visually heavier than the utility buttons.
+- Gold, speed and settings must not be scattered into different screen corners.
+
+**Top-center — encounter state**
+
+- Encounter number/progress and timer occupy the strongest top-center banner.
+- Remaining enemies / next pressure message sits inside or directly under the same banner.
+- A boss banner/health bar appears directly below the encounter banner when a boss is active.
+- Boss name, portrait, title/role, HP and key mechanics belong to one coherent boss block.
+- Boss information must not be duplicated in another permanent panel.
+
+**Upper corners — Patron God presence**
+
+- Patron Gods are presented as illustrated characters integrated into the screen corner, not as neutral front-facing ID cards.
+- A god must **look diagonally inward toward the battlefield center**.
+- The body/head/frame may be slightly rotated or perspective-skewed so the character feels as if they are watching the battle from the edge of the screen.
+- Top-right gods look down-left/inward; a mirrored top-left god would look down-right/inward.
+- Favor a three-quarter face/body angle over a passport-style frontal portrait.
+- The outer edge of the frame may be cropped by the screen edge to make the god feel embedded in the HUD.
+- Divine readiness, patron name and one short state line may be integrated into this corner composition.
+- Divine glow/rays must stay close to the corner and must not wash out the tactical center.
+
+**Left-middle — contextual advice**
+
+- Battle advice, boss hint or tutorial note may appear below the gate block.
+- This panel is temporary/contextual, not a permanent wall of text.
+- Parchment treatment is preferred for advice.
+- Keep the advice away from the primary enemy lane whenever possible.
+
+**Bottom-left — Hector / hero state**
+
+- Hector gets a strong illustrated portrait and compact status panel.
+- Show only information that affects immediate decisions: availability/downed state, HP or respawn state, and critical ability state when needed.
+- When Hector is downed, the failure state must be unmistakable at a glance.
+- Flavor text may appear as a short one-line quote, but it must not compete with status information.
+
+**Bottom-center — defender deployment strip**
+
+- The defender/build strip is the main tactical selection bar.
+- Unit cards use large role icons/portraits, hotkey number, name and gold cost.
+- Selected defender gets a strong gold/orange glow and raised/active treatment.
+- Unaffordable/locked choices must be readable without becoming visually louder than the selected choice.
+- The strip should feel like a Trojan command dais: stone/bronze structure, red cloth accents, readable card divisions.
+- The strip may collapse or reduce itself when no build interaction is needed if that improves battlefield visibility.
+
+**Bottom-right — Magic and Defenders entry controls**
+
+- The lower-right corner is reserved for two major action openers: **MAGIC** and **DEFENDERS**.
+- These are large, high-recognition illustrated buttons with strong silhouettes.
+- `MAGIC` opens divine/magic abilities; `DEFENDERS` opens or focuses the defender deployment/build interface.
+- Their iconography must be recognizable before text: divine/sun/fire/lightning language for magic; shield/helmet/formation language for defenders.
+- Ready/cooldown/locked states must be visible directly on these controls.
+- Do not place Speed or Settings in this corner; they belong beside Gold.
+
+### 14.3 Battlefield visibility rule
+
+The HUD frames the fight; it does not sit on top of it.
+
+- Keep the central tactical area visually open.
+- Permanent HUD should hug edges and corners.
+- The only persistent element allowed to project meaningfully into the upper central field is encounter/boss information.
+- Avoid covering the center of build circles, hero movement space, main lanes or boss telegraphs.
+- Contextual panels should disappear when their information is no longer needed.
+- If two HUD blocks compete for the same space, the lower-priority block must collapse, move or hide.
+
+Player attention order during combat:
+
+1. battlefield threats and placement;
+2. boss/encounter state;
+3. gate survival;
+4. gold and available actions;
+5. defender selection;
+6. Hector state;
+7. patron-god/magic readiness;
+8. advice/flavor text.
+
+### 14.4 Color and state language
+
+Canonical state language:
+
+- **Trojan red / dark red:** primary action framing, danger, damage pressure, important hostile state;
+- **gold / bronze / warm orange:** selected, active, important, interactable, premium visual focus;
+- **pale parchment / warm cream:** readable informational text surface;
+- **green:** reserved for clear positive readiness/confirmation such as a ready Divine Power; use sparingly;
+- **desaturated gray/brown:** unavailable, locked, cooldown or secondary state;
+- **Greek blue/cool accents:** enemy/faction context only when useful, not as the generic HUD color.
+
+Never use color alone for a critical state. Pair color with icon, label, fill level, shape or animation.
+
+### 14.5 Typography
+
+- Use bold, compact, high-readability display text for major labels.
+- Major combat labels may be uppercase.
+- Numbers that change rapidly must be larger and cleaner than surrounding prose.
+- Avoid long sentences in permanent combat HUD.
+- Russian and English must fit the **same containers** without shrinking to unreadable sizes.
+- If RU copy is longer, rewrite the copy before reducing font size aggressively.
+- Boss names, encounter numbers, gold, gate HP and hotkeys must remain readable at `1366×768`.
+
+### 14.6 Interaction and motion
+
+HUD motion should feel responsive and game-like, not like a website.
+
+Recommended button feedback:
+
+- hover: approximately `1.04–1.06x` scale plus warm highlight;
+- pointer/key press: approximately `0.92x` compression;
+- release: short overshoot around `1.08x`, then settle;
+- use unscaled time so feedback still works while the game is paused.
+
+Use stronger motion for important state changes:
+
+- boss arrival;
+- Divine Power becoming ready;
+- Hector being downed/returning;
+- gate entering danger state;
+- newly unlocked defender/magic action.
+
+Do not make every HUD element pulse continuously. Constant movement destroys hierarchy.
+
+Patron Gods may use very subtle idle life — breathing, cloth/hair movement, light flicker or a tiny inward lean — but must remain anchored to their corner.
+
+### 14.7 Icon and portrait rules
+
+- Important portraits must use the same cartoon character language as the rest of the game.
+- Portrait crops should preserve helmet/crest/hair/weapon cues that identify the character.
+- Gods and heroes should feel like illustrated personalities, not circular inventory thumbnails.
+- Unit cards should prioritize the role-defining prop/silhouette over facial detail.
+- Magic icons should be bold emblem shapes that remain readable at small size.
+- Avoid mixing unrelated icon styles (flat line icons beside painted cartoon portraits, for example).
+
+### 14.8 Responsive layout and safe areas
+
+Primary HUD composition is authored against **1920×1080, 16:9** and must be validated at **1366/1376×768**.
+
+Rules:
+
+- anchor edge UI to actual screen edges/safe areas, not absolute scene positions;
+- preserve the relative zone contract when resolution changes;
+- top-left utility cluster stays together;
+- top-center encounter/boss block stays centered;
+- Patron God remains attached to the assigned corner and still looks inward;
+- bottom-center deployment strip remains centered;
+- Magic/Defenders remain bottom-right;
+- Hector remains bottom-left;
+- never solve lower resolution by uniformly shrinking all text until it becomes unreadable;
+- collapse optional decoration before shrinking critical interaction targets.
+
+### 14.9 HUD information discipline
+
+Each fact has one primary home.
+
+- Gold: top-left only.
+- Speed/Settings: immediately right of Gold.
+- Gate health: top-left gate block.
+- Encounter/timer: top-center.
+- Boss HP/mechanics: central boss block.
+- Hector status: bottom-left.
+- Defender selection/cost: bottom-center deployment strip.
+- Patron Divine Power state: Patron God corner and/or Magic panel, but do not duplicate full descriptions in both places.
+- Magic/Defenders entry points: bottom-right.
+
+Duplicate critical warnings are allowed only temporarily when a short-lived alert is needed.
+
+### 14.10 Combat HUD acceptance checklist
+
+A HUD revision is directionally acceptable only when all of the following are true:
+
+1. the battlefield remains the largest visual area;
+2. the player can find Gold, Gate HP, encounter/timer and current defender in under one second;
+3. Speed and Settings are directly to the right of Gold;
+4. Magic and Defenders openers are in the bottom-right;
+5. Patron God art is corner-anchored and visibly angled/looking toward the map center;
+6. boss information is centralized and not duplicated;
+7. Hector state is readable bottom-left;
+8. the defender strip is readable without hiding the central fight;
+9. selected/ready/danger/locked states are distinguishable without relying only on color;
+10. hover/press feedback is visible but not distracting;
+11. English and Russian fit without broken hierarchy;
+12. the layout is checked at 1920×1080 and 1366/1376×768;
+13. no prototype/debug-looking panel is more visually dominant than the authored HUD;
+14. no decorative element hides a gameplay telegraph or placement decision.
 
 ## 15. VFX direction
 
