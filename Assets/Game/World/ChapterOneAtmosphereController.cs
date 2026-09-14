@@ -2,12 +2,14 @@ using UnityEngine;
 
 public class ChapterOneAtmosphereController : MonoBehaviour
 {
-    static readonly Color FogColor = new Color(.36f, .43f, .45f);
-    static readonly Color SkyAmbient = new Color(.34f, .40f, .41f);
-    static readonly Color EquatorAmbient = new Color(.43f, .38f, .30f);
-    static readonly Color GroundAmbient = new Color(.23f, .19f, .14f);
-    static readonly Color SunWarm = new Color(1f, .77f, .54f);
-    static readonly Color SunLift = new Color(1f, .84f, .64f);
+    static readonly Color FogColor = new Color(.43f, .50f, .50f);
+    static readonly Color FogLift = new Color(.49f, .54f, .51f);
+    static readonly Color SkyAmbient = new Color(.42f, .49f, .49f);
+    static readonly Color EquatorAmbient = new Color(.55f, .46f, .33f);
+    static readonly Color GroundAmbient = new Color(.29f, .23f, .16f);
+    static readonly Color SunWarm = new Color(1f, .79f, .55f);
+    static readonly Color SunLift = new Color(1f, .88f, .69f);
+    static readonly Color Dust = new Color(.58f,.47f,.31f);
 
     Light sun;
     float phase;
@@ -17,21 +19,21 @@ public class ChapterOneAtmosphereController : MonoBehaviour
         RenderSettings.fog = true;
         RenderSettings.fogColor = FogColor;
         RenderSettings.fogMode = FogMode.Linear;
-        RenderSettings.fogStartDistance = 24f;
-        RenderSettings.fogEndDistance = 57f;
+        RenderSettings.fogStartDistance = 27f;
+        RenderSettings.fogEndDistance = 64f;
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
         RenderSettings.ambientSkyColor = SkyAmbient;
         RenderSettings.ambientEquatorColor = EquatorAmbient;
         RenderSettings.ambientGroundColor = GroundAmbient;
-        RenderSettings.reflectionIntensity = .78f;
+        RenderSettings.reflectionIntensity = .90f;
 
         Camera cam = Camera.main;
         if (cam != null)
         {
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(.18f, .27f, .30f);
+            cam.backgroundColor = new Color(.24f, .38f, .45f);
             cam.nearClipPlane = .25f;
-            cam.farClipPlane = 120f;
+            cam.farClipPlane = 140f;
         }
 
         GameObject sunObject = GameObject.Find("Directional Light");
@@ -40,22 +42,67 @@ public class ChapterOneAtmosphereController : MonoBehaviour
         if (sun != null)
         {
             sun.color = SunWarm;
-            sun.intensity = 1.28f;
+            sun.intensity = 1.36f;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = .76f;
+            sun.shadowStrength = .74f;
             sun.shadowBias = .035f;
-            sun.shadowNormalBias = .28f;
-            sun.transform.rotation = Quaternion.Euler(51f, -34f, 0f);
+            sun.shadowNormalBias = .26f;
+            sun.transform.rotation = Quaternion.Euler(50f, -35f, 0f);
         }
 
+        BuildBattlefieldAir();
         phase = Random.value * 10f;
+    }
+
+    void BuildBattlefieldAir()
+    {
+        if (GameObject.Find("Chapter01_BattlefieldAir") != null) return;
+        GameObject root=new GameObject("Chapter01_BattlefieldAir");
+        Vector3[] wisps=
+        {
+            new Vector3(-8.0f,.17f,5.25f), new Vector3(-6.4f,.15f,-5.1f),
+            new Vector3(-2.4f,.16f,4.65f), new Vector3(.8f,.14f,-4.45f),
+            new Vector3(4.2f,.16f,4.35f), new Vector3(7.0f,.15f,-3.95f),
+            new Vector3(9.0f,.18f,3.25f)
+        };
+        for(int i=0;i<wisps.Length;i++)
+        {
+            GameObject wisp=GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            wisp.name="Ground Dust Wisp";
+            wisp.transform.SetParent(root.transform,false);
+            wisp.transform.position=wisps[i];
+            wisp.transform.rotation=Quaternion.Euler(0f,-22f+i*17f,0f);
+            wisp.transform.localScale=new Vector3(.62f+(i%3)*.16f,.025f,.28f+(i%2)*.09f);
+            Collider c=wisp.GetComponent<Collider>();
+            if(c!=null) Destroy(c);
+            TowerFactory.SetColor(wisp,Dust*(.86f+(i%3)*.04f));
+            ChapterOneAmbientMotion motion=wisp.AddComponent<ChapterOneAmbientMotion>();
+            motion.kind=ChapterOneAmbientMotion.MotionKind.Dust;
+            motion.phase=.35f+i*.77f;
+        }
+
+        for(int i=0;i<9;i++)
+        {
+            GameObject mote=GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            mote.name="Sunlit Dust Mote";
+            mote.transform.SetParent(root.transform,false);
+            mote.transform.position=new Vector3(-5.5f+i*1.75f,.55f+(i%3)*.24f,(i%2==0?3.0f:-3.1f)+(i%4)*.17f);
+            mote.transform.localScale=Vector3.one*(.025f+(i%3)*.008f);
+            Collider c=mote.GetComponent<Collider>();
+            if(c!=null) Destroy(c);
+            TowerFactory.SetColor(mote,new Color(.83f,.65f,.34f));
+            ChapterOneAmbientMotion motion=mote.AddComponent<ChapterOneAmbientMotion>();
+            motion.kind=ChapterOneAmbientMotion.MotionKind.Dust;
+            motion.phase=1.1f+i*.51f;
+        }
     }
 
     void Update()
     {
-        if (sun == null) return;
         float drift = (Mathf.Sin(Time.time * .13f + phase) + 1f) * .5f;
-        sun.intensity = Mathf.Lerp(1.25f, 1.31f, drift);
-        sun.color = Color.Lerp(SunWarm, SunLift, drift * .34f);
+        RenderSettings.fogColor = Color.Lerp(FogColor,FogLift,drift*.12f);
+        if (sun == null) return;
+        sun.intensity = Mathf.Lerp(1.34f, 1.42f, drift);
+        sun.color = Color.Lerp(SunWarm, SunLift, drift * .38f);
     }
 }
