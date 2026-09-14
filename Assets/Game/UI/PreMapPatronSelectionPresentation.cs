@@ -123,7 +123,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
             DivineGiftType.Ares);
         MakeGodButton(panel.transform, new Vector2(225, 88),
             GameLanguage.T("ATHENA", "АФИНА"),
-            GameLanguage.T("GATE +2 MAX HP\nIMMEDIATE", "ВОРОТА +2 МАКС. HP\nСРАЗУ"),
+            GameLanguage.T("GATE +2 MAX HP\nIMMEDIATE", "ВОРОТА +2 МАКС. ЗДОРОВЬЯ\nСРАЗУ"),
             DivineGiftType.Athena);
         MakeGodButton(panel.transform, new Vector2(-225, -86),
             GameLanguage.T("APOLLO", "АПОЛЛОН"),
