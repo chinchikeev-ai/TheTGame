@@ -15,14 +15,15 @@ MonoBehaviour:
   encounterId: chapter_01_01
   encounterNumber: 1
   preparationTime: 30
-  targetDuration: 60
-  spawnInterval: 4.6
+  targetDuration: 75
+  spawnInterval: 5.5
   hpMultiplier: 1
   speedMultiplier: 1
   spawnGroups:
   - pattern:
     - 0
     repeats: 8
+    baseCount: 14
     route: -1
     routeOffset: 0
     startDelay: 0
