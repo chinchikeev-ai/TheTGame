@@ -34,6 +34,11 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         weaponPresentation = GetComponent<CharacterWeaponPresentation>();
         if (weaponPresentation == null) weaponPresentation = gameObject.AddComponent<CharacterWeaponPresentation>();
         weaponPresentation.Refresh();
+
+        HectorMotionFallbackAnimator fallbackAnimator = GetComponent<HectorMotionFallbackAnimator>();
+        if (fallbackAnimator == null) fallbackAnimator = gameObject.AddComponent<HectorMotionFallbackAnimator>();
+        fallbackAnimator.Initialize(controller);
+
         bodyRenderer = GetComponentInChildren<Renderer>();
         previousPosition = transform.position;
         previousDowned = hector != null && hector.IsDowned;
