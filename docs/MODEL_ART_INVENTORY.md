@@ -22,9 +22,9 @@ A builder succeeding does **not** promote an asset to `DONE`.
 | Runner | GENERATED PLACEHOLDER | role-specific light/skirmisher candidate |
 | Heavy Hoplite | GENERATED PLACEHOLDER + SOURCE ONLY | spear + large shield + armor candidates |
 | Shield Bearer | GENERATED PLACEHOLDER + SOURCE ONLY | spear + shield + armor candidates |
-| Greek Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow/quiver candidate; draw/release hooks exist |
+| Greek Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow/quiver candidate; draw/release hooks exist; runtime arrows now travel visibly to Hector/Guard/gate before damage resolves |
 | Menelaus / Boss | GENERATED PLACEHOLDER | commander silhouette + command hook; final boss clips/materials pending |
-| Hector | GENERATED PLACEHOLDER + SOURCE ONLY | hero silhouette + spear/shield/armor candidates + explicit `Poke`/`Block` profile states + Q/E/R/F hooks |
+| Hector | GENERATED PLACEHOLDER + SOURCE ONLY | hero silhouette + spear/shield/armor candidates + explicit `Poke`/`Block` profile states + Q/E/R/F hooks; R now launches a visible spear flight before impact |
 | Trojan Infantry | GENERATED PLACEHOLDER + SOURCE ONLY | spear/shield/armor candidate pass |
 | Trojan Guard | GENERATED PLACEHOLDER + SOURCE ONLY | shield/spear/armor candidates + block/poke hooks |
 | Trojan Archer | GENERATED PLACEHOLDER + SOURCE ONLY | bow candidate + draw/release hooks |
@@ -80,9 +80,10 @@ Final grip, scale, materials, skin deformation, clipping and gameplay-camera rea
 |---|---|---|
 | Generic locomotion / hit / death | GENERATED PLACEHOLDER | role controllers exist; imported clips are now selected deterministically by scored token matching; final authored clips/QA pending |
 | Spear combat | GENERATED PLACEHOLDER | `Poke` hooks wired to relevant runtime attacks; spear profiles use deterministic thrust/stab/poke candidate selection; enemy/Hector/Guard damage now waits for the animation impact phase with a bounded fallback; final authored thrust/brace clips and timing QA pending |
-| Archer combat | GENERATED PLACEHOLDER | `Draw` / `Release` wired; builder prefers distinct bow-role candidates; ranged damage now waits for `Release` impact phase and redraw waits until release progression; final projectile/hand timing and authored clips pending |
+| Archer combat | GENERATED PLACEHOLDER + PROCEDURAL projectile | `Draw` / `Release` wired; builder prefers distinct bow-role candidates; ranged attack waits for `Release`, then launches a pooled procedural arrow on an arc that tracks the target and applies damage only on arrival; final arrow asset, hand release point and Play Mode timing pending |
+| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX/projectile | basic spear damage stays animation-phase synchronized; `R` uses the existing release-phase hook to launch a pooled procedural spear flight and applies damage/armor break on arrival; Q/E/F remain immediate gameplay hooks; final hero clips, authored spear projectile and Play Mode timing pending |
+| Character projectile flight | PROCEDURAL | `CombatFlightPresentation` provides pooled arrow/spear geometry, target tracking, oriented ballistic arc and arrival callbacks; no physics collider is used | replace procedural geometry with production arrow/spear assets; tune launch sockets, speed/arc/contact frames in real Play Mode |
 | Shield block | GENERATED PLACEHOLDER | `Block` wired for Trojan Guard and now present in Hector's spear-bearing controller profile; final pose/clip pending |
-| Hector | GENERATED PLACEHOLDER + PROCEDURAL VFX | basic spear damage and `R` spear-throw damage/VFX now align to animation impact callbacks; Q/E/F remain immediate gameplay hooks; final hero body clips and full ability timing QA pending |
 | Menelaus | GENERATED PLACEHOLDER | command hook tied to reinforcements; deterministic command candidate/fallback is logged; repeated gate attacks now resolve damage at the attack impact phase; final boss-specific clips pending |
 | Ballista mechanism | PROCEDURAL | `TowerSupportMechanismPresentation` performs release/reload/tension feedback; final authored mechanism animation pending |
 | Apollo shrine mechanism | PROCEDURAL | cast pulse/disc motion exists; final authored support presentation pending |
@@ -91,7 +92,7 @@ Final grip, scale, materials, skin deformation, clipping and gameplay-camera rea
 | Siege Tower movement | MISSING | later chapter wheel/movement/assault animation |
 | Chariot horse locomotion | SOURCE ONLY + generator | pinned horse source + generator; real import/orientation/clip QA pending |
 
-The current Chapter I animation builder/runtime timing layer is an auditable candidate system, not final animation production. It uses normalized Animator-state phases where the expected state is available and bounded fallback timing otherwise. Exact contact/release frames, clip lengths, projectile visuals and pose quality still require real Unity Play Mode inspection before production acceptance.
+The current Chapter I animation builder/runtime timing/projectile layer is an auditable candidate system, not final animation production. It uses normalized Animator-state phases where the expected state is available, bounded fallback timing otherwise, and procedural pooled character projectiles for arrow/spear travel. Exact release sockets, flight arcs, contact frames, clip lengths, projectile meshes and pose quality still require real Unity Play Mode inspection before production acceptance.
 
 ## Later-campaign candidate coverage
 
@@ -159,14 +160,15 @@ Third-party provenance:
 1. final authored/rigged hero and enemy meshes/materials;
 2. final skinned armor/weapon integration;
 3. final weapon-specific combat clips and hero/boss animation sets;
-4. final authored six Chapter I Tower-Unit structures and L2/L3/specialization variants;
-5. final authored Ballista / Ram / Siege Tower mechanisms;
-6. final chariot integration;
-7. Greek ship variants/LOD;
-8. final civilians and evacuation animation;
-9. authored damaged/destroyed/burning states for key structures;
-10. final environment modules for the campaign;
-11. real gameplay-camera and Play Mode QA, including exact contact/release-frame tuning.
+4. final authored arrow/spear projectile meshes, launch sockets and contact timing;
+5. final authored six Chapter I Tower-Unit structures and L2/L3/specialization variants;
+6. final authored Ballista / Ram / Siege Tower mechanisms;
+7. final chariot integration;
+8. Greek ship variants/LOD;
+9. final civilians and evacuation animation;
+10. authored damaged/destroyed/burning states for key structures;
+11. final environment modules for the campaign;
+12. real gameplay-camera and Play Mode QA, including exact contact/release-frame and projectile-flight tuning.
 
 ## Acceptance gate for `DONE`
 

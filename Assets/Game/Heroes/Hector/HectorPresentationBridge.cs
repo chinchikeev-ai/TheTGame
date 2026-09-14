@@ -72,12 +72,12 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         abilityPresentation?.PlayShieldWall(center, transform.rotation);
     }
 
+    // Kept as the animation-release hook for the existing Chapter I timing contract.
     public void PlaySpearImpact(Vector3 point, Action impact)
     {
         if (characterPresentation == null)
         {
             impact?.Invoke();
-            abilityPresentation?.PlaySpearImpact(point);
             return;
         }
 
@@ -85,6 +85,16 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         {
             if (hector == null || hector.IsDowned) return;
             impact?.Invoke();
+        });
+    }
+
+    public void LaunchSpearFlight(Transform target, Action<Vector3> impact)
+    {
+        if (hector == null || hector.IsDowned || target == null) return;
+        Vector3 start = transform.position + Vector3.up * 1.15f + transform.forward * .45f;
+        CombatFlightPresentation.SpawnSpear(start, target, Vector3.up * .65f, point =>
+        {
+            impact?.Invoke(point);
             abilityPresentation?.PlaySpearImpact(point);
         });
     }
