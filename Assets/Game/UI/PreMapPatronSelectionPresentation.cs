@@ -7,7 +7,8 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
 {
     GameMenuController menu;
     Canvas menuCanvas;
-    GameObject overlay;
+    GameObject difficultyOverlay;
+    GameObject patronOverlay;
     Button chapterOneButton;
     bool bound;
 
@@ -31,15 +32,15 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         GameManager gm = GameManager.Instance;
         if (GameMenuController.QuitRequested)
         {
-            HideChoice();
+            HideAll();
             return;
         }
         if (gm == null || gm.GameEnded || gm.GiftSelected) return;
 
-        // Safety net for restart/legacy flows that try to enter combat without a patron.
-        // The choice still happens before the run can actually begin because GameManager rejects BeginRun without it.
+        // Safety net: any legacy/restart flow attempting to enter combat without a patron
+        // is routed back through the full pre-map preparation flow.
         if (Time.timeScale > 0f)
-            ShowChoice();
+            ShowDifficulty();
     }
 
     bool TryBind()
@@ -52,7 +53,9 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         Transform levelSelect = menuCanvas.transform.Find("LevelSelect");
         if (levelSelect == null) return false;
 
-        if (overlay == null) BuildOverlay();
+        if (difficultyOverlay == null) BuildDifficultyOverlay();
+        if (patronOverlay == null) BuildPatronOverlay();
+
         if (chapterOneButton == null)
         {
             Button[] buttons = levelSelect.GetComponentsInChildren<Button>(true);
@@ -63,53 +66,93 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
                 if (!label.text.Contains("THE LANDING") && !label.text.Contains("ВЫСАДКА")) continue;
                 chapterOneButton = buttons[i];
                 chapterOneButton.onClick.RemoveAllListeners();
-                chapterOneButton.onClick.AddListener(ShowChoice);
+                chapterOneButton.onClick.AddListener(ShowDifficulty);
                 break;
             }
         }
 
-        return overlay != null && chapterOneButton != null;
+        return difficultyOverlay != null && patronOverlay != null && chapterOneButton != null;
     }
 
-    void BuildOverlay()
+    void BuildDifficultyOverlay()
     {
-        overlay = new GameObject("PreMapPatronSelection");
-        overlay.transform.SetParent(menuCanvas.transform, false);
-        Image backdrop = overlay.AddComponent<Image>();
-        backdrop.color = new Color(.015f, .009f, .006f, .985f);
-        RectTransform br = backdrop.rectTransform;
-        br.anchorMin = Vector2.zero;
-        br.anchorMax = Vector2.one;
-        br.offsetMin = br.offsetMax = Vector2.zero;
+        difficultyOverlay = MakeOverlay("PreMapDifficultySelection");
+        GameObject panel = MakePanel(difficultyOverlay.transform, "DifficultyCard", new Vector2(980f, 720f));
 
-        GameObject panel = MakePanel(overlay.transform, new Vector2(980f, 720f));
-        MakeText(panel.transform, GameLanguage.T("CHOOSE A PATRON GOD", "ВЫБЕРИТЕ БОГА-ПОКРОВИТЕЛЯ"), new Vector2(0, 286), new Vector2(820, 62), 36, true, new Color(1f, .72f, .26f, 1f));
         MakeText(panel.transform,
-            GameLanguage.T("Choose before the map begins. One patron stays with Troy for the whole battle.", "Выбор делается ДО начала карты. Один покровитель помогает Трое всю битву."),
-            new Vector2(0, 224), new Vector2(800, 54), 17, false, new Color(.88f, .78f, .66f, 1f));
+            GameLanguage.T("CHOOSE DIFFICULTY", "ВЫБЕРИТЕ СЛОЖНОСТЬ"),
+            new Vector2(0f, 280f), new Vector2(820f, 62f), 38, true, new Color(1f, .72f, .26f, 1f));
+        MakeText(panel.transform,
+            GameLanguage.T("Choose the battle rules before selecting a patron god.", "Сначала выберите правила боя, затем бога-покровителя."),
+            new Vector2(0f, 225f), new Vector2(790f, 46f), 17, false, new Color(.88f, .78f, .66f, 1f));
 
-        MakeGodButton(panel.transform, new Vector2(-225, 102),
+        MakeDifficultyButton(panel.transform, new Vector2(0f, 105f),
+            GameLanguage.T("STORY", "ИСТОРИЯ"),
+            GameLanguage.T("More forgiving defense • 190 starting gold", "Более мягкая оборона • 190 стартового золота"),
+            CampaignDifficulty.Story);
+        MakeDifficultyButton(panel.transform, new Vector2(0f, 0f),
+            GameLanguage.T("STRATEGOS", "СТРАТЕГ"),
+            GameLanguage.T("Standard campaign pressure • 150 starting gold", "Стандартное давление кампании • 150 стартового золота"),
+            CampaignDifficulty.Strategos);
+        MakeDifficultyButton(panel.transform, new Vector2(0f, -105f),
+            GameLanguage.T("LEGENDARY", "ЛЕГЕНДА"),
+            GameLanguage.T("Hardest pressure and economy • 120 starting gold", "Самое высокое давление и жёсткая экономика • 120 стартового золота"),
+            CampaignDifficulty.Legendary);
+
+        MakeButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0f, -275f), new Vector2(240f, 52f), HideDifficulty);
+        difficultyOverlay.SetActive(false);
+    }
+
+    void BuildPatronOverlay()
+    {
+        patronOverlay = MakeOverlay("PreMapPatronSelection");
+        GameObject panel = MakePanel(patronOverlay.transform, "PatronCard", new Vector2(980f, 720f));
+
+        MakeText(panel.transform,
+            GameLanguage.T("CHOOSE A PATRON GOD", "ВЫБЕРИТЕ БОГА-ПОКРОВИТЕЛЯ"),
+            new Vector2(0, 286), new Vector2(820, 62), 36, true, new Color(1f, .72f, .26f, 1f));
+        MakeText(panel.transform,
+            GameLanguage.T("One patron stays with Troy for the whole battle.", "Один покровитель помогает Трое всю битву."),
+            new Vector2(0, 232), new Vector2(800, 46), 17, false, new Color(.88f, .78f, .66f, 1f));
+        MakeText(panel.transform,
+            GameLanguage.T("Difficulty: ", "Сложность: ") + DifficultyRules.Label(CampaignController.Instance != null ? CampaignController.Instance.Difficulty : CampaignDifficulty.Story),
+            new Vector2(0, 194), new Vector2(800, 38), 15, true, new Color(.75f, .62f, .48f, 1f));
+
+        MakeGodButton(panel.transform, new Vector2(-225, 88),
             GameLanguage.T("ARES", "АРЕС"),
             GameLanguage.T("HECTOR & TOWERS +10% DAMAGE\nWHOLE MAP", "ГЕКТОР И БАШНИ +10% УРОНА\nВСЮ КАРТУ"),
             DivineGiftType.Ares);
-        MakeGodButton(panel.transform, new Vector2(225, 102),
+        MakeGodButton(panel.transform, new Vector2(225, 88),
             GameLanguage.T("ATHENA", "АФИНА"),
             GameLanguage.T("GATE +2 MAX HP\nIMMEDIATE", "ВОРОТА +2 МАКС. HP\nСРАЗУ"),
             DivineGiftType.Athena);
-        MakeGodButton(panel.transform, new Vector2(-225, -72),
+        MakeGodButton(panel.transform, new Vector2(-225, -86),
             GameLanguage.T("APOLLO", "АПОЛЛОН"),
             GameLanguage.T("+50 STARTING GOLD\nONE TIME", "+50 СТАРТОВОГО ЗОЛОТА\nОДИН РАЗ"),
             DivineGiftType.Apollo);
-        MakeGodButton(panel.transform, new Vector2(225, -72),
+        MakeGodButton(panel.transform, new Vector2(225, -86),
             GameLanguage.T("POSEIDON", "ПОСЕЙДОН"),
             GameLanguage.T("ENEMIES -10% SPEED\nWHOLE MAP", "ВРАГИ -10% СКОРОСТИ\nВСЮ КАРТУ"),
             DivineGiftType.Poseidon);
 
-        MakeButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0, -270), new Vector2(240, 52), HideChoice);
-        overlay.SetActive(false);
+        MakeButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0, -270), new Vector2(240, 52), BackToDifficulty);
+        patronOverlay.SetActive(false);
     }
 
-    void ShowChoice()
+    GameObject MakeOverlay(string name)
+    {
+        GameObject overlay = new GameObject(name);
+        overlay.transform.SetParent(menuCanvas.transform, false);
+        Image backdrop = overlay.AddComponent<Image>();
+        backdrop.color = new Color(.015f, .009f, .006f, .985f);
+        RectTransform rect = backdrop.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        return overlay;
+    }
+
+    void ShowDifficulty()
     {
         if (GameMenuController.QuitRequested) return;
         GameManager gm = GameManager.Instance;
@@ -118,18 +161,54 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
             StartMap();
             return;
         }
+
         Time.timeScale = 0f;
-        if (overlay != null)
+        if (patronOverlay != null) patronOverlay.SetActive(false);
+        if (difficultyOverlay != null)
         {
-            overlay.transform.SetAsLastSibling();
-            overlay.SetActive(true);
+            difficultyOverlay.transform.SetAsLastSibling();
+            difficultyOverlay.SetActive(true);
         }
-        RuntimeFileLogger.Event("PATRON", "Pre-map patron selection opened.");
+        RuntimeFileLogger.Event("MENU", "Pre-map difficulty selection opened");
     }
 
-    void HideChoice()
+    void HideDifficulty()
     {
-        if (overlay != null) overlay.SetActive(false);
+        if (difficultyOverlay != null) difficultyOverlay.SetActive(false);
+    }
+
+    void SelectDifficulty(CampaignDifficulty difficulty)
+    {
+        CampaignController.Instance?.SetDifficulty(difficulty);
+        RuntimeFileLogger.Event("MENU", $"Pre-map difficulty selected: {difficulty}");
+        HideDifficulty();
+        ShowPatron();
+    }
+
+    void ShowPatron()
+    {
+        if (GameMenuController.QuitRequested) return;
+        GameManager gm = GameManager.Instance;
+        if (gm != null && gm.GiftSelected)
+        {
+            StartMap();
+            return;
+        }
+
+        Time.timeScale = 0f;
+        if (difficultyOverlay != null) difficultyOverlay.SetActive(false);
+        if (patronOverlay != null)
+        {
+            patronOverlay.transform.SetAsLastSibling();
+            patronOverlay.SetActive(true);
+        }
+        RuntimeFileLogger.Event("PATRON", "Pre-map patron selection opened");
+    }
+
+    void BackToDifficulty()
+    {
+        if (patronOverlay != null) patronOverlay.SetActive(false);
+        ShowDifficulty();
     }
 
     void Choose(DivineGiftType gift)
@@ -137,8 +216,14 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         GameManager gm = GameManager.Instance;
         if (gm == null || !gm.UseGift(gift)) return;
         RuntimeFileLogger.Event("PATRON", $"Pre-map patron confirmed: {gift}");
-        HideChoice();
+        HideAll();
         StartMap();
+    }
+
+    void HideAll()
+    {
+        if (difficultyOverlay != null) difficultyOverlay.SetActive(false);
+        if (patronOverlay != null) patronOverlay.SetActive(false);
     }
 
     void StartMap()
@@ -148,10 +233,21 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         if (startLevel == null)
         {
             RuntimeFileLogger.Event("PATRON", "Could not locate GameMenuController.StartLevel; map start aborted.");
-            ShowChoice();
+            ShowDifficulty();
             return;
         }
         startLevel.Invoke(menu, null);
+    }
+
+    void MakeDifficultyButton(Transform parent, Vector2 pos, string title, string description, CampaignDifficulty difficulty)
+    {
+        Button button = MakeButton(parent, title + "\n" + description, pos, new Vector2(620f, 84f), () => SelectDifficulty(difficulty));
+        Text label = button.GetComponentInChildren<Text>(true);
+        if (label != null)
+        {
+            label.fontSize = 17;
+            label.lineSpacing = 1.15f;
+        }
     }
 
     void MakeGodButton(Transform parent, Vector2 pos, string title, string description, DivineGiftType gift)
@@ -165,9 +261,9 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         }
     }
 
-    GameObject MakePanel(Transform parent, Vector2 size)
+    GameObject MakePanel(Transform parent, string name, Vector2 size)
     {
-        GameObject go = new GameObject("PatronCard");
+        GameObject go = new GameObject(name);
         go.transform.SetParent(parent, false);
         Image image = go.AddComponent<Image>();
         image.color = new Color(.07f, .04f, .022f, .99f);
@@ -183,7 +279,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
 
     Button MakeButton(Transform parent, string label, Vector2 pos, Vector2 size, UnityEngine.Events.UnityAction action)
     {
-        GameObject go = new GameObject("PatronButton");
+        GameObject go = new GameObject("PreMapButton");
         go.transform.SetParent(parent, false);
         Image image = go.AddComponent<Image>();
         image.color = new Color(.28f, .13f, .055f, .98f);
@@ -194,6 +290,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         Button button = go.AddComponent<Button>();
         button.targetGraphic = image;
         button.onClick.AddListener(action);
+        go.AddComponent<MenuButtonFeedback>();
         MakeText(go.transform, label, Vector2.zero, size - new Vector2(20, 12), 16, true, new Color(1f, .86f, .65f, 1f));
         return button;
     }
