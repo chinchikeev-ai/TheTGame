@@ -59,6 +59,7 @@ public class CampaignController : MonoBehaviour
         CampaignSave.RecordChapterResult(chapter.chapterNumber, score, timeSeconds, gateHealth, chapter.unlockChapter);
     }
 
+    public void SetDifficulty(CampaignDifficulty difficulty) => CampaignSave.SetDifficulty(difficulty);
     public CampaignDifficulty CycleDifficulty() => CampaignSave.CycleDifficulty();
     public void ResetProgress() => CampaignSave.ResetProgress();
 }
