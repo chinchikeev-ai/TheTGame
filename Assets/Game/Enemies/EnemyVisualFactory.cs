@@ -9,8 +9,29 @@ public static class EnemyVisualFactory
     {
         EnemyArchetype archetype = data != null ? data.archetype : EnemyArchetype.Infantry;
         string prefabName = GetPrefabName(archetype);
+        string source;
+        string detail;
+
         GameObject prefab = Resources.Load<GameObject>(ProductionRoot + prefabName);
-        if (prefab == null) prefab = Resources.Load<GameObject>(GeneratedRoot + prefabName);
+        if (prefab != null)
+        {
+            source = "PRODUCTION_RESOURCE";
+            detail = ProductionRoot + prefabName;
+        }
+        else
+        {
+            prefab = Resources.Load<GameObject>(GeneratedRoot + prefabName);
+            if (prefab != null)
+            {
+                source = "GENERATED_RESOURCE";
+                detail = GeneratedRoot + prefabName;
+            }
+            else
+            {
+                source = "PROCEDURAL_FALLBACK";
+                detail = "RuntimeWarriorVisualFactory";
+            }
+        }
 
         GameObject instance;
         if (prefab != null)
@@ -28,6 +49,7 @@ public static class EnemyVisualFactory
         if (archetype == EnemyArchetype.Boss)
             HeroSignatureArt.Enhance(instance, TroyHeroId.Menelaus);
         EnemyMotionAnimator.Attach(instance, archetype);
+        RuntimeVisualAudit.Report("Enemy:" + archetype, source, detail);
         return instance;
     }
 
