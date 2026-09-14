@@ -32,6 +32,7 @@ public class Enemy : MonoBehaviour
     EnemyHealthBar healthBar;
     CharacterPresentationState presentation;
     CharacterWeaponSocketResolver weaponSockets;
+    CharacterWeaponPresentation weaponPresentation;
     float baseSpeed;
     float armor;
     float arrowResistance;
@@ -76,7 +77,14 @@ public class Enemy : MonoBehaviour
         weaponSockets = GetComponent<CharacterWeaponSocketResolver>();
         if (weaponSockets == null) weaponSockets = gameObject.AddComponent<CharacterWeaponSocketResolver>();
         weaponSockets.Refresh();
-        if (Archetype == EnemyArchetype.Archer) presentation.PrepareBow();
+        weaponPresentation = GetComponent<CharacterWeaponPresentation>();
+        if (weaponPresentation == null) weaponPresentation = gameObject.AddComponent<CharacterWeaponPresentation>();
+        weaponPresentation.Refresh();
+        if (Archetype == EnemyArchetype.Archer)
+        {
+            weaponPresentation.PrepareBow();
+            presentation.PrepareBow();
+        }
         healthBar = gameObject.AddComponent<EnemyHealthBar>();
         HeavyEnemyGroundVfx.Attach(this);
     }
@@ -257,7 +265,9 @@ public class Enemy : MonoBehaviour
     {
         if (presentation == null)
         {
+            if (Archetype == EnemyArchetype.Archer) weaponPresentation?.ReleaseArrow();
             impact?.Invoke();
+            if (Archetype == EnemyArchetype.Archer) weaponPresentation?.RestoreArrow();
             return;
         }
 
@@ -269,7 +279,17 @@ public class Enemy : MonoBehaviour
                 presentation.PlaySpearAttack(impact);
                 break;
             case EnemyArchetype.Archer:
-                presentation.PlayBowShot(impact);
+                presentation.PlayBowShot(
+                    () =>
+                    {
+                        if (!IsAlive) return;
+                        weaponPresentation?.ReleaseArrow();
+                        impact?.Invoke();
+                    },
+                    () =>
+                    {
+                        if (IsAlive) weaponPresentation?.RestoreArrow();
+                    });
                 break;
             default:
                 presentation.PlayAttack(impact);
