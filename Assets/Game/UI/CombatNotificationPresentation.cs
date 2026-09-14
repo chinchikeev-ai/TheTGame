@@ -42,13 +42,13 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
 
         GameObject panel=new GameObject("NotificationPanel"); panel.transform.SetParent(root.transform,false);
         Image bg=panel.AddComponent<Image>(); bg.sprite=TroyHudArt.Panel(); bg.type=Image.Type.Sliced; bg.color=Color.white; bg.raycastTarget=false;
-        RectTransform pr=bg.rectTransform; pr.anchorMin=pr.anchorMax=pr.pivot=new Vector2(0,0); pr.anchoredPosition=new Vector2(24,224); pr.sizeDelta=new Vector2(470,154);
+        RectTransform pr=bg.rectTransform; pr.anchorMin=pr.anchorMax=pr.pivot=new Vector2(0,0); pr.anchoredPosition=new Vector2(24,24); pr.sizeDelta=new Vector2(450,136);
 
         for(int i=0;i<3;i++)
         {
-            float y=46-i*46;
-            GameObject iconObj=new GameObject("Icon"+i); iconObj.transform.SetParent(panel.transform,false); icons[i]=iconObj.AddComponent<Image>(); icons[i].raycastTarget=false; RectTransform ir=icons[i].rectTransform; ir.anchorMin=ir.anchorMax=ir.pivot=new Vector2(.5f,.5f); ir.anchoredPosition=new Vector2(-202,y); ir.sizeDelta=new Vector2(34,34);
-            GameObject textObj=new GameObject("Line"+i); textObj.transform.SetParent(panel.transform,false); lines[i]=textObj.AddComponent<Text>(); lines[i].font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); lines[i].fontSize=13; lines[i].fontStyle=FontStyle.Bold; lines[i].color=new Color(.94f,.86f,.75f,1f); lines[i].alignment=TextAnchor.MiddleLeft; lines[i].raycastTarget=false; RectTransform tr=lines[i].rectTransform; tr.anchorMin=tr.anchorMax=tr.pivot=new Vector2(.5f,.5f); tr.anchoredPosition=new Vector2(20,y); tr.sizeDelta=new Vector2(390,38);
+            float y=40-i*40;
+            GameObject iconObj=new GameObject("Icon"+i); iconObj.transform.SetParent(panel.transform,false); icons[i]=iconObj.AddComponent<Image>(); icons[i].raycastTarget=false; RectTransform ir=icons[i].rectTransform; ir.anchorMin=ir.anchorMax=ir.pivot=new Vector2(.5f,.5f); ir.anchoredPosition=new Vector2(-192,y); ir.sizeDelta=new Vector2(30,30);
+            GameObject textObj=new GameObject("Line"+i); textObj.transform.SetParent(panel.transform,false); lines[i]=textObj.AddComponent<Text>(); lines[i].font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); lines[i].fontSize=12; lines[i].fontStyle=FontStyle.Bold; lines[i].color=new Color(.94f,.86f,.75f,1f); lines[i].alignment=TextAnchor.MiddleLeft; lines[i].horizontalOverflow=HorizontalWrapMode.Wrap; lines[i].verticalOverflow=VerticalWrapMode.Truncate; lines[i].raycastTarget=false; RectTransform tr=lines[i].rectTransform; tr.anchorMin=tr.anchorMax=tr.pivot=new Vector2(.5f,.5f); tr.anchoredPosition=new Vector2(14,y); tr.sizeDelta=new Vector2(370,34);
         }
     }
 
