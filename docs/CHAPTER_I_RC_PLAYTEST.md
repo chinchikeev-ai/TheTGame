@@ -84,38 +84,59 @@ Runtime encounter composition/pacing now lives under `Assets/Resources/Data/Enco
 
 Do not tune Chapter I by adding encounter-number/index formulas back into `BalanceCatalog` or `EnemySpawner`.
 
-## Freeze rule
+## Steps 5–8 acceptance workflow
 
-Once a Story report returns `READY FOR HUMAN ACCEPTANCE`:
+The canonical final gameplay-acceptance state is:
 
-1. Review every remaining analyzer WARN finding.
-2. Explicitly accept or fix each warning.
-3. Perform the required RU/EN visual/readability pass.
-4. Record the baseline as accepted in `PROJECT_STATUS.md` only after that inspection.
-5. After acceptance, change Chapter I balance only for a documented regression or deliberately reopened balance task.
+`Assets/Game/QA/CHAPTER_I_GAMEPLAY_ACCEPTANCE.json`
 
-Until those steps are complete, Chapter I remains an RC even if the hard automated gate passes.
+After the Story report returns `READY FOR HUMAN ACCEPTANCE`:
 
-## Difficulty validation after Story freeze
+1. Run `TheTroyGame > Validation > Gameplay Acceptance > Prepare Latest Story Candidate`.
+2. The exact Story report is bound to the manifest by `sessionId`, filename and SHA-256.
+3. Review `ChapterI_WARN_Review_<session>.md`; fix or explicitly accept every WARN with a documented reason.
+4. Record Story human acceptance in the manifest only after WARN review.
+5. Complete clean 1x/no-pause Strategos and Legendary runs.
+6. Run `TheTroyGame > Validation > Gameplay Acceptance > Analyze Story-Strategos-Legendary Pressure` and review the pressure comparison.
+7. Complete the four RU/EN visual-fit passes using the presets under `TheTroyGame > Validation > Visual Fit`.
+8. Run `TheTroyGame > Validation > Gameplay Acceptance > Check Final Chapter I Acceptance`.
+
+The final validator returns:
+
+- `BLOCKED` — one or more acceptance gates are incomplete or bound Story evidence changed;
+- `READY TO FREEZE` — all prerequisite gates are accepted and the only remaining action is explicit final human freeze;
+- `PASS` — every prerequisite is accepted and `gameplayFrozen=true` is explicitly recorded.
+
+Changing the bound Story baseline invalidates downstream WARN, difficulty, visual-fit and final-freeze acceptance so stale approvals cannot carry over to new balance.
+
+Full details: `CHAPTER_I_GAMEPLAY_ACCEPTANCE.md`.
+
+## Difficulty validation after Story acceptance
 
 Once Story has a clean accepted 1x baseline:
 
 1. Repeat Chapter I on `Strategos`.
 2. Repeat Chapter I on `Legendary`.
-3. Use the same analyzer for each run.
-4. Treat the harder modes as pressure-validation passes, not as replacements for the Story baseline.
+3. Keep both runs at 1x with no pause so telemetry is comparable.
+4. Run `Analyze Story-Strategos-Legendary Pressure`.
+5. Review authored multipliers, prepared enemy counts, peak-alive pressure, leak rate, gate loss, duration, FPS and any detected pressure inversion.
+6. Record the accepted result or exception in `difficultyPressure.notes` before setting the Strategos/Legendary review flags.
 
-The objective is increasing tactical pressure without breaking the Chapter I pacing identity or turning the Menelaus encounter into an HP-only wall.
+The objective is increasing tactical pressure without breaking the Chapter I pacing identity or turning the Menelaus encounter into an HP-only wall. The diagnostic pressure score never replaces human review.
 
-## Visual-fit QA after gameplay freeze
+## Visual-fit QA before final gameplay freeze
 
-After gameplay tuning is stable, complete real Play Mode checks at minimum for:
+Complete real Play Mode checks at minimum for:
 
 - `1920x1080` RU
 - `1920x1080` EN
 - `1366x768` or `1376x768` RU
 - `1366x768` or `1376x768` EN
 
-Verify that the top resources, encounter status, boss HUD, Hector HUD, defense picker, contextual defense-unit menu and result screen never overlap or leave the usable battlefield inaccessible.
+Editor presets are available under `TheTroyGame > Validation > Visual Fit`. Use `Generate Chapter I QA Checklist` for the required inspection list.
 
-Only after gameplay RC and visual-fit QA are accepted should Chapter I be treated as the campaign gameplay baseline. Production-art freeze remains a separate gate.
+Verify that the top resources, encounter status, boss HUD, Hector HUD, defense picker, contextual defense-unit menu, tooltips and result screen never overlap or leave the usable battlefield inaccessible. Inspect critical RU/EN text truncation and viewport-edge behavior through the full chapter, not only the initial frame.
+
+The visual-fit tool never sets acceptance flags automatically. Update the matching manifest fields only after the real visual pass and record evidence/limitations in `visualFit.notes`.
+
+Only after the final acceptance validator reports `READY TO FREEZE` should `gameplayFrozen=true` be set. Production-art freeze remains a separate gate.
