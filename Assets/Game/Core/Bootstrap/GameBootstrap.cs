@@ -11,8 +11,6 @@ public class GameBootstrap : MonoBehaviour
 
     void Start()
     {
-        Camera cam = SetupLightingAndCamera();
-
         CampaignController campaign = EnsureComponent<CampaignController>("CampaignController");
         ChapterController chapters = EnsureComponent<ChapterController>("ChapterController");
         if (chapters.ActiveChapter == null) chapters.LoadChapter(1);
@@ -22,43 +20,14 @@ public class GameBootstrap : MonoBehaviour
         EnsureComponent<RuntimeEffects>("RuntimeEffects");
         EnsureComponent<AncientMusicController>("AncientMusic");
 
-        MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
-        bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
-        if (worldNeedsBuild)
-        {
-            bool hadRuntimeWorld = GameObject.Find("Route_A") != null || GameObject.Find("Chapter01_Roads") != null;
-            mapBuilder.BuildMap();
-            if (!hadRuntimeWorld)
-            {
-                ChapterOneVisualEnhancer.Enhance();
-                TroyGateHeroBuilder.Build();
-                ChapterOneWallLife.Build();
-            }
-        }
-
-        EnsureComponent<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
+        Camera camera = EnsureMainCamera();
+        ChapterRuntimeContext runtime = ChapterRuntimeInstaller.Install(chapters.ActiveChapter, camera);
 
         EnemySpawner spawner = EnsureComponent<EnemySpawner>("EnemySpawner");
-        if ((spawner.paths == null || spawner.paths.Length == 0) && mapBuilder.Paths != null && mapBuilder.Paths.Length > 0)
-            spawner.Initialize(mapBuilder.Paths);
-
-        EnsureComponent<ChapterOnePlaythroughReporter>("ChapterOnePlaythroughReporter");
-
-        TowerPlacement placement = EnsureComponent<TowerPlacement>("TowerPlacement");
-        if (placement.gameCamera == null) placement.gameCamera = cam;
-
-        EnsureHector(cam);
-        EnsureComponent<LandingPresentation>("LandingPresentation");
-
-        ChapterOneCinematicCamera cinematic = FindFirstObjectByType<ChapterOneCinematicCamera>();
-        if (cinematic == null)
-        {
-            cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
-            cinematic.Initialize(cam);
-        }
+        if ((spawner.paths == null || spawner.paths.Length == 0) && runtime.Paths != null && runtime.Paths.Length > 0)
+            spawner.Initialize(runtime.Paths);
 
         EnsureComponent<ModernCombatHud>("ModernCombatHUD");
-        EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
         EnsureComponent<GameMenuController>("GameMenu");
         EnsureComponent<GameMenuUxEnhancer>("GameMenuUX");
         EnsureComponent<MenuProgressPresentation>("GameMenuProgress");
@@ -67,7 +36,9 @@ public class GameBootstrap : MonoBehaviour
         EnsureComponent<ResultScreenPresentation>("ResultScreenPresentation");
         EnsureComponent<ModernSettingsPresentation>("ModernSettingsPresentation");
 
-        RuntimeFileLogger.Event("BOOT", $"Runtime graph ready. unlockedChapter={campaign.UnlockedChapter}, activeChapter={(chapters.ActiveChapter != null ? chapters.ActiveChapter.chapterId : "none")}");
+        RuntimeFileLogger.Event(
+            "BOOT",
+            $"Runtime graph ready. unlockedChapter={campaign.UnlockedChapter}, activeChapter={(chapters.ActiveChapter != null ? chapters.ActiveChapter.chapterId : "none")}, runtimeProfile={(chapters.ActiveChapter != null ? chapters.ActiveChapter.runtimeProfile : "none")}");
     }
 
     static T EnsureComponent<T>(string objectName) where T : Component
@@ -76,75 +47,13 @@ public class GameBootstrap : MonoBehaviour
         return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
     }
 
-    void EnsureHector(Camera cam)
+    static Camera EnsureMainCamera()
     {
-        HectorController controller = FindFirstObjectByType<HectorController>();
-        GameObject hector;
+        Camera camera = Camera.main;
+        if (camera != null) return camera;
 
-        if (controller == null)
-        {
-            hector = HeroVisualFactory.Create(TroyHeroId.Hector);
-            hector.name = "Hector";
-            hector.transform.position = MapBuilder.CellToWorld(new Vector2Int(15, 4), .6f);
-            controller = hector.AddComponent<HectorController>();
-        }
-        else
-        {
-            hector = controller.gameObject;
-        }
-
-        if (hector.GetComponentInChildren<Collider>() == null)
-        {
-            CapsuleCollider collider = hector.AddComponent<CapsuleCollider>();
-            collider.center = new Vector3(0f, .9f, 0f);
-            collider.height = 1.8f;
-            collider.radius = .35f;
-        }
-
-        HectorPresentationBridge presentation = hector.GetComponent<HectorPresentationBridge>();
-        if (presentation == null) presentation = hector.AddComponent<HectorPresentationBridge>();
-        presentation.Initialize(controller);
-
-        HectorInputDriver input = hector.GetComponent<HectorInputDriver>();
-        if (input == null) input = hector.AddComponent<HectorInputDriver>();
-        input.Initialize(controller, cam);
-    }
-
-    Camera SetupLightingAndCamera()
-    {
-        Camera cam = Camera.main;
-        if (cam == null)
-        {
-            GameObject c = new GameObject("Main Camera");
-            cam = c.AddComponent<Camera>();
-            c.tag = "MainCamera";
-        }
-
-        cam.orthographic = true;
-        cam.orthographicSize = 10.6f;
-        cam.transform.position = new Vector3(.35f, 28.2f, -4.8f);
-        cam.transform.rotation = Quaternion.Euler(73f, -1.5f, 0f);
-        cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(.18f, .27f, .30f);
-
-        CameraController controller = cam.GetComponent<CameraController>();
-        if (controller == null) controller = cam.gameObject.AddComponent<CameraController>();
-        controller.xBounds = new Vector2(-8.0f, 8.0f);
-        controller.zBounds = new Vector2(-11.5f, 5.5f);
-        controller.minOrthoSize = 7f;
-        controller.maxOrthoSize = 13f;
-
-        if (FindFirstObjectByType<Light>() == null)
-        {
-            GameObject l = new GameObject("Directional Light");
-            Light lightComp = l.AddComponent<Light>();
-            lightComp.type = LightType.Directional;
-            lightComp.intensity = 1.28f;
-            lightComp.color = new Color(1f, .77f, .54f);
-            lightComp.shadows = LightShadows.Soft;
-            lightComp.shadowStrength = .76f;
-            l.transform.rotation = Quaternion.Euler(51f, -34f, 0f);
-        }
-        return cam;
+        GameObject cameraObject = new GameObject("Main Camera");
+        cameraObject.tag = "MainCamera";
+        return cameraObject.AddComponent<Camera>();
     }
 }
