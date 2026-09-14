@@ -7,6 +7,12 @@ public class MenelausBossController : MonoBehaviour
     public float auraDamageMultiplier = 1.35f;
     public float reinforcementInterval = 20f;
     public int reinforcementCount = 3;
+    public EnemyArchetype[] reinforcementPattern =
+    {
+        EnemyArchetype.Infantry,
+        EnemyArchetype.Infantry,
+        EnemyArchetype.ShieldBearer
+    };
 
     Enemy self;
     EnemySpawner spawner;
@@ -52,7 +58,7 @@ public class MenelausBossController : MonoBehaviour
             if (spawner != null)
             {
                 presentation?.PlayCommand();
-                spawner.SpawnMenelausReinforcements(reinforcementCount);
+                spawner.SpawnReinforcements(reinforcementCount, reinforcementPattern);
                 RuntimeFileLogger.Event("BOSS", $"Menelaus called reinforcements count={reinforcementCount}");
             }
         }
