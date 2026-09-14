@@ -30,6 +30,10 @@ public static class ChapterOneRuntimeInstaller
         if (placement.gameCamera == null) placement.gameCamera = camera;
 
         EnsureHector(camera, mapBuilder.Paths);
+        EnsureComponent<HectorHUD>("HectorHUD");
+        EnsureComponent<EnemyInspectorPresentation>("EnemyInspector");
+        EnsureComponent<CombatActionClarityPresentation>("CombatActionClarity");
+        EnsureComponent<PreMapPatronSelectionPresentation>("PreMapPatronSelection");
         EnsureComponent<LandingPresentation>("LandingPresentation");
 
         ChapterOneCinematicCamera cinematic = Object.FindFirstObjectByType<ChapterOneCinematicCamera>();
