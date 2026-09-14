@@ -121,10 +121,35 @@ public static class TowerArtDirector
 
     static void AddProductionCrew(Transform parent,string prefabName,Vector3 localPosition,float scale,float yaw)
     {
+        string source;
+        string detail;
         GameObject prefab=Resources.Load<GameObject>(TrojanProductionRoot+prefabName);
-        if(prefab==null) prefab=Resources.Load<GameObject>(TrojanGeneratedRoot+prefabName);
-        if(prefab==null) return;
-        GameObject crew=Object.Instantiate(prefab,parent);
+        GameObject crew;
+
+        if(prefab!=null)
+        {
+            crew=Object.Instantiate(prefab,parent);
+            source="PRODUCTION_RESOURCE";
+            detail=TrojanProductionRoot+prefabName;
+        }
+        else
+        {
+            prefab=Resources.Load<GameObject>(TrojanGeneratedRoot+prefabName);
+            if(prefab!=null)
+            {
+                crew=Object.Instantiate(prefab,parent);
+                source="GENERATED_RESOURCE";
+                detail=TrojanGeneratedRoot+prefabName;
+            }
+            else
+            {
+                crew=TrojanTowerCrewFallbackFactory.Create(prefabName);
+                crew.transform.SetParent(parent,false);
+                source="PROCEDURAL_FALLBACK";
+                detail="TrojanTowerCrewFallbackFactory";
+            }
+        }
+
         crew.name="TowerCrew_"+prefabName;
         crew.transform.localPosition=localPosition;
         crew.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
@@ -134,6 +159,7 @@ public static class TowerArtDirector
             collider.enabled=false;
             Object.Destroy(collider);
         }
+        RuntimeVisualAudit.Report("TowerCrew:"+prefabName,source,detail);
     }
 
     static void AddPriest(Transform parent,Vector3 localPosition,float yaw)
@@ -145,6 +171,7 @@ public static class TowerArtDirector
         Part(root.transform,"Robe",PrimitiveType.Cylinder,new Vector3(0f,.34f,0f),new Vector3(.18f,.34f,.18f),new Color(.88f,.78f,.58f));
         Part(root.transform,"Head",PrimitiveType.Sphere,new Vector3(0f,.78f,0f),Vector3.one*.17f,new Color(.72f,.52f,.34f));
         Part(root.transform,"SunStaff",PrimitiveType.Cylinder,new Vector3(.22f,.48f,.02f),new Vector3(.025f,.48f,.025f),new Color(.72f,.48f,.18f));
+        RuntimeVisualAudit.Report("TowerCrew:Trojan_PriestApollo","PROCEDURAL_FALLBACK","TowerArtDirector.AddPriest");
     }
 
     static void AddFireKeeper(Transform parent,Vector3 localPosition)
@@ -155,6 +182,7 @@ public static class TowerArtDirector
         Part(root.transform,"Tunic",PrimitiveType.Cylinder,new Vector3(0f,.32f,0f),new Vector3(.17f,.32f,.17f),new Color(.48f,.09f,.045f));
         Part(root.transform,"Head",PrimitiveType.Sphere,new Vector3(0f,.72f,0f),Vector3.one*.16f,new Color(.72f,.50f,.32f));
         Part(root.transform,"PitchPot",PrimitiveType.Cylinder,new Vector3(-.22f,.26f,.10f),new Vector3(.12f,.18f,.12f),new Color(.17f,.11f,.07f));
+        RuntimeVisualAudit.Report("TowerCrew:Trojan_FireKeeper","PROCEDURAL_FALLBACK","TowerArtDirector.AddFireKeeper");
     }
 
     static void AddPost(Transform parent,Vector3 p,Color c)
