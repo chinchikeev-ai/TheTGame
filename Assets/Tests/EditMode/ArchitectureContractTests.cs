@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -71,6 +72,44 @@ public class ArchitectureContractTests
         foreach (EncounterSpawnGroup group in finalEncounter.spawnGroups)
             if (group != null && string.Equals(group.behaviorId, "menelaus", StringComparison.OrdinalIgnoreCase)) menelausBehavior = true;
         Assert.IsTrue(menelausBehavior, "Final encounter must explicitly bind the Menelaus runtime behavior.");
+    }
+
+    [Test]
+    public void ChapterOne_GameplayAcceptanceManifest_HasAllFinalGates()
+    {
+        const string path = "Assets/Game/QA/CHAPTER_I_GAMEPLAY_ACCEPTANCE.json";
+        Assert.IsTrue(File.Exists(path), $"Missing {path}");
+        string json = File.ReadAllText(path);
+        StringAssert.Contains("\"sourceSessionId\"", json);
+        StringAssert.Contains("\"sourceReportSha256\"", json);
+        StringAssert.Contains("\"warningsReviewed\"", json);
+        StringAssert.Contains("\"humanAccepted\"", json);
+        StringAssert.Contains("\"strategosReviewed\"", json);
+        StringAssert.Contains("\"legendaryReviewed\"", json);
+        StringAssert.Contains("\"ru1920x1080\"", json);
+        StringAssert.Contains("\"en1920x1080\"", json);
+        StringAssert.Contains("\"ru1366or1376x768\"", json);
+        StringAssert.Contains("\"en1366or1376x768\"", json);
+        StringAssert.Contains("\"gameplayFrozen\"", json);
+    }
+
+    [Test]
+    public void GameLanguage_AllowsDeterministicQaSelection()
+    {
+        bool wasRussian = GameLanguage.Russian;
+        try
+        {
+            GameLanguage.SetRussian(true);
+            Assert.IsTrue(GameLanguage.Russian);
+            Assert.AreEqual("RU", GameLanguage.Code);
+            GameLanguage.SetRussian(false);
+            Assert.IsFalse(GameLanguage.Russian);
+            Assert.AreEqual("EN", GameLanguage.Code);
+        }
+        finally
+        {
+            GameLanguage.SetRussian(wasRussian);
+        }
     }
 
     [Test]
