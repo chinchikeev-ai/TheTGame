@@ -34,6 +34,32 @@ This repository is maintained by one developer. Keep Git workflow simple and do 
 - Never manually start Unity CI unless the user explicitly asks to run it.
 - Do not enable automatic Unity CI as a side effect of other Git/GitHub work.
 
+### Commit messages
+Keep commit messages short and obvious. Do not use a complicated Conventional Commits scheme.
+
+Preferred prefixes:
+- `fix:` — bug fixes
+- `balance:` — gameplay/economy/pacing balance
+- `ui:` — UI/HUD/presentation
+- `docs:` — documentation/rules
+- `art:` — art/assets
+- `audio:` — sound/music
+- `refactor:` — structural cleanup without intended behavior change
+
+Examples:
+- `fix: enemy click`
+- `balance: chapter 1`
+- `ui: hero panel`
+- `docs: update rules`
+
+One commit should describe one coherent change. Avoid vague messages like `update`, `changes`, or `misc`.
+
+### Current task list
+- `docs/TODO.md` is the single day-to-day task list.
+- Keep four sections: `Сейчас`, `Сломано`, `Проверить`, `Потом`.
+- Update that file instead of creating GitHub Issues, GitHub Projects, Jira tickets, or duplicate TODO/planning documents unless the developer explicitly asks for another system.
+- Keep it short: remove completed items instead of using it as a historical archive.
+
 ## Documentation authority
 - `docs/PROJECT_STATUS.md` is authoritative for current implementation state.
 - `docs/MODEL_ART_INVENTORY.md` is authoritative for production-art completion.
