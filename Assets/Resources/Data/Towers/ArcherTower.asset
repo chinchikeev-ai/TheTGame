@@ -15,9 +15,9 @@ MonoBehaviour:
   type: 0
   displayName: Archer Tower
   cost: 100
-  damage: 16
+  damage: 45
   range: 5.8
-  attacksPerSecond: 4.2
+  attacksPerSecond: 1.5
   projectileSpeed: 18
   splashRadius: 0
   slowMultiplier: 1
