@@ -73,6 +73,15 @@ public static class GameInput
 #endif
     }
 
+    public static bool ScreenshotPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        return Keyboard.current != null && Keyboard.current.f12Key.wasPressedThisFrame;
+#else
+        return Input.GetKeyDown(KeyCode.F12);
+#endif
+    }
+
     public static bool BuildSlotPressed(int slot)
     {
 #if ENABLE_INPUT_SYSTEM
