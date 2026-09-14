@@ -10,7 +10,7 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 Chapter I is functionally playable as a vertical slice, but it is **not frozen** yet. Two independent gates remain:
 
-1. Gameplay RC gate — clean real Story 1x playthrough, telemetry analysis/freeze-readiness review, difficulty pressure checks, RU/EN visual-fit QA.
+1. Gameplay RC gate — clean real Story 1x playthrough, telemetry analysis/freeze-readiness review, WARN acceptance, Strategos/Legendary pressure review, RU/EN visual-fit QA and explicit final gameplay freeze.
 2. Production-art gate — promote P0 assets from generated/procedural candidates to accepted final art after real visual QA.
 
 Chapter II unlock plumbing exists, but Chapter II content is not implemented. Chapters III–VII remain design/roadmap work.
@@ -32,7 +32,7 @@ GameBootstrap
   -> shared UI
 ```
 
-`GameBootstrap` is now chapter-agnostic. Chapter I coast/map/Hector/presentation/cinematic/guidance wiring lives behind `ChapterOneRuntimeInstaller` instead of being directly embedded in the generic bootstrap.
+`GameBootstrap` is chapter-agnostic. Chapter I coast/map/Hector/presentation/cinematic/guidance wiring lives behind `ChapterOneRuntimeInstaller` instead of being directly embedded in the generic bootstrap.
 
 A future chapter should add a dedicated runtime profile/installer rather than expanding `GameBootstrap` with chapter-number conditionals.
 
@@ -60,10 +60,10 @@ Implemented:
 - Menelaus boss, commander aura, authored boss behavior binding, reinforcement calls and final-encounter objective integration;
 - Chapter I victory requires Menelaus defeated;
 - Menelaus reaching the gate damages it over time; defeat occurs when gate HP reaches zero;
-- EN/RU gameplay text and language switching;
+- deterministic EN/RU language selection plus language switching;
 - save/unlock flow for Chapter I -> Chapter II;
 - bounded combat-speed controls;
-- Chapter I telemetry, playthrough analysis and gameplay-freeze readiness validation.
+- Chapter I telemetry, playthrough analysis, hard freeze-readiness validation and final acceptance tooling.
 
 Pending core mechanics:
 
@@ -74,7 +74,7 @@ Pending core mechanics:
 
 ## Encounter authoring state
 
-Chapter I now references exactly five authored `EncounterData` assets:
+Chapter I references exactly five authored `EncounterData` assets:
 
 - Encounter 1: 8 base enemies;
 - Encounter 2: 12 base enemies;
@@ -103,6 +103,8 @@ Current target:
 The playthrough reporter writes JSON + per-encounter CSV under `Application.persistentDataPath/Logs` with:
 
 - result and difficulty;
+- telemetry schema version;
+- 1x compliance and pause use;
 - total duration and per-encounter actual/target duration;
 - kills / leaks;
 - Gold earned / spent / refunded;
@@ -112,16 +114,29 @@ The playthrough reporter writes JSON + per-encounter CSV under `Application.pers
 - peak alive-enemy pressure;
 - average FPS.
 
-Validation flow:
+Validation and acceptance flow:
 
 1. `TheTroyGame/Validation/Analyze Latest Chapter I Playthrough` -> detailed PASS/WARN/FAIL tuning report.
 2. `TheTroyGame/Validation/Check Chapter I Gameplay Freeze Readiness` -> independent hard-gate decision.
+3. `TheTroyGame/Validation/Gameplay Acceptance/Prepare Latest Story Candidate` -> binds the exact accepted-candidate Story report to the tracked manifest using session id + SHA-256 and generates a WARN review checklist.
+4. `TheTroyGame/Validation/Gameplay Acceptance/Analyze Story-Strategos-Legendary Pressure` -> compares the latest three 1x/no-pause difficulty runs and reports pressure inversions/eligibility problems.
+5. `TheTroyGame/Validation/Visual Fit/...` -> deterministic RU/EN QA presets and checklist for the required 16:9 matrix.
+6. `TheTroyGame/Validation/Gameplay Acceptance/Check Final Chapter I Acceptance` -> prevents final gameplay freeze until Story/WARN/difficulty/visual-fit gates are explicitly accepted.
 
-Freeze readiness requires Story, Chapter I, victory, Menelaus defeated/no completed breach, 11:00–13:00 total duration, five complete encounter snapshots, no encounter >=40% away from its duration target and gate HP above zero.
+The canonical final gameplay acceptance state is tracked in:
 
-A `READY FOR HUMAN ACCEPTANCE` result does **not** automatically declare gameplay frozen. Remaining analyzer warnings and real presentation/readability still require explicit review.
+`Assets/Game/QA/CHAPTER_I_GAMEPLAY_ACCEPTANCE.json`
 
-Exact manual protocol: `CHAPTER_I_RC_PLAYTEST.md`.
+Changing the bound Story session resets downstream WARN, Story acceptance, difficulty, visual-fit and final-freeze approvals so stale acceptance cannot carry over to new balance.
+
+Freeze readiness requires Story, Chapter I, victory, Menelaus defeated/no completed breach, verified 1x/no-pause telemetry, 11:00–13:00 total duration, five complete encounter snapshots, no encounter >=40% away from its duration target and gate HP above zero.
+
+A `READY FOR HUMAN ACCEPTANCE` result does **not** automatically declare gameplay frozen. `gameplayFrozen=true` is valid only after all steps in `CHAPTER_I_GAMEPLAY_ACCEPTANCE.md` are explicitly accepted.
+
+Exact manual protocols:
+
+- `CHAPTER_I_RC_PLAYTEST.md`
+- `CHAPTER_I_GAMEPLAY_ACCEPTANCE.md`
 
 ## UI / combat readability
 
@@ -136,9 +151,10 @@ Implemented presentation work includes:
 - Menelaus aura, boss warning and longer boss death presentation;
 - Hector ability pulses and hit feedback;
 - improved coast, road, Greek landing, ships, Trojan gate/walls, banners, braziers and atmosphere;
-- cinematic Chapter I opening camera pass.
+- cinematic Chapter I opening camera pass;
+- gameplay-camera character combat presentation pass for Greek Archer nocked-arrow lifecycle and Hector spear flight/restore behavior.
 
-Final RU/EN 16:9 real visual QA is still required before Chapter I freeze.
+Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance.
 
 ## Character and defensive-unit animation candidates
 
@@ -154,6 +170,8 @@ Runtime hooks include:
 - Ballista: Fire / Reload / Tension;
 - Priests of Apollo: Cast / Channel;
 - Fire Keeper: Throw / Stoke.
+
+Character combat presentation now also includes explicit weapon-release sockets, animation-phase impact timing, visible character projectile flights, Greek Archer nocked-arrow presentation and Hector carried-spear hide/flight/restore behavior. These remain production candidates pending real Unity pose/grip/timing/gameplay-camera QA.
 
 `TowerSupportMechanismPresentation` drives visible mechanism feedback for Ballista, Apollo shrine and Fire Tower. These remain presentation/production candidates, not proof of final authored animation quality.
 
@@ -178,29 +196,37 @@ Implemented:
 - Unity architecture smoke validator;
 - Chapter I release-candidate validator;
 - authored encounter contract checks;
-- EditMode architecture/data/save tests;
+- EditMode architecture/data/save/gameplay-acceptance contract tests;
 - PlayMode runtime/gameplay acceptance tests;
 - Chapter I playthrough reporter;
 - Chapter I playthrough analyzer;
 - Chapter I gameplay-freeze readiness validator;
+- Chapter I Story acceptance manifest binding + SHA-256 evidence;
+- Chapter I WARN review template generation;
+- Story/Strategos/Legendary pressure comparison analyzer;
+- RU/EN visual-fit QA presets/checklist;
+- final Chapter I gameplay acceptance validator;
 - Chapter I art-freeze validator.
 
-Static validation is not a substitute for the required real Chapter I run or visual inspection.
+Static validation is not a substitute for the required real Chapter I runs or visual inspection.
 
 ## Remaining Chapter I work
 
 ### Gameplay RC
 
-1. Complete one clean Story run at 1x with the current authored EncounterData.
+Tooling for steps 5–8 is implemented; the human/Play Mode evidence is not fabricated.
+
+1. Complete one clean Story run at 1x/no-pause with the current authored EncounterData.
 2. Run the latest-playthrough analyzer.
 3. Run Gameplay Freeze Readiness.
 4. Resolve every hard blocker.
-5. Resolve or explicitly accept remaining WARN findings.
-6. Record human acceptance and freeze the Story pacing/economy/pressure baseline.
-7. Repeat pressure validation on Strategos and Legendary.
-8. Perform final 1920x1080 + 1366/1376x768 RU/EN visual-fit QA.
+5. Bind the freeze-ready Story candidate and resolve/explicitly accept every WARN finding.
+6. Record human Story acceptance in `CHAPTER_I_GAMEPLAY_ACCEPTANCE.json`.
+7. Complete Strategos + Legendary 1x/no-pause runs, review the difficulty pressure report, and record the decisions.
+8. Perform and record the 1920x1080 + 1366/1376x768 RU/EN visual-fit matrix.
+9. Run the final gameplay acceptance validator and set `gameplayFrozen=true` only when it reports `READY TO FREEZE`.
 
-No balance freeze is claimed yet because the required real Story 1x run has not been accepted in this work session.
+No balance freeze is claimed yet because the required real playthrough/visual evidence has not been accepted in this work session.
 
 ### Production art
 
@@ -221,8 +247,8 @@ Profile real Chapter I density before expanding campaign-scale spawn pressure. P
 
 Do not treat Chapter I as the campaign baseline until both are true:
 
-**Gameplay RC:** clean Story 1x run -> analyzer/freeze-readiness has no unresolved blocker -> human acceptance -> Strategos/Legendary pressure check -> RU/EN 16:9 QA.
+**Gameplay RC:** clean Story 1x/no-pause run -> hard freeze readiness -> WARN review -> human Story acceptance -> Strategos/Legendary pressure review -> RU/EN 16:9 QA -> explicit final gameplay freeze.
 
 **Production art:** required P0 Chapter I assets satisfy `MODEL_ART_INVENTORY.md` acceptance and are visually verified in real gameplay.
 
-The new encounter/runtime architecture is ready to support Chapter II content authoring, but full Chapter II production should still wait for the Chapter I gameplay baseline to be accepted.
+The encounter/runtime architecture is ready to support Chapter II content authoring, but full Chapter II production should still wait for the Chapter I gameplay baseline to be accepted.
