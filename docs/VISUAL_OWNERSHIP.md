@@ -22,8 +22,9 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Tower visible geometry/crew | `TowerArtDirector` | Tower stats/targeting |
 | Projectile impact visuals | `CombatImpactPresentation` | Audio |
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
-| Main combat HUD layout/content, controls, wave strip, build details, corner magic controls | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
+| Main combat HUD layout/content, controls, wave strip, contextual selected-defense panel, build details, corner magic controls | `ModernCombatHud` | Secondary combat/build canvas or layout owner |
 | Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
+| Settings UI including audio layout | `ModernSettingsPresentation` | Runtime layout polishers or duplicate settings canvases |
 | Chapter I objective/tutorial guidance | `ChapterOneGuidancePresentation` | Secondary tutorial/objective canvas |
 | Hector health and ability HUD | `HectorHUD` | Main combat resources/build UI |
 | Boss health/mechanics HUD | `BossHUD` | Main combat resources/build UI |
@@ -46,7 +47,9 @@ These components are still active or intentionally retained during a cutover. Th
 
 `CombatCornerControlsPresentation` has been removed. Its BuildDock placement, compact gift panel and corner magic UX are now owned directly by `ModernCombatHud`.
 
-Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, `ExtendedBalanceUI`, or `CombatCornerControlsPresentation`.
+`AudioSettingsLayoutPolisher` has been removed. The audio cards, labels, sliders and percentages are now authored directly by `ModernSettingsPresentation`.
+
+Previously retained compatibility shells and dormant legacy canvases have been removed. Do not reintroduce `GameHUD`, `GameUIController`, `ChapterFlowUI`, `CampaignProgressUI`, `BuildDefenseInfoPresentation`, `TowerContextActionHud`, `MenuSceneNavigationFix`, `ResultScreenPresentation`, `ExtendedBalanceUI`, `CombatCornerControlsPresentation`, or `AudioSettingsLayoutPolisher`.
 
 ## Editor art tooling
 
