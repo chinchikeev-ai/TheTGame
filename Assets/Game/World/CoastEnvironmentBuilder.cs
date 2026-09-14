@@ -4,15 +4,18 @@ using UnityEngine;
 // Troy wall/gate/city/fire have dedicated presentation owners.
 public static class CoastEnvironmentBuilder
 {
-    static readonly Color Sand = new Color(.63f,.54f,.38f);
-    static readonly Color LightSand = new Color(.72f,.62f,.43f);
-    static readonly Color WetSand = new Color(.43f,.39f,.31f);
-    static readonly Color ShallowWater = new Color(.10f,.31f,.37f);
-    static readonly Color Water = new Color(.065f,.21f,.29f);
-    static readonly Color DeepWater = new Color(.035f,.10f,.17f);
-    static readonly Color Rock = new Color(.30f,.29f,.26f);
-    static readonly Color Wood = new Color(.29f,.17f,.08f);
-    static readonly Color GreekCloth = new Color(.43f,.46f,.52f);
+    static readonly Color Sand = new Color(.70f,.58f,.37f);
+    static readonly Color LightSand = new Color(.82f,.69f,.44f);
+    static readonly Color WetSand = new Color(.47f,.41f,.30f);
+    static readonly Color ShallowWater = new Color(.09f,.38f,.46f);
+    static readonly Color Water = new Color(.055f,.27f,.39f);
+    static readonly Color DeepWater = new Color(.03f,.13f,.24f);
+    static readonly Color Rock = new Color(.35f,.34f,.30f);
+    static readonly Color Wood = new Color(.31f,.18f,.075f);
+    static readonly Color GreekCloth = new Color(.29f,.39f,.56f);
+    static readonly Color GreekDark = new Color(.16f,.25f,.40f);
+    static readonly Color Bronze = new Color(.66f,.43f,.15f);
+    static readonly Color Terracotta = new Color(.56f,.27f,.14f);
 
     public static void Build()
     {
@@ -21,6 +24,7 @@ public static class CoastEnvironmentBuilder
         CreateGround(root.transform);
         CreateSea(root.transform);
         CreateGreekLanding(root.transform);
+        CreateGreekCampLandmarks(root.transform);
         CreateDunesAndRocks(root.transform);
     }
 
@@ -54,6 +58,15 @@ public static class CoastEnvironmentBuilder
                 LightSand * (.96f + i * .008f),
                 Quaternion.Euler(0f,-14f + i * 7f,0f));
         }
+
+        Vector3[] sunBleachedMounds =
+        {
+            new Vector3(-9.0f,-.025f,5.55f), new Vector3(-8.35f,-.025f,-5.35f),
+            new Vector3(-6.55f,-.025f,7.55f), new Vector3(-6.1f,-.025f,-7.15f)
+        };
+        for(int i=0;i<sunBleachedMounds.Length;i++)
+            Primitive(parent,"Sun Bleached Sand Mound",PrimitiveType.Sphere,sunBleachedMounds[i],
+                new Vector3(1.35f+(i%2)*.25f,.09f,.72f+(i%3)*.10f),LightSand*(.98f+(i%2)*.025f),Quaternion.Euler(0f,i*37f-12f,0f));
     }
 
     static void CreateSea(Transform parent)
@@ -68,7 +81,7 @@ public static class CoastEnvironmentBuilder
             Primitive(parent,"Shallow Water Variation",PrimitiveType.Sphere,
                 new Vector3(-14.55f,-.175f,sandbarZ[i]),
                 new Vector3(1.75f,.025f,1.4f + (i % 2) * .45f),
-                new Color(.12f,.35f,.39f),
+                new Color(.13f,.43f,.48f),
                 Quaternion.Euler(0f,-8f + i * 4f,0f));
         }
     }
@@ -92,8 +105,81 @@ public static class CoastEnvironmentBuilder
                 new Vector3(-11.0f+(i%2)*.42f,.61f,z),
                 new Vector3(.028f,.61f,.028f),Wood,
                 Quaternion.Euler(i % 2 == 0 ? 5f : -7f,0f,i % 2 == 0 ? 5f : -6f));
-            Primitive(spear.transform,"Bronze Spear Tip",PrimitiveType.Sphere,new Vector3(0f,1.0f,0f),new Vector3(2.1f,.16f,2.1f),new Color(.58f,.38f,.15f));
+            Primitive(spear.transform,"Bronze Spear Tip",PrimitiveType.Sphere,new Vector3(0f,1.0f,0f),new Vector3(2.1f,.16f,2.1f),Bronze);
         }
+    }
+
+    static void CreateGreekCampLandmarks(Transform parent)
+    {
+        CreateCommandAwning(parent,new Vector3(-7.75f,.03f,6.55f),-8f);
+        CreateShieldRack(parent,new Vector3(-8.25f,.03f,-6.85f),10f);
+        CreateLandingRamp(parent,new Vector3(-11.45f,-.015f,.05f),4f);
+        CreateBaggageLine(parent,new Vector3(-8.25f,.02f,-8.15f),-7f);
+        CreateBaggageLine(parent,new Vector3(-7.75f,.02f,8.45f),9f);
+    }
+
+    static void CreateCommandAwning(Transform parent,Vector3 position,float yaw)
+    {
+        GameObject root=new GameObject("Greek Command Awning");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition=position;
+        root.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
+
+        float[] xs={-.72f,.72f};
+        float[] zs={-.48f,.48f};
+        for(int xi=0;xi<xs.Length;xi++)
+            for(int zi=0;zi<zs.Length;zi++)
+                Primitive(root.transform,"Awning Pole",PrimitiveType.Cylinder,new Vector3(xs[xi],.62f,zs[zi]),new Vector3(.025f,.62f,.025f),Wood);
+
+        Primitive(root.transform,"Blue Command Canopy",PrimitiveType.Cube,new Vector3(0f,1.18f,0f),new Vector3(1.65f,.055f,1.18f),GreekCloth,Quaternion.Euler(0f,0f,-2f));
+        Primitive(root.transform,"Canopy Dark Border",PrimitiveType.Cube,new Vector3(0f,1.145f,-.57f),new Vector3(1.68f,.07f,.07f),GreekDark);
+        Primitive(root.transform,"Canopy Bronze Stripe",PrimitiveType.Cube,new Vector3(0f,1.225f,.02f),new Vector3(.16f,.025f,1.20f),Bronze);
+        Primitive(root.transform,"Command Table",PrimitiveType.Cube,new Vector3(0f,.34f,0f),new Vector3(.90f,.09f,.55f),Wood*1.12f);
+        Primitive(root.transform,"Map Weight",PrimitiveType.Sphere,new Vector3(.23f,.42f,.08f),new Vector3(.10f,.06f,.10f),Bronze*.92f);
+    }
+
+    static void CreateShieldRack(Transform parent,Vector3 position,float yaw)
+    {
+        GameObject root=new GameObject("Greek Shield Rack");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition=position;
+        root.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
+
+        Primitive(root.transform,"Rack Beam",PrimitiveType.Cube,new Vector3(0f,.62f,0f),new Vector3(1.65f,.08f,.10f),Wood);
+        Primitive(root.transform,"Rack Leg",PrimitiveType.Cylinder,new Vector3(-.68f,.35f,0f),new Vector3(.035f,.35f,.035f),Wood,Quaternion.Euler(0f,0f,8f));
+        Primitive(root.transform,"Rack Leg",PrimitiveType.Cylinder,new Vector3(.68f,.35f,0f),new Vector3(.035f,.35f,.035f),Wood,Quaternion.Euler(0f,0f,-8f));
+        for(int i=0;i<3;i++)
+        {
+            GameObject shield=Primitive(root.transform,"Racked Greek Shield",PrimitiveType.Cylinder,new Vector3((i-1)*.48f,.52f,-.09f),new Vector3(.26f,.035f,.26f),i==1?GreekCloth:GreekDark,Quaternion.Euler(90f,0f,0f));
+            Primitive(shield.transform,"Bronze Shield Boss",PrimitiveType.Sphere,new Vector3(0f,.08f,0f),new Vector3(.12f,.045f,.12f),Bronze);
+        }
+    }
+
+    static void CreateLandingRamp(Transform parent,Vector3 position,float yaw)
+    {
+        GameObject root=new GameObject("Improvised Landing Ramp");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition=position;
+        root.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
+        for(int i=0;i<6;i++)
+        {
+            float z=(i-2.5f)*.28f;
+            Primitive(root.transform,"Wet Landing Plank",PrimitiveType.Cube,new Vector3(0f,.025f,z),new Vector3(1.55f,.055f,.22f),Wood*(.84f+(i%3)*.07f),Quaternion.Euler((i%2==0?1f:-1f),0f,(i-2)*.6f));
+        }
+        Primitive(root.transform,"Ramp Rope",PrimitiveType.Cylinder,new Vector3(-.61f,.08f,0f),new Vector3(.018f,.78f,.018f),new Color(.33f,.27f,.18f),Quaternion.Euler(90f,0f,0f));
+        Primitive(root.transform,"Ramp Rope",PrimitiveType.Cylinder,new Vector3(.61f,.08f,0f),new Vector3(.018f,.78f,.018f),new Color(.33f,.27f,.18f),Quaternion.Euler(90f,0f,0f));
+    }
+
+    static void CreateBaggageLine(Transform parent,Vector3 position,float yaw)
+    {
+        GameObject root=new GameObject("Greek Baggage Stack");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition=position;
+        root.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
+        Primitive(root.transform,"Baggage Crate",PrimitiveType.Cube,new Vector3(-.42f,.18f,.05f),new Vector3(.54f,.36f,.48f),Wood*.94f);
+        Primitive(root.transform,"Baggage Crate",PrimitiveType.Cube,new Vector3(.12f,.14f,.18f),new Vector3(.42f,.28f,.42f),Wood*1.12f,Quaternion.Euler(0f,15f,0f));
+        Primitive(root.transform,"Rolled Cloth",PrimitiveType.Cylinder,new Vector3(.52f,.16f,-.12f),new Vector3(.14f,.34f,.14f),GreekCloth,Quaternion.Euler(90f,0f,0f));
+        Primitive(root.transform,"Amphora",PrimitiveType.Sphere,new Vector3(.72f,.20f,.25f),new Vector3(.17f,.25f,.17f),Terracotta);
     }
 
     static void CreateTent(Transform parent, Vector3 position, float yaw)
@@ -103,12 +189,13 @@ public static class CoastEnvironmentBuilder
         root.transform.localPosition = position;
         root.transform.localRotation = Quaternion.Euler(0f,yaw,0f);
 
-        Primitive(root.transform,"Tent Ground Cloth",PrimitiveType.Cube,new Vector3(0f,.045f,0f),new Vector3(1.45f,.05f,1.25f),GreekCloth * .74f);
+        Primitive(root.transform,"Tent Ground Cloth",PrimitiveType.Cube,new Vector3(0f,.045f,0f),new Vector3(1.45f,.05f,1.25f),GreekDark * .92f);
         Primitive(root.transform,"Tent Left Roof",PrimitiveType.Cube,new Vector3(-.31f,.42f,0f),new Vector3(.78f,.065f,1.22f),GreekCloth,Quaternion.Euler(0f,0f,-31f));
-        Primitive(root.transform,"Tent Right Roof",PrimitiveType.Cube,new Vector3(.31f,.42f,0f),new Vector3(.78f,.065f,1.22f),GreekCloth * .92f,Quaternion.Euler(0f,0f,31f));
+        Primitive(root.transform,"Tent Right Roof",PrimitiveType.Cube,new Vector3(.31f,.42f,0f),new Vector3(.78f,.065f,1.22f),GreekCloth * .91f,Quaternion.Euler(0f,0f,31f));
         Primitive(root.transform,"Tent Ridge Pole",PrimitiveType.Cylinder,new Vector3(0f,.70f,0f),new Vector3(.025f,.67f,.025f),Wood,Quaternion.Euler(90f,0f,0f));
         Primitive(root.transform,"Tent Front Pole",PrimitiveType.Cylinder,new Vector3(0f,.35f,-.62f),new Vector3(.022f,.35f,.022f),Wood);
         Primitive(root.transform,"Tent Rear Pole",PrimitiveType.Cylinder,new Vector3(0f,.35f,.62f),new Vector3(.022f,.35f,.022f),Wood);
+        Primitive(root.transform,"Tent Bronze Mark",PrimitiveType.Cube,new Vector3(-.34f,.44f,-.63f),new Vector3(.13f,.17f,.015f),Bronze,Quaternion.Euler(0f,0f,-31f));
     }
 
     static void CreateSupplyCluster(Transform parent, Vector3 position, float yaw)
@@ -120,8 +207,8 @@ public static class CoastEnvironmentBuilder
 
         Primitive(root.transform,"Supply Crate",PrimitiveType.Cube,new Vector3(-.32f,.18f,0f),new Vector3(.48f,.36f,.46f),Wood);
         Primitive(root.transform,"Supply Crate",PrimitiveType.Cube,new Vector3(.18f,.14f,.28f),new Vector3(.38f,.28f,.38f),Wood * 1.14f,Quaternion.Euler(0f,17f,0f));
-        Primitive(root.transform,"Amphora Body",PrimitiveType.Sphere,new Vector3(.38f,.22f,-.26f),new Vector3(.20f,.28f,.20f),new Color(.48f,.28f,.15f));
-        Primitive(root.transform,"Amphora Neck",PrimitiveType.Cylinder,new Vector3(.38f,.43f,-.26f),new Vector3(.075f,.12f,.075f),new Color(.52f,.31f,.17f));
+        Primitive(root.transform,"Amphora Body",PrimitiveType.Sphere,new Vector3(.38f,.22f,-.26f),new Vector3(.20f,.28f,.20f),Terracotta);
+        Primitive(root.transform,"Amphora Neck",PrimitiveType.Cylinder,new Vector3(.38f,.43f,-.26f),new Vector3(.075f,.12f,.075f),Terracotta*1.08f);
     }
 
     static void CreateDunesAndRocks(Transform parent)
