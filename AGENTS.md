@@ -17,6 +17,23 @@ This is the mandatory entrypoint for AI-assisted development.
 
 For non-trivial work, use `docs/tasks/TASK_TEMPLATE.md`.
 
+## Solo-developer Git workflow
+This repository is maintained by one developer. Keep Git workflow simple and do not introduce team-process ceremony unless explicitly requested.
+
+- `main` is the normal delivery branch for routine fixes, balance changes, UI changes, documentation, and configuration updates.
+- For small and medium changes, commit directly to `main` by default.
+- Do not create a feature branch or pull request just for process/review when the user did not ask for one.
+- Use a separate branch only when it materially reduces risk: large refactors, experimental work, long-running changes, destructive migrations, or concurrent work that must stay isolated.
+- If a branch is used for a requested change and the user says to ship/merge/apply it, merge it into `main` in the same task unless the user explicitly asks to keep it separate.
+- Never treat "committed to a branch" or "PR opened" as equivalent to "shipped". A change is shipped only when it is actually present in `main`.
+- After any merge or direct write that is supposed to be live, verify the relevant file/content from `main` before reporting completion.
+- If a branch has diverged from `main`, compare changed files first and preserve newer `main` work; do not overwrite unrelated newer changes.
+- PRs are optional for this solo project. Use them only when they are genuinely useful or explicitly requested.
+- Do not wait for or require CI before merging unless the user explicitly asks for CI validation.
+- Unity CI is manual-only. `.github/workflows/unity-ci.yml` must use `workflow_dispatch` and must not auto-run on `push` or `pull_request` unless the user explicitly requests changing that policy.
+- Never manually start Unity CI unless the user explicitly asks to run it.
+- Do not enable automatic Unity CI as a side effect of other Git/GitHub work.
+
 ## Documentation authority
 - `docs/PROJECT_STATUS.md` is authoritative for current implementation state.
 - `docs/MODEL_ART_INVENTORY.md` is authoritative for production-art completion.
@@ -123,7 +140,7 @@ Unix: `UNITY_EDITOR=/path/to/Unity ./tools/validate-project.sh`
 
 Full stages: architecture guard -> Unity architecture checks -> EditMode -> PlayMode acceptance tests -> Windows build.
 
-GitHub Actions mirrors this flow in `.github/workflows/unity-ci.yml`.
+GitHub Actions mirrors this flow in `.github/workflows/unity-ci.yml`, but the GitHub workflow is manual-only and runs only when explicitly requested.
 
 ## Validation truthfulness
 An agent may say code was implemented after editing source. It may say Unity compile/tests/build are validated only when those checks actually ran and passed.
