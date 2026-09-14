@@ -1,530 +1,416 @@
+using System;
+using System.Collections;
+using System.Reflection;
+using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public sealed class MainMenuBackgroundOverride : MonoBehaviour
 {
-    const string HighResolutionBackgroundResource = "Menu/Main_screen";
-    const float BackgroundZoom = 1.45f;
+    const string ApprovedMenuResourceRoot = "Menu/ApprovedMainMenu/part";
+    const int ApprovedMenuPartCount = 10;
 
-    Texture2D highResolutionTexture;
-    Sprite highResolutionSprite;
-    GameObject appliedMenu;
+    readonly Vector2 playPosition = new Vector2(437f, 286f);
+    readonly Vector2 playSize = new Vector2(548f, 203f);
+    readonly Vector2 heroesPosition = new Vector2(454f, 127f);
+    readonly Vector2 secondarySize = new Vector2(457f, 116f);
+    readonly Vector2 towersPosition = new Vector2(454f, 8f);
+    readonly Vector2 upgradesPosition = new Vector2(454f, -106f);
+    readonly Vector2 shopPosition = new Vector2(454f, -217f);
+    readonly Vector2 settingsPosition = new Vector2(861f, 473f);
+    readonly Vector2 settingsSize = new Vector2(104f, 100f);
+    readonly Vector2 exitPosition = new Vector2(791f, -469f);
+    readonly Vector2 exitSize = new Vector2(208f, 118f);
+
+    Texture2D approvedTexture;
+    Sprite approvedSprite;
+    GameObject appliedMainMenu;
+    GameMenuController controller;
+    GameObject toastPanel;
+    Text toastText;
+    CanvasGroup toastCanvasGroup;
+    Coroutine toastRoutine;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoStart()
     {
         if (FindFirstObjectByType<MainMenuBackgroundOverride>() == null)
-            new GameObject("MainMenuVisualRefresh").AddComponent<MainMenuBackgroundOverride>();
+            new GameObject("ApprovedMainMenuPresenter").AddComponent<MainMenuBackgroundOverride>();
     }
 
     void Awake()
     {
-        highResolutionTexture = Resources.Load<Texture2D>(HighResolutionBackgroundResource);
-        if (highResolutionTexture != null)
-        {
-            highResolutionSprite = Sprite.Create(
-                highResolutionTexture,
-                new Rect(0f, 0f, highResolutionTexture.width, highResolutionTexture.height),
-                new Vector2(.5f, .5f),
-                100f);
-        }
+        approvedSprite = LoadApprovedMenuSprite();
     }
 
     void LateUpdate()
     {
+        if (approvedSprite == null) return;
+        if (appliedMainMenu != null) return;
+
+        controller = FindFirstObjectByType<GameMenuController>();
+        if (controller == null) return;
+
         GameObject canvasObject = GameObject.Find("MenuCanvas");
         if (canvasObject == null) return;
 
         Transform mainMenu = canvasObject.transform.Find("MainMenu");
         if (mainMenu == null) return;
 
-        if (appliedMenu == mainMenu.gameObject) return;
-        ApplyPresentation(mainMenu);
-        appliedMenu = mainMenu.gameObject;
+        ApplyApprovedMenu(mainMenu);
+        appliedMainMenu = mainMenu.gameObject;
     }
 
-    void ApplyPresentation(Transform mainMenu)
+    Sprite LoadApprovedMenuSprite()
     {
-        ApplyHighResolutionBackground(mainMenu);
-        ApplyReadabilityWash(mainMenu);
-
-        Transform panel = mainMenu.Find("MainPanel");
-        if (panel != null)
-            RestyleMainPanel(panel);
-
-        RuntimeFileLogger.Event("MENU", "Applied refreshed high-resolution main-menu presentation");
-    }
-
-    void ApplyHighResolutionBackground(Transform mainMenu)
-    {
-        Transform background = mainMenu.Find("Background");
-        if (background != null)
+        StringBuilder encoded = new StringBuilder(560000);
+        for (int i = 0; i < ApprovedMenuPartCount; i++)
         {
-            Image image = background.GetComponent<Image>();
-            if (image != null && highResolutionSprite != null)
+            TextAsset part = Resources.Load<TextAsset>($"{ApprovedMenuResourceRoot}{i:00}");
+            if (part == null)
             {
-                image.sprite = highResolutionSprite;
-                image.type = Image.Type.Simple;
-                image.preserveAspect = false;
-                image.color = Color.white;
-                image.raycastTarget = false;
+                RuntimeFileLogger.Event("MENU", $"Approved menu reference part missing: {i:00}");
+                return null;
             }
 
-            RectTransform backgroundRect = background as RectTransform;
-            if (backgroundRect != null)
-                backgroundRect.localScale = new Vector3(BackgroundZoom, BackgroundZoom, 1f);
-
-            AspectRatioFitter fitter = background.GetComponent<AspectRatioFitter>();
-            if (fitter != null && highResolutionTexture != null)
-                fitter.aspectRatio = (float)highResolutionTexture.width / highResolutionTexture.height;
+            encoded.Append(part.text.Trim());
         }
 
-        Transform shade = mainMenu.Find("CinematicShade");
-        if (shade != null)
+        try
         {
-            Image shadeImage = shade.GetComponent<Image>();
-            if (shadeImage != null)
-                shadeImage.color = new Color(.018f, .008f, .004f, .12f);
+            byte[] bytes = Convert.FromBase64String(encoded.ToString());
+            approvedTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false)
+            {
+                name = "ApprovedMainMenuReference"
+            };
+
+            if (!approvedTexture.LoadImage(bytes, false))
+            {
+                RuntimeFileLogger.Event("MENU", "Approved menu reference could not be decoded as an image");
+                Destroy(approvedTexture);
+                approvedTexture = null;
+                return null;
+            }
+
+            approvedTexture.wrapMode = TextureWrapMode.Clamp;
+            approvedTexture.filterMode = FilterMode.Bilinear;
+            return Sprite.Create(
+                approvedTexture,
+                new Rect(0f, 0f, approvedTexture.width, approvedTexture.height),
+                new Vector2(.5f, .5f),
+                100f);
         }
-    }
-
-    void ApplyReadabilityWash(Transform mainMenu)
-    {
-        Transform panel = mainMenu.Find("MainPanel");
-        int insertIndex = panel != null ? panel.GetSiblingIndex() : mainMenu.childCount;
-
-        CreateWashBand(mainMenu, "ReadabilityWashSoft", .48f, 1f, .08f, insertIndex++);
-        CreateWashBand(mainMenu, "ReadabilityWashMid", .58f, 1f, .12f, insertIndex++);
-        CreateWashBand(mainMenu, "ReadabilityWashStrong", .69f, 1f, .18f, insertIndex++);
-    }
-
-    static void CreateWashBand(Transform parent, string name, float minX, float maxX, float alpha, int siblingIndex)
-    {
-        Transform existing = parent.Find(name);
-        GameObject go = existing != null ? existing.gameObject : new GameObject(name);
-        if (existing == null) go.transform.SetParent(parent, false);
-
-        Image image = go.GetComponent<Image>();
-        if (image == null) image = go.AddComponent<Image>();
-        image.color = new Color(.025f, .010f, .004f, alpha);
-        image.raycastTarget = false;
-
-        RectTransform rect = image.rectTransform;
-        rect.anchorMin = new Vector2(minX, 0f);
-        rect.anchorMax = new Vector2(maxX, 1f);
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-        go.transform.SetSiblingIndex(Mathf.Clamp(siblingIndex, 0, parent.childCount - 1));
-    }
-
-    void RestyleMainPanel(Transform panel)
-    {
-        RectTransform panelRect = panel as RectTransform;
-        if (panelRect != null)
+        catch (Exception exception)
         {
-            panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(.79f, .5f);
-            panelRect.sizeDelta = new Vector2(720f, 940f);
-        }
-
-        Image panelImage = panel.GetComponent<Image>();
-        if (panelImage != null)
-        {
-            panelImage.color = new Color(0f, 0f, 0f, 0f);
-            panelImage.raycastTarget = false;
-        }
-
-        Outline panelOutline = panel.GetComponent<Outline>();
-        if (panelOutline != null) panelOutline.enabled = false;
-
-        CreateBrandPlaque(panel);
-        CreateButtonRail(panel);
-        RestyleMainTexts(panel);
-        RestyleMainButtons(panel);
-    }
-
-    static void CreateBrandPlaque(Transform panel)
-    {
-        Transform existing = panel.Find("BrandPlaque");
-        GameObject plaque = existing != null ? existing.gameObject : new GameObject("BrandPlaque");
-        if (existing == null) plaque.transform.SetParent(panel, false);
-
-        Image image = plaque.GetComponent<Image>();
-        if (image == null) image = plaque.AddComponent<Image>();
-        image.color = new Color(.11f, .038f, .012f, .94f);
-        image.raycastTarget = false;
-
-        RectTransform rect = image.rectTransform;
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-        rect.anchoredPosition = new Vector2(0f, 300f);
-        rect.sizeDelta = new Vector2(650f, 220f);
-
-        Outline outline = plaque.GetComponent<Outline>();
-        if (outline == null) outline = plaque.AddComponent<Outline>();
-        outline.effectColor = new Color(.95f, .56f, .16f, .86f);
-        outline.effectDistance = new Vector2(3f, -3f);
-
-        Shadow shadow = FindPlainShadow(plaque);
-        if (shadow == null) shadow = plaque.AddComponent<Shadow>();
-        shadow.effectColor = new Color(.02f, .006f, .002f, .78f);
-        shadow.effectDistance = new Vector2(0f, -8f);
-
-        Transform inner = plaque.transform.Find("InnerPlate");
-        GameObject innerGo = inner != null ? inner.gameObject : new GameObject("InnerPlate");
-        if (inner == null) innerGo.transform.SetParent(plaque.transform, false);
-        Image innerImage = innerGo.GetComponent<Image>();
-        if (innerImage == null) innerImage = innerGo.AddComponent<Image>();
-        innerImage.color = new Color(.30f, .085f, .025f, .82f);
-        innerImage.raycastTarget = false;
-        RectTransform innerRect = innerImage.rectTransform;
-        innerRect.anchorMin = Vector2.zero;
-        innerRect.anchorMax = Vector2.one;
-        innerRect.offsetMin = new Vector2(10f, 10f);
-        innerRect.offsetMax = new Vector2(-10f, -10f);
-
-        Transform top = plaque.transform.Find("GoldTop");
-        GameObject topGo = top != null ? top.gameObject : new GameObject("GoldTop");
-        if (top == null) topGo.transform.SetParent(plaque.transform, false);
-        Image topImage = topGo.GetComponent<Image>();
-        if (topImage == null) topImage = topGo.AddComponent<Image>();
-        topImage.color = new Color(1f, .63f, .16f, .95f);
-        topImage.raycastTarget = false;
-        RectTransform topRect = topImage.rectTransform;
-        topRect.anchorMin = new Vector2(.08f, 1f);
-        topRect.anchorMax = new Vector2(.92f, 1f);
-        topRect.pivot = new Vector2(.5f, 1f);
-        topRect.anchoredPosition = new Vector2(0f, -7f);
-        topRect.sizeDelta = new Vector2(0f, 6f);
-
-        plaque.transform.SetSiblingIndex(0);
-    }
-
-    static void CreateButtonRail(Transform panel)
-    {
-        Transform existing = panel.Find("ButtonRail");
-        GameObject rail = existing != null ? existing.gameObject : new GameObject("ButtonRail");
-        if (existing == null) rail.transform.SetParent(panel, false);
-
-        Image image = rail.GetComponent<Image>();
-        if (image == null) image = rail.AddComponent<Image>();
-        image.color = new Color(.035f, .012f, .004f, .28f);
-        image.raycastTarget = false;
-
-        RectTransform rect = image.rectTransform;
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-        rect.anchoredPosition = new Vector2(0f, -67f);
-        rect.sizeDelta = new Vector2(636f, 525f);
-
-        Outline outline = rail.GetComponent<Outline>();
-        if (outline == null) outline = rail.AddComponent<Outline>();
-        outline.effectColor = new Color(.88f, .49f, .13f, .20f);
-        outline.effectDistance = new Vector2(2f, -2f);
-
-        rail.transform.SetSiblingIndex(Mathf.Min(1, panel.childCount - 1));
-    }
-
-    static void RestyleMainTexts(Transform panel)
-    {
-        foreach (Text text in panel.GetComponentsInChildren<Text>(true))
-        {
-            string value = text.text ?? string.Empty;
-            RectTransform rect = text.rectTransform;
-
-            if (value == "THE TROY GAME")
-            {
-                text.fontSize = 58;
-                text.fontStyle = FontStyle.Bold;
-                text.color = new Color(1f, .67f, .17f, 1f);
-                rect.anchoredPosition = new Vector2(0f, 350f);
-                rect.sizeDelta = new Vector2(620f, 80f);
-                EnsureTextShadow(text, new Color(.12f, .035f, .005f, .95f), new Vector2(3f, -4f));
-            }
-            else if (value == "GODS DEFENSE")
-            {
-                text.fontSize = 25;
-                text.fontStyle = FontStyle.Bold;
-                text.color = new Color(1f, .88f, .55f, 1f);
-                rect.anchoredPosition = new Vector2(0f, 292f);
-                rect.sizeDelta = new Vector2(560f, 42f);
-                EnsureTextShadow(text, new Color(.06f, .02f, .005f, .85f), new Vector2(2f, -2f));
-            }
-            else if (value.Contains("DEFEND TROY") || value.Contains("ЗАЩИТИ ТРОЮ"))
-            {
-                text.fontSize = 16;
-                text.color = new Color(.94f, .82f, .64f, .96f);
-                rect.anchoredPosition = new Vector2(0f, 245f);
-                rect.sizeDelta = new Vector2(570f, 36f);
-            }
-            else if (value.Contains("Progress saves automatically") || value.Contains("Прогресс сохраняется автоматически"))
-            {
-                text.fontSize = 13;
-                text.color = new Color(.86f, .72f, .55f, .90f);
-                rect.anchoredPosition = new Vector2(0f, -355f);
-            }
-            else if (value.Contains("PRE-ALPHA"))
-            {
-                text.fontSize = 12;
-                text.color = new Color(.70f, .56f, .42f, .86f);
-                rect.anchoredPosition = new Vector2(0f, -405f);
-            }
+            RuntimeFileLogger.Event("MENU", $"Approved menu reference decode failed: {exception.GetType().Name}");
+            return null;
         }
     }
 
-    static void RestyleMainButtons(Transform panel)
+    void ApplyApprovedMenu(Transform mainMenu)
     {
-        Button[] buttons = panel.GetComponentsInChildren<Button>(true);
-        for (int i = 0; i < buttons.Length && i < 5; i++)
-        {
-            Vector2 position;
-            Vector2 size;
-            switch (i)
-            {
-                case 0:
-                    position = new Vector2(0f, 120f);
-                    size = new Vector2(590f, 92f);
-                    break;
-                case 1:
-                    position = new Vector2(0f, 12f);
-                    size = new Vector2(550f, 74f);
-                    break;
-                case 2:
-                    position = new Vector2(0f, -78f);
-                    size = new Vector2(550f, 74f);
-                    break;
-                case 3:
-                    position = new Vector2(0f, -168f);
-                    size = new Vector2(520f, 70f);
-                    break;
-                default:
-                    position = new Vector2(0f, -258f);
-                    size = new Vector2(430f, 66f);
-                    break;
-            }
+        for (int i = 0; i < mainMenu.childCount; i++)
+            mainMenu.GetChild(i).gameObject.SetActive(false);
 
-            StyleButton(buttons[i], i, position, size);
-        }
+        GameObject approvedRoot = new GameObject("ApprovedMainMenu");
+        approvedRoot.transform.SetParent(mainMenu, false);
+        RectTransform approvedRect = approvedRoot.AddComponent<RectTransform>();
+        Stretch(approvedRect);
+
+        GameObject artObject = new GameObject("ApprovedReferenceArt");
+        artObject.transform.SetParent(approvedRoot.transform, false);
+        Image art = artObject.AddComponent<Image>();
+        art.sprite = approvedSprite;
+        art.type = Image.Type.Simple;
+        art.preserveAspect = false;
+        art.raycastTarget = false;
+        Stretch(art.rectTransform);
+
+        CreateHotspot(approvedRoot.transform, "PLAY", playPosition, playSize, OpenChapterSelect, .18f);
+        CreateHotspot(approvedRoot.transform, "HEROES", heroesPosition, secondarySize, () => ShowComingSoon("HEROES"), .12f);
+        CreateHotspot(approvedRoot.transform, "TOWERS", towersPosition, new Vector2(457f, 112f), () => ShowComingSoon("TOWERS"), .12f);
+        CreateHotspot(approvedRoot.transform, "UPGRADES", upgradesPosition, new Vector2(457f, 110f), () => ShowComingSoon("UPGRADES"), .12f);
+        CreateHotspot(approvedRoot.transform, "SHOP", shopPosition, new Vector2(457f, 106f), () => ShowComingSoon("SHOP"), .12f);
+        CreateHotspot(approvedRoot.transform, "SETTINGS", settingsPosition, settingsSize, OpenSettings, .16f);
+        CreateHotspot(approvedRoot.transform, "EXIT", exitPosition, exitSize, ExitGame, .14f);
+
+        BuildToast(approvedRoot.transform);
+        RuntimeFileLogger.Event("MENU", "Applied user-approved main-menu reference and interactive hotspots");
     }
 
-    static void StyleButton(Button button, int index, Vector2 position, Vector2 size)
+    void CreateHotspot(
+        Transform parent,
+        string name,
+        Vector2 position,
+        Vector2 size,
+        UnityEngine.Events.UnityAction action,
+        float hoverAlpha)
     {
-        Image frame = button.GetComponent<Image>();
-        if (frame == null) frame = button.gameObject.AddComponent<Image>();
-        frame.sprite = null;
-        frame.type = Image.Type.Simple;
-        frame.color = FrameColor(index);
-        frame.raycastTarget = true;
+        GameObject go = new GameObject(name + "_Hotspot");
+        go.transform.SetParent(parent, false);
 
-        RectTransform rect = frame.rectTransform;
+        Image input = go.AddComponent<Image>();
+        input.color = new Color(1f, 1f, 1f, .001f);
+        input.raycastTarget = true;
+
+        RectTransform rect = input.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
         rect.anchoredPosition = position;
         rect.sizeDelta = size;
 
-        button.targetGraphic = frame;
-        button.transition = Selectable.Transition.ColorTint;
-        ColorBlock colors = button.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1f, .93f, .72f, 1f);
-        colors.pressedColor = new Color(.70f, .55f, .40f, 1f);
-        colors.selectedColor = new Color(1f, .88f, .62f, 1f);
-        colors.disabledColor = new Color(.42f, .42f, .42f, .62f);
-        colors.colorMultiplier = 1f;
-        colors.fadeDuration = .07f;
-        button.colors = colors;
+        Button button = go.AddComponent<Button>();
+        button.targetGraphic = input;
+        button.transition = Selectable.Transition.None;
+        button.onClick.AddListener(action);
 
-        Outline outline = button.GetComponent<Outline>();
-        if (outline == null) outline = button.gameObject.AddComponent<Outline>();
-        outline.effectColor = index == 0
-            ? new Color(1f, .67f, .18f, .92f)
-            : new Color(.36f, .16f, .055f, .96f);
+        GameObject glowObject = new GameObject("Glow");
+        glowObject.transform.SetParent(go.transform, false);
+        Image glow = glowObject.AddComponent<Image>();
+        glow.color = new Color(1f, .72f, .22f, 0f);
+        glow.raycastTarget = false;
+        RectTransform glowRect = glow.rectTransform;
+        Stretch(glowRect);
+        glowRect.offsetMin = new Vector2(-5f, -5f);
+        glowRect.offsetMax = new Vector2(5f, 5f);
+
+        Outline outline = glowObject.AddComponent<Outline>();
+        outline.effectColor = new Color(1f, .76f, .30f, .0f);
         outline.effectDistance = new Vector2(3f, -3f);
 
-        Shadow shadow = FindPlainShadow(button.gameObject);
-        if (shadow == null) shadow = button.gameObject.AddComponent<Shadow>();
-        shadow.effectColor = new Color(.02f, .006f, .002f, .84f);
-        shadow.effectDistance = new Vector2(0f, -7f);
+        MainMenuHotspotFeedback feedback = go.AddComponent<MainMenuHotspotFeedback>();
+        feedback.Configure(glow, outline, hoverAlpha);
+    }
 
-        GameObject face = EnsureImageChild(button.transform, "RefreshFace", FaceColor(index));
-        RectTransform faceRect = face.GetComponent<RectTransform>();
-        faceRect.anchorMin = Vector2.zero;
-        faceRect.anchorMax = Vector2.one;
-        faceRect.offsetMin = new Vector2(8f, 9f);
-        faceRect.offsetMax = new Vector2(-8f, -8f);
-        face.transform.SetSiblingIndex(0);
+    void BuildToast(Transform parent)
+    {
+        toastPanel = new GameObject("ComingSoonToast");
+        toastPanel.transform.SetParent(parent, false);
+        Image panelImage = toastPanel.AddComponent<Image>();
+        panelImage.color = new Color(.12f, .045f, .015f, .94f);
+        panelImage.raycastTarget = false;
 
-        GameObject topHighlight = EnsureImageChild(face.transform, "TopHighlight", TopHighlightColor(index));
-        RectTransform topRect = topHighlight.GetComponent<RectTransform>();
-        topRect.anchorMin = new Vector2(.03f, 1f);
-        topRect.anchorMax = new Vector2(.97f, 1f);
-        topRect.pivot = new Vector2(.5f, 1f);
-        topRect.anchoredPosition = new Vector2(0f, -5f);
-        topRect.sizeDelta = new Vector2(0f, 4f);
+        RectTransform panelRect = panelImage.rectTransform;
+        panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(.5f, .5f);
+        panelRect.anchoredPosition = new Vector2(320f, -390f);
+        panelRect.sizeDelta = new Vector2(460f, 64f);
 
-        GameObject accent = EnsureImageChild(face.transform, "LeftAccent", AccentColor(index));
-        RectTransform accentRect = accent.GetComponent<RectTransform>();
-        accentRect.anchorMin = new Vector2(0f, .10f);
-        accentRect.anchorMax = new Vector2(0f, .90f);
-        accentRect.pivot = new Vector2(0f, .5f);
-        accentRect.anchoredPosition = new Vector2(10f, 0f);
-        accentRect.sizeDelta = new Vector2(11f, 0f);
+        Outline outline = toastPanel.AddComponent<Outline>();
+        outline.effectColor = new Color(1f, .60f, .18f, .80f);
+        outline.effectDistance = new Vector2(2f, -2f);
 
-        CreateBadge(button.transform, index, size);
+        GameObject textObject = new GameObject("Text");
+        textObject.transform.SetParent(toastPanel.transform, false);
+        toastText = textObject.AddComponent<Text>();
+        toastText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        toastText.fontSize = 20;
+        toastText.fontStyle = FontStyle.Bold;
+        toastText.alignment = TextAnchor.MiddleCenter;
+        toastText.color = new Color(1f, .88f, .58f, 1f);
+        toastText.raycastTarget = false;
+        Stretch(toastText.rectTransform);
 
-        Text label = button.GetComponentInChildren<Text>(true);
-        if (label != null)
+        toastCanvasGroup = toastPanel.AddComponent<CanvasGroup>();
+        toastCanvasGroup.alpha = 0f;
+        toastPanel.SetActive(false);
+    }
+
+    void OpenChapterSelect()
+    {
+        InvokeController("ShowLevels");
+    }
+
+    void OpenSettings()
+    {
+        InvokeController("ShowSettingsFromMain");
+    }
+
+    void ExitGame()
+    {
+        InvokeController("QuitGame");
+    }
+
+    void InvokeController(string methodName)
+    {
+        if (controller == null) controller = FindFirstObjectByType<GameMenuController>();
+        if (controller == null) return;
+
+        MethodInfo method = typeof(GameMenuController).GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (method == null)
         {
-            label.fontSize = index == 0 ? 26 : 21;
-            label.fontStyle = FontStyle.Bold;
-            label.color = LabelColor(index);
-            label.alignment = TextAnchor.MiddleCenter;
-            label.raycastTarget = false;
-            RectTransform labelRect = label.rectTransform;
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(78f, 0f);
-            labelRect.offsetMax = new Vector2(-50f, 0f);
-            labelRect.pivot = new Vector2(.5f, .5f);
-            EnsureTextShadow(label, new Color(.08f, .025f, .008f, .78f), new Vector2(1f, -2f));
+            RuntimeFileLogger.Event("MENU", $"Approved menu action was not found: {methodName}");
+            return;
         }
 
-        CreateChevron(button.transform, index);
+        method.Invoke(controller, null);
     }
 
-    static void CreateBadge(Transform parent, int index, Vector2 size)
+    void ShowComingSoon(string feature)
     {
-        GameObject badge = EnsureImageChild(parent, "MenuBadge", BadgeColor(index));
-        RectTransform badgeRect = badge.GetComponent<RectTransform>();
-        badgeRect.anchorMin = badgeRect.anchorMax = badgeRect.pivot = new Vector2(0f, .5f);
-        badgeRect.anchoredPosition = new Vector2(36f, 0f);
-        badgeRect.sizeDelta = new Vector2(index == 0 ? 58f : 50f, index == 0 ? 58f : 50f);
-        badge.transform.SetSiblingIndex(1);
+        if (toastPanel == null || toastText == null) return;
 
-        Text text = badge.GetComponentInChildren<Text>(true);
-        if (text == null)
+        toastText.text = GameLanguage.T(
+            $"{feature}  -  IN DEVELOPMENT",
+            $"{feature}  -  В РАЗРАБОТКЕ");
+
+        if (toastRoutine != null) StopCoroutine(toastRoutine);
+        toastRoutine = StartCoroutine(AnimateToast());
+    }
+
+    IEnumerator AnimateToast()
+    {
+        toastPanel.SetActive(true);
+        float time = 0f;
+        while (time < .14f)
         {
-            GameObject textGo = new GameObject("BadgeText");
-            textGo.transform.SetParent(badge.transform, false);
-            text = textGo.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
-            text.raycastTarget = false;
-            RectTransform textRect = text.rectTransform;
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = textRect.offsetMax = Vector2.zero;
+            time += Time.unscaledDeltaTime;
+            toastCanvasGroup.alpha = Mathf.Clamp01(time / .14f);
+            yield return null;
         }
 
-        text.text = index == 0 ? ">" : index == 1 ? "+" : index == 2 ? "III" : index == 3 ? "#" : "X";
-        text.fontSize = index == 2 ? 17 : 24;
-        text.color = BadgeTextColor(index);
-    }
-
-    static void CreateChevron(Transform parent, int index)
-    {
-        Transform existing = parent.Find("MenuChevron");
-        Text text;
-        if (existing == null)
+        toastCanvasGroup.alpha = 1f;
+        float hold = 0f;
+        while (hold < 1.35f)
         {
-            GameObject go = new GameObject("MenuChevron");
-            go.transform.SetParent(parent, false);
-            text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
-            text.raycastTarget = false;
-        }
-        else
-        {
-            text = existing.GetComponent<Text>();
-            if (text == null) text = existing.gameObject.AddComponent<Text>();
+            hold += Time.unscaledDeltaTime;
+            yield return null;
         }
 
-        text.text = ">";
-        text.fontSize = 25;
-        text.color = LabelColor(index);
-        RectTransform rect = text.rectTransform;
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1f, .5f);
-        rect.anchoredPosition = new Vector2(-28f, 0f);
-        rect.sizeDelta = new Vector2(32f, 52f);
-    }
-
-    static GameObject EnsureImageChild(Transform parent, string name, Color color)
-    {
-        Transform existing = parent.Find(name);
-        GameObject go = existing != null ? existing.gameObject : new GameObject(name);
-        if (existing == null) go.transform.SetParent(parent, false);
-
-        Image image = go.GetComponent<Image>();
-        if (image == null) image = go.AddComponent<Image>();
-        image.sprite = null;
-        image.type = Image.Type.Simple;
-        image.color = color;
-        image.raycastTarget = false;
-        return go;
-    }
-
-    static Shadow FindPlainShadow(GameObject go)
-    {
-        Shadow[] shadows = go.GetComponents<Shadow>();
-        foreach (Shadow shadow in shadows)
+        time = 0f;
+        while (time < .22f)
         {
-            if (shadow.GetType() == typeof(Shadow)) return shadow;
+            time += Time.unscaledDeltaTime;
+            toastCanvasGroup.alpha = 1f - Mathf.Clamp01(time / .22f);
+            yield return null;
         }
-        return null;
+
+        toastCanvasGroup.alpha = 0f;
+        toastPanel.SetActive(false);
+        toastRoutine = null;
     }
 
-    static void EnsureTextShadow(Text text, Color color, Vector2 distance)
+    static void Stretch(RectTransform rect)
     {
-        Shadow shadow = FindPlainShadow(text.gameObject);
-        if (shadow == null) shadow = text.gameObject.AddComponent<Shadow>();
-        shadow.effectColor = color;
-        shadow.effectDistance = distance;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 
-    static Color FrameColor(int index)
+    void OnDestroy()
     {
-        if (index == 0) return new Color(.97f, .60f, .16f, 1f);
-        if (index == 4) return new Color(.55f, .16f, .08f, 1f);
-        return new Color(.39f, .20f, .075f, 1f);
+        if (approvedSprite != null) Destroy(approvedSprite);
+        if (approvedTexture != null) Destroy(approvedTexture);
+    }
+}
+
+public sealed class MainMenuHotspotFeedback : MonoBehaviour,
+    IPointerEnterHandler,
+    IPointerExitHandler,
+    IPointerDownHandler,
+    IPointerUpHandler,
+    ISelectHandler,
+    IDeselectHandler
+{
+    const float HoverScale = 1.025f;
+    const float PressScale = .965f;
+    const float Speed = 20f;
+
+    RectTransform rect;
+    Image glow;
+    Outline outline;
+    float hoverAlpha;
+    float targetAlpha;
+    Vector3 targetScale = Vector3.one;
+    bool highlighted;
+
+    public void Configure(Image glowImage, Outline glowOutline, float alpha)
+    {
+        glow = glowImage;
+        outline = glowOutline;
+        hoverAlpha = alpha;
     }
 
-    static Color FaceColor(int index)
+    void Awake()
     {
-        if (index == 0) return new Color(.58f, .095f, .04f, 1f);
-        if (index == 1 || index == 2) return new Color(.73f, .53f, .30f, 1f);
-        if (index == 4) return new Color(.24f, .045f, .025f, 1f);
-        return new Color(.17f, .075f, .032f, 1f);
+        rect = transform as RectTransform;
     }
 
-    static Color TopHighlightColor(int index)
+    void OnEnable()
     {
-        if (index == 0) return new Color(1f, .76f, .33f, .78f);
-        if (index == 1 || index == 2) return new Color(1f, .82f, .50f, .48f);
-        return new Color(.94f, .58f, .20f, .32f);
+        highlighted = false;
+        targetAlpha = 0f;
+        targetScale = Vector3.one;
+        if (rect != null) rect.localScale = Vector3.one;
+        ApplyVisual(0f);
     }
 
-    static Color AccentColor(int index)
+    void Update()
     {
-        if (index == 4) return new Color(.82f, .18f, .08f, 1f);
-        return new Color(1f, .59f, .13f, 1f);
+        if (rect == null) return;
+        float t = 1f - Mathf.Exp(-Speed * Time.unscaledDeltaTime);
+        rect.localScale = Vector3.Lerp(rect.localScale, targetScale, t);
+
+        float current = glow != null ? glow.color.a : 0f;
+        float next = Mathf.Lerp(current, targetAlpha, t);
+        ApplyVisual(next);
     }
 
-    static Color BadgeColor(int index)
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        if (index == 0) return new Color(.18f, .055f, .012f, 1f);
-        if (index == 1 || index == 2) return new Color(.34f, .16f, .05f, 1f);
-        if (index == 4) return new Color(.10f, .025f, .015f, 1f);
-        return new Color(.08f, .035f, .018f, 1f);
+        SetHighlighted(true);
     }
 
-    static Color BadgeTextColor(int index)
+    public void OnPointerExit(PointerEventData eventData)
     {
-        if (index == 1 || index == 2) return new Color(1f, .75f, .34f, 1f);
-        return new Color(1f, .84f, .48f, 1f);
+        SetHighlighted(false);
     }
 
-    static Color LabelColor(int index)
+    public void OnPointerDown(PointerEventData eventData)
     {
-        if (index == 1 || index == 2) return new Color(.20f, .07f, .018f, 1f);
-        return new Color(1f, .86f, .54f, 1f);
+        if (!IsInteractable()) return;
+        targetScale = Vector3.one * PressScale;
+        targetAlpha = hoverAlpha * 1.25f;
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (!IsInteractable()) return;
+        targetScale = Vector3.one * (highlighted ? HoverScale : 1f);
+        targetAlpha = highlighted ? hoverAlpha : 0f;
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        SetHighlighted(true);
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        SetHighlighted(false);
+    }
+
+    void SetHighlighted(bool value)
+    {
+        highlighted = value && IsInteractable();
+        targetScale = Vector3.one * (highlighted ? HoverScale : 1f);
+        targetAlpha = highlighted ? hoverAlpha : 0f;
+    }
+
+    void ApplyVisual(float alpha)
+    {
+        if (glow != null)
+            glow.color = new Color(1f, .72f, .22f, alpha);
+        if (outline != null)
+            outline.effectColor = new Color(1f, .80f, .34f, Mathf.Clamp01(alpha * 2.1f));
+    }
+
+    bool IsInteractable()
+    {
+        Button button = GetComponent<Button>();
+        return button == null || button.interactable;
     }
 }
