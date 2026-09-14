@@ -8,7 +8,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 - Полировка боя Chapter I: графика, анимации, читаемость атак и попаданий.
 - Довести opening flow Chapter I: подготовка берега -> Encounter 1 -> передышка -> Encounter 2.
-- Удалить legacy in-map `DivineGiftChoice`/Gift presentation из `ModernCombatHud`: покровитель выбирается только до карты, а в бою справа работает `PatronCommentaryPresentation`.
+- Физически удалить legacy in-map `DivineGiftChoice` / `CombatActions` из `ModernCombatHud` после проверки cleanup-pass; сейчас они уже скрыты `CombatHudLegacyCleanup`. Покровитель выбирается только до карты, в бою справа работает `PatronCommentaryPresentation`.
+- Перевести remaining player-facing Encounter HUD с cleanup-переписывания на прямой `EncounterRuntime`/Encounter copy и после этого удалить `CombatHudLegacyCleanup`.
 - Провести ручной проход Chapter I после последних gameplay/balance изменений.
 
 ## Сломано
@@ -29,6 +30,7 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 - Первый Encounter не начинается раньше завершения 30-секундной подготовки.
 - Guidance показывает подготовку берега, выбранного покровителя, Encounter 1 и переход ко второму бою без старой player-facing Wave-терминологии.
 - Правый `PatronCommentaryPresentation` не пересекается с `BossHUD`, верхними ресурсами и combat controls на 1920x1080 и 1366/1376x768; RU/EN текст не обрезается.
+- В бою не появляется legacy in-map Gift chooser; `CombatHudLegacyCleanup` скрывает старые `CombatActions`/`DivineGiftChoiceOverlay` до их физического удаления.
 - Новый Story-проход на 1x без паузы: целевая длительность Chapter I — 11–13 минут.
 - На обычном игровом масштабе хорошо читаются попадания стрел/обычных снарядов, копий, огня и slow-снарядов.
 - Удары Trojan Guard и Гектора визуально читаются лучше обычного контакта персонажей.
