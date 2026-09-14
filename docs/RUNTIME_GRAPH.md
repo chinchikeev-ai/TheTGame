@@ -1,5 +1,7 @@
 # TheTroyGame Runtime Graph
 
+Last reviewed: 2026-09-14
+
 ## Startup composition
 
 ```text
@@ -12,19 +14,23 @@ GameBootstrap
     ├─ GameStateController
     ├─ RuntimeEffects
     ├─ AncientMusicController
-    ├─ MapBuilder
-    │   └─ routes / build points / environment
+    ├─ ChapterRuntimeInstaller
+    │   └─ runtimeProfile
+    │       └─ ChapterOneRuntimeInstaller (current)
+    │           ├─ MapBuilder / routes / build points
+    │           ├─ coast / gate / atmosphere presentation
+    │           ├─ Hector
+    │           ├─ LandingPresentation
+    │           ├─ ChapterOneCinematicCamera
+    │           ├─ ChapterOneGuidancePresentation
+    │           └─ ChapterOnePlaythroughReporter
     ├─ EnemySpawner
-    ├─ TowerPlacement
-    ├─ HectorController
-    ├─ LandingPresentation
-    ├─ GameUIController
-    └─ GameMenuController
+    └─ shared HUD / menu / settings / campaign UI
 ```
 
-`GameBootstrap` composes runtime objects. It must not become a gameplay owner.
+`GameBootstrap` composes shared runtime objects and delegates chapter-specific setup. It must not become a chapter gameplay/presentation owner.
 
-## Campaign flow
+## Campaign and encounter flow
 
 ```text
 CampaignController
@@ -32,19 +38,33 @@ CampaignController
 ChapterController
     ↓
 ChapterData
-    ↓
-WaveData
-    ↓
-EnemySpawner
-    ↓
-Enemy / Boss runtime
-    ↓
-GameManager result
-    ↓
-CampaignController
-    ↓
-CampaignSave
+    ├─ runtimeProfile ──> ChapterRuntimeInstaller
+    └─ encounters[]
+           ↓
+       EncounterData
+           ↓
+       spawnGroups[]
+           ↓
+       EnemySpawner
+           ├─ DifficultyRules scaling
+           ├─ route resolution
+           ├─ EnemyData
+           └─ optional behaviorId
+                    ↓
+            EnemyRuntimeBehaviorRegistry
+                    ↓
+              special runtime behavior
+           ↓
+       Enemy / Boss runtime
+           ↓
+       GameManager result
+           ↓
+       CampaignController
+           ↓
+       CampaignSave
 ```
+
+Encounter composition is authored. `EnemySpawner` must not infer archetypes from encounter number/spawn index.
 
 ## Session lifecycle
 
@@ -70,7 +90,7 @@ Result summary
 Campaign save / unlock
 ```
 
-GameStateController is the canonical runtime state boundary for Preparing, WaveRunning, BetweenWaves, Paused, Victory, Defeat and NarrativeEvent.
+`GameStateController` is the canonical runtime state boundary for Preparing, WaveRunning, BetweenWaves, Paused, Victory, Defeat and NarrativeEvent. State names retain the historical `WaveRunning`/`BetweenWaves` terminology even though authored campaign content is now represented by `EncounterData`.
 
 ## Combat flow
 
@@ -114,28 +134,30 @@ versioned JSON
     └─ campaign_save.backup.json
 ```
 
-UI must not call CampaignSave directly. Tests use isolated temporary storage via `CampaignSave.ConfigureStorageForTests`.
+UI must not call `CampaignSave` directly. Tests use isolated temporary storage via `CampaignSave.ConfigureStorageForTests`.
 
-## Validation flow
+## Chapter I gameplay-freeze flow
 
 ```text
-AI change
+Real Story run at 1x
     ↓
-python tools/check-architecture.py
+ChapterOnePlaythroughReporter
     ↓
-Unity ArchitectureSmokeValidator
+ChapterI_Playthrough_*.json + ChapterI_Waves_*.csv
     ↓
-EditMode tests
+ChapterOnePlaythroughAnalyzer
     ↓
-PlayMode acceptance tests
+PASS / WARN / FAIL tuning findings
     ↓
-Windows build
+ChapterOneGameplayFreezeValidator
     ↓
-PASS / FAIL
+BLOCKED
+or
+READY FOR HUMAN ACCEPTANCE
+    ↓
+manual warning + presentation review
+    ↓
+explicit baseline acceptance
 ```
 
-Local one-command entrypoints:
-- Windows: `tools/validate-project.ps1`
-- Unix: `tools/validate-project.sh`
-
-GitHub Actions mirrors the same intent in `.github/workflows/unity-ci.yml`.
+No static validator can replace the real 1x run or the human visual/readability acceptance step.
