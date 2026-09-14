@@ -283,14 +283,17 @@ public class GameplayAcceptanceTests
     }
 
     [UnityTest]
-    public IEnumerator FinalWaveData_ContainsMenelausBoss()
+    public IEnumerator FinalEncounterData_ContainsMenelausBoss()
     {
-        WaveData finalWave = BalanceCatalog.GetWave(5, 5);
+        ChapterData chapter = Resources.Load<ChapterData>("Chapters/Chapter01_Landing");
+        EncounterData finalEncounter = chapter != null ? chapter.GetEncounter(5) : null;
         EnemyData boss = BalanceCatalog.GetEnemy(EnemyArchetype.Boss);
         yield return null;
 
-        Assert.NotNull(finalWave);
-        Assert.IsTrue(finalWave.hasBoss);
+        Assert.NotNull(chapter);
+        Assert.NotNull(finalEncounter);
+        Assert.IsTrue(finalEncounter.HasBoss);
+        Assert.IsTrue(finalEncounter.Contains(EnemyArchetype.Boss));
         Assert.NotNull(boss);
         Assert.AreEqual("menelaus", boss.id);
     }

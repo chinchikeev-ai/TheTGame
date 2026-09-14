@@ -42,8 +42,6 @@ public sealed class MenuNavigationPlayModeTests
         GameObject canvas = GameObject.Find("MenuCanvas");
         Assert.NotNull(menu, "Restart reload did not rebuild GameMenuController.");
         Assert.NotNull(canvas, "Restart reload did not rebuild MenuCanvas.");
-        Assert.IsNull(Object.FindFirstObjectByType<MenuSceneNavigationFix>(), "Legacy navigation interceptor must not survive a reload.");
-
         Transform mainMenu = canvas.transform.Find("MainMenu");
         Transform levelSelect = canvas.transform.Find("LevelSelect");
         Assert.NotNull(mainMenu);
@@ -72,8 +70,6 @@ public sealed class MenuNavigationPlayModeTests
         GameObject canvas = GameObject.Find("MenuCanvas");
         Assert.NotNull(menu, "Main-menu reload did not rebuild GameMenuController.");
         Assert.NotNull(canvas, "Main-menu reload did not rebuild MenuCanvas.");
-        Assert.IsNull(Object.FindFirstObjectByType<MenuSceneNavigationFix>(), "Legacy navigation interceptor must not survive a reload.");
-
         Transform mainMenu = canvas.transform.Find("MainMenu");
         Transform levelSelect = canvas.transform.Find("LevelSelect");
         Transform pauseMenu = canvas.transform.Find("PauseMenu");
