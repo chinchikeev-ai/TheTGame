@@ -1,18 +1,19 @@
 # TheTroyGame — Unity Roadmap
 
-Last reviewed: 2026-09-13
+Last reviewed: 2026-09-14
 
 This roadmap answers **what should be built next**. Current implementation truth lives in `PROJECT_STATUS.md`; game-design truth lives in `GDD.md`.
 
 ## Production principles
 
 1. Build on the canonical runtime under `Assets/Game`; never recreate `Assets/Scripts`.
-2. Use authored `TowerData`, `EnemyData`, `WaveData`, and `ChapterData` as runtime sources of truth.
-3. Do not start full production of a later chapter before the previous chapter passes its required gate.
-4. Measure pacing/economy/pressure through telemetry instead of balancing only by feel.
-5. Production art is `DONE` only under the acceptance rules in `MODEL_ART_INVENTORY.md`.
-6. Do not claim Unity compile/tests/build are green unless they actually ran and passed.
-7. Keep shared combat, save, input, UI and campaign systems reusable across chapters.
+2. Use authored `TowerData`, `EnemyData`, `EncounterData`, and `ChapterData` as runtime sources of truth.
+3. Encounter composition/pacing belongs in `EncounterData`, never in hidden spawn-index formulas.
+4. Chapter-specific map/presentation composition belongs behind a chapter runtime profile/installer, never directly in `GameBootstrap`.
+5. Do not start full production of a later chapter before the previous chapter passes its required gate.
+6. Measure pacing/economy/pressure through telemetry instead of balancing only by feel.
+7. Production art is `DONE` only under the acceptance rules in `MODEL_ART_INVENTORY.md`.
+8. Keep shared combat, save, input, UI and campaign systems reusable across chapters.
 
 ## Campaign target
 
@@ -38,14 +39,21 @@ Completed baseline:
 - explicit runtime state;
 - campaign/chapter controllers;
 - registries instead of scene-wide gameplay scans;
-- data-driven tower/enemy/wave/chapter configuration;
+- reusable TowerData/EnemyData contracts;
+- authored ChapterData/EncounterData campaign content;
+- generic `GameBootstrap` -> `ChapterRuntimeInstaller` boundary;
+- dedicated `ChapterOneRuntimeInstaller` for coast/map/Hector/cinematic/guidance wiring;
+- generic EnemySpawner executing authored encounter plans;
+- explicit enemy runtime behavior registry for special encounter behaviors;
 - shared damage/status pipeline;
 - input abstraction;
 - save/versioning foundation;
 - EditMode/PlayMode test assemblies;
-- architecture guard and CI workflow.
+- architecture/release validators.
 
-No further architecture rewrite is required before Chapter I freeze unless a concrete blocker appears.
+`WaveData` is legacy compatibility only and is not the runtime content-authoring path for future chapters.
+
+No broad architecture rewrite is required before Chapter I freeze. Further refactors should be driven by a concrete Chapter II+ requirement.
 
 ---
 
@@ -57,7 +65,10 @@ Freeze Chapter I gameplay as the reference implementation for the rest of the ca
 
 ## Already implemented
 
-- 5-event chapter contract;
+- 5 authored EncounterData assets;
+- Chapter I base encounter counts 8 / 12 / 16 / 20 / 25;
+- authored Menelaus behavior binding in Encounter 5;
+- current Story/Strategos/Legendary count composition preserved through the data migration;
 - six defense roles;
 - build/upgrade/sell/priority flow;
 - one-shot build mode and contextual selected-defense UI;
@@ -66,21 +77,23 @@ Freeze Chapter I gameplay as the reference implementation for the rest of the ca
 - save/unlock Chapter II;
 - EN/RU;
 - telemetry/reporter/analyzer;
+- Chapter I gameplay-freeze readiness validator;
 - Chapter I release-candidate validator;
 - responsive HUD target layout;
 - current combat/readability pass.
 
 ## Remaining gate
 
-1. Clean Story run at 1x.
-2. Analyze latest playthrough.
-3. Resolve all FAIL findings.
-4. Resolve/accept WARN findings.
-5. Freeze Story pacing/economy/pressure.
-6. Repeat pressure check on Strategos and Legendary.
-7. Run 1920x1080 and 1366/1376x768 RU/EN visual-fit QA.
+1. Complete a clean Story run at 1x using the current EncounterData.
+2. Analyze the latest playthrough.
+3. Run `Check Chapter I Gameplay Freeze Readiness`.
+4. Resolve every hard blocker.
+5. Resolve or explicitly accept remaining WARN findings.
+6. Record human acceptance and freeze Story pacing/economy/pressure.
+7. Repeat pressure checks on Strategos and Legendary.
+8. Run 1920x1080 and 1366/1376x768 RU/EN visual-fit QA.
 
-Definition of Done: `CHAPTER_I_RC_PLAYTEST.md` passes without unresolved blockers.
+Definition of Done: `CHAPTER_I_RC_PLAYTEST.md` passes and the baseline is explicitly accepted. `READY FOR HUMAN ACCEPTANCE` alone is not the final freeze.
 
 ---
 
@@ -104,7 +117,7 @@ Replace or formally accept the visible candidate art needed for a showable Chapt
 
 Current runtime already exposes animation hooks for Hector, Menelaus, Guard, Spear Wall, Archer Post, Ballista crew, Apollo priests and Fire Keeper. These hooks support final art but do not make candidate art final by themselves.
 
-Definition of Done: required P0 rows in `MODEL_ART_INVENTORY.md` satisfy the `DONE` contract and Chapter I passes real Play Mode visual QA.
+Definition of Done: required P0 rows in `MODEL_ART_INVENTORY.md` satisfy the `DONE` contract and Chapter I passes real visual QA.
 
 ---
 
@@ -121,7 +134,7 @@ Start once Chapter I is stable enough that browser-specific debugging will not h
 - browser-safe save persistence validation;
 - loading/progress presentation;
 - static deployment artifact;
-- GitHub Pages or equivalent static hosting deployment;
+- static hosting deployment;
 - optional PWA manifest/service worker after baseline Web build is proven;
 - browser performance pass at Chapter I peak pressure.
 
@@ -133,27 +146,40 @@ Definition of Done: fresh browser session can load, play Chapter I, save progres
 
 # M4 — Chapter II: Road to Troy
 
-Target: 14–16 minutes / 6 events.
+Target: 14–16 minutes / 6 encounters.
+
+## Foundation already available
+
+Chapter II no longer needs a second spawn-loop implementation. It should reuse:
+
+- `ChapterData`;
+- `EncounterData` spawn groups;
+- generic `EnemySpawner`;
+- generic difficulty scaling;
+- `ChapterRuntimeInstaller` boundary;
+- existing combat/economy/save/UI contracts.
 
 ## New requirements
 
-- authored Chapter II data, no source-code wave authoring;
-- 2–3 route pressure patterns;
-- clearer lane-pressure preview;
+- authored `Chapter02` ChapterData;
+- six authored EncounterData assets;
+- dedicated Chapter II runtime profile/installer;
+- 2–3 route pressure patterns authored in encounter data;
+- clearer lane-pressure preview where required;
 - Chariot gameplay support;
 - shielded formations and more varied enemy mix;
-- chapter-specific environment kit;
+- chapter-specific map/environment kit;
 - chapter result and unlock flow using existing campaign contracts.
 
 Avoid adding a second implementation of systems already solved in Chapter I.
 
-Definition of Done: chapter is fully authored through shared systems and lands in target duration without bespoke combat forks.
+Definition of Done: chapter is authored through shared systems, uses no hidden source-code composition table, and lands in the 14–16 minute target without bespoke combat forks.
 
 ---
 
 # M5 — Chapter III: The Gates
 
-Target: 18–20 minutes / 7 events.
+Target: 18–20 minutes / 7 encounters.
 
 Required additions:
 
@@ -171,7 +197,7 @@ Definition of Done: siege units interact with objectives as siege units, tempora
 
 # M6 — Chapter IV: Heroes of Greece
 
-Target: 17–19 minutes / 6 events.
+Target: 17–19 minutes / 6 encounters.
 
 Required additions:
 
@@ -182,13 +208,13 @@ Required additions:
 - Achilles encounter;
 - Hector combat/progression expansion if needed by the chapter.
 
-Definition of Done: Ajax and Achilles demand visibly different tactics and are implemented through reusable boss contracts rather than wave-loop special cases.
+Definition of Done: Ajax and Achilles demand visibly different tactics and are implemented through reusable boss contracts rather than encounter-loop special cases.
 
 ---
 
 # M7 — Chapter V: The Great Assault
 
-Target: 20–22 minutes / 7 events.
+Target: 20–22 minutes / 7 encounters.
 
 Focus:
 
@@ -261,8 +287,7 @@ Definition of Done: finale is structurally different from Chapters I–V, Chapte
 - accessibility/settings pass;
 - save migration/backup verification;
 - desktop/Web performance pass;
-- clean release builds;
-- complete CI compile/test/build once Unity activation is configured.
+- clean release builds.
 
 ## Documentation gate
 
