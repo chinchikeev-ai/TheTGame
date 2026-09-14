@@ -77,9 +77,9 @@ public class BossHUD : MonoBehaviour
         RectTransform fr = fill.rectTransform;
         fr.anchorMin = Vector2.zero; fr.anchorMax = Vector2.one; fr.offsetMin = new Vector2(3,3); fr.offsetMax = new Vector2(-3,-3);
 
-        MakeBadge(root.transform,"AURA",new Vector2(-145,-38),new Color(.78f,.18f,.06f,1f));
-        MakeBadge(root.transform,"REINFORCEMENTS",new Vector2(8,-38),new Color(.62f,.34f,.10f,1f));
-        MakeBadge(root.transform,"GATE THREAT",new Vector2(175,-38),new Color(.72f,.10f,.035f,1f));
+        MakeBadge(root.transform,GameLanguage.T("AURA","АУРА"),new Vector2(-145,-38),new Color(.78f,.18f,.06f,1f));
+        MakeBadge(root.transform,GameLanguage.T("REINFORCEMENTS","ПОДКРЕПЛЕНИЯ"),new Vector2(8,-38),new Color(.62f,.34f,.10f,1f));
+        MakeBadge(root.transform,GameLanguage.T("GATE THREAT","УГРОЗА ВОРОТАМ"),new Vector2(175,-38),new Color(.72f,.10f,.035f,1f));
         root.SetActive(false);
     }
 
@@ -136,7 +136,7 @@ public class BossHUD : MonoBehaviour
 
     void MakeBadge(Transform parent,string textValue,Vector2 pos,Color accent)
     {
-        GameObject badge=new GameObject("Badge_"+textValue); badge.transform.SetParent(parent,false);
+        GameObject badge=new GameObject("BossBadge"); badge.transform.SetParent(parent,false);
         Image bg=badge.AddComponent<Image>(); bg.sprite=TroyHudArt.Panel(true); bg.type=Image.Type.Sliced; bg.color=new Color(.45f,.18f,.07f,1f);
         RectTransform rt=bg.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(textValue.Length>8?150:100,24);
         Text t=MakeText(badge.transform,"Text",9,TextAnchor.MiddleCenter); t.text=textValue; t.color=new Color(1f,.82f,.54f,1f); RectTransform tr=t.rectTransform; tr.anchorMin=Vector2.zero; tr.anchorMax=Vector2.one; tr.offsetMin=Vector2.zero; tr.offsetMax=Vector2.zero;
