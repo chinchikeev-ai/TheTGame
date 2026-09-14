@@ -9,16 +9,17 @@ This directory is the canonical documentation set for the current Unity project.
 For development or AI-assisted work, use this order:
 
 1. `../AGENTS.md` — mandatory repository rules for AI changes.
-2. `PROJECT_STATUS.md` — what is actually implemented now.
-3. `ARCHITECTURE.md` — runtime ownership and dependency rules.
-4. `MODULE_MAP.md` — where each kind of change belongs.
-5. `DATA_CATALOG.md` — authored runtime data and source-of-truth rules.
-6. `RUNTIME_GRAPH.md` — runtime composition and lifecycle.
-7. `AI_PIPELINE.md` — validation and CI truthfulness rules.
-8. `MODEL_ART_INVENTORY.md` — authoritative art/model completion status.
-9. `ART_BIBLE.md` — single canonical creative + visual direction authority.
-10. `UNITY_ROADMAP.md` — what should be built next.
-11. `GDD.md` — canonical game-design target.
+2. `TODO.md` — single current day-to-day task list (`Сейчас`, `Сломано`, `Проверить`, `Потом`).
+3. `PROJECT_STATUS.md` — what is actually implemented now.
+4. `ARCHITECTURE.md` — runtime ownership and dependency rules.
+5. `MODULE_MAP.md` — where each kind of change belongs.
+6. `DATA_CATALOG.md` — authored runtime data and source-of-truth rules.
+7. `RUNTIME_GRAPH.md` — runtime composition and lifecycle.
+8. `AI_PIPELINE.md` — validation and CI truthfulness rules.
+9. `MODEL_ART_INVENTORY.md` — authoritative art/model completion status.
+10. `ART_BIBLE.md` — single canonical creative + visual direction authority.
+11. `UNITY_ROADMAP.md` — what should be built next.
+12. `GDD.md` — canonical game-design target.
 
 For non-trivial work use `tasks/TASK_TEMPLATE.md`.
 
@@ -35,6 +36,8 @@ When documents disagree, resolve them in this order:
 7. **`UNITY_ROADMAP.md`** — planned implementation order.
 8. Design-detail documents and audits — supporting reference only.
 
+`TODO.md` is an execution queue, not an authority over current implementation state or design contracts.
+
 A future-design document must never be used as evidence that a feature is implemented.
 
 ## Core product documents
@@ -42,6 +45,7 @@ A future-design document must never be used as evidence that a feature is implem
 - `GDD.md` — campaign structure, pacing, towers, enemies, Hector, bosses and ending.
 - `ART_BIBLE.md` — canonical tone, vibe, cartoon level, humor, grotesque exaggeration, selective sex appeal, faction language, characters, environment, UI, animation and VFX.
 - `PROJECT_STATUS.md` — current state, blockers and next product gate.
+- `TODO.md` — current work queue; keep it short and delete completed items.
 - `UNITY_ROADMAP.md` — milestone order from the current state to v1.0.
 - `TERMINOLOGY.md` — canonical naming.
 - `TROY_DEFENSE_UNITS.md` — Trojan defense design; clearly separates Chapter I implemented roster from future concepts.
@@ -105,17 +109,18 @@ Audits are diagnostic snapshots. They preserve findings/rationale but do not ove
 ## Documentation maintenance rules
 
 1. One canonical status document: `PROJECT_STATUS.md`.
-2. One canonical roadmap: `UNITY_ROADMAP.md`.
-3. One canonical game-design document: `GDD.md`.
-4. One canonical production-art status document: `MODEL_ART_INVENTORY.md`.
-5. One canonical creative + visual direction document: `ART_BIBLE.md`.
-6. Do not create a second document for the same authority/scope.
-7. Delete obsolete implementation plans instead of leaving competing instructions.
-8. Merge overlapping references when one canonical document can carry the information cleanly.
-9. Update status/inventory in the same change that materially changes implementation/art state.
-10. Future concepts must be explicitly labeled as future/design-only.
-11. Never claim Unity compile/tests/build are green unless those checks actually ran and passed.
-12. Do not promote production art that conflicts with `ART_BIBLE.md` even if it is technically complete.
+2. One canonical current task list: `TODO.md`.
+3. One canonical roadmap: `UNITY_ROADMAP.md`.
+4. One canonical game-design document: `GDD.md`.
+5. One canonical production-art status document: `MODEL_ART_INVENTORY.md`.
+6. One canonical creative + visual direction document: `ART_BIBLE.md`.
+7. Do not create a second document for the same authority/scope.
+8. Delete obsolete implementation plans instead of leaving competing instructions.
+9. Merge overlapping references when one canonical document can carry the information cleanly.
+10. Update status/inventory in the same change that materially changes implementation/art state.
+11. Future concepts must be explicitly labeled as future/design-only.
+12. Never claim Unity compile/tests/build are green unless those checks actually ran and passed.
+13. Do not promote production art that conflicts with `ART_BIBLE.md` even if it is technically complete.
 
 ## Removed obsolete documents
 
