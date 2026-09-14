@@ -16,8 +16,10 @@ For development or AI-assisted work, use this order:
 6. `RUNTIME_GRAPH.md` — runtime composition and lifecycle.
 7. `AI_PIPELINE.md` — validation and CI truthfulness rules.
 8. `MODEL_ART_INVENTORY.md` — authoritative art/model completion status.
-9. `UNITY_ROADMAP.md` — what should be built next.
-10. `GDD.md` — canonical game-design target.
+9. `CREATIVE_DIRECTION.md` — canonical tone, comedy and high-level visual identity.
+10. `ART_BIBLE.md` / `CHARACTER_ART_DIRECTION.md` — visual execution rules.
+11. `UNITY_ROADMAP.md` — what should be built next.
+12. `GDD.md` — canonical game-design target.
 
 For non-trivial work use `tasks/TASK_TEMPLATE.md`.
 
@@ -29,15 +31,17 @@ When documents disagree, resolve them in this order:
 2. **`PROJECT_STATUS.md`** — documented implementation truth.
 3. **`ARCHITECTURE.md` / `DATA_CATALOG.md` / `RUNTIME_GRAPH.md`** — engineering contracts.
 4. **`MODEL_ART_INVENTORY.md`** — production-art completion truth.
-5. **`GDD.md`** — intended game design.
-6. **`UNITY_ROADMAP.md`** — planned implementation order.
-7. Design-detail documents and audits — supporting reference only.
+5. **`CREATIVE_DIRECTION.md` / `ART_BIBLE.md` / `CHARACTER_ART_DIRECTION.md`** — creative and visual direction.
+6. **`GDD.md`** — intended game design.
+7. **`UNITY_ROADMAP.md`** — planned implementation order.
+8. Design-detail documents and audits — supporting reference only.
 
 A future-design document must never be used as evidence that a feature is implemented.
 
 ## Core product documents
 
 - `GDD.md` — campaign structure, pacing, towers, enemies, Hector, bosses and ending.
+- `CREATIVE_DIRECTION.md` — Trojan War × Cartoon Tower Defence × Adventure Comedy; canonical tone contract.
 - `PROJECT_STATUS.md` — current state, blockers and next product gate.
 - `UNITY_ROADMAP.md` — milestone order from the current state to v1.0.
 - `TERMINOLOGY.md` — canonical naming.
@@ -61,6 +65,7 @@ These remain design references until `PROJECT_STATUS.md` says the systems are im
 ## Chapter I release-candidate documents
 
 - `CHAPTER_I_RC_PLAYTEST.md` — real 1x gameplay validation protocol.
+- `CHAPTER_I_GAMEPLAY_ACCEPTANCE.md` — explicit gameplay acceptance/freeze contract.
 - `CHAPTER_I_ART_FREEZE.md` — strict production-art freeze gate.
 - `CHAPTER_I_VISUAL_TARGET.md` — Chapter I visual target.
 - `MODEL_ART_INVENTORY.md` — asset/model status and `DONE` acceptance gate.
@@ -70,8 +75,9 @@ Chapter I is not frozen until both gameplay RC and production-art gates in `PROJ
 ## Art documents
 
 Direction:
-- `ART_BIBLE.md` — global art direction.
-- `CHARACTER_ART_DIRECTION.md` — faction, role and silhouette rules.
+- `CREATIVE_DIRECTION.md` — canonical tone, comedy, tonal arc and high-level visual identity.
+- `ART_BIBLE.md` — global visual execution direction.
+- `CHARACTER_ART_DIRECTION.md` — faction, role, silhouette, proportion and acting rules.
 
 Pipeline / ownership:
 - `CARTOON_CHARACTER_PIPELINE.md` — current Chapter I character/equipment/animation candidate workflow.
@@ -96,12 +102,14 @@ Audits are diagnostic snapshots. They preserve findings/rationale but do not ove
 2. One canonical roadmap: `UNITY_ROADMAP.md`.
 3. One canonical game-design document: `GDD.md`.
 4. One canonical production-art status document: `MODEL_ART_INVENTORY.md`.
-5. Do not create a second document for the same authority/scope.
-6. Delete obsolete implementation plans instead of leaving competing instructions.
-7. Merge small overlapping references when one can carry the information cleanly.
-8. Update status/inventory in the same change that materially changes implementation/art state.
-9. Future concepts must be explicitly labeled as future/design-only.
-10. Never claim Unity compile/tests/build are green unless those checks actually ran and passed.
+5. One canonical high-level tone document: `CREATIVE_DIRECTION.md`.
+6. Do not create a second document for the same authority/scope.
+7. Delete obsolete implementation plans instead of leaving competing instructions.
+8. Merge small overlapping references when one can carry the information cleanly.
+9. Update status/inventory in the same change that materially changes implementation/art state.
+10. Future concepts must be explicitly labeled as future/design-only.
+11. Never claim Unity compile/tests/build are green unless those checks actually ran and passed.
+12. Do not promote production art that conflicts with `CREATIVE_DIRECTION.md` even if it is technically complete.
 
 ## Removed obsolete documents
 
