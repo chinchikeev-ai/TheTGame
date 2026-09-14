@@ -19,21 +19,12 @@ public static class BalanceCatalog
         return enemies[type];
     }
 
-    public static EnemyData GetEnemyForWave(int wave, int index, int count, bool boss)
-    {
-        if (boss) return GetEnemy(EnemyArchetype.Boss);
-        if (wave >= 4 && index % 5 == 3) return GetEnemy(EnemyArchetype.ShieldBearer);
-        if (wave >= 4 && index % 6 == 2) return GetEnemy(EnemyArchetype.Archer);
-        if (wave >= 3 && index % 4 == 3) return GetEnemy(EnemyArchetype.HeavyHoplite);
-        if (wave >= 2 && index % 4 == 1) return GetEnemy(EnemyArchetype.Runner);
-        return GetEnemy(EnemyArchetype.Infantry);
-    }
-
+    [Obsolete("WaveData is legacy compatibility data. Runtime encounter composition now comes from ChapterData.encounters / EncounterData.")]
     public static WaveData GetWave(int wave, int maxWaves = 5)
     {
         WaveData authored = Resources.Load<WaveData>($"Data/Waves/Wave_{wave:00}");
         if (authored == null)
-            throw new InvalidOperationException($"Missing authored WaveData: Resources/Data/Waves/Wave_{wave:00}. Run TheTroyGame/Data/Create Missing Default Assets in the Editor.");
+            throw new InvalidOperationException($"Missing legacy WaveData: Resources/Data/Waves/Wave_{wave:00}.");
         return authored;
     }
 
@@ -66,6 +57,7 @@ public static class BalanceCatalog
         }
     }
 
+    [Obsolete("Legacy WaveData generator only. New chapters author EncounterData instead.")]
     public static WaveData GetWaveRuntimeDefault(int wave, int maxWaves = 5)
     {
         WaveData d = ScriptableObject.CreateInstance<WaveData>();
@@ -78,7 +70,7 @@ public static class BalanceCatalog
 
         float[] target = { 60f, 80f, 100f, 120f, 200f };
         float[] cadence = { 4.6f, 4.25f, 4.0f, 3.75f, 4.15f };
-        float[] prep = { 35f, 20f, 20f, 20f, 25f };
+        float[] prep = { 30f, 20f, 20f, 20f, 25f };
         int i = Mathf.Clamp(wave - 1, 0, target.Length - 1);
         d.targetDuration = target[i];
         d.spawnInterval = cadence[i];
