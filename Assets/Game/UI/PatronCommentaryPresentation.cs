@@ -18,6 +18,8 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
     bool victoryCommentShown;
     float commentUntil;
     string currentComment;
+    int lastScreenWidth = -1;
+    int lastScreenHeight = -1;
 
     string L(string en, string ru) => GameLanguage.T(en, ru);
 
@@ -27,12 +29,14 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
         GameObject menu = GameObject.Find("MenuCanvas");
         menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
         Build();
+        ApplyResponsiveLayout(true);
         RefreshPatron();
     }
 
     void Build()
     {
         GameObject root = new GameObject("PatronCommentaryUI");
+        root.transform.SetParent(transform, false);
         canvas = root.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 84;
@@ -56,18 +60,18 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
         panel.raycastTarget = false;
         RectTransform panelRt = panel.rectTransform;
         panelRt.anchorMin = panelRt.anchorMax = panelRt.pivot = new Vector2(1f, 1f);
-        panelRt.anchoredPosition = new Vector2(-24f, -112f);
-        panelRt.sizeDelta = new Vector2(370f, 154f);
 
-        portrait = AddImage(card.transform, "PatronPortrait", new Vector2(-292f, -77f), new Vector2(116f, 116f));
+        portrait = AddImage(card.transform, "PatronPortrait", Vector2.zero, Vector2.zero);
         portrait.preserveAspect = true;
 
-        nameText = AddText(card.transform, "", new Vector2(-214f, -26f), new Vector2(190f, 26f), 14, new Color(1f, .72f, .25f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
-        commentText = AddText(card.transform, "", new Vector2(-214f, -56f), new Vector2(190f, 82f), 14, new Color(.96f, .88f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
+        nameText = AddText(card.transform, "", Vector2.zero, Vector2.zero, 14, new Color(1f, .72f, .25f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
+        commentText = AddText(card.transform, "", Vector2.zero, Vector2.zero, 14, new Color(.96f, .88f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal);
     }
 
     void Update()
     {
+        ApplyResponsiveLayout(false);
+
         GameManager gm = GameManager.Instance;
         if (gm == null || gm.MapNumber != 1 || !gm.GiftSelected)
         {
@@ -124,6 +128,47 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
             commentText.text = AmbientLine(gm.SelectedGift, encounter);
         else
             commentText.text = currentComment;
+    }
+
+    void ApplyResponsiveLayout(bool force)
+    {
+        if (!force && Screen.width == lastScreenWidth && Screen.height == lastScreenHeight) return;
+        lastScreenWidth = Screen.width;
+        lastScreenHeight = Screen.height;
+        if (card == null || portrait == null || nameText == null || commentText == null) return;
+
+        bool compact = Screen.width <= 1450 || Screen.height <= 800;
+        RectTransform cardRt = card.transform as RectTransform;
+        RectTransform portraitRt = portrait.rectTransform;
+        RectTransform nameRt = nameText.rectTransform;
+        RectTransform commentRt = commentText.rectTransform;
+
+        if (compact)
+        {
+            cardRt.anchoredPosition = new Vector2(-16f, -96f);
+            cardRt.sizeDelta = new Vector2(324f, 136f);
+            portraitRt.anchoredPosition = new Vector2(-256f, -68f);
+            portraitRt.sizeDelta = new Vector2(96f, 96f);
+            nameRt.anchoredPosition = new Vector2(-184f, -21f);
+            nameRt.sizeDelta = new Vector2(168f, 24f);
+            nameText.fontSize = 12;
+            commentRt.anchoredPosition = new Vector2(-184f, -49f);
+            commentRt.sizeDelta = new Vector2(168f, 70f);
+            commentText.fontSize = 12;
+        }
+        else
+        {
+            cardRt.anchoredPosition = new Vector2(-24f, -112f);
+            cardRt.sizeDelta = new Vector2(370f, 154f);
+            portraitRt.anchoredPosition = new Vector2(-292f, -77f);
+            portraitRt.sizeDelta = new Vector2(116f, 116f);
+            nameRt.anchoredPosition = new Vector2(-214f, -26f);
+            nameRt.sizeDelta = new Vector2(190f, 26f);
+            nameText.fontSize = 14;
+            commentRt.anchoredPosition = new Vector2(-214f, -56f);
+            commentRt.sizeDelta = new Vector2(190f, 82f);
+            commentText.fontSize = 14;
+        }
     }
 
     void RefreshPatron()
