@@ -37,7 +37,7 @@ The current approved menu exposes PLAY / HEROES / TOWERS / UPGRADES / SHOP plus 
 
 ## Acceptance criteria
 - [x] Main menu exposes only four active choices: PLAY, ARMY, SETTINGS, EXIT.
-- [x] Legacy HEROES / TOWERS / UPGRADES / SHOP actions are blocked from interaction.
+- [x] Legacy HEROES / TOWERS / UPGRADES / SHOP actions are blocked from interaction and their baked navigation area is visually covered.
 - [x] ARMY is a single lightweight screen with Hector / Defenders / Enemies tabs.
 - [x] PLAY keeps the existing campaign map.
 - [x] Chapter I selection opens difficulty selection before Patron selection.
@@ -46,10 +46,10 @@ The current approved menu exposes PLAY / HEROES / TOWERS / UPGRADES / SHOP plus 
 - [ ] No architecture guard violations.
 
 ## Automated validation
-- [ ] `python tools/check-architecture.py`
-- [ ] EditMode: existing CampaignSave difficulty persistence coverage remains applicable.
-- [ ] PlayMode: not run in this task.
-- [ ] Full Unity validation: not run unless explicitly requested.
+- [ ] `python tools/check-architecture.py` — not executed in this GitHub-only edit session.
+- [x] EditMode coverage already exists for difficulty save round-trip/reset in `CampaignSaveTests`; no save schema was changed.
+- [ ] PlayMode — not run in this task.
+- [ ] Full Unity validation — not run; Unity CI remains manual-only.
 
 ## Manual validation
 - Main menu shows only PLAY / ARMY / SETTINGS / EXIT as usable navigation.
@@ -60,13 +60,18 @@ The current approved menu exposes PLAY / HEROES / TOWERS / UPGRADES / SHOP plus 
 - RU/EN labels fit at 1920x1080 and 1366/1376x768.
 
 ## Known risks
-The approved background image still contains historical baked menu artwork. The simplified presentation deliberately overlays and blocks the obsolete interactive regions without replacing that art asset yet.
+The approved background image still contains historical baked artwork, but the old navigation area is now covered by the simplified runtime layer. Final visual composition still needs real Unity QA.
 
 ## Result
-- changed files: pending
-- validation actually executed: none yet
-- remaining manual checks: all checks above
-- commit SHA: pending
+- changed files:
+  - `Assets/Game/UI/SimpleMainMenuPresentation.cs` + `.meta`
+  - `Assets/Game/UI/PreMapPatronSelectionPresentation.cs`
+  - `Assets/Game/Campaign/CampaignController.cs`
+  - `docs/TODO.md`
+  - this task contract
+- validation actually executed: source/main verification only; no Unity compile/tests/CI
+- remaining manual checks: navigation, RU/EN fit, resolutions, restart flow
+- latest implementation commit SHA: `2d13a06403807ac979fca501dcf4770eabf70e77`
 
 ## Status
-`IN_PROGRESS`
+`IN_PROGRESS` — implementation is in `main`; real Unity/manual QA remains.
