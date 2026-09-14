@@ -16,7 +16,7 @@ MonoBehaviour:
   encounterNumber: 5
   preparationTime: 25
   targetDuration: 200
-  spawnInterval: 4.15
+  spawnInterval: 4.6
   hpMultiplier: 2.2
   speedMultiplier: 1.16
   spawnGroups:
@@ -50,7 +50,7 @@ MonoBehaviour:
     - 4
     - 2
     repeats: 1
-    baseCount: 24
+    baseCount: 42
     route: -1
     routeOffset: 0
     startDelay: 0
