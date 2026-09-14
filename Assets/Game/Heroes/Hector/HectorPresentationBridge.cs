@@ -11,6 +11,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     HectorController hector;
     HectorAbilityPresentation abilityPresentation;
     CharacterPresentationState characterPresentation;
+    CharacterWeaponSocketResolver weaponSockets;
     Renderer bodyRenderer;
     Vector3 previousPosition;
     bool previousDowned;
@@ -23,6 +24,9 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         if (abilityPresentation == null) abilityPresentation = gameObject.AddComponent<HectorAbilityPresentation>();
         characterPresentation = GetComponent<CharacterPresentationState>();
         if (characterPresentation == null) characterPresentation = gameObject.AddComponent<CharacterPresentationState>();
+        weaponSockets = GetComponent<CharacterWeaponSocketResolver>();
+        if (weaponSockets == null) weaponSockets = gameObject.AddComponent<CharacterWeaponSocketResolver>();
+        weaponSockets.Refresh();
         bodyRenderer = GetComponentInChildren<Renderer>();
         previousPosition = transform.position;
         previousDowned = hector != null && hector.IsDowned;
@@ -91,7 +95,9 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     public void LaunchSpearFlight(Transform target, Action<Vector3> impact)
     {
         if (hector == null || hector.IsDowned || target == null) return;
-        Vector3 start = transform.position + Vector3.up * 1.15f + transform.forward * .45f;
+        Vector3 start = weaponSockets != null
+            ? weaponSockets.SpearReleasePoint()
+            : transform.TransformPoint(new Vector3(.22f, 1.10f, .42f));
         CombatFlightPresentation.SpawnSpear(start, target, Vector3.up * .65f, point =>
         {
             impact?.Invoke(point);
