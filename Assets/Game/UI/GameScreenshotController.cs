@@ -143,7 +143,7 @@ public sealed class GameScreenshotController : MonoBehaviour
         textObject.transform.SetParent(buttonObject.transform, false);
         Text label = textObject.AddComponent<Text>();
         label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        label.text = "SHOT\nF12";
+        label.text = GameLanguage.T("SHOT\nF12", "СНИМОК\nF12");
         label.fontSize = 17;
         label.fontStyle = FontStyle.Bold;
         label.alignment = TextAnchor.MiddleCenter;
