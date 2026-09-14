@@ -24,8 +24,8 @@ public static class MythicAndSupportArtCandidateBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        ChapterOneCharacterAnimationBuilder.BuildAll();
-        Debug.Log("Built visually differentiated Trojan support and Cyclops candidates and refreshed Chapter I animation profiles.");
+        TrojanRosterRefinementPass.ApplyAll();
+        Debug.Log("Built visually differentiated Trojan support and Cyclops candidates, bound presentation props to candidate rigs, and refreshed Chapter I animation profiles.");
     }
 
     static void EnsureBaseCharacters()
@@ -80,7 +80,6 @@ public static class MythicAndSupportArtCandidateBuilder
             Color leather = new Color(.24f,.13f,.07f);
             Color glass = new Color(.34f,.20f,.10f);
             Color rag = new Color(.72f,.56f,.30f);
-            Color flame = new Color(1f,.32f,.035f);
             Color eye = new Color(.91f,.84f,.68f);
             Color pupil = new Color(.08f,.045f,.025f);
             Color hair = new Color(.20f,.10f,.045f);
