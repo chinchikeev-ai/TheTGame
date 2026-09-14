@@ -1,6 +1,5 @@
 public static class EncounterRuntime
 {
-    public static int CurrentEncounter => GameManager.Instance != null ? GameManager.Instance.CurrentWave : 0;
     public static int MaxEncounters => GameManager.Instance != null ? GameManager.Instance.MaxWaves : 0;
 
     public static bool EncounterActive(EnemySpawner spawner) => spawner != null && spawner.WaveActive;
