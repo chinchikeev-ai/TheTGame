@@ -21,6 +21,9 @@ public enum MenuButtonStyle
 
 public static class GameMenuUiFactory
 {
+    const string IllustratedButtonResource = "Menu/Buttons/ButtonPrimary";
+    static Sprite illustratedButtonSprite;
+
     public static GameObject MakeScreen(Canvas canvas, string name, Color color)
     {
         GameObject go = new GameObject(name);
@@ -46,6 +49,7 @@ public static class GameMenuUiFactory
             Image backgroundImage = backgroundObject.AddComponent<Image>();
             backgroundImage.sprite = Sprite.Create(background, new Rect(0f, 0f, background.width, background.height), new Vector2(.5f, .5f));
             backgroundImage.type = Image.Type.Simple;
+            backgroundImage.raycastTarget = false;
             StretchToParent(backgroundImage.rectTransform);
 
             AspectRatioFitter fitter = backgroundObject.AddComponent<AspectRatioFitter>();
@@ -56,7 +60,8 @@ public static class GameMenuUiFactory
         GameObject shade = new GameObject("CinematicShade");
         shade.transform.SetParent(go.transform, false);
         Image shadeImage = shade.AddComponent<Image>();
-        shadeImage.color = new Color(.018f, .008f, .004f, .29f);
+        shadeImage.color = new Color(.018f, .008f, .004f, .35f);
+        shadeImage.raycastTarget = false;
         StretchToParent(shadeImage.rectTransform);
         return go;
     }
@@ -91,6 +96,7 @@ public static class GameMenuUiFactory
         text.alignment = TextAnchor.MiddleCenter;
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Truncate;
+        text.raycastTarget = false;
 
         RectTransform rect = text.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
@@ -105,6 +111,7 @@ public static class GameMenuUiFactory
         go.transform.SetParent(parent, false);
         Image image = go.AddComponent<Image>();
         image.color = new Color(.82f, .49f, .19f, .55f);
+        image.raycastTarget = false;
 
         RectTransform rect = image.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
@@ -117,7 +124,19 @@ public static class GameMenuUiFactory
         GameObject go = new GameObject(string.IsNullOrEmpty(label) ? "Button" : label);
         go.transform.SetParent(parent, false);
         Image image = go.AddComponent<Image>();
-        image.color = ButtonColor(style);
+
+        Sprite art = GetIllustratedButtonSprite();
+        if (art != null)
+        {
+            image.sprite = art;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = false;
+            image.color = ButtonTint(style);
+        }
+        else
+        {
+            image.color = ButtonColor(style);
+        }
 
         Button button = go.AddComponent<Button>();
         button.targetGraphic = image;
@@ -125,11 +144,12 @@ public static class GameMenuUiFactory
 
         ColorBlock colors = button.colors;
         colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1f, .95f, .86f, 1f);
-        colors.pressedColor = new Color(.78f, .58f, .42f, 1f);
-        colors.selectedColor = new Color(1f, .91f, .76f, 1f);
+        colors.highlightedColor = new Color(1.08f, 1.05f, .94f, 1f);
+        colors.pressedColor = new Color(.78f, .72f, .62f, 1f);
+        colors.selectedColor = new Color(1.04f, 1f, .88f, 1f);
         colors.disabledColor = new Color(.45f, .45f, .45f, .65f);
-        colors.fadeDuration = .12f;
+        colors.colorMultiplier = 1f;
+        colors.fadeDuration = .08f;
         button.colors = colors;
         button.onClick.AddListener(action);
 
@@ -138,18 +158,16 @@ public static class GameMenuUiFactory
         rect.anchoredPosition = position;
         rect.sizeDelta = customSize ?? new Vector2(430, 64);
 
-        Outline outline = go.AddComponent<Outline>();
-        outline.effectColor = style == MenuButtonStyle.Highlight
-            ? new Color(1f, .52f, .15f, .75f)
-            : new Color(.62f, .38f, .18f, .35f);
-        outline.effectDistance = new Vector2(1f, -1f);
+        Shadow shadow = go.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.04f, .015f, .006f, .72f);
+        shadow.effectDistance = new Vector2(0f, -5f);
 
-        Text text = AddTitle(go.transform, label, Vector2.zero, 21, MenuTextStyle.Button);
+        Text text = AddTitle(go.transform, label, Vector2.zero, style == MenuButtonStyle.Highlight ? 25 : 21, MenuTextStyle.Button);
         text.color = style == MenuButtonStyle.Highlight
-            ? new Color(1f, .90f, .55f, 1f)
+            ? new Color(.20f, .075f, .015f, 1f)
             : style == MenuButtonStyle.Ghost
-                ? new Color(.93f, .78f, .60f, 1f)
-                : new Color(.17f, .07f, .03f, 1f);
+                ? new Color(.22f, .08f, .025f, 1f)
+                : new Color(.18f, .065f, .02f, 1f);
 
         RectTransform textRect = text.rectTransform;
         textRect.anchorMin = Vector2.zero;
@@ -157,6 +175,15 @@ public static class GameMenuUiFactory
         textRect.offsetMin = textRect.offsetMax = Vector2.zero;
         textRect.pivot = new Vector2(.5f, .5f);
         return button;
+    }
+
+    static Sprite GetIllustratedButtonSprite()
+    {
+        if (illustratedButtonSprite != null) return illustratedButtonSprite;
+        Texture2D texture = Resources.Load<Texture2D>(IllustratedButtonResource);
+        if (texture == null) return null;
+        illustratedButtonSprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(.5f, .5f), 100f);
+        return illustratedButtonSprite;
     }
 
     static void StretchToParent(RectTransform rect)
@@ -170,10 +197,21 @@ public static class GameMenuUiFactory
     {
         switch (style)
         {
-            case MenuTextStyle.Logo: return new Color(1f, .62f, .18f, 1f);
-            case MenuTextStyle.Subtitle: return new Color(1f, .84f, .56f, 1f);
-            case MenuTextStyle.Muted: return new Color(.82f, .72f, .62f, .92f);
-            default: return new Color(.97f, .92f, .84f, 1f);
+            case MenuTextStyle.Logo: return new Color(1f, .68f, .15f, 1f);
+            case MenuTextStyle.Subtitle: return new Color(1f, .88f, .58f, 1f);
+            case MenuTextStyle.Muted: return new Color(.90f, .81f, .70f, .95f);
+            default: return new Color(.98f, .94f, .86f, 1f);
+        }
+    }
+
+    static Color ButtonTint(MenuButtonStyle style)
+    {
+        switch (style)
+        {
+            case MenuButtonStyle.Highlight: return new Color(1f, .82f, .33f, 1f);
+            case MenuButtonStyle.Stone: return new Color(.88f, .72f, .49f, 1f);
+            case MenuButtonStyle.Ghost: return new Color(.70f, .50f, .32f, 1f);
+            default: return new Color(.82f, .62f, .36f, 1f);
         }
     }
 
@@ -181,9 +219,9 @@ public static class GameMenuUiFactory
     {
         switch (style)
         {
-            case MenuButtonStyle.Highlight: return new Color(.58f, .105f, .055f, .98f);
+            case MenuButtonStyle.Highlight: return new Color(.72f, .28f, .08f, .98f);
             case MenuButtonStyle.Stone: return new Color(.72f, .56f, .39f, .98f);
-            case MenuButtonStyle.Ghost: return new Color(.10f, .055f, .03f, .82f);
+            case MenuButtonStyle.Ghost: return new Color(.18f, .08f, .035f, .92f);
             default: return new Color(.32f, .18f, .09f, .98f);
         }
     }
