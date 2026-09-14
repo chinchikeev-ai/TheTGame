@@ -19,15 +19,6 @@ public static class BalanceCatalog
         return enemies[type];
     }
 
-    [Obsolete("WaveData is legacy compatibility data. Runtime encounter composition now comes from ChapterData.encounters / EncounterData.")]
-    public static WaveData GetWave(int wave, int maxWaves = 5)
-    {
-        WaveData authored = Resources.Load<WaveData>($"Data/Waves/Wave_{wave:00}");
-        if (authored == null)
-            throw new InvalidOperationException($"Missing legacy WaveData: Resources/Data/Waves/Wave_{wave:00}.");
-        return authored;
-    }
-
     // Bootstrap defaults exist ONLY to create a missing authored asset in Editor tooling.
     // Runtime gameplay never uses these values as a fallback.
     public static TowerData GetTowerRuntimeDefault(TowerType type)
@@ -55,27 +46,6 @@ public static class BalanceCatalog
             case EnemyArchetype.Boss: return MakeEnemy(type, "menelaus", "Menelaus", 15f, .68f, 500, 6, 1.65f, .32f, .20f, 0f, new Color(.55f,.05f,.08f));
             default: return MakeEnemy(type, "greek_infantry", "Greek Infantry", 1f, 1f, 20, 1, .85f, 0f, 0f, 0f, new Color(.65f,.32f,.18f));
         }
-    }
-
-    [Obsolete("Legacy WaveData generator only. New chapters author EncounterData instead.")]
-    public static WaveData GetWaveRuntimeDefault(int wave, int maxWaves = 5)
-    {
-        WaveData d = ScriptableObject.CreateInstance<WaveData>();
-        d.waveNumber = wave;
-        d.enemyCount = 8 + (wave - 1) * 4 + (wave == maxWaves ? 1 : 0);
-        d.hpMultiplier = 1f + (wave - 1) * .30f;
-        d.speedMultiplier = 1f + (wave - 1) * .04f;
-        d.heavyEvery = wave >= 3 ? 4 : 0;
-        d.hasBoss = wave == maxWaves;
-
-        float[] target = { 60f, 80f, 100f, 120f, 200f };
-        float[] cadence = { 4.6f, 4.25f, 4.0f, 3.75f, 4.15f };
-        float[] prep = { 30f, 20f, 20f, 20f, 25f };
-        int i = Mathf.Clamp(wave - 1, 0, target.Length - 1);
-        d.targetDuration = target[i];
-        d.spawnInterval = cadence[i];
-        d.preparationTime = prep[i];
-        return d;
     }
 
     static void BuildTowers()
