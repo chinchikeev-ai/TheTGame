@@ -82,10 +82,26 @@ public static class BalanceCatalog
     {
         foreach (TowerType type in Enum.GetValues(typeof(TowerType)))
         {
-            TowerData authored = Resources.Load<TowerData>($"Data/Towers/{type}");
+            string resourceName = GetTowerResourceName(type);
+            TowerData authored = Resources.Load<TowerData>($"Data/Towers/{resourceName}");
             if (authored == null)
-                throw new InvalidOperationException($"Missing authored TowerData: Resources/Data/Towers/{type}.");
+                throw new InvalidOperationException($"Missing authored TowerData: Resources/Data/Towers/{resourceName} for TowerType.{type}.");
             towers[type] = authored;
+        }
+    }
+
+    // TowerType names are serialized legacy identifiers. Asset filenames use player-facing canonical terminology.
+    static string GetTowerResourceName(TowerType type)
+    {
+        switch (type)
+        {
+            case TowerType.MachineGun: return "ArcherTower";
+            case TowerType.Cannon: return "Ballista";
+            case TowerType.Slow: return "PriestsOfApollo";
+            case TowerType.SpearThrower: return "SpearWall";
+            case TowerType.FireTower: return "FireTower";
+            case TowerType.TrojanGuard: return "TrojanGuard";
+            default: throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported TowerType");
         }
     }
 
