@@ -20,11 +20,15 @@ public sealed class ModernCombatHud : MonoBehaviour
     Text goldText, gateText, aliveText, waveText, threatText, wavePreviewText;
     Text speedText, magicText, giftText;
     Text selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview;
+    Text firstWavePrepTitle, firstWavePrepObjective, firstWavePrepComposition;
     Button upgradeButton, sellButton, priorityButton, startWaveButton, magicButton, giftButton;
+    Button firstWavePrepStartButton;
     Button defenseToggleButton;
     Text defenseToggleText;
     Text buildSelectionText;
 
+    GameObject waveBar;
+    GameObject firstWavePrep;
     GameObject buildDock;
     GameObject buildTooltip;
     GameObject selectedCard;
@@ -86,6 +90,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         BuildTopBar(root.transform);
         BuildWaveBar(root.transform);
         BuildActionPanel(root.transform);
+        BuildFirstWavePreparation(root.transform);
         BuildDock(root.transform);
         BuildDefenseToggle(root.transform);
         BuildBuildTooltip(root.transform);
@@ -104,12 +109,12 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildWaveBar(Transform parent)
     {
-        GameObject bar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(720, 118), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        waveText = Text(bar.transform, "WAVE", new Vector2(-68, 38), new Vector2(470, 28), 19, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        threatText = Text(bar.transform, "THREAT", new Vector2(-68, 10), new Vector2(470, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
-        wavePreviewText = Text(bar.transform, "", new Vector2(-68, -28), new Vector2(470, 24), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        waveBar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(720, 118), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
+        waveText = Text(waveBar.transform, "WAVE", new Vector2(-68, 38), new Vector2(470, 28), 19, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        threatText = Text(waveBar.transform, "THREAT", new Vector2(-68, 10), new Vector2(470, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
+        wavePreviewText = Text(waveBar.transform, "", new Vector2(-68, -28), new Vector2(470, 24), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         wavePreviewText.enabled = false;
-        startWaveButton = Button(bar.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(276, 0), new Vector2(142, 70), StartWave, true);
+        startWaveButton = Button(waveBar.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(276, 0), new Vector2(142, 70), StartWave, true);
     }
 
     void BuildActionPanel(Transform parent)
@@ -122,6 +127,17 @@ public sealed class ModernCombatHud : MonoBehaviour
         magicText = magicButton.GetComponentInChildren<Text>();
         giftButton = Button(panel.transform, "", new Vector2(0, -32), new Vector2(282, 36), () => GameManager.Instance?.UseGift(), false);
         giftText = giftButton.GetComponentInChildren<Text>();
+    }
+
+    void BuildFirstWavePreparation(Transform parent)
+    {
+        firstWavePrep = Panel(parent, "FirstWavePreparation", new Vector2(0, -176), new Vector2(760, 330), new Color(.035f, .022f, .016f, .975f), new Vector2(.5f, 1f), new Vector2(.5f, 1f));
+        firstWavePrepTitle = Text(firstWavePrep.transform, "", new Vector2(0, 112), new Vector2(680, 62), 34, new Color(1f, .68f, .22f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        Text(firstWavePrep.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 66), new Vector2(620, 30), 13, new Color(.76f, .67f, .58f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        firstWavePrepObjective = Text(firstWavePrep.transform, "", new Vector2(0, 24), new Vector2(640, 42), 17, new Color(.96f, .88f, .75f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        firstWavePrepComposition = Text(firstWavePrep.transform, "", new Vector2(0, -30), new Vector2(660, 52), 14, new Color(.90f, .79f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        firstWavePrepStartButton = Button(firstWavePrep.transform, L("START WAVE", "НАЧАТЬ ВОЛНУ"), new Vector2(0, -105), new Vector2(300, 64), StartWave, true);
+        firstWavePrep.SetActive(false);
     }
 
     void BuildDock(Transform parent)
@@ -219,10 +235,12 @@ public sealed class ModernCombatHud : MonoBehaviour
         {
             HideBuildTooltip();
             if (selectedCard != null) selectedCard.SetActive(false);
+            if (firstWavePrep != null) firstWavePrep.SetActive(false);
             return;
         }
 
         UpdateResources();
+        UpdateFirstWavePreparation();
         UpdateWave();
         UpdateActions();
         UpdateBuildDock();
@@ -248,6 +266,21 @@ public sealed class ModernCombatHud : MonoBehaviour
         goldText.text = gm.Money.ToString();
         gateText.text = $"{L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
         aliveText.text = $"{L("ENEMIES", "ВРАГИ")} {EnemyRegistry.AliveCount}";
+    }
+
+    void UpdateFirstWavePreparation()
+    {
+        GameManager gm = GameManager.Instance;
+        bool visible = spawner != null && gm != null && gm.CurrentWave == 0 && !spawner.WaveActive && spawner.WaitingForManualStart && !gm.GameEnded;
+        if (firstWavePrep != null) firstWavePrep.SetActive(visible);
+        if (waveBar != null) waveBar.SetActive(!visible);
+        if (!visible) return;
+
+        int seconds = Mathf.Max(0, Mathf.CeilToInt(spawner.InterWaveCountdown));
+        firstWavePrepTitle.text = L($"PREPARE FOR ATTACK — {seconds}", $"ПОДГОТОВКА К АТАКЕ — {seconds}");
+        firstWavePrepObjective.text = L("OBJECTIVE • DEFEND THE GATE", "ЦЕЛЬ • ЗАЩИТИТЕ ВОРОТА");
+        firstWavePrepComposition.text = CombatHudWaveFormatter.BuildPreview(spawner);
+        firstWavePrepStartButton.interactable = !gm.GameEnded;
     }
 
     void UpdateActions()
@@ -296,13 +329,15 @@ public sealed class ModernCombatHud : MonoBehaviour
             threatText.text = $"{L("READY", "ГОТОВО")} • {spawner.NextWaveEnemyCount} {L("enemies", "врагов")} • {threat}";
 
         wavePreviewText.text = CombatHudWaveFormatter.BuildPreview(spawner);
-        bool canStart = spawner.WaitingForManualStart && !spawner.WaveActive && !gm.GameEnded;
+        bool canStart = spawner.WaitingForManualStart && !spawner.WaveActive && !gm.GameEnded && gm.CurrentWave > 0;
         startWaveButton.gameObject.SetActive(canStart);
         startWaveButton.interactable = canStart;
     }
 
     void StartWave()
     {
+        if (firstWavePrep != null) firstWavePrep.SetActive(false);
+        if (waveBar != null) waveBar.SetActive(true);
         if (spawner != null) spawner.StartWaveNow();
     }
 
