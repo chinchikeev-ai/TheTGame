@@ -26,8 +26,10 @@ public sealed class TowerProductionArtBinder : MonoBehaviour
         if (tower.Type == TowerType.Cannon && Has("Trojan_BallistaCrew"))
         {
             HideNamed(art,"TowerCrew_Trojan_Infantry");
-            AddCrew(art,"Trojan_BallistaCrew","A",new Vector3(-.58f,.35f,-.40f),.58f,18f);
-            AddCrew(art,"Trojan_BallistaCrew","B",new Vector3(.58f,.35f,-.34f),.58f,-16f);
+            string engineer = Has("Trojan_BallistaCrew_Engineer") ? "Trojan_BallistaCrew_Engineer" : "Trojan_BallistaCrew";
+            string loader = Has("Trojan_BallistaCrew_Loader") ? "Trojan_BallistaCrew_Loader" : "Trojan_BallistaCrew";
+            AddCrew(art,engineer,"A",new Vector3(-.58f,.35f,-.40f),.58f,18f);
+            AddCrew(art,loader,"B",new Vector3(.58f,.35f,-.34f),.58f,-16f);
         }
         if (tower.Type == TowerType.Slow && Has("Trojan_PriestApollo"))
         {
