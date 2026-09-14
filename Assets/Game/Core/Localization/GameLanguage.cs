@@ -7,9 +7,11 @@ public static class GameLanguage
     public static bool Russian => PlayerPrefs.GetInt(Key, 0) == 1;
     public static string Code => Russian ? "RU" : "EN";
 
-    public static void Toggle()
+    public static void Toggle() => SetRussian(!Russian);
+
+    public static void SetRussian(bool russian)
     {
-        PlayerPrefs.SetInt(Key, Russian ? 0 : 1);
+        PlayerPrefs.SetInt(Key, russian ? 1 : 0);
         PlayerPrefs.Save();
     }
 
