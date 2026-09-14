@@ -53,7 +53,8 @@ public static class RuntimeWarriorVisualFactory
         if (heroId == TroyHeroId.Hector)
         {
             AddSpear(root.transform, 1.38f);
-            AddShield(root.transform, .50f, new Color(.70f,.20f,.12f));
+            AddHectorShield(root.transform);
+            AddHectorArmor(root.transform);
             AddCape(root.transform, new Color(.50f,.06f,.04f));
         }
         else if (heroId == TroyHeroId.Achilles)
@@ -117,6 +118,43 @@ public static class RuntimeWarriorVisualFactory
         Part(PrimitiveType.Sphere, shield.transform, "ShieldBoss", new Vector3(0f,.08f,0f), new Vector3(.22f,.10f,.22f), new Color(.76f,.56f,.20f));
     }
 
+    static void AddHectorShield(Transform root)
+    {
+        Color shieldRed = new Color(.57f,.065f,.04f);
+        Color bronze = new Color(.82f,.58f,.20f);
+        GameObject shield = Part(PrimitiveType.Cylinder, root, "HectorRoundShield", new Vector3(-.52f,1.04f,.10f), new Vector3(.56f,.075f,.56f), shieldRed);
+        shield.transform.localRotation = Quaternion.Euler(90f,0f,0f);
+
+        Part(PrimitiveType.Sphere, shield.transform, "HectorShieldBoss", new Vector3(0f,.085f,0f), new Vector3(.22f,.09f,.22f), bronze);
+        Part(PrimitiveType.Cylinder, shield.transform, "HectorShieldHorseBody", new Vector3(.05f,.09f,.05f), new Vector3(.12f,.018f,.20f), bronze, Quaternion.Euler(90f,0f,-18f));
+        Part(PrimitiveType.Sphere, shield.transform, "HectorShieldHorseHead", new Vector3(.15f,.09f,.20f), new Vector3(.09f,.025f,.09f), bronze);
+        Part(PrimitiveType.Cube, shield.transform, "HectorShieldHorseNeck", new Vector3(.11f,.09f,.13f), new Vector3(.055f,.025f,.15f), bronze, Quaternion.Euler(0f,0f,-24f));
+        Part(PrimitiveType.Cube, shield.transform, "HectorShieldHorseLegFront", new Vector3(.11f,.09f,-.10f), new Vector3(.045f,.022f,.17f), bronze, Quaternion.Euler(0f,0f,-22f));
+        Part(PrimitiveType.Cube, shield.transform, "HectorShieldHorseLegRear", new Vector3(-.08f,.09f,-.11f), new Vector3(.045f,.022f,.16f), bronze, Quaternion.Euler(0f,0f,18f));
+    }
+
+    static void AddHectorArmor(Transform root)
+    {
+        Color bronze = new Color(.76f,.50f,.17f);
+        Color darkBronze = new Color(.44f,.27f,.10f);
+        Color trojanRed = new Color(.54f,.055f,.035f);
+
+        Part(PrimitiveType.Cube, root, "HectorArmoredCuirass", new Vector3(0f,1.10f,.03f), new Vector3(.50f,.43f,.30f), bronze);
+        Part(PrimitiveType.Cube, root, "HectorCuirassWaist", new Vector3(0f,.80f,.02f), new Vector3(.46f,.12f,.29f), darkBronze);
+        Part(PrimitiveType.Cube, root, "HectorArmoredSkirt", new Vector3(0f,.61f,.02f), new Vector3(.50f,.24f,.31f), trojanRed);
+
+        Part(PrimitiveType.Sphere, root, "HectorPauldronL", new Vector3(-.42f,1.34f,0f), new Vector3(.18f,.12f,.19f), bronze);
+        Part(PrimitiveType.Sphere, root, "HectorPauldronR", new Vector3(.42f,1.34f,0f), new Vector3(.18f,.12f,.19f), bronze);
+
+        Part(PrimitiveType.Cylinder, root, "HectorVambraceL", new Vector3(-.43f,1.02f,.02f), new Vector3(.145f,.22f,.145f), darkBronze, Quaternion.Euler(0f,0f,-10f));
+        Part(PrimitiveType.Cylinder, root, "HectorVambraceR", new Vector3(.43f,1.02f,.02f), new Vector3(.145f,.22f,.145f), darkBronze, Quaternion.Euler(0f,0f,10f));
+
+        Part(PrimitiveType.Sphere, root, "HectorKneeL", new Vector3(-.16f,.39f,.07f), new Vector3(.16f,.10f,.16f), bronze);
+        Part(PrimitiveType.Sphere, root, "HectorKneeR", new Vector3(.16f,.39f,.07f), new Vector3(.16f,.10f,.16f), bronze);
+        Part(PrimitiveType.Cylinder, root, "HectorGreaveL", new Vector3(-.16f,.20f,.02f), new Vector3(.15f,.22f,.15f), darkBronze);
+        Part(PrimitiveType.Cylinder, root, "HectorGreaveR", new Vector3(.16f,.20f,.02f), new Vector3(.15f,.22f,.15f), darkBronze);
+    }
+
     static void AddSpear(Transform root, float length)
     {
         GameObject shaft = Part(PrimitiveType.Cylinder, root, "Spear", new Vector3(.47f,1.08f,.02f), new Vector3(.035f,length,.035f), new Color(.32f,.18f,.08f));
@@ -163,13 +201,14 @@ public static class RuntimeWarriorVisualFactory
         return root;
     }
 
-    static GameObject Part(PrimitiveType type, Transform parent, string name, Vector3 position, Vector3 scale, Color color)
+    static GameObject Part(PrimitiveType type, Transform parent, string name, Vector3 position, Vector3 scale, Color color, Quaternion? rotation = null)
     {
         GameObject go = GameObject.CreatePrimitive(type);
         go.name = name;
         go.transform.SetParent(parent,false);
         go.transform.localPosition = position;
         go.transform.localScale = scale;
+        if (rotation.HasValue) go.transform.localRotation = rotation.Value;
         Collider collider = go.GetComponent<Collider>();
         if (collider != null) Object.Destroy(collider);
         TowerFactory.SetColor(go,color);
