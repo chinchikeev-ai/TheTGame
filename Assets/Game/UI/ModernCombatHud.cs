@@ -109,31 +109,46 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildTopBar(Transform parent)
     {
-        GameObject bar = Panel(parent, "TopResources", new Vector2(24, -24), new Vector2(330, 132), new Color(.035f, .022f, .016f, .94f), new Vector2(0, 1), new Vector2(0, 1));
-        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-128, 34), new Vector2(34, 34), CoinSprite());
+        GameObject bar = new GameObject("TopResources", typeof(RectTransform));
+        bar.transform.SetParent(parent, false);
+        RectTransform barRect = bar.transform as RectTransform;
+        barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(0f, 1f);
+        barRect.anchoredPosition = new Vector2(24f, -24f);
+        barRect.sizeDelta = new Vector2(354f, 150f);
+
+        Panel(bar.transform, "GoldResourcePanel", new Vector2(-58, 44), new Vector2(236, 58), new Color(.18f, .075f, .025f, .98f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-154, 44), new Vector2(52, 52), CoinSprite());
         coin.color = Color.white;
-        goldText = Text(bar.transform, "0", new Vector2(-96, 34), new Vector2(190, 46), 25, new Color(1f, .73f, .24f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(0, -4), new Vector2(278, 30), 14, new Color(.94f, .84f, .67f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(0, -42), new Vector2(278, 16), new Color(.18f, .08f, .045f, 1f), new Color(.79f, .22f, .08f, 1f));
+        goldText = Text(bar.transform, "0", new Vector2(-60, 44), new Vector2(150, 44), 27, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+
+        Panel(bar.transform, "GateResourcePanel", new Vector2(0, -38), new Vector2(330, 78), new Color(.070f, .041f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Icon(bar.transform, "GateIcon", new Vector2(-132, -38), new Vector2(54, 54), TroyHudArt.Icon("gate"));
+        gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(18, -19), new Vector2(220, 28), 17, new Color(1f, .86f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(44, -54), new Vector2(224, 18), new Color(.18f, .08f, .045f, 1f), new Color(.88f, .12f, .07f, 1f));
     }
 
     void BuildWaveBar(Transform parent)
     {
-        waveBar = Panel(parent, "WaveStatus", new Vector2(0, -24), new Vector2(760, 152), new Color(.035f, .022f, .016f, .95f), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        waveText = Text(waveBar.transform, "WAVE", new Vector2(0, 54), new Vector2(500, 30), 20, new Color(1f, .75f, .32f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        threatText = Text(waveBar.transform, "THREAT", new Vector2(0, 27), new Vector2(520, 24), 12, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Normal);
-        wavePreviewText = Text(waveBar.transform, "", new Vector2(0, 2), new Vector2(500, 22), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        wavePreviewText.enabled = false;
-        waveProgressFill = ProgressBar(waveBar.transform, "WaveProgress", new Vector2(0, -8), new Vector2(500, 14), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
-        waveProgressText = Text(waveBar.transform, "0%", new Vector2(0, -27), new Vector2(220, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        waveBar = Panel(parent, "WaveStatus", new Vector2(0, -18), new Vector2(820, 138), new Color(.050f, .027f, .018f, .96f), new Vector2(.5f, 1), new Vector2(.5f, 1));
+        Panel(waveBar.transform, "WaveBannerCloth", new Vector2(0, 30), new Vector2(680, 64), new Color(.48f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Icon(waveBar.transform, "WaveLeftLaurel", new Vector2(-310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
+        Icon(waveBar.transform, "WaveRightLaurel", new Vector2(310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
 
-        Button speedDown = Button(waveBar.transform, "<", new Vector2(-62, -55), new Vector2(46, 38), DecreaseSpeed, false);
+        waveText = Text(waveBar.transform, "WAVE", new Vector2(0, 42), new Vector2(430, 38), 26, new Color(1f, .86f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        threatText = Text(waveBar.transform, "THREAT", new Vector2(0, 9), new Vector2(600, 22), 12, new Color(1f, .91f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        wavePreviewText = Text(waveBar.transform, "", new Vector2(0, -14), new Vector2(500, 20), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        wavePreviewText.enabled = false;
+        waveProgressFill = ProgressBar(waveBar.transform, "WaveProgress", new Vector2(0, -24), new Vector2(560, 16), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
+        waveProgressText = Text(waveBar.transform, "0%", new Vector2(0, -45), new Vector2(280, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+
+        Panel(waveBar.transform, "SpeedControlPanel", new Vector2(0, -72), new Vector2(178, 44), new Color(.12f, .065f, .035f, .96f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Button speedDown = Button(waveBar.transform, "<", new Vector2(-62, -72), new Vector2(46, 34), DecreaseSpeed, false);
         speedDown.gameObject.name = "SpeedPrevious";
-        speedText = Text(waveBar.transform, "1x", new Vector2(0, -55), new Vector2(68, 38), 16, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        speedText = Text(waveBar.transform, "1x", new Vector2(0, -72), new Vector2(68, 34), 16, new Color(1f, .82f, .40f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         speedText.gameObject.name = "SpeedValue";
-        Button speedUp = Button(waveBar.transform, ">", new Vector2(62, -55), new Vector2(46, 38), IncreaseSpeed, false);
+        Button speedUp = Button(waveBar.transform, ">", new Vector2(62, -72), new Vector2(46, 34), IncreaseSpeed, false);
         speedUp.gameObject.name = "SpeedNext";
-        startWaveButton = Button(waveBar.transform, L("START", "СТАРТ"), new Vector2(310, -2), new Vector2(116, 76), StartWave, true);
+        startWaveButton = Button(waveBar.transform, L("START", "СТАРТ"), new Vector2(350, -25), new Vector2(104, 58), StartWave, true);
     }
 
     void BuildActionPanel(Transform parent)
