@@ -1,10 +1,38 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    const float FirstWavePreparationSeconds = 30f;
     static readonly WaitForSeconds ReinforcementDelay = new WaitForSeconds(.65f);
+
+    sealed class PreparedSpawn
+    {
+        public EnemyArchetype archetype;
+        public int route;
+        public int routeOffset;
+        public float startDelay;
+        public float spawnInterval;
+        public float hpMultiplier = 1f;
+        public float speedMultiplier = 1f;
+        public string behaviorId;
+
+        public PreparedSpawn Copy()
+        {
+            return new PreparedSpawn
+            {
+                archetype = archetype,
+                route = route,
+                routeOffset = routeOffset,
+                startDelay = startDelay,
+                spawnInterval = spawnInterval,
+                hpMultiplier = hpMultiplier,
+                speedMultiplier = speedMultiplier,
+                behaviorId = behaviorId
+            };
+        }
+    }
 
     public Transform[] spawnPoints;
     public Transform[][] paths;
@@ -21,6 +49,7 @@ public class EnemySpawner : MonoBehaviour
     public bool WaitingForManualStart { get; private set; } = true;
     public bool NextWaveHasHeavy { get; private set; }
     public bool NextWaveHasBoss { get; private set; }
+    public string NextWaveBossDisplayName { get; private set; } = "";
 
     public int NextWaveInfantryCount { get; private set; }
     public int NextWaveRunnerCount { get; private set; }
@@ -29,11 +58,15 @@ public class EnemySpawner : MonoBehaviour
     public int NextWaveArcherCount { get; private set; }
     public int NextWaveBossCount { get; private set; }
 
+    readonly List<PreparedSpawn> preparedPlan = new List<PreparedSpawn>(64);
+    readonly List<PreparedSpawn> baseNonBossPlan = new List<PreparedSpawn>(64);
+    readonly List<PreparedSpawn> baseBossPlan = new List<PreparedSpawn>(4);
+
     bool running;
     bool requestStart;
     float waveStartedAt;
     float lastWaveDuration;
-    WaveData preparedWave;
+    EncounterData preparedEncounter;
     int effectiveEnemyCount;
     float effectiveHpMultiplier = 1f;
     float effectiveSpeedMultiplier = 1f;
@@ -41,12 +74,20 @@ public class EnemySpawner : MonoBehaviour
     public void Initialize(Transform[][] newPaths)
     {
         paths = newPaths;
+        if (paths == null || paths.Length == 0)
+            throw new InvalidOperationException("EnemySpawner requires at least one authored runtime path.");
+
         spawnPoints = new Transform[paths.Length];
-        for (int i = 0; i < paths.Length; i++) spawnPoints[i] = paths[i][0];
-        GameManager.Instance.MaxWaves = maxWaves;
+        for (int i = 0; i < paths.Length; i++)
+            spawnPoints[i] = paths[i] != null && paths[i].Length > 0 ? paths[i][0] : null;
+
+        ChapterData chapter = GameManager.Instance != null ? GameManager.Instance.Chapter : null;
+        if (chapter != null && chapter.EncounterCount > 0) maxWaves = chapter.EncounterCount;
+        if (GameManager.Instance != null) GameManager.Instance.MaxWaves = maxWaves;
+
         EnemyRegistry.Clear();
         PrepareNextWave(1);
-        RuntimeFileLogger.Event("SPAWNER", $"Initialized routes={paths.Length}, maxWaves={maxWaves}, difficulty={CampaignSave.Difficulty}");
+        RuntimeFileLogger.Event("SPAWNER", $"Initialized routes={paths.Length}, encounters={maxWaves}, difficulty={CampaignSave.Difficulty}");
     }
 
     public void ActivateLevel()
@@ -59,7 +100,7 @@ public class EnemySpawner : MonoBehaviour
         if (WaveActive || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
         requestStart = true;
         InterWaveCountdown = 0f;
-        RuntimeFileLogger.Event("WAVE", $"Manual start requested for wave={Mathf.Max(1, CurrentWave + 1)}");
+        RuntimeFileLogger.Event("WAVE", $"Manual start requested for encounter={Mathf.Max(1, CurrentWave + 1)}");
     }
 
     IEnumerator GameLoop()
@@ -71,8 +112,10 @@ public class EnemySpawner : MonoBehaviour
             WaitingForManualStart = true;
             GameStateController.Instance?.SetState(wave == 1 ? GameState.Preparing : GameState.BetweenWaves);
 
-            float preparationSeconds = wave == 1 ? FirstWavePreparationSeconds : preparedWave.preparationTime;
-            RuntimeFileLogger.Event("WAVE", $"Prepared wave={wave}/{maxWaves}, enemies={effectiveEnemyCount}, prep={preparationSeconds:0.0}s, target={preparedWave.targetDuration:0.0}s, spawnInterval={preparedWave.spawnInterval:0.00}s, hpMul={effectiveHpMultiplier:0.00}, speedMul={effectiveSpeedMultiplier:0.00}, boss={preparedWave.hasBoss}, difficulty={CampaignSave.Difficulty}");
+            float preparationSeconds = preparedEncounter.preparationTime;
+            RuntimeFileLogger.Event(
+                "WAVE",
+                $"Prepared encounter={wave}/{maxWaves}, id={preparedEncounter.encounterId}, enemies={effectiveEnemyCount}, prep={preparationSeconds:0.0}s, target={preparedEncounter.targetDuration:0.0}s, spawnInterval={preparedEncounter.spawnInterval:0.00}s, hpMul={effectiveHpMultiplier:0.00}, speedMul={effectiveSpeedMultiplier:0.00}, boss={NextWaveHasBoss}, difficulty={CampaignSave.Difficulty}");
 
             InterWaveCountdown = preparationSeconds;
             while (InterWaveCountdown > 0f && !requestStart && !GameManager.Instance.GameEnded)
@@ -91,20 +134,20 @@ public class EnemySpawner : MonoBehaviour
             waveStartedAt = Time.time;
             lastWaveDuration = 0f;
             GameStateController.Instance?.SetState(GameState.WaveRunning);
-            RuntimeFileLogger.Event("WAVE", $"Started wave={wave}/{maxWaves}");
+            RuntimeFileLogger.Event("WAVE", $"Started encounter={wave}/{maxWaves}, id={preparedEncounter.encounterId}");
 
-            WaitForSeconds spawnDelay = new WaitForSeconds(preparedWave.spawnInterval);
-            for (int i = 0; i < effectiveEnemyCount; i++)
+            for (int i = 0; i < preparedPlan.Count; i++)
             {
-                bool boss = preparedWave.hasBoss && i == effectiveEnemyCount - 1;
-                SpawnEnemy(wave, i, boss);
-                yield return spawnDelay;
+                PreparedSpawn spawn = preparedPlan[i];
+                if (spawn.startDelay > 0f) yield return new WaitForSeconds(spawn.startDelay);
+                SpawnPreparedEnemy(spawn, i);
+                yield return new WaitForSeconds(Mathf.Max(.01f, spawn.spawnInterval));
             }
 
             while (!GameManager.Instance.GameEnded && EnemyRegistry.AliveCount > 0) yield return null;
             lastWaveDuration = Mathf.Max(0f, Time.time - waveStartedAt);
             WaveActive = false;
-            RuntimeFileLogger.Event("WAVE", $"Completed wave={wave}/{maxWaves}, actualDuration={lastWaveDuration:0.0}s, target={preparedWave.targetDuration:0.0}s, killsTotal={GameManager.Instance.Kills}, leaksTotal={GameManager.Instance.Leaks}, gold={GameManager.Instance.Money}, gateHP={GameManager.Instance.BaseHealth}");
+            RuntimeFileLogger.Event("WAVE", $"Completed encounter={wave}/{maxWaves}, actualDuration={lastWaveDuration:0.0}s, target={preparedEncounter.targetDuration:0.0}s, killsTotal={GameManager.Instance.Kills}, leaksTotal={GameManager.Instance.Leaks}, gold={GameManager.Instance.Money}, gateHP={GameManager.Instance.BaseHealth}");
         }
 
         if (!GameManager.Instance.GameEnded) GameManager.Instance.WinGame();
@@ -112,25 +155,92 @@ public class EnemySpawner : MonoBehaviour
 
     void PrepareNextWave(int wave)
     {
-        preparedWave = BalanceCatalog.GetWave(wave, maxWaves);
+        ChapterData chapter = GameManager.Instance != null ? GameManager.Instance.Chapter : null;
+        preparedEncounter = chapter != null ? chapter.GetEncounter(wave) : null;
+        if (preparedEncounter == null)
+            throw new InvalidOperationException($"Missing authored EncounterData for encounter {wave}. Chapter={chapter?.chapterId ?? "none"}.");
+
         CampaignDifficulty difficulty = CampaignSave.Difficulty;
+        effectiveHpMultiplier = preparedEncounter.hpMultiplier * DifficultyRules.EnemyHpMultiplier(difficulty);
+        effectiveSpeedMultiplier = preparedEncounter.speedMultiplier * DifficultyRules.EnemySpeedMultiplier(difficulty);
+        BuildPreparedPlan(DifficultyRules.EnemyCountMultiplier(difficulty));
 
-        effectiveEnemyCount = Mathf.Max(1, Mathf.RoundToInt(preparedWave.enemyCount * DifficultyRules.EnemyCountMultiplier(difficulty)));
-        if (preparedWave.hasBoss) effectiveEnemyCount = Mathf.Max(2, effectiveEnemyCount);
-        effectiveHpMultiplier = preparedWave.hpMultiplier * DifficultyRules.EnemyHpMultiplier(difficulty);
-        effectiveSpeedMultiplier = preparedWave.speedMultiplier * DifficultyRules.EnemySpeedMultiplier(difficulty);
-
+        effectiveEnemyCount = preparedPlan.Count;
         NextWaveEnemyCount = effectiveEnemyCount;
         NextWaveHpMultiplier = effectiveHpMultiplier;
         NextWaveSpeedMultiplier = effectiveSpeedMultiplier;
-        NextWaveHasBoss = preparedWave.hasBoss;
-        TargetWaveDuration = preparedWave.targetDuration;
-        InterWaveCountdown = wave == 1 ? FirstWavePreparationSeconds : preparedWave.preparationTime;
-        BuildPreparedWaveComposition(wave);
+        TargetWaveDuration = preparedEncounter.targetDuration;
+        InterWaveCountdown = preparedEncounter.preparationTime;
+        BuildPreparedWaveComposition();
         NextWaveHasHeavy = NextWaveHeavyCount > 0 || NextWaveShieldCount > 0;
     }
 
-    void BuildPreparedWaveComposition(int wave)
+    void BuildPreparedPlan(float countMultiplier)
+    {
+        preparedPlan.Clear();
+        baseNonBossPlan.Clear();
+        baseBossPlan.Clear();
+
+        EncounterSpawnGroup[] groups = preparedEncounter.spawnGroups;
+        if (groups == null || groups.Length == 0)
+            throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' has no authored spawn groups.");
+
+        for (int g = 0; g < groups.Length; g++)
+        {
+            EncounterSpawnGroup group = groups[g];
+            if (group == null || group.pattern == null || group.pattern.Length == 0) continue;
+
+            int repeats = Mathf.Max(1, group.repeats);
+            bool firstInGroup = true;
+            for (int repeat = 0; repeat < repeats; repeat++)
+            {
+                for (int p = 0; p < group.pattern.Length; p++)
+                {
+                    PreparedSpawn spawn = new PreparedSpawn
+                    {
+                        archetype = group.pattern[p],
+                        route = group.route,
+                        routeOffset = group.routeOffset,
+                        startDelay = firstInGroup ? Mathf.Max(0f, group.startDelay) : 0f,
+                        spawnInterval = group.spawnInterval > 0f ? group.spawnInterval : preparedEncounter.spawnInterval,
+                        hpMultiplier = Mathf.Max(.01f, group.hpMultiplier),
+                        speedMultiplier = Mathf.Max(.01f, group.speedMultiplier),
+                        behaviorId = group.behaviorId
+                    };
+                    firstInGroup = false;
+
+                    if (spawn.archetype == EnemyArchetype.Boss) baseBossPlan.Add(spawn);
+                    else baseNonBossPlan.Add(spawn);
+                }
+            }
+        }
+
+        int baseCount = baseNonBossPlan.Count + baseBossPlan.Count;
+        if (baseCount <= 0)
+            throw new InvalidOperationException($"Encounter '{preparedEncounter.encounterId}' resolves to zero enemies.");
+
+        int targetTotal = Mathf.Max(1, Mathf.RoundToInt(baseCount * Mathf.Max(.01f, countMultiplier)));
+        if (baseBossPlan.Count > 0) targetTotal = Mathf.Max(baseBossPlan.Count, targetTotal);
+        int targetNonBoss = baseNonBossPlan.Count > 0 ? Mathf.Max(1, targetTotal - baseBossPlan.Count) : 0;
+
+        if (targetNonBoss == baseNonBossPlan.Count)
+        {
+            for (int i = 0; i < baseNonBossPlan.Count; i++) preparedPlan.Add(baseNonBossPlan[i].Copy());
+        }
+        else if (targetNonBoss > 0)
+        {
+            for (int i = 0; i < targetNonBoss; i++)
+            {
+                float position = (i + .5f) / targetNonBoss;
+                int sourceIndex = Mathf.Clamp(Mathf.FloorToInt(position * baseNonBossPlan.Count), 0, baseNonBossPlan.Count - 1);
+                preparedPlan.Add(baseNonBossPlan[sourceIndex].Copy());
+            }
+        }
+
+        for (int i = 0; i < baseBossPlan.Count; i++) preparedPlan.Add(baseBossPlan[i].Copy());
+    }
+
+    void BuildPreparedWaveComposition()
     {
         NextWaveInfantryCount = 0;
         NextWaveRunnerCount = 0;
@@ -138,33 +248,52 @@ public class EnemySpawner : MonoBehaviour
         NextWaveShieldCount = 0;
         NextWaveArcherCount = 0;
         NextWaveBossCount = 0;
+        NextWaveBossDisplayName = "";
 
-        for (int i = 0; i < effectiveEnemyCount; i++)
+        for (int i = 0; i < preparedPlan.Count; i++)
         {
-            bool boss = preparedWave.hasBoss && i == effectiveEnemyCount - 1;
-            EnemyArchetype archetype = BalanceCatalog.GetEnemyForWave(wave, i, effectiveEnemyCount, boss).archetype;
+            EnemyArchetype archetype = preparedPlan[i].archetype;
             switch (archetype)
             {
                 case EnemyArchetype.Runner: NextWaveRunnerCount++; break;
                 case EnemyArchetype.HeavyHoplite: NextWaveHeavyCount++; break;
                 case EnemyArchetype.ShieldBearer: NextWaveShieldCount++; break;
                 case EnemyArchetype.Archer: NextWaveArcherCount++; break;
-                case EnemyArchetype.Boss: NextWaveBossCount++; break;
+                case EnemyArchetype.Boss:
+                    NextWaveBossCount++;
+                    if (string.IsNullOrEmpty(NextWaveBossDisplayName))
+                        NextWaveBossDisplayName = BalanceCatalog.GetEnemy(archetype).displayName;
+                    break;
                 default: NextWaveInfantryCount++; break;
             }
         }
+
+        NextWaveHasBoss = NextWaveBossCount > 0;
     }
 
-    void SpawnEnemy(int wave, int index, bool boss)
-    {
-        int route = paths != null && paths.Length > 1 ? index % paths.Length : 0;
-        EnemyData data = BalanceCatalog.GetEnemyForWave(wave, index, effectiveEnemyCount, boss);
-        SpawnConfiguredEnemy(data, route, effectiveHpMultiplier, effectiveSpeedMultiplier, boss);
-    }
-
-    void SpawnConfiguredEnemy(EnemyData data, int route, float hpMultiplier, float speedMultiplier, bool boss)
+    void SpawnPreparedEnemy(PreparedSpawn spawn, int globalIndex)
     {
         if (paths == null || paths.Length == 0) return;
+
+        int route = spawn.route;
+        if (route < 0)
+        {
+            route = (globalIndex + spawn.routeOffset) % paths.Length;
+            if (route < 0) route += paths.Length;
+        }
+
+        EnemyData data = BalanceCatalog.GetEnemy(spawn.archetype);
+        SpawnConfiguredEnemy(
+            data,
+            route,
+            effectiveHpMultiplier * spawn.hpMultiplier,
+            effectiveSpeedMultiplier * spawn.speedMultiplier,
+            spawn.behaviorId);
+    }
+
+    void SpawnConfiguredEnemy(EnemyData data, int route, float hpMultiplier, float speedMultiplier, string behaviorId = null)
+    {
+        if (paths == null || paths.Length == 0 || data == null) return;
         route = Mathf.Clamp(route, 0, paths.Length - 1);
         Transform[] routePath = paths[route];
         if (routePath == null || routePath.Length == 0) return;
@@ -174,24 +303,29 @@ public class EnemySpawner : MonoBehaviour
 
         Enemy enemy = enemyObj.AddComponent<Enemy>();
         enemy.InitFromData(routePath, data, hpMultiplier, speedMultiplier);
-        if (boss) enemyObj.AddComponent<MenelausBossController>();
+        EnemyRuntimeBehaviorRegistry.Attach(enemyObj, behaviorId);
     }
 
-    public void SpawnMenelausReinforcements(int count)
+    public void SpawnReinforcements(int count, EnemyArchetype[] pattern, float hpMultiplier = .85f, float speedMultiplier = 1f)
     {
         if (!WaveActive || GameManager.Instance == null || GameManager.Instance.GameEnded || count <= 0) return;
-        StartCoroutine(SpawnReinforcementBurst(count));
+        if (pattern == null || pattern.Length == 0) pattern = new[] { EnemyArchetype.Infantry };
+        StartCoroutine(SpawnReinforcementBurst(count, pattern, hpMultiplier, speedMultiplier));
     }
 
-    IEnumerator SpawnReinforcementBurst(int count)
+    IEnumerator SpawnReinforcementBurst(int count, EnemyArchetype[] pattern, float hpMultiplier, float speedMultiplier)
     {
         for (int i = 0; i < count; i++)
         {
             if (GameManager.Instance == null || GameManager.Instance.GameEnded) yield break;
             int route = paths != null && paths.Length > 1 ? i % paths.Length : 0;
-            EnemyArchetype archetype = i % 3 == 2 ? EnemyArchetype.ShieldBearer : EnemyArchetype.Infantry;
+            EnemyArchetype archetype = pattern[i % pattern.Length];
             EnemyData data = BalanceCatalog.GetEnemy(archetype);
-            SpawnConfiguredEnemy(data, route, Mathf.Max(1f, effectiveHpMultiplier * .85f), Mathf.Max(1f, effectiveSpeedMultiplier), false);
+            SpawnConfiguredEnemy(
+                data,
+                route,
+                Mathf.Max(.01f, effectiveHpMultiplier * hpMultiplier),
+                Mathf.Max(.01f, effectiveSpeedMultiplier * speedMultiplier));
             yield return ReinforcementDelay;
         }
     }
