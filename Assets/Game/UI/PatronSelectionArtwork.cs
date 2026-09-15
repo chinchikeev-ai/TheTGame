@@ -30,7 +30,11 @@ public sealed class PatronSelectionArtwork : MonoBehaviour
         heading = Label("Heading", content, new Vector2(0, 405), new Vector2(1250, 65), 38);
         DifficultyLabel = Label("Difficulty", content, new Vector2(0, 360), new Vector2(900, 30), 18);
         string[] files = { "Gods_Afina", "Gods_Ares", "Gods_Apollo", "Gods_Poseidon" };
-        string[] english = { "ATHENA\nGATE +2 MAX HP / IMMEDIATE", "ARES\nHECTOR & TOWERS +10% DAMAGE / WHOLE MAP", "APOLLO\n+50 STARTING GOLD / ONE TIME", "POSEIDON\nENEMIES -10% SPEED / WHOLE MAP" };
+        string[] names = { "ATHENA", "ARES", "APOLLO", "POSEIDON" };
+        string[] english = { "GATE +2 MAX HP\nIMMEDIATE", "HECTOR & TOWERS\n+10% DAMAGE / WHOLE MAP", "+50 STARTING GOLD\nONE TIME", "ENEMIES -10% SPEED\nWHOLE MAP" };
+        float[] nameY = { -84, -67, -64, -67 };
+        float[] nameWidth = { 190, 205, 233, 247 };
+        float[] infoY = { -130, -115, -119, -123 };
         for (int i = 0; i < gifts.Length; i++)
         {
             int index = i;
@@ -51,12 +55,23 @@ public sealed class PatronSelectionArtwork : MonoBehaviour
             highlights[i].effectDistance = new Vector2(4, -4);
             highlights[i].enabled = false;
             var translation = Node("EnglishCaption", rect);
-            translation.anchoredPosition = new Vector2(0, -104);
-            translation.sizeDelta = new Vector2(438, 132);
-            var plate = translation.gameObject.AddComponent<Image>();
-            plate.color = new Color(.10f, .065f, .04f);
+            var namePlate = Node("NamePlate", translation);
+            namePlate.anchoredPosition = new Vector2(0, nameY[i]);
+            namePlate.sizeDelta = new Vector2(nameWidth[i], 26);
+            var parchment = namePlate.gameObject.AddComponent<Image>();
+            parchment.color = new Color(.86f, .64f, .36f);
+            parchment.raycastTarget = false;
+            var nameLabel = Label("Name", namePlate, Vector2.zero, namePlate.sizeDelta, 22);
+            nameLabel.text = names[i];
+            nameLabel.color = new Color(.12f, .055f, .015f);
+            nameLabel.GetComponent<Shadow>().enabled = false;
+            var infoPlate = Node("BonusPlate", translation);
+            infoPlate.anchoredPosition = new Vector2(50, infoY[i]);
+            infoPlate.sizeDelta = new Vector2(288, 54);
+            var plate = infoPlate.gameObject.AddComponent<Image>();
+            plate.color = new Color(.12f, .085f, .06f);
             plate.raycastTarget = false;
-            Label("Caption", translation, Vector2.zero, new Vector2(414, 112), 20).text = english[i];
+            Label("Caption", infoPlate, Vector2.zero, new Vector2(280, 50), 16).text = english[i];
             translations[i] = translation.gameObject;
             selectionLabels[i] = Label("Selected", rect, new Vector2(0, 142), new Vector2(240, 30), 20);
             selectionLabels[i].gameObject.SetActive(false);

@@ -20,4 +20,7 @@ Architecture guard and focused EditMode tests; real Unity render and player-flow
 No Windows player build requested. Artwork remains a candidate until visual acceptance.
 
 ## Status
-Implemented; validation results recorded in the task response.
+Implemented. Architecture guard passed. Eleven EditMode cases cover all four gift
+callbacks, confirmation/reset/back, resource loading, and six isolated Canvas captures
+(RU/EN at 1600x900, 1366x768 and 1024x768). No player save is changed by these tests.
+Full menu-to-battle gameplay acceptance and an EXE build are not claimed.

@@ -11,7 +11,9 @@ background and four separate illustrated cards. A pending selection is highlight
 only confirmation applies the gift through the existing controller. Back returns to
 difficulty. English captions cover the baked Russian text, and layout scales uniformly.
 Runtime textures live under Assets/Game/Art/Resources/PatronSelection, not Pictures.
-Real Unity visual acceptance remains pending; no new Windows build is claimed.
+Unity compilation and eleven focused EditMode tests passed, including six isolated
+RU/EN Canvas captures at 1600x900, 1366x768 and 1024x768. Full menu-to-battle visual
+acceptance remains pending; no new Windows build is claimed.
 
 Build badge recovery (2026-09-15): `MainMenuBuildVersionPresentation` reactivates
 its existing badge and restores its sibling order after approved menu art disables
