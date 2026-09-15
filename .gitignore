@@ -70,3 +70,8 @@ ProjectSettings/McpUnitySettings.json
 
 # Local reference images kept outside the Unity project
 /Pictures/
+
+# Unity performance test run artifacts
+PerformanceTestRun*.json
+Assets/Resources/PerformanceTestRun*.json
+
