@@ -26,6 +26,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     Button magicAction;
     Button firstEncounterPrepStartButton;
     Button defenseToggleButton;
+    Button settingsButton;
     Text defenseToggleText;
     Text buildSelectionText;
 
@@ -38,6 +39,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     Image gateHealthFill;
     Image encounterProgressFill;
     Image tooltipAccent;
+    Image tooltipPortrait;
     Text tooltipTitle, tooltipRole, tooltipStats, tooltipMatchup;
     TowerType hoveredBuildType;
     bool buildTooltipVisible;
@@ -110,24 +112,37 @@ public sealed class ModernCombatHud : MonoBehaviour
         RectTransform barRect = bar.transform as RectTransform;
         barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(0f, 1f);
         barRect.anchoredPosition = new Vector2(20f, -20f);
-        barRect.sizeDelta = new Vector2(320f, 150f);
+        barRect.sizeDelta = new Vector2(530f, 154f);
 
-        GameObject goldPanel = Panel(bar.transform, "GoldResourcePanel", new Vector2(-66, 48), new Vector2(210, 50), new Color(1f, 1f, 1f, 1f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Image goldImage = goldPanel.GetComponent<Image>();
-        if (goldImage != null)
-        {
-            goldImage.sprite = TroyHudArt.Panel();
-            goldImage.type = Image.Type.Sliced;
-            goldImage.color = new Color(.42f, .22f, .08f, 1f);
-        }
-        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-156, 48), new Vector2(54, 54), TroyHudArt.Icon("gold"));
+        GameObject goldPanel = Panel(bar.transform, "GoldResourcePanel", new Vector2(-150f, 48f), new Vector2(212f, 54f), new Color(.42f, .22f, .08f, 1f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Image coin = Icon(bar.transform, "CoinIcon", new Vector2(-242f, 48f), new Vector2(56f, 56f), TroyHudArt.Icon("gold"));
         coin.color = Color.white;
-        goldText = Text(bar.transform, "0", new Vector2(-54, 48), new Vector2(132, 36), 27, new Color(1f, .88f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        goldText = Text(bar.transform, "0", new Vector2(-137f, 48f), new Vector2(128f, 38f), 27, new Color(1f, .88f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
 
-        Panel(bar.transform, "GateResourcePanel", new Vector2(0, -38), new Vector2(330, 78), new Color(.070f, .041f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Icon(bar.transform, "GateIcon", new Vector2(-132, -38), new Vector2(54, 54), TroyHudArt.Icon("gate"));
-        gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(18, -19), new Vector2(220, 28), 17, new Color(1f, .86f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(44, -54), new Vector2(224, 18), new Color(.18f, .08f, .045f, 1f), new Color(.88f, .12f, .07f, 1f));
+        Panel(bar.transform, "SpeedControlPanel", new Vector2(78f, 48f), new Vector2(174f, 54f), new Color(.12f, .065f, .035f, .98f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Button speedDown = Button(bar.transform, "<", new Vector2(28f, 48f), new Vector2(42f, 42f), DecreaseSpeed, false);
+        speedDown.gameObject.name = "SpeedPrevious";
+        speedText = Text(bar.transform, "1x", new Vector2(78f, 48f), new Vector2(58f, 38f), 17, new Color(1f, .82f, .40f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        speedText.gameObject.name = "SpeedValue";
+        Button speedUp = Button(bar.transform, ">", new Vector2(128f, 48f), new Vector2(42f, 42f), IncreaseSpeed, false);
+        speedUp.gameObject.name = "SpeedNext";
+
+        settingsButton = Button(bar.transform, "", new Vector2(218f, 48f), new Vector2(54f, 54f), OpenSettings, false);
+        settingsButton.gameObject.name = "CombatSettingsButton";
+        Text settingsLabel = settingsButton.GetComponentInChildren<Text>();
+        if (settingsLabel != null)
+        {
+            settingsLabel.text = L("SET", "НАСТР");
+            settingsLabel.fontSize = 10;
+            settingsLabel.resizeTextForBestFit = true;
+            settingsLabel.resizeTextMinSize = 8;
+            settingsLabel.resizeTextMaxSize = 10;
+        }
+
+        Panel(bar.transform, "GateResourcePanel", new Vector2(-35f, -38f), new Vector2(450f, 76f), new Color(.070f, .041f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Icon(bar.transform, "GateIcon", new Vector2(-232f, -38f), new Vector2(58f, 58f), TroyHudArt.Icon("gate"));
+        gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(-82f, -18f), new Vector2(270f, 28f), 17, new Color(1f, .86f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(34f, -54f), new Vector2(320f, 18f), new Color(.18f, .08f, .045f, 1f), new Color(.88f, .12f, .07f, 1f));
     }
 
     void BuildEncounterBar(Transform parent)
@@ -143,14 +158,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         encounterPreviewText.enabled = false;
         encounterProgressFill = ProgressBar(encounterBar.transform, "WaveProgress", new Vector2(0, -24), new Vector2(560, 16), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
         encounterProgressText = Text(encounterBar.transform, "0%", new Vector2(0, -45), new Vector2(280, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-
-        Panel(encounterBar.transform, "SpeedControlPanel", new Vector2(0, -72), new Vector2(178, 44), new Color(.12f, .065f, .035f, .96f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Button speedDown = Button(encounterBar.transform, "<", new Vector2(-62, -72), new Vector2(46, 34), DecreaseSpeed, false);
-        speedDown.gameObject.name = "SpeedPrevious";
-        speedText = Text(encounterBar.transform, "1x", new Vector2(0, -72), new Vector2(68, 34), 16, new Color(1f, .82f, .40f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        speedText.gameObject.name = "SpeedValue";
-        Button speedUp = Button(encounterBar.transform, ">", new Vector2(62, -72), new Vector2(46, 34), IncreaseSpeed, false);
-        speedUp.gameObject.name = "SpeedNext";
         startEncounterButton = Button(encounterBar.transform, L("START", "СТАРТ"), new Vector2(350, -25), new Vector2(104, 58), StartEncounter, true);
     }
 
@@ -159,7 +166,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         GameObject panel = Panel(parent, "DivinePowerActions", new Vector2(-24, -24), new Vector2(370, 132), new Vector2(1, 1), new Vector2(1, 1));
         magicAction = Button(panel.transform, "", Vector2.zero, new Vector2(330f, 94f), CastMagic, true);
         magicAction.gameObject.name = "Magic_Primary";
-        Icon(magicAction.transform, "MagicIcon", new Vector2(-126f, 0f), new Vector2(58f, 58f), TroyHudArt.Ability("magic"));
+        Icon(magicAction.transform, "MagicIcon", new Vector2(-126f, 0f), new Vector2(62f, 62f), TroyHudArt.Ability("magic"));
         magicActionText = magicAction.GetComponentInChildren<Text>();
         if (magicActionText != null)
         {
@@ -180,6 +187,12 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (gm != null) gm.UseMagic();
     }
 
+    void OpenSettings()
+    {
+        GameMenuController menu = FindFirstObjectByType<GameMenuController>();
+        if (menu != null) menu.OpenCombatSettings();
+    }
+
     void BuildFirstEncounterPreparation(Transform parent)
     {
         firstEncounterPrep = Panel(parent, "FirstWavePreparation", new Vector2(0, -176), new Vector2(760, 330), new Color(.035f, .022f, .016f, .975f), new Vector2(.5f, 1f), new Vector2(.5f, 1f));
@@ -193,21 +206,24 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDock(Transform parent)
     {
-        buildDock = Panel(parent, "BuildDock", new Vector2(-284f, 24f), new Vector2(920, 176), new Color(.040f, .024f, .016f, .96f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 66), new Vector2(800, 38), new Color(.44f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Text(buildDock.transform, L("DEPLOY DEFENDERS", "РАЗМЕСТИТЬ ЗАЩИТНИКОВ"), new Vector2(-236, 66), new Vector2(300, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        buildSelectionText = Text(buildDock.transform, "", new Vector2(192, 66), new Vector2(470, 24), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildDock = Panel(parent, "BuildDock", new Vector2(-292f, 22f), new Vector2(960f, 198f), new Color(.040f, .024f, .016f, .96f), new Vector2(1f, 0f), new Vector2(1f, 0f));
+        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 78), new Vector2(850, 40), new Color(.44f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Text(buildDock.transform, L("TROJAN DEFENDERS", "ЗАЩИТНИКИ ТРОИ"), new Vector2(-250, 78), new Vector2(330, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildSelectionText = Text(buildDock.transform, "", new Vector2(198, 78), new Vector2(480, 24), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         for (int i = 0; i < buildTypes.Length; i++)
         {
             TowerType type = buildTypes[i];
-            float x = -360 + i * 144;
-            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -24), new Vector2(124, 112), () => SelectBuild(type), false);
+            float x = -390 + i * 156;
+            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -18), new Vector2(140, 134), () => SelectBuild(type), false);
             buildButtons[i].gameObject.name = "BuildCard_" + type;
-            Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Tower(type));
-            Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-51, 43), new Vector2(24, 22), 13, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-            Text(buildButtons[i].transform, TowerName(type).ToUpperInvariant(), new Vector2(0, -18), new Vector2(122, 26), 12, new Color(1f, .90f, .68f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-24, -43), new Vector2(22, 22), TroyHudArt.Icon("gold"));
-            Text(buildButtons[i].transform, TowerFactory.GetCost(type).ToString(), new Vector2(20, -43), new Vector2(62, 22), 12, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+            Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 30), new Vector2(62, 62), TroyHudArt.Tower(type));
+            Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-56, 49), new Vector2(24, 22), 13, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            Text towerName = Text(buildButtons[i].transform, TowerName(type).ToUpperInvariant(), new Vector2(0, -24), new Vector2(132, 28), 12, new Color(1f, .90f, .68f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            towerName.resizeTextForBestFit = true;
+            towerName.resizeTextMinSize = 9;
+            towerName.resizeTextMaxSize = 12;
+            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-26, -50), new Vector2(24, 24), TroyHudArt.Icon("gold"));
+            Text(buildButtons[i].transform, TowerFactory.GetCost(type).ToString(), new Vector2(20, -50), new Vector2(64, 22), 12, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
             relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
         }
@@ -217,7 +233,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDefenseToggle(Transform parent)
     {
-        defenseToggleButton = Button(parent, L("DEFENDERS\n+", "ЗАЩИТА\n+"), new Vector2(-24, 24), new Vector2(116, 104), ToggleDefenseDock, true);
+        defenseToggleButton = Button(parent, L("DEFENDERS\n+", "ЗАЩИТА\n+"), new Vector2(-24, 24), new Vector2(128, 112), ToggleDefenseDock, true);
         defenseToggleButton.gameObject.name = "DefendersToggle";
         RectTransform rt = defenseToggleButton.transform as RectTransform;
         if (rt != null)
@@ -225,12 +241,12 @@ public sealed class ModernCombatHud : MonoBehaviour
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
             rt.anchoredPosition = new Vector2(-24f, 24f);
         }
-        Icon(defenseToggleButton.transform, "DefendersIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Tower(TowerType.TrojanGuard));
+        Icon(defenseToggleButton.transform, "DefendersIcon", new Vector2(0, 28), new Vector2(56, 56), TroyHudArt.Tower(TowerType.TrojanGuard));
         defenseToggleText = defenseToggleButton.GetComponentInChildren<Text>();
         if (defenseToggleText != null)
         {
-            defenseToggleText.rectTransform.anchoredPosition = new Vector2(0, -28);
-            defenseToggleText.rectTransform.sizeDelta = new Vector2(102, 42);
+            defenseToggleText.rectTransform.anchoredPosition = new Vector2(0, -31);
+            defenseToggleText.rectTransform.sizeDelta = new Vector2(112, 42);
             defenseToggleText.fontSize = 13;
             defenseToggleText.fontStyle = FontStyle.Bold;
             defenseToggleText.lineSpacing = .88f;
@@ -250,7 +266,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildBuildTooltip(Transform parent)
     {
-        buildTooltip = Panel(parent, "BuildHoverTooltip", new Vector2(-104f, 190f), new Vector2(500, 166), new Color(.028f, .018f, .014f, .985f), new Vector2(1f, 0f), new Vector2(1f, 0f));
+        buildTooltip = Panel(parent, "BuildHoverTooltip", new Vector2(-112f, 220f), new Vector2(520, 190), new Color(.028f, .018f, .014f, .985f), new Vector2(1f, 0f), new Vector2(1f, 0f));
         buildTooltip.GetComponent<Image>().raycastTarget = false;
         GameObject accentObject = new GameObject("Accent");
         accentObject.transform.SetParent(buildTooltip.transform, false);
@@ -259,32 +275,34 @@ public sealed class ModernCombatHud : MonoBehaviour
         RectTransform accentRt = tooltipAccent.rectTransform;
         accentRt.anchorMin = accentRt.anchorMax = accentRt.pivot = new Vector2(0f, .5f);
         accentRt.anchoredPosition = new Vector2(8f, 0f);
-        accentRt.sizeDelta = new Vector2(8f, 146f);
-        tooltipTitle = Text(buildTooltip.transform, "", new Vector2(-108, 52), new Vector2(286, 28), 18, new Color(1f, .76f, .31f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        tooltipRole = Text(buildTooltip.transform, "", new Vector2(-108, 24), new Vector2(286, 26), 12, new Color(.78f, .70f, .61f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        tooltipStats = Text(buildTooltip.transform, "", new Vector2(-108, -10), new Vector2(286, 36), 12, new Color(.93f, .87f, .79f, 1f), TextAnchor.MiddleLeft, FontStyle.Normal);
-        tooltipMatchup = Text(buildTooltip.transform, "", new Vector2(118, -2), new Vector2(208, 106), 12, new Color(.78f, .91f, .70f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        accentRt.sizeDelta = new Vector2(8f, 168f);
+        tooltipPortrait = Icon(buildTooltip.transform, "TooltipTowerPortrait", new Vector2(-200f, 34f), new Vector2(84f, 84f), TroyHudArt.Tower(TowerType.TrojanGuard));
+        tooltipTitle = Text(buildTooltip.transform, "", new Vector2(-112, 62), new Vector2(300, 32), 18, new Color(1f, .76f, .31f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        tooltipRole = Text(buildTooltip.transform, "", new Vector2(-112, 30), new Vector2(300, 28), 12, new Color(.78f, .70f, .61f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        tooltipStats = Text(buildTooltip.transform, "", new Vector2(-112, -12), new Vector2(300, 42), 12, new Color(.93f, .87f, .79f, 1f), TextAnchor.MiddleLeft, FontStyle.Normal);
+        tooltipMatchup = Text(buildTooltip.transform, "", new Vector2(120, -18), new Vector2(210, 126), 12, new Color(.78f, .91f, .70f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
         buildTooltip.SetActive(false);
     }
 
     void BuildSelectedCard(Transform parent)
     {
-        selectedCard = Panel(parent, "SelectedTowerCard", Vector2.zero, new Vector2(368, 328), new Color(.045f, .027f, .018f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedCard = Panel(parent, "SelectedTowerCard", Vector2.zero, new Vector2(390, 300), new Color(.045f, .027f, .018f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
         selectedCardRect = selectedCard.transform as RectTransform;
-        Panel(selectedCard.transform, "SelectedTowerHeader", new Vector2(0, 126), new Vector2(320, 54), new Color(.42f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Icon(selectedCard.transform, "SelectedTowerCrest", new Vector2(-132, 126), new Vector2(58, 58), TroyHudArt.Tower(TowerType.TrojanGuard));
-        selectedTitle = Text(selectedCard.transform, "", new Vector2(36, 126), new Vector2(236, 38), 18, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        Panel(selectedCard.transform, "SelectedTowerHeader", new Vector2(0, 101), new Vector2(350, 82), new Color(.42f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Icon(selectedCard.transform, "SelectedTowerCrest", new Vector2(-136, 101), new Vector2(82, 82), TroyHudArt.Tower(TowerType.TrojanGuard));
+        selectedTitle = Text(selectedCard.transform, "", new Vector2(43, 108), new Vector2(245, 40), 18, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        Text(selectedCard.transform, L("TROJAN DEFENSE", "ОБОРОНА ТРОИ"), new Vector2(43, 80), new Vector2(245, 22), 10, new Color(.74f, .65f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
 
-        Panel(selectedCard.transform, "SelectedStatsPanel", new Vector2(0, 48), new Vector2(320, 92), new Color(.075f, .044f, .028f, .94f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        selectedStats = Text(selectedCard.transform, "", new Vector2(0, 48), new Vector2(288, 74), 13, new Color(.96f, .89f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
+        Panel(selectedCard.transform, "SelectedStatsPanel", new Vector2(0, 26), new Vector2(350, 92), new Color(.075f, .044f, .028f, .94f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedStats = Text(selectedCard.transform, "", new Vector2(0, 26), new Vector2(316, 74), 13, new Color(.96f, .89f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
 
-        Panel(selectedCard.transform, "SelectedUpgradePanel", new Vector2(0, -40), new Vector2(320, 66), new Color(.10f, .056f, .030f, .94f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -40), new Vector2(288, 48), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
-        selectedPriority = Text(selectedCard.transform, "", new Vector2(0, -86), new Vector2(304, 24), 11, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        Panel(selectedCard.transform, "SelectedUpgradePanel", new Vector2(0, -58), new Vector2(350, 62), new Color(.10f, .056f, .030f, .94f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        selectedUpgradePreview = Text(selectedCard.transform, "", new Vector2(0, -58), new Vector2(316, 46), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.UpperLeft, FontStyle.Bold);
+        selectedPriority = Text(selectedCard.transform, "", new Vector2(0, -99), new Vector2(330, 22), 11, new Color(.86f, .76f, .64f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
 
-        upgradeButton = Button(selectedCard.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-102, -124), new Vector2(112, 40), () => placement?.UpgradeSelected(), true);
-        sellButton = Button(selectedCard.transform, L("SELL", "ПРОДАТЬ"), new Vector2(20, -124), new Vector2(96, 40), () => placement?.SellSelected(), false);
-        priorityButton = Button(selectedCard.transform, L("PRIORITY", "ПРИОРИТЕТ"), new Vector2(118, -124), new Vector2(112, 40), () => placement?.CycleSelectedPriority(), false);
+        upgradeButton = Button(selectedCard.transform, L("UPGRADE", "УЛУЧШИТЬ"), new Vector2(-112, -128), new Vector2(118, 40), () => placement?.UpgradeSelected(), true);
+        sellButton = Button(selectedCard.transform, L("SELL", "ПРОДАТЬ"), new Vector2(12, -128), new Vector2(104, 40), () => placement?.SellSelected(), false);
+        priorityButton = Button(selectedCard.transform, L("PRIORITY", "ПРИОРИТЕТ"), new Vector2(124, -128), new Vector2(112, 40), () => placement?.CycleSelectedPriority(), false);
         selectedCard.SetActive(false);
     }
 
@@ -435,6 +453,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (data == null) return;
         bool recommended = hoveredBuildType == RecommendedDefense();
         bool affordable = GameManager.Instance != null && GameManager.Instance.Money >= data.cost;
+        if (tooltipPortrait != null) tooltipPortrait.sprite = TroyHudArt.Tower(hoveredBuildType);
         tooltipAccent.color = recommended ? new Color(1f, .68f, .16f, 1f) : affordable ? new Color(.30f, .82f, .36f, 1f) : new Color(.82f, .18f, .08f, 1f);
         tooltipTitle.text = TowerDisplayName(hoveredBuildType) + (recommended ? " • " + L("RECOMMENDED", "РЕКОМЕНДУЕТСЯ") : "");
         tooltipRole.text = TowerRole(hoveredBuildType);
@@ -464,7 +483,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, null, out Vector2 localPoint)) return;
 
         float direction = screenPoint.x < Screen.width * .5f ? 1f : -1f;
-        localPoint += new Vector2(direction * 205f, 55f);
+        localPoint += new Vector2(direction * 215f, 58f);
 
         float halfWidth = selectedCardRect.rect.width * .5f;
         float halfHeight = selectedCardRect.rect.height * .5f;

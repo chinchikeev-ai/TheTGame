@@ -44,8 +44,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         if (gameCamera == null) return;
 
         bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-        if (GameInput.PrimaryPressed() && !overUi)
-            SelectAtPointer();
+        if (GameInput.PrimaryPressed() && !overUi) SelectAtPointer();
 
         if (selected == null || !selected.IsAlive)
         {
@@ -62,7 +61,6 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         int count = Physics.RaycastNonAlloc(ray, hits, 250f);
         Enemy closest = null;
         float closestDistance = float.PositiveInfinity;
-
         for (int i = 0; i < count; i++)
         {
             RaycastHit hit = hits[i];
@@ -88,7 +86,6 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         panel.SetActive(true);
         portrait.sprite = EnemyPortrait(selected.Archetype);
         title.text = CombatUiLabels.EnemyName(selected.Archetype) + "  •  " + CombatUiLabels.ArchetypeLabel(selected.Archetype);
-
         string blocked = selected.IsBlockedByGuard
             ? GameLanguage.T("BLOCKED BY TROJAN GUARD", "ЗАБЛОКИРОВАН ТРОЯНСКОЙ СТРАЖЕЙ")
             : GameLanguage.T("ADVANCING", "ПРОДВИГАЕТСЯ");
@@ -99,8 +96,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
             $"{GameLanguage.T("ARROW RESIST", "ЗАЩИТА ОТ СТРЕЛ")}  {selected.ArrowResistance * 100f:0}%\n" +
             $"{GameLanguage.T("GATE DAMAGE", "УРОН ВОРОТАМ")}  {selected.baseDamage}\n" +
             $"{GameLanguage.T("BOUNTY", "НАГРАДА")}  {GameManager.Instance.RewardFor(selected.reward)}\n" +
-            $"{GameLanguage.T("ROUTE", "МАРШРУТ")}  {selected.RouteProgress * 100f:0}%\n" +
-            blocked;
+            $"{GameLanguage.T("ROUTE", "МАРШРУТ")}  {selected.RouteProgress * 100f:0}%\n" + blocked;
     }
 
     void ClearSelection()
@@ -131,12 +127,14 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         image.color = Color.white;
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, .5f);
-        rt.anchoredPosition = new Vector2(-24f, 20f);
-        rt.sizeDelta = new Vector2(360f, 330f);
-        portrait = MakeImage(panel.transform, "EnemyPortrait", new Vector2(-138f, 112f), new Vector2(66f, 66f), TroyHudArt.Icon("enemy"));
-        title = MakeText(panel.transform, GameLanguage.T("ENEMY", "ПРОТИВНИК"), new Vector2(38f, 128f), new Vector2(244f, 34f), 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(1f, .69f, .24f, 1f));
-        MakeText(panel.transform, GameLanguage.T("ENEMY CHARACTERISTICS", "ХАРАКТЕРИСТИКИ ПРОТИВНИКА"), new Vector2(38f, 99f), new Vector2(244f, 24f), 10, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(.73f, .66f, .58f, 1f));
-        stats = MakeText(panel.transform, "", new Vector2(0, -46), new Vector2(300, 226), 15, FontStyle.Bold, TextAnchor.UpperLeft, new Color(.94f, .85f, .72f, 1f));
+        rt.anchoredPosition = new Vector2(-24f, 8f);
+        rt.sizeDelta = new Vector2(350f, 300f);
+
+        MakeImage(panel.transform, "EnemyPortraitFrame", new Vector2(-115f, 86f), new Vector2(108f, 108f), TroyHudArt.Panel());
+        portrait = MakeImage(panel.transform, "EnemyPortrait", new Vector2(-115f, 86f), new Vector2(88f, 88f), TroyHudArt.Icon("enemy"));
+        title = MakeText(panel.transform, GameLanguage.T("ENEMY", "ПРОТИВНИК"), new Vector2(43f, 111f), new Vector2(205f, 40f), 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(1f, .69f, .24f, 1f));
+        MakeText(panel.transform, GameLanguage.T("THREAT PROFILE", "ПРОФИЛЬ УГРОЗЫ"), new Vector2(43f, 80f), new Vector2(205f, 24f), 10, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(.73f, .66f, .58f, 1f));
+        stats = MakeText(panel.transform, "", new Vector2(0f, -55f), new Vector2(296f, 190f), 14, FontStyle.Bold, TextAnchor.UpperLeft, new Color(.94f, .85f, .72f, 1f));
         panel.SetActive(false);
     }
 

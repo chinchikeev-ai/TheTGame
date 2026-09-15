@@ -15,10 +15,19 @@ acceptance and a new Windows player build are not claimed.
 Unified combat HUD source follow-up (2026-09-15): the transferred `b8f03e2` work is
 present in `main` and the post-merge layout ownership has been reconciled. Guidance
 reserves the top-left resource zone, transient notifications reserve Hector's corner,
-next-encounter portrait cards no longer share the progress/speed region, objective copy
+next-encounter portrait cards no longer share the progress region, objective copy
 avoids duplicate gate/encounter telemetry, and enemy inspection yields to blocking
 menus. PlayMode contracts cover these ownership/layout rules, but this GitHub-only
 session could not run Unity, the target RU/EN resolution matrix or a new Windows build.
+
+Combat HUD visual-hierarchy pass (2026-09-15): Gold, combat speed and Settings now
+form the canonical top-left utility row with Gate health directly below; speed has been
+removed from the encounter center. Defender cards, hover details and selected-defense
+context are more strongly portrait-led; enemy inspection and Menelaus use larger
+character portraits; contextual tutorial guidance uses the existing Hector parchment
+art; and next-encounter/notification cards were tightened for battlefield readability.
+Settings remains owned by `GameMenuController`; the combat HUD only invokes its public
+combat-settings entry point. This source pass still requires real RU/EN Play Mode QA.
 
 **Chapter I: The Landing — gameplay release candidate + production-art candidate pass.**
 
@@ -156,14 +165,20 @@ Exact manual protocols:
 
 Implemented presentation work includes:
 
-- responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
+- responsive combat HUD targeting 1920x1080 and 1366/1376x768 layouts;
 - unified Trojan combat HUD cards using the same dark-stone, bronze-framed, portrait-led language as the Hector block;
+- top-left Gold + combat speed + compact Settings utility row with Gate health directly underneath;
+- encounter center reserved for encounter number/timer, threat, progress and Start Encounter instead of speed/settings utility controls;
 - one direct Divine Power action with effect/readiness copy instead of competing duplicate controls;
+- enlarged portrait-led defender build cards with hotkey, localized name and Gold cost;
+- portrait-led defender hover details and selected-defense contextual card;
 - guidance/objective cards reserved below the top-left resource/gate cluster;
+- contextual tutorial/advice presented on the existing Hector parchment art;
 - transient notifications placed above the lower-left Hector block and hidden when empty;
-- next-encounter portrait cards separated from the centered progress/speed controls;
+- larger next-encounter portrait cards separated from centered encounter progress;
 - objective guidance copy avoids repeating gate HP and encounter progress already visible in the primary HUD;
-- enemy inspector uses Trojan panel/portrait hierarchy and hides behind blocking menus;
+- enemy inspector uses Trojan panel/large-portrait hierarchy and hides behind blocking menus;
+- Menelaus boss HUD uses a dedicated large portrait with name/role/HP/mechanics hierarchy;
 - separate encounter, boss, Hector, build and selected-unit regions;
 - selected-defense contextual menu around the unit;
 - pre-map Patron God selection; the selected Patron cannot be changed after the map starts;
@@ -179,7 +194,7 @@ Implemented presentation work includes:
 - cinematic Chapter I opening camera pass;
 - gameplay-camera character combat presentation pass for Greek Archer nocked-arrow lifecycle and Hector spear flight/restore behavior.
 
-Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance. The final unified-HUD follow-up must also be recompiled and rerun through EditMode/PlayMode/full validation in a Unity-capable checkout before its visual QA can be considered accepted.
+Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance. The latest unified-HUD visual-hierarchy pass must also be recompiled and rerun through EditMode/PlayMode/full validation in a Unity-capable checkout before its visual QA can be considered accepted.
 
 ## Character and defensive-unit animation candidates
 

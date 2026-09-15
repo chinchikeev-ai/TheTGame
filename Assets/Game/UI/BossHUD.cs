@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class BossHUD : MonoBehaviour
 {
-    static readonly string[] BlockingMenuNames = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu" };
+    static readonly string[] BlockingMenuNames = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal" };
 
     GameObject root;
     Text label;
@@ -15,8 +15,7 @@ public class BossHUD : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
     {
-        if (FindFirstObjectByType<BossHUD>() == null)
-            new GameObject("BossHUD").AddComponent<BossHUD>();
+        if (FindFirstObjectByType<BossHUD>() == null) new GameObject("BossHUD").AddComponent<BossHUD>();
     }
 
     void Start()
@@ -40,8 +39,8 @@ public class BossHUD : MonoBehaviour
         bg.color = Color.white;
         RectTransform rr = bg.rectTransform;
         rr.anchorMin = rr.anchorMax = rr.pivot = new Vector2(.5f,1f);
-        rr.anchoredPosition = new Vector2(-80,-184);
-        rr.sizeDelta = new Vector2(700,118);
+        rr.anchoredPosition = new Vector2(0f,-176f);
+        rr.sizeDelta = new Vector2(760f,138f);
 
         GameObject glowObj = new GameObject("DangerGlow");
         glowObj.transform.SetParent(root.transform,false);
@@ -52,13 +51,18 @@ public class BossHUD : MonoBehaviour
         gr.offsetMin = new Vector2(8,8); gr.offsetMax = new Vector2(-8,-8);
         gr.SetAsFirstSibling();
 
-        AddImage(root.transform,"MenelausPortrait",new Vector2(-326,4),new Vector2(74,74),TroyHudArt.Icon("boss"));
-        label = MakeText(root.transform,"Label",20,TextAnchor.MiddleLeft);
+        AddImage(root.transform,"MenelausPortraitFrame",new Vector2(-329f,8f),new Vector2(116f,116f),TroyHudArt.Panel(true));
+        AddImage(root.transform,"MenelausPortrait",new Vector2(-329f,8f),new Vector2(100f,100f),TroyHudArt.Portrait("menelaus"));
+        label = MakeText(root.transform,"Label",22,TextAnchor.MiddleLeft);
         label.color = new Color(1f,.72f,.30f,1f);
-        SetRect(label.rectTransform,new Vector2(-270,30),new Vector2(390,32));
+        SetRect(label.rectTransform,new Vector2(-235f,38f),new Vector2(410f,34f));
+        Text role = MakeText(root.transform,"BossRole",11,TextAnchor.MiddleLeft);
+        role.text = GameLanguage.T("BOSS • COMMANDER AURA","БОСС • АУРА КОМАНДИРА");
+        role.color = new Color(.82f,.67f,.53f,1f);
+        SetRect(role.rectTransform,new Vector2(-235f,14f),new Vector2(410f,22f));
         hpText = MakeText(root.transform,"HpText",15,TextAnchor.MiddleRight);
         hpText.color = new Color(1f,.88f,.72f,1f);
-        SetRect(hpText.rectTransform,new Vector2(252,30),new Vector2(190,28));
+        SetRect(hpText.rectTransform,new Vector2(260f,38f),new Vector2(205f,28f));
 
         GameObject trackObj = new GameObject("Track");
         trackObj.transform.SetParent(root.transform,false);
@@ -66,8 +70,8 @@ public class BossHUD : MonoBehaviour
         track.color = new Color(.15f,.055f,.035f,1f);
         RectTransform tr = track.rectTransform;
         tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(.5f,.5f);
-        tr.anchoredPosition = new Vector2(28,0);
-        tr.sizeDelta = new Vector2(600,22);
+        tr.anchoredPosition = new Vector2(42f,-6f);
+        tr.sizeDelta = new Vector2(570f,24f);
         GameObject fillObj = new GameObject("Fill");
         fillObj.transform.SetParent(trackObj.transform,false);
         fill = fillObj.AddComponent<Image>();
@@ -77,29 +81,21 @@ public class BossHUD : MonoBehaviour
         RectTransform fr = fill.rectTransform;
         fr.anchorMin = Vector2.zero; fr.anchorMax = Vector2.one; fr.offsetMin = new Vector2(3,3); fr.offsetMax = new Vector2(-3,-3);
 
-        MakeBadge(root.transform,GameLanguage.T("AURA","АУРА"),new Vector2(-145,-38),new Color(.78f,.18f,.06f,1f));
-        MakeBadge(root.transform,GameLanguage.T("REINFORCEMENTS","ПОДКРЕПЛЕНИЯ"),new Vector2(8,-38),new Color(.62f,.34f,.10f,1f));
-        MakeBadge(root.transform,GameLanguage.T("GATE THREAT","УГРОЗА ВОРОТАМ"),new Vector2(175,-38),new Color(.72f,.10f,.035f,1f));
+        MakeBadge(root.transform,GameLanguage.T("AURA","АУРА"),new Vector2(-135f,-45f),new Color(.78f,.18f,.06f,1f));
+        MakeBadge(root.transform,GameLanguage.T("REINFORCEMENTS","ПОДКРЕПЛЕНИЯ"),new Vector2(35f,-45f),new Color(.62f,.34f,.10f,1f));
+        MakeBadge(root.transform,GameLanguage.T("GATE THREAT","УГРОЗА ВОРОТАМ"),new Vector2(214f,-45f),new Color(.72f,.10f,.035f,1f));
         root.SetActive(false);
     }
 
     void Update()
     {
         if (root == null) return;
-        if (IsMenuBlockingCombat())
-        {
-            root.SetActive(false);
-            return;
-        }
+        if (IsMenuBlockingCombat()) { root.SetActive(false); return; }
 
         Enemy boss = null;
         foreach (Enemy enemy in EnemyRegistry.All)
         {
-            if (enemy != null && enemy.Archetype == EnemyArchetype.Boss)
-            {
-                boss = enemy;
-                break;
-            }
+            if (enemy != null && enemy.Archetype == EnemyArchetype.Boss) { boss = enemy; break; }
         }
 
         bool visible = boss != null && boss.Health > 0f && GameManager.Instance != null && !GameManager.Instance.GameEnded;
@@ -112,7 +108,6 @@ public class BossHUD : MonoBehaviour
         dangerGlow.color = health01 < .30f
             ? new Color(.78f,.04f,.01f,.22f + Mathf.PingPong(Time.unscaledTime*.18f,.16f))
             : new Color(.55f,.04f,.02f,.10f);
-
         label.text = GameLanguage.T("MENELAUS • COMMANDER OF THE ASSAULT","МЕНЕЛАЙ • КОМАНДУЮЩИЙ ШТУРМОМ");
         hpText.text = $"{Mathf.CeilToInt(boss.Health)} / {Mathf.CeilToInt(boss.maxHealth)}   •   {Mathf.RoundToInt(health01*100f)}%";
     }
@@ -125,7 +120,6 @@ public class BossHUD : MonoBehaviour
             menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
         }
         if (menuCanvas == null) return false;
-
         for (int i = 0; i < BlockingMenuNames.Length; i++)
         {
             Transform screen = menuCanvas.transform.Find(BlockingMenuNames[i]);
@@ -138,7 +132,7 @@ public class BossHUD : MonoBehaviour
     {
         GameObject badge=new GameObject("Badge_"+textValue); badge.transform.SetParent(parent,false);
         Image bg=badge.AddComponent<Image>(); bg.sprite=TroyHudArt.Panel(true); bg.type=Image.Type.Sliced; bg.color=new Color(.45f,.18f,.07f,1f);
-        RectTransform rt=bg.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(textValue.Length>8?150:100,24);
+        RectTransform rt=bg.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(textValue.Length>8?160:106,26);
         Text t=MakeText(badge.transform,"Text",9,TextAnchor.MiddleCenter); t.text=textValue; t.color=new Color(1f,.82f,.54f,1f); RectTransform tr=t.rectTransform; tr.anchorMin=Vector2.zero; tr.anchorMax=Vector2.one; tr.offsetMin=Vector2.zero; tr.offsetMax=Vector2.zero;
         Outline o=badge.AddComponent<Outline>(); o.effectColor=accent; o.effectDistance=new Vector2(1,-1);
     }
