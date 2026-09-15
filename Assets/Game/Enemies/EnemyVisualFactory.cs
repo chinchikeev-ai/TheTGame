@@ -49,6 +49,9 @@ public static class EnemyVisualFactory
         if (archetype == EnemyArchetype.Boss)
             HeroSignatureArt.Enhance(instance, TroyHeroId.Menelaus);
         EnemyMotionAnimator.Attach(instance, archetype);
+        int repairedMaterials = CharacterUrpMaterialAdapter.ApplyTo(instance);
+        if (repairedMaterials > 0)
+            detail += "; urpMaterialRepair=" + repairedMaterials;
         RuntimeVisualAudit.Report("Enemy:" + archetype, source, detail);
         return instance;
     }
