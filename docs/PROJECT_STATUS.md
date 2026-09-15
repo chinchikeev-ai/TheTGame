@@ -26,8 +26,17 @@ removed from the encounter center. Defender cards, hover details and selected-de
 context are more strongly portrait-led; enemy inspection and Menelaus use larger
 character portraits; contextual tutorial guidance uses the existing Hector parchment
 art; and next-encounter/notification cards were tightened for battlefield readability.
-Settings remains owned by `GameMenuController`; the combat HUD only invokes its public
-combat-settings entry point. This source pass still requires real RU/EN Play Mode QA.
+Settings remains owned by `GameMenuController`; the combat HUD delegates through the
+small `CombatMenuBridge` without changing the restored main-menu layout. This source
+pass still requires real RU/EN Play Mode QA.
+
+Chapter I opening-flow presentation pass (2026-09-15): the opening camera, Greek fleet
+approach and decorative landing party now hand off to the authored Encounter flow rather
+than attempting to start Encounter 1. `EnemySpawner` + `EncounterData` remain the sole
+authority for preparation timing and combat start. After Encounter 1 the presentation
+shows a first-assault-repelled lull, stages reinforcement galleys and a regrouping Greek
+beachhead, then clears that temporary formation when Encounter 2 actually begins. The
+flow is source-complete but still requires real Unity timing, camera and RU/EN visual QA.
 
 **Chapter I: The Landing — gameplay release candidate + production-art candidate pass.**
 
@@ -192,9 +201,10 @@ Implemented presentation work includes:
 - Hector ability pulses and hit feedback;
 - improved coast, road, Greek landing, ships, Trojan gate/walls, banners, braziers and atmosphere;
 - cinematic Chapter I opening camera pass;
+- staged Chapter I opening handoff: fleet approach + decorative shore formation during authored preparation, Encounter 1 reaction, first-assault lull, reinforcement beachhead cue and cleanup on actual Encounter 2 start;
 - gameplay-camera character combat presentation pass for Greek Archer nocked-arrow lifecycle and Hector spear flight/restore behavior.
 
-Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance. The latest unified-HUD visual-hierarchy pass must also be recompiled and rerun through EditMode/PlayMode/full validation in a Unity-capable checkout before its visual QA can be considered accepted.
+Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance. The latest unified-HUD visual-hierarchy and opening-flow source passes must also be recompiled and rerun through EditMode/PlayMode/full validation in a Unity-capable checkout before their visual QA can be considered accepted.
 
 ## Character and defensive-unit animation candidates
 
@@ -265,7 +275,7 @@ Tooling for steps 5–8 is implemented; the human/Play Mode evidence is not fabr
 5. Bind the freeze-ready Story candidate and resolve/explicitly accept every WARN finding.
 6. Record human Story acceptance in `CHAPTER_I_GAMEPLAY_ACCEPTANCE.json`.
 7. Complete Strategos + Legendary 1x/no-pause runs, review the difficulty pressure report, and record the decisions.
-8. Perform and record the 1920x1080 + 1366/1376x768 RU/EN visual-fit matrix.
+8. Perform and record the 1920x1080 + 1366/1376x768 RU/EN visual-fit matrix, including opening-flow timing/camera/text fit.
 9. Run the final gameplay acceptance validator and set `gameplayFrozen=true` only when it reports `READY TO FREEZE`.
 
 No balance freeze is claimed yet because the required real playthrough/visual evidence has not been accepted in this work session.

@@ -27,6 +27,17 @@ public class RuntimeGraphTests
     }
 
     [UnityTest]
+    public IEnumerator ChapterOne_InstallsSingleOpeningPresentationOwners()
+    {
+        yield return null;
+        yield return null;
+
+        Assert.AreEqual(1, Object.FindObjectsByType<LandingPresentation>(FindObjectsSortMode.None).Length, "Chapter I must have one landing presentation owner.");
+        Assert.AreEqual(1, Object.FindObjectsByType<ChapterOneCinematicCamera>(FindObjectsSortMode.None).Length, "Chapter I must have one cinematic camera owner.");
+        Assert.AreEqual(1, Object.FindObjectsByType<ChapterOneEncounterPresentation>(FindObjectsSortMode.None).Length, "Chapter I must have one encounter presentation owner.");
+    }
+
+    [UnityTest]
     public IEnumerator Registries_StartInValidState()
     {
         yield return null;
