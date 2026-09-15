@@ -6,6 +6,11 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Build badge recovery (2026-09-15): `MainMenuBuildVersionPresentation` reactivates
+its existing badge and restores its sibling order after approved menu art disables
+older children or appends a background. The original `ef4ef5cd` player built
+successfully; this visibility failure was a menu lifecycle issue, not a missing push.
+
 Hector HUD illustrated candidate (2026-09-15): eleven separate bitmap assets now
 replace its procedural decoration, with live localized labels, portrait selection,
 health and four ability cooldowns. Unity compilation, isolated RU/EN Canvas renders

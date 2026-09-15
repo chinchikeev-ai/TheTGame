@@ -17,6 +17,14 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
 
     void Update()
     {
+        // Approved menu art disables existing children and adds an opaque background.
+        if (boundMainMenu != null && badge != null)
+        {
+            if (!badge.activeSelf) badge.SetActive(true);
+            if (badge.transform.GetSiblingIndex() != boundMainMenu.transform.childCount - 1)
+                badge.transform.SetAsLastSibling();
+        }
+
         if (boundMainMenu == null || badge == null || label == null)
             BindOrBuildBadge();
 
@@ -37,7 +45,7 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
         if (existing != null)
         {
             badge = existing.gameObject;
-            label = badge.GetComponentInChildren<Text>();
+            label = badge.GetComponentInChildren<Text>(true);
             return;
         }
 
