@@ -91,6 +91,15 @@ public static class CartoonCharacterAutoBuilder
         if (verifiedAnimatorBindings > 0)
             Debug.Log("Troy characters: verified/rebound Chapter I Animator components and role controllers on " + verifiedAnimatorBindings + " production candidate(s).");
 
+        // Imported KayKit materials may reference shaders that render magenta under URP. Attach a runtime adapter
+        // to every generated character so non-URP materials are converted while retaining their base texture/color.
+        int repairedUrpMaterials = ChapterOneUrpMaterialRepair.RepairAll(false);
+        if (repairedUrpMaterials > 0)
+        {
+            Debug.Log("Troy characters: added URP material recovery to " + repairedUrpMaterials + " production candidate(s).");
+            changed = true;
+        }
+
         // Re-apply Hector's production-candidate stack after any core regeneration.
         // The spear pass is intentionally offline-safe and only uses an already imported pinned source.
         if (ChapterOneProductionEquipmentBuilder.ApplyHectorSpearIfSourceAvailable(true))
@@ -153,12 +162,15 @@ public static class CartoonCharacterAutoBuilder
         foreach (string problem in ChapterOneCharacterAnimationBuilder.CollectAnimatorBindingProblems())
             missing.Add("Animation: " + problem);
 
+        foreach (string problem in ChapterOneUrpMaterialRepair.CollectProblems())
+            missing.Add("Material: " + problem);
+
         foreach (string problem in HectorProductionVisualValidator.CollectProblems())
             missing.Add("Hector: " + problem);
 
         if (missing.Count == 0)
         {
-            Debug.Log("Troy generated-art validation: all required Chapter I generated assets are present, Animator/controller bindings are valid, and Hector satisfies the source-level production visual contract. Real Play Mode visual QA is still required.");
+            Debug.Log("Troy generated-art validation: all required Chapter I generated assets are present, Animator/controller bindings are valid, URP material recovery is installed, and Hector satisfies the source-level production visual contract. Real Play Mode visual QA is still required.");
             return;
         }
 
