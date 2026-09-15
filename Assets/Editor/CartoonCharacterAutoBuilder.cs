@@ -40,6 +40,12 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
+        if (HectorProductionAnimationBinder.ApplyIfAvailable())
+        {
+            Debug.Log("Troy characters: applied Hector-specific KayKit production animation candidates.");
+            changed = true;
+        }
+
         if (!changed)
             Debug.Log("Troy characters: Chapter I generated art candidates are already present. Nothing to build.");
     }
