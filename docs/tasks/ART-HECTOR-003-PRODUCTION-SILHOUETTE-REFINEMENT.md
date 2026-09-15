@@ -17,7 +17,6 @@ The current Hector candidate already has a KayKit body, spear, authored shield/a
 - `Assets/Editor/CartoonCharacterAutoBuilder.cs`
 - `Assets/Tests/EditMode/HectorProductionVisualPipelineTests.cs`
 - corresponding `.meta` files
-- `docs/MODEL_ART_INVENTORY.md`
 - this task contract
 
 ## Do not change
@@ -72,7 +71,7 @@ The current Hector candidate already has a KayKit body, spear, authored shield/a
 - Added a Hector-only rig-following silhouette refinement builder.
 - Wired it into the reproducible Chapter I art auto-builder before Hector animation binding.
 - Added source-contract EditMode tests for bone-following, hero cues, cleanup and pipeline ordering.
-- Updated production-art inventory note; Hector remains `GENERATED PLACEHOLDER + SOURCE ONLY`.
+- Hector remains `GENERATED PLACEHOLDER + SOURCE ONLY`; authoritative production-art status is unchanged until real Play Mode visual QA.
 - Unity/Play Mode visual QA remains pending.
 
 ## Status
