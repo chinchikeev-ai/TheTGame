@@ -47,7 +47,7 @@ public static class CartoonCharacterAutoBuilder
         AnimationRoot + "/ChapterOne_FireKeeper.controller"
     };
 
-    [MenuItem("Tools/TheTroyGame/Art/Build Missing Chapter I Art")]
+    [MenuItem("The Troy Game/Art/Build Missing Chapter I Art")]
     public static void BuildMissing()
     {
         if (!AssetDatabase.IsValidFolder(SourceRoot))
@@ -103,7 +103,7 @@ public static class CartoonCharacterAutoBuilder
             Debug.Log("Troy characters: Chapter I generated art candidates are already present. Nothing to build.");
     }
 
-    [MenuItem("Tools/TheTroyGame/Art/Validate Generated Chapter I Art")]
+    [MenuItem("The Troy Game/Art/Validate Generated Chapter I Art")]
     public static void ValidateGeneratedArt()
     {
         ReportMissingAfterBuild();

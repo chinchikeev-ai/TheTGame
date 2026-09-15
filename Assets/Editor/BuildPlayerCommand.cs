@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 
 public static class BuildPlayerCommand
 {
-    [MenuItem("Tools/The Troy Game/Build Windows Visible Map")]
+    [MenuItem("The Troy Game/Build/Windows Visible Map")]
     public static void BuildWindowsVisibleMap()
     {
         string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
