@@ -87,12 +87,9 @@ public static class CartoonCharacterAutoBuilder
 
         // Always repair Animator/controller bindings after character recovery. Existing controller files do not
         // guarantee newly regenerated prefabs still contain an Animator or reference the correct profile.
-        int repairedAnimatorBindings = ChapterOneCharacterAnimationBuilder.RepairControllerAssignments(false);
-        if (repairedAnimatorBindings > 0)
-        {
-            Debug.Log("Troy characters: verified/rebound Chapter I Animator components and role controllers on " + repairedAnimatorBindings + " production candidate(s).");
-            changed = true;
-        }
+        int verifiedAnimatorBindings = ChapterOneCharacterAnimationBuilder.RepairControllerAssignments(false);
+        if (verifiedAnimatorBindings > 0)
+            Debug.Log("Troy characters: verified/rebound Chapter I Animator components and role controllers on " + verifiedAnimatorBindings + " production candidate(s).");
 
         // Re-apply Hector's production-candidate stack after any core regeneration.
         // The spear pass is intentionally offline-safe and only uses an already imported pinned source.
