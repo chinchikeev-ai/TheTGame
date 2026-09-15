@@ -1,6 +1,6 @@
 # TheTroyGame — Project Status
 
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-15
 
 This document is the canonical answer to **what is implemented now**. It intentionally does not duplicate the GDD or roadmap.
 
@@ -11,6 +11,14 @@ replace its procedural decoration, with live localized labels, portrait selectio
 health and four ability cooldowns. Unity compilation, isolated RU/EN Canvas renders
 at 1600x900 / 1280x720, text-fit and five-button checks passed. Full gameplay visual
 acceptance and a new Windows player build are not claimed.
+
+Unified combat HUD source follow-up (2026-09-15): the transferred `b8f03e2` work is
+present in `main` and the post-merge layout ownership has been reconciled. Guidance
+reserves the top-left resource zone, transient notifications reserve Hector's corner,
+next-encounter portrait cards no longer share the progress/speed region, objective copy
+avoids duplicate gate/encounter telemetry, and enemy inspection yields to blocking
+menus. PlayMode contracts cover these ownership/layout rules, but this GitHub-only
+session could not run Unity, the target RU/EN resolution matrix or a new Windows build.
 
 **Chapter I: The Landing — gameplay release candidate + production-art candidate pass.**
 
@@ -151,6 +159,11 @@ Implemented presentation work includes:
 - responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
 - unified Trojan combat HUD cards using the same dark-stone, bronze-framed, portrait-led language as the Hector block;
 - one direct Divine Power action with effect/readiness copy instead of competing duplicate controls;
+- guidance/objective cards reserved below the top-left resource/gate cluster;
+- transient notifications placed above the lower-left Hector block and hidden when empty;
+- next-encounter portrait cards separated from the centered progress/speed controls;
+- objective guidance copy avoids repeating gate HP and encounter progress already visible in the primary HUD;
+- enemy inspector uses Trojan panel/portrait hierarchy and hides behind blocking menus;
 - separate encounter, boss, Hector, build and selected-unit regions;
 - selected-defense contextual menu around the unit;
 - pre-map Patron God selection; the selected Patron cannot be changed after the map starts;
@@ -166,7 +179,7 @@ Implemented presentation work includes:
 - cinematic Chapter I opening camera pass;
 - gameplay-camera character combat presentation pass for Greek Archer nocked-arrow lifecycle and Hector spear flight/restore behavior.
 
-Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance.
+Final RU/EN 16:9 real visual QA is still required before Chapter I gameplay freeze and before production-art acceptance. The final unified-HUD follow-up must also be recompiled and rerun through EditMode/PlayMode/full validation in a Unity-capable checkout before its visual QA can be considered accepted.
 
 ## Character and defensive-unit animation candidates
 

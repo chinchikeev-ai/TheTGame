@@ -74,7 +74,7 @@ public sealed class VisualEncounterPreviewPresentation : MonoBehaviour
         row.transform.SetParent(encounter,false);
         RectTransform rowRt = row.AddComponent<RectTransform>();
         rowRt.anchorMin = rowRt.anchorMax = rowRt.pivot = new Vector2(.5f,.5f);
-        rowRt.anchoredPosition = new Vector2(-68f,-28f);
+        rowRt.anchoredPosition = new Vector2(-295f,-68f);
         rowRt.sizeDelta = new Vector2(410f,54f);
 
         for (int i=0;i<cards.Length;i++)

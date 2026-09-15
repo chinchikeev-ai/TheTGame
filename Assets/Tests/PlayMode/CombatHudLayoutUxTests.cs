@@ -82,7 +82,10 @@ public class CombatHudLayoutUxTests
         Transform action = actions.Find("Magic_Primary");
         Assert.NotNull(action);
         Assert.NotNull(action.Find("MagicIcon")?.GetComponent<Image>(), "Divine Power must use the same portrait/icon hierarchy as Hector abilities.");
+        Assert.AreEqual(1, Resources.FindObjectsOfTypeAll<Transform>().Count(t => t != null && t.name == "Magic_Primary" && t.gameObject.scene.IsValid()), "Only one Divine Power action may exist in combat.");
         Assert.IsNull(FindSceneTransform("MagicToggle"), "A second corner magic control must not compete with the primary action.");
+        Assert.IsNull(FindSceneTransform("MagicFlyout"), "Legacy magic flyout must stay removed.");
+        Assert.IsNull(FindSceneTransform("CombatActions"), "Legacy combat action panel must stay removed.");
         Assert.IsNull(FindSceneTransform("DivineGiftChoiceOverlay"), "Patron selection belongs to the pre-map flow, not the combat HUD.");
     }
 
@@ -100,6 +103,91 @@ public class CombatHudLayoutUxTests
         Assert.NotNull(wave?.GetComponent<Image>()?.sprite);
         Assert.NotNull(resources.Find("GateIcon")?.GetComponent<Image>()?.sprite);
         Assert.NotNull(wave.Find("WaveCrest")?.GetComponent<Image>()?.sprite);
+    }
+
+    [UnityTest]
+    public IEnumerator GuidanceNotificationsAndPreview_ReserveNonCompetingZones()
+    {
+        yield return null;
+        yield return null;
+
+        RectTransform objective = FindSceneTransform("ChapterObjective") as RectTransform;
+        RectTransform tutorial = FindSceneTransform("ContextTutorial") as RectTransform;
+        RectTransform notification = FindSceneTransform("NotificationPanel") as RectTransform;
+        RectTransform preview = FindSceneTransform("EnemyEncounterCardRow") as RectTransform;
+        Assert.NotNull(objective);
+        Assert.NotNull(tutorial);
+        Assert.NotNull(notification);
+        Assert.NotNull(preview);
+
+        Assert.LessOrEqual(objective.anchoredPosition.y, -170f, "Objective card must stay below the top-left resource cluster.");
+        Assert.LessOrEqual(tutorial.anchoredPosition.y, -290f, "Tutorial card must stay below the objective card.");
+        Assert.GreaterOrEqual(notification.anchoredPosition.y, 320f, "Notifications must reserve the lower-left Hector region.");
+        Assert.LessOrEqual(preview.anchoredPosition.x, -280f, "Next-encounter cards must not occupy the centered speed controls.");
+        Assert.LessOrEqual(preview.anchoredPosition.y, -60f, "Next-encounter cards must sit below the progress bar.");
+    }
+
+    [UnityTest]
+    public IEnumerator PrimaryHudAnchors_StayOnPerimeterZones()
+    {
+        yield return null;
+        yield return null;
+
+        RectTransform resources = FindSceneTransform("TopResources") as RectTransform;
+        RectTransform encounter = FindSceneTransform("WaveStatus") as RectTransform;
+        RectTransform divine = FindSceneTransform("DivinePowerActions") as RectTransform;
+        RectTransform buildDock = FindSceneTransform("BuildDock") as RectTransform;
+        RectTransform hector = FindSceneTransform("HectorPanel") as RectTransform;
+        Assert.NotNull(resources);
+        Assert.NotNull(encounter);
+        Assert.NotNull(divine);
+        Assert.NotNull(buildDock);
+        Assert.NotNull(hector);
+
+        Assert.AreEqual(0f, resources.anchorMin.x, .01f);
+        Assert.AreEqual(1f, resources.anchorMin.y, .01f);
+        Assert.AreEqual(.5f, encounter.anchorMin.x, .01f);
+        Assert.AreEqual(1f, encounter.anchorMin.y, .01f);
+        Assert.AreEqual(1f, divine.anchorMin.x, .01f);
+        Assert.AreEqual(1f, divine.anchorMin.y, .01f);
+        Assert.AreEqual(1f, buildDock.anchorMin.x, .01f);
+        Assert.AreEqual(0f, buildDock.anchorMin.y, .01f);
+        Assert.AreEqual(0f, hector.anchorMin.x, .01f);
+        Assert.AreEqual(0f, hector.anchorMin.y, .01f);
+    }
+
+    [UnityTest]
+    public IEnumerator CharacterAndCombatInspectors_HaveSemanticPortraits()
+    {
+        yield return null;
+        yield return null;
+
+        Image hector = FindSceneTransform("HectorPortrait")?.GetComponent<Image>();
+        Image menelaus = FindSceneTransform("MenelausPortrait")?.GetComponent<Image>();
+        Image enemy = FindSceneTransform("EnemyPortrait")?.GetComponent<Image>();
+        Image patron = FindSceneTransform("PatronPortrait")?.GetComponent<Image>();
+        Assert.NotNull(hector);
+        Assert.NotNull(hector.sprite);
+        Assert.NotNull(menelaus);
+        Assert.NotNull(menelaus.sprite);
+        Assert.NotNull(enemy);
+        Assert.NotNull(enemy.sprite);
+        Assert.NotNull(patron);
+    }
+
+    [UnityTest]
+    public IEnumerator EnemyInspector_UsesTrojanPanelArt()
+    {
+        yield return null;
+        yield return null;
+
+        Transform inspector = FindSceneTransform("EnemyInspectorPanel");
+        Assert.NotNull(inspector);
+        Image panel = inspector.GetComponent<Image>();
+        Assert.NotNull(panel);
+        Assert.NotNull(panel.sprite);
+        Assert.AreEqual(Image.Type.Sliced, panel.type);
+        Assert.NotNull(inspector.Find("EnemyPortrait")?.GetComponent<Image>()?.sprite);
     }
 
     [UnityTest]

@@ -5,10 +5,12 @@ using UnityEngine.UI;
 public sealed class EnemyInspectorPresentation : MonoBehaviour
 {
     const int HitCapacity = 64;
+    static readonly string[] BlockingMenuNames = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal" };
 
     readonly RaycastHit[] hits = new RaycastHit[HitCapacity];
     Camera gameCamera;
     Canvas canvas;
+    Canvas menuCanvas;
     GameObject panel;
     Image portrait;
     Text title;
@@ -18,6 +20,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
     void Start()
     {
         gameCamera = Camera.main;
+        BindMenuCanvas();
         Build();
     }
 
@@ -27,6 +30,13 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         if (gm == null || gm.GameEnded)
         {
             ClearSelection();
+            return;
+        }
+
+        if (menuCanvas == null) BindMenuCanvas();
+        if (IsMenuBlockingCombat())
+        {
+            if (panel != null) panel.SetActive(false);
             return;
         }
 
@@ -128,6 +138,23 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
         MakeText(panel.transform, GameLanguage.T("ENEMY CHARACTERISTICS", "ХАРАКТЕРИСТИКИ ПРОТИВНИКА"), new Vector2(38f, 99f), new Vector2(244f, 24f), 10, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(.73f, .66f, .58f, 1f));
         stats = MakeText(panel.transform, "", new Vector2(0, -46), new Vector2(300, 226), 15, FontStyle.Bold, TextAnchor.UpperLeft, new Color(.94f, .85f, .72f, 1f));
         panel.SetActive(false);
+    }
+
+    void BindMenuCanvas()
+    {
+        GameObject menu = GameObject.Find("MenuCanvas");
+        menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
+    }
+
+    bool IsMenuBlockingCombat()
+    {
+        if (menuCanvas == null) return false;
+        for (int i = 0; i < BlockingMenuNames.Length; i++)
+        {
+            Transform screen = menuCanvas.transform.Find(BlockingMenuNames[i]);
+            if (screen != null && screen.gameObject.activeInHierarchy) return true;
+        }
+        return false;
     }
 
     static Sprite EnemyPortrait(EnemyArchetype archetype)

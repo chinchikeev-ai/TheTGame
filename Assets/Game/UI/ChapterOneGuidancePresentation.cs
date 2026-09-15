@@ -46,13 +46,13 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         group.interactable = false;
         group.blocksRaycasts = false;
 
-        objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(24f, -112f), new Vector2(450f, 104f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+        objectiveCard = Panel(root.transform, "ChapterObjective", new Vector2(24f, -176f), new Vector2(450f, 104f), new Vector2(0f, 1f), new Vector2(0f, 1f));
         objectiveIcon = AddIcon(objectiveCard.transform, "ObjectiveIcon", new Vector2(-194f, 0f), 44, TroyHudArt.Icon("gate"));
         chapterText = AddText(objectiveCard.transform, "", new Vector2(74f, -14f), new Vector2(352f, 22f), 11, new Color(1f, .69f, .23f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         objectiveText = AddText(objectiveCard.transform, "", new Vector2(74f, -38f), new Vector2(352f, 28f), 16, new Color(.96f, .88f, .75f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         progressText = AddText(objectiveCard.transform, "", new Vector2(74f, -72f), new Vector2(352f, 22f), 11, new Color(.77f, .69f, .59f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
 
-        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, -232f), new Vector2(450f, 116f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+        tutorialCard = Panel(root.transform, "ContextTutorial", new Vector2(24f, -296f), new Vector2(450f, 116f), new Vector2(0f, 1f), new Vector2(0f, 1f));
         tutorialIcon = AddIcon(tutorialCard.transform, "TutorialIcon", new Vector2(-190f, 0f), 48, TroyHudArt.Tower(TowerType.MachineGun));
         tutorialTitle = AddText(tutorialCard.transform, "", new Vector2(72f, -16f), new Vector2(354f, 22f), 12, new Color(1f, .70f, .24f, 1f), TextAnchor.UpperLeft, FontStyle.Bold, new Vector2(0f, 1f));
         tutorialText = AddText(tutorialCard.transform, "", new Vector2(72f, -43f), new Vector2(354f, 58f), 13, new Color(.93f, .86f, .76f, 1f), TextAnchor.UpperLeft, FontStyle.Normal, new Vector2(0f, 1f));
@@ -115,12 +115,8 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
 
         if (currentEncounter == 0 && !active)
         {
-            int seconds = Mathf.Max(0, Mathf.CeilToInt(EncounterRuntime.InterEncounterCountdown(spawner)));
             objectiveText.text = L("FORTIFY THE LANDING", "УКРЕПИТЕ БЕРЕГ");
-            string attack = seconds > 0
-                ? $"{L("ATTACK", "АТАКА")} {seconds}{L("s", "с")}"
-                : L("ASSAULT FORMING", "ШТУРМ ГОТОВИТСЯ");
-            progressText.text = $"{PatronName(gm)} • {attack} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+            progressText.text = L("COVER BOTH ROUTES • BUILD BEFORE CONTACT", "ПЕРЕКРОЙТЕ ОБА МАРШРУТА • ПОСТРОЙТЕСЬ ДО АТАКИ");
             return;
         }
 
@@ -129,24 +125,21 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
             objectiveText.text = currentEncounter == 1
                 ? L("HOLD THE LANDING", "УДЕРЖИТЕ БЕРЕГ")
                 : L("DEFEND THE GATE", "ЗАЩИТИТЕ ВОРОТА");
-            int resolved = EncounterRuntime.CurrentEncounterResolvedEnemies(spawner);
-            int total = EncounterRuntime.CurrentEncounterTotalEnemies(spawner);
-            progressText.text = $"{L("ENCOUNTER", "БОЙ")} {currentEncounter}/{maxEncounters} • {resolved}/{total} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+            progressText.text = L("HOLD THE LINE • ADAPT TO THE ENEMY MIX", "ДЕРЖИТЕ СТРОЙ • АДАПТИРУЙТЕСЬ К СОСТАВУ ВРАГА");
             return;
         }
 
         if (between)
         {
-            int nextEncounter = Mathf.Min(currentEncounter + 1, maxEncounters);
             objectiveText.text = currentEncounter == 1
                 ? L("FIRST ASSAULT REPELLED", "ПЕРВЫЙ ШТУРМ ОТБИТ")
                 : L("REGROUP AND REINFORCE", "ПЕРЕГРУППИРУЙТЕСЬ");
-            progressText.text = $"{L("NEXT", "ДАЛЕЕ")} {nextEncounter}/{maxEncounters} • {EncounterRuntime.NextEncounterEnemyCount(spawner)} {L("ENEMIES", "ВРАГОВ")} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+            progressText.text = L("REPAIR • UPGRADE • REDEPLOY", "РЕМОНТ • УЛУЧШЕНИЕ • ПЕРЕСТРОЕНИЕ");
             return;
         }
 
         objectiveText.text = L("DEFEND THE GATE", "ЗАЩИТИТЕ ВОРОТА");
-        progressText.text = $"{L("ENCOUNTER", "БОЙ")} {Mathf.Clamp(currentEncounter, 0, maxEncounters)}/{maxEncounters} • {L("GATE", "ВОРОТА")} {gm.BaseHealth}/{gm.MaxBaseHealth}";
+        progressText.text = L("KEEP THE GATE STANDING", "НЕ ДАЙТЕ ВОРОТАМ ПАСТЬ");
     }
 
     void UpdateTutorial(GameManager gm)
@@ -227,20 +220,6 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         }
     }
 
-    string PatronName(GameManager gm)
-    {
-        if (!gm.GiftSelected) return L("NO PATRON", "НЕТ ПОКРОВИТЕЛЯ");
-
-        switch (gm.SelectedGift)
-        {
-            case DivineGiftType.Ares: return L("ARES", "АРЕС");
-            case DivineGiftType.Athena: return L("ATHENA", "АФИНА");
-            case DivineGiftType.Apollo: return L("APOLLO", "АПОЛЛОН");
-            case DivineGiftType.Poseidon: return L("POSEIDON", "ПОСЕЙДОН");
-            default: return L("PATRON", "ПОКРОВИТЕЛЬ");
-        }
-    }
-
     bool HasActiveBoss()
     {
         foreach (Enemy enemy in EnemyRegistry.All)
@@ -251,7 +230,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     bool IsMenuBlockingCombat()
     {
         if (menuCanvas == null) return false;
-        string[] names = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu" };
+        string[] names = { "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal" };
         for (int i = 0; i < names.Length; i++)
         {
             Transform t = menuCanvas.transform.Find(names[i]);
