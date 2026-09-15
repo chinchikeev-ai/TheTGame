@@ -66,6 +66,97 @@ public static class ChapterOneCharacterAnimationBuilder
         Debug.Log($"Chapter I role animation profiles built from {clips.Length} imported clips and assigned to {assigned} production candidates. Specialized bindings are candidate mappings until real Play Mode timing/pose QA passes.");
     }
 
+    [MenuItem("The Troy Game/Characters/Repair Chapter I Animator Bindings")]
+    public static void RepairControllerAssignmentsMenu()
+    {
+        RepairControllerAssignments(true);
+    }
+
+    public static int RepairControllerAssignments(bool logSummary = true)
+    {
+        Dictionary<string, RuntimeAnimatorController> controllers = LoadExistingControllers();
+        if (!controllers.TryGetValue("generic", out RuntimeAnimatorController generic) || generic == null)
+        {
+            if (logSummary)
+                Debug.LogWarning("Chapter I Animator repair skipped: generated animation controllers are missing. Run 'The Troy Game/Characters/Build Chapter I Animation Controller' first.");
+            return 0;
+        }
+
+        int assigned = AssignControllers(controllers);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        if (logSummary)
+            Debug.Log($"Chapter I Animator repair verified/rebound {assigned} production candidate(s). Missing Animator components are restored on the Visual model root and existing role controllers are reassigned without root motion.");
+        return assigned;
+    }
+
+    public static List<string> CollectAnimatorBindingProblems()
+    {
+        var problems = new List<string>();
+        if (!AssetDatabase.IsValidFolder(CandidateRoot))
+        {
+            problems.Add("Missing Chapter I character candidate folder: " + CandidateRoot);
+            return problems;
+        }
+
+        Dictionary<string, RuntimeAnimatorController> controllers = LoadExistingControllers();
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { CandidateRoot });
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            GameObject root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                Animator animator = root.GetComponentInChildren<Animator>(true);
+                if (animator == null)
+                {
+                    problems.Add(path + ": missing Animator.");
+                    continue;
+                }
+
+                if (animator.runtimeAnimatorController == null)
+                {
+                    problems.Add(path + ": Animator has no runtime controller.");
+                    continue;
+                }
+
+                CharacterVisualIdentity identity = root.GetComponent<CharacterVisualIdentity>();
+                if (identity == null) identity = root.GetComponentInChildren<CharacterVisualIdentity>(true);
+                string profile = ResolveProfile(identity);
+                RuntimeAnimatorController expected;
+                if (!controllers.TryGetValue(profile, out expected) || expected == null)
+                    controllers.TryGetValue("generic", out expected);
+
+                if (expected != null && animator.runtimeAnimatorController != expected)
+                    problems.Add(path + ": Animator uses unexpected controller for profile=" + profile + ".");
+                if (animator.applyRootMotion)
+                    problems.Add(path + ": Animator root motion must be disabled.");
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        return problems;
+    }
+
+    static Dictionary<string, RuntimeAnimatorController> LoadExistingControllers()
+    {
+        return new Dictionary<string, RuntimeAnimatorController>
+        {
+            { "generic", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(GenericControllerPath) },
+            { "spear", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(SpearControllerPath) },
+            { "archer", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(ArcherControllerPath) },
+            { "skirmisher", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(SkirmisherControllerPath) },
+            { "hector", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(HectorControllerPath) },
+            { "menelaus", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(MenelausControllerPath) },
+            { "ballista", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(BallistaControllerPath) },
+            { "priest", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(PriestControllerPath) },
+            { "firekeeper", AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(FireKeeperControllerPath) }
+        };
+    }
+
     static AnimationClip[] LoadAllSourceClips()
     {
         var result = new List<AnimationClip>();
@@ -311,20 +402,35 @@ public static class ChapterOneCharacterAnimationBuilder
             GameObject root = PrefabUtility.LoadPrefabContents(path);
             try
             {
-                Animator animator = root.GetComponentInChildren<Animator>(true);
-                if (animator == null) continue;
+                bool prefabChanged;
+                Animator animator = EnsureAnimator(root, path, out prefabChanged);
+                if (animator == null)
+                {
+                    Debug.LogWarning("Chapter I animation assignment could not create/find Animator: " + path);
+                    continue;
+                }
 
                 CharacterVisualIdentity identity = root.GetComponent<CharacterVisualIdentity>();
                 if (identity == null) identity = root.GetComponentInChildren<CharacterVisualIdentity>(true);
                 string profile = ResolveProfile(identity);
                 RuntimeAnimatorController controller;
                 if (!controllers.TryGetValue(profile, out controller) || controller == null)
-                    controller = controllers["generic"];
+                    controllers.TryGetValue("generic", out controller);
                 if (controller == null) continue;
 
-                animator.runtimeAnimatorController = controller;
-                animator.applyRootMotion = false;
-                PrefabUtility.SaveAsPrefabAsset(root, path);
+                if (animator.runtimeAnimatorController != controller)
+                {
+                    animator.runtimeAnimatorController = controller;
+                    prefabChanged = true;
+                }
+                if (animator.applyRootMotion)
+                {
+                    animator.applyRootMotion = false;
+                    prefabChanged = true;
+                }
+
+                if (prefabChanged)
+                    PrefabUtility.SaveAsPrefabAsset(root, path);
                 assigned++;
             }
             finally
@@ -335,13 +441,59 @@ public static class ChapterOneCharacterAnimationBuilder
         return assigned;
     }
 
+    static Animator EnsureAnimator(GameObject root, string prefabPath, out bool changed)
+    {
+        changed = false;
+        Animator animator = root.GetComponentInChildren<Animator>(true);
+        Avatar importedAvatar = FindImportedAvatar(root);
+
+        if (animator == null)
+        {
+            Transform visual = root.transform.Find("Visual");
+            GameObject host = visual != null ? visual.gameObject : root;
+            animator = host.GetComponent<Animator>();
+            if (animator == null)
+            {
+                animator = host.AddComponent<Animator>();
+                changed = true;
+                Debug.Log("Chapter I animation recovery added Animator to " + prefabPath + " host=" + host.name + ".");
+            }
+        }
+
+        if (animator != null && animator.avatar == null && importedAvatar != null)
+        {
+            animator.avatar = importedAvatar;
+            changed = true;
+            Debug.Log("Chapter I animation recovery assigned imported Avatar=" + importedAvatar.name + " to " + prefabPath + ".");
+        }
+
+        return animator;
+    }
+
+    static Avatar FindImportedAvatar(GameObject root)
+    {
+        foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (renderer == null || renderer.sharedMesh == null) continue;
+            string sourcePath = AssetDatabase.GetAssetPath(renderer.sharedMesh);
+            if (string.IsNullOrEmpty(sourcePath)) continue;
+
+            foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetsAtPath(sourcePath))
+            {
+                Avatar avatar = asset as Avatar;
+                if (avatar != null && avatar.isValid) return avatar;
+            }
+        }
+        return null;
+    }
+
     static string ResolveProfile(CharacterVisualIdentity identity)
     {
         if (identity == null) return "generic";
         string id = identity.characterId ?? string.Empty;
         if (id.Equals("Hector", StringComparison.OrdinalIgnoreCase)) return "hector";
         if (id.Equals("Menelaus", StringComparison.OrdinalIgnoreCase) || identity.role == TroyVisualRole.Commander) return "menelaus";
-        if (id.Equals("Trojan_BallistaCrew", StringComparison.OrdinalIgnoreCase)) return "ballista";
+        if (id.StartsWith("Trojan_BallistaCrew", StringComparison.OrdinalIgnoreCase)) return "ballista";
         if (id.Equals("Trojan_PriestApollo", StringComparison.OrdinalIgnoreCase)) return "priest";
         if (id.Equals("Trojan_FireKeeper", StringComparison.OrdinalIgnoreCase)) return "firekeeper";
         if (identity.role == TroyVisualRole.Archer) return "archer";
