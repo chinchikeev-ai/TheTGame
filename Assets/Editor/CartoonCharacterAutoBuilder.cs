@@ -85,14 +85,10 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
-        // Always repair Animator/controller bindings after character recovery. Existing controller files do not
-        // guarantee newly regenerated prefabs still contain an Animator or reference the correct profile.
         int verifiedAnimatorBindings = ChapterOneCharacterAnimationBuilder.RepairControllerAssignments(false);
         if (verifiedAnimatorBindings > 0)
             Debug.Log("Troy characters: verified/rebound Chapter I Animator components and role controllers on " + verifiedAnimatorBindings + " production candidate(s).");
 
-        // Imported KayKit materials may reference shaders that render magenta under URP. Attach a runtime adapter
-        // to every generated character so non-URP materials are converted while retaining their base texture/color.
         int repairedUrpMaterials = ChapterOneUrpMaterialRepair.RepairAll(false);
         if (repairedUrpMaterials > 0)
         {
@@ -100,25 +96,19 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
-        // Re-apply Hector's production-candidate stack after any core regeneration.
-        // The spear pass is intentionally offline-safe and only uses an already imported pinned source.
-        if (ChapterOneProductionEquipmentBuilder.ApplyHectorSpearIfSourceAvailable(true))
+        // Geometry recovery is intentionally offline-safe: it only uses source assets already present locally.
+        int repairedWeapons = ChapterOneProductionEquipmentBuilder.ApplyExistingWeaponGeometryIfSourcesAvailable(false);
+        if (repairedWeapons > 0)
         {
-            Debug.Log("Troy characters: applied Hector-specific pinned production spear candidate.");
+            Debug.Log("Troy characters: rebound and normalized production weapons on " + repairedWeapons + " prefab(s).");
             changed = true;
         }
 
-        if (ChapterOneShieldCandidateBuilder.ApplyHectorIfAvailable(true))
-        {
-            Debug.Log("Troy characters: applied Hector-specific round Trojan shield candidate with horse emblem.");
-            changed = true;
-        }
-
-        if (ChapterOneArmorCandidateBuilder.ApplyHectorIfAvailable(true))
-        {
-            Debug.Log("Troy characters: applied Hector-specific Late Bronze Age cuirass and helmet candidates.");
-            changed = true;
-        }
+        // Authored shield/armor candidates are project-owned local assets; reapplying them after Animator repair
+        // guarantees they bind to resolved rig bones instead of retaining stale root-space placeholder transforms.
+        ChapterOneShieldCandidateBuilder.Build();
+        ChapterOneArmorCandidateBuilder.Build();
+        changed = true;
 
         if (HectorProductionVisualRefinementBuilder.ApplyIfAvailable())
         {
