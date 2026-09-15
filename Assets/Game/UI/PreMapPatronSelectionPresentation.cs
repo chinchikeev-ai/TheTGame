@@ -105,36 +105,9 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
     void BuildPatronOverlay()
     {
         patronOverlay = MakeOverlay("PreMapPatronSelection");
-        GameObject panel = MakePanel(patronOverlay.transform, "PatronCard", new Vector2(980f, 720f));
-
-        MakeText(panel.transform,
-            GameLanguage.T("CHOOSE A PATRON GOD", "ВЫБЕРИТЕ БОГА-ПОКРОВИТЕЛЯ"),
-            new Vector2(0, 286), new Vector2(820, 62), 36, true, new Color(1f, .72f, .26f, 1f));
-        MakeText(panel.transform,
-            GameLanguage.T("One patron stays with Troy for the whole battle.", "Один покровитель помогает Трое всю битву."),
-            new Vector2(0, 232), new Vector2(800, 46), 17, false, new Color(.88f, .78f, .66f, 1f));
-        patronDifficultyLabel = MakeText(panel.transform,
-            "",
-            new Vector2(0, 194), new Vector2(800, 38), 15, true, new Color(.75f, .62f, .48f, 1f));
-
-        MakeGodButton(panel.transform, new Vector2(-225, 88),
-            GameLanguage.T("ARES", "АРЕС"),
-            GameLanguage.T("HECTOR & TOWERS +10% DAMAGE\nWHOLE MAP", "ГЕКТОР И БАШНИ +10% УРОНА\nВСЮ КАРТУ"),
-            DivineGiftType.Ares);
-        MakeGodButton(panel.transform, new Vector2(225, 88),
-            GameLanguage.T("ATHENA", "АФИНА"),
-            GameLanguage.T("GATE +2 MAX HP\nIMMEDIATE", "ВОРОТА +2 МАКС. ЗДОРОВЬЯ\nСРАЗУ"),
-            DivineGiftType.Athena);
-        MakeGodButton(panel.transform, new Vector2(-225, -86),
-            GameLanguage.T("APOLLO", "АПОЛЛОН"),
-            GameLanguage.T("+50 STARTING GOLD\nONE TIME", "+50 СТАРТОВОГО ЗОЛОТА\nОДИН РАЗ"),
-            DivineGiftType.Apollo);
-        MakeGodButton(panel.transform, new Vector2(225, -86),
-            GameLanguage.T("POSEIDON", "ПОСЕЙДОН"),
-            GameLanguage.T("ENEMIES -10% SPEED\nWHOLE MAP", "ВРАГИ -10% СКОРОСТИ\nВСЮ КАРТУ"),
-            DivineGiftType.Poseidon);
-
-        MakeButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0, -270), new Vector2(240, 52), BackToDifficulty);
+        PatronSelectionArtwork artwork = patronOverlay.AddComponent<PatronSelectionArtwork>();
+        artwork.Build(BackToDifficulty, Choose);
+        patronDifficultyLabel = artwork.DifficultyLabel;
         patronOverlay.SetActive(false);
     }
 
@@ -205,6 +178,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         }
         if (patronOverlay != null)
         {
+            patronOverlay.GetComponent<PatronSelectionArtwork>()?.ResetSelection();
             patronOverlay.transform.SetAsLastSibling();
             patronOverlay.SetActive(true);
         }

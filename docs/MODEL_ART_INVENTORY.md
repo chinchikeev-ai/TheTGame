@@ -16,6 +16,10 @@ A builder succeeding does **not** promote an asset to `DONE`.
 
 ## UI character portraits
 
+Patron selection page: SOURCE ONLY supplied artwork integrated as a UI candidate.
+Five textures under Assets/Game/Art/Resources/PatronSelection provide the background
+and four individual selection cards. Runtime wiring is present; visual QA is pending.
+
 | Asset | Status | Current candidate / note |
 |---|---|---|
 | Ares patron portrait | GENERATED PLACEHOLDER | AI-generated transparent upper-body HUD candidate facing the battlefield; real Unity visual QA pending |

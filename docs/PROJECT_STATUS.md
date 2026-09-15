@@ -6,6 +6,13 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Patron selection artwork (2026-09-15): the pre-map screen uses the supplied Gods
+background and four separate illustrated cards. A pending selection is highlighted;
+only confirmation applies the gift through the existing controller. Back returns to
+difficulty. English captions cover the baked Russian text, and layout scales uniformly.
+Runtime textures live under Assets/Game/Art/Resources/PatronSelection, not Pictures.
+Real Unity visual acceptance remains pending; no new Windows build is claimed.
+
 Build badge recovery (2026-09-15): `MainMenuBuildVersionPresentation` reactivates
 its existing badge and restores its sibling order after approved menu art disables
 older children or appends a background. The original `ef4ef5cd` player built
