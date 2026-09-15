@@ -19,11 +19,11 @@ public sealed class ModernCombatHud : MonoBehaviour
     Camera gameplayCamera;
 
     Text goldText, gateText, encounterText, threatText, encounterPreviewText, encounterProgressText;
-    Text speedText, magicToggleText, magicActionText;
+    Text speedText, magicActionText;
     Text selectedTitle, selectedStats, selectedPriority, selectedUpgradePreview;
     Text firstEncounterPrepTitle, firstEncounterPrepObjective, firstEncounterPrepComposition;
     Button upgradeButton, sellButton, priorityButton, startEncounterButton;
-    Button magicToggle, magicAction;
+    Button magicAction;
     Button firstEncounterPrepStartButton;
     Button defenseToggleButton;
     Text defenseToggleText;
@@ -35,7 +35,6 @@ public sealed class ModernCombatHud : MonoBehaviour
     GameObject buildTooltip;
     GameObject selectedCard;
     RectTransform selectedCardRect;
-    GameObject magicFlyout;
     Image gateHealthFill;
     Image encounterProgressFill;
     Image tooltipAccent;
@@ -157,61 +156,28 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildMagicCornerControl(Transform parent)
     {
-        GameObject container = new GameObject("MagicCornerControls", typeof(RectTransform));
-        container.transform.SetParent(parent, false);
-        RectTransform containerRect = container.GetComponent<RectTransform>();
-        containerRect.anchorMin = Vector2.zero;
-        containerRect.anchorMax = Vector2.one;
-        containerRect.offsetMin = Vector2.zero;
-        containerRect.offsetMax = Vector2.zero;
-
-        magicToggle = Button(container.transform, L("DIVINE\nPOWER", "БОЖЕСТВ.\nСИЛА"), Vector2.zero, new Vector2(116, 104), ToggleMagicFlyout, true);
-        magicToggle.gameObject.name = "MagicToggle";
-        RectTransform toggleRect = magicToggle.transform as RectTransform;
-        toggleRect.anchorMin = toggleRect.anchorMax = toggleRect.pivot = new Vector2(1f, 0f);
-        toggleRect.anchoredPosition = new Vector2(-152f, 24f);
-        Icon(magicToggle.transform, "DivinePowerIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Ability("magic"));
-        magicToggleText = magicToggle.GetComponentInChildren<Text>();
-        if (magicToggleText != null)
-        {
-            magicToggleText.rectTransform.anchoredPosition = new Vector2(0, -28);
-            magicToggleText.rectTransform.sizeDelta = new Vector2(102, 42);
-            magicToggleText.fontSize = 13;
-            magicToggleText.lineSpacing = .88f;
-            magicToggleText.resizeTextForBestFit = true;
-            magicToggleText.resizeTextMinSize = 9;
-            magicToggleText.resizeTextMaxSize = 14;
-        }
-
-        magicFlyout = Panel(container.transform, "MagicFlyout", new Vector2(-24f, 150f), new Vector2(360f, 100f), new Color(.035f, .022f, .016f, .97f), new Vector2(1f, 0f), new Vector2(1f, 0f));
-        magicAction = Button(magicFlyout.transform, "", Vector2.zero, new Vector2(326f, 66f), CastMagic, true);
+        GameObject panel = Panel(parent, "DivinePowerActions", new Vector2(-24, -24), new Vector2(370, 132), new Vector2(1, 1), new Vector2(1, 1));
+        magicAction = Button(panel.transform, "", Vector2.zero, new Vector2(330f, 94f), CastMagic, true);
         magicAction.gameObject.name = "Magic_Primary";
+        Icon(magicAction.transform, "MagicIcon", new Vector2(-126f, 0f), new Vector2(58f, 58f), TroyHudArt.Ability("magic"));
         magicActionText = magicAction.GetComponentInChildren<Text>();
-        if (magicActionText != null) magicActionText.fontSize = 13;
-        magicFlyout.SetActive(false);
-    }
-
-    void ToggleMagicFlyout()
-    {
-        if (magicFlyout == null) return;
-        bool show = !magicFlyout.activeSelf;
-        magicFlyout.SetActive(show);
-        if (show)
+        if (magicActionText != null)
         {
-            HideBuildTooltip();
-            if (selectedCard != null) selectedCard.SetActive(false);
+            magicActionText.fontSize = 13;
+            magicActionText.lineSpacing = 1.05f;
+            magicActionText.resizeTextForBestFit = true;
+            magicActionText.resizeTextMinSize = 10;
+            magicActionText.resizeTextMaxSize = 13;
+            RectTransform textRect = magicActionText.rectTransform;
+            textRect.anchoredPosition = new Vector2(34f, 0f);
+            textRect.sizeDelta = new Vector2(224f, 82f);
         }
-    }
-
-    void CloseMagicFlyout()
-    {
-        if (magicFlyout != null) magicFlyout.SetActive(false);
     }
 
     void CastMagic()
     {
         GameManager gm = GameManager.Instance;
-        if (gm != null && gm.UseMagic()) CloseMagicFlyout();
+        if (gm != null) gm.UseMagic();
     }
 
     void BuildFirstEncounterPreparation(Transform parent)
@@ -240,7 +206,7 @@ public sealed class ModernCombatHud : MonoBehaviour
             Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 24), new Vector2(46, 46), TroyHudArt.Tower(type));
             Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-51, 43), new Vector2(24, 22), 13, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
             Text(buildButtons[i].transform, TowerName(type).ToUpperInvariant(), new Vector2(0, -18), new Vector2(122, 26), 12, new Color(1f, .90f, .68f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-24, -43), new Vector2(22, 22), CoinSprite());
+            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-24, -43), new Vector2(22, 22), TroyHudArt.Icon("gold"));
             Text(buildButtons[i].transform, TowerFactory.GetCost(type).ToString(), new Vector2(20, -43), new Vector2(62, 22), 12, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
             relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
@@ -279,7 +245,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         defenseDockOpen = !defenseDockOpen;
         if (buildDock != null) buildDock.SetActive(defenseDockOpen);
         if (!defenseDockOpen) HideBuildTooltip();
-        if (defenseDockOpen) CloseMagicFlyout();
         if (defenseToggleText != null) defenseToggleText.text = defenseDockOpen ? L("DEFENDERS\n-", "ЗАЩИТА\n-") : L("DEFENDERS\n+", "ЗАЩИТА\n+");
     }
 
@@ -340,7 +305,6 @@ public sealed class ModernCombatHud : MonoBehaviour
         if (blocked || GameManager.Instance == null)
         {
             HideBuildTooltip();
-            CloseMagicFlyout();
             if (selectedCard != null) selectedCard.SetActive(false);
             if (firstEncounterPrep != null) firstEncounterPrep.SetActive(false);
             return;
@@ -395,11 +359,18 @@ public sealed class ModernCombatHud : MonoBehaviour
         speedText.text = $"{CombatControlsUI.CurrentSpeed:0}x";
         float cooldown = gm != null ? gm.MagicCooldownRemaining : 0f;
         bool magicReady = gm != null && cooldown <= .01f && !gm.GameEnded && EnemyRegistry.AliveCount > 0;
-        if (magicToggleText != null) magicToggleText.text = cooldown > .01f ? L("DIVINE\n", "СИЛА\n") + Mathf.CeilToInt(cooldown) + L("s", "с") : L("DIVINE\nREADY", "СИЛА\nГОТОВА");
-        if (magicActionText != null) magicActionText.text = cooldown > .01f ? L("DIVINE POWER   ", "БОЖЕСТВЕННАЯ СИЛА   ") + Mathf.CeilToInt(cooldown) + L("s", "с") : L("DIVINE POWER   READY", "БОЖЕСТВЕННАЯ СИЛА   ГОТОВА");
+        string state = gm != null && gm.GameEnded
+            ? L("BATTLE ENDED", "БИТВА ЗАВЕРШЕНА")
+            : cooldown > .01f
+                ? L($"READY IN {Mathf.CeilToInt(cooldown)}s", $"ГОТОВО ЧЕРЕЗ {Mathf.CeilToInt(cooldown)}с")
+                : EnemyRegistry.AliveCount <= 0
+                    ? L("WAITING FOR ENEMIES", "ЖДЁМ ПРОТИВНИКОВ")
+                    : L("READY — CLICK TO CAST", "ГОТОВО — НАЖМИТЕ");
+        if (magicActionText != null)
+            magicActionText.text = L(
+                $"DIVINE STORM • ALL ENEMIES\n120 DMG • 50% SLOW FOR 5s\n{state}",
+                $"БОЖЕСТВЕННАЯ БУРЯ • ВСЕ ВРАГИ\n120 УРОНА • ЗАМЕДЛЕНИЕ 50% НА 5с\n{state}");
         if (magicAction != null) magicAction.interactable = magicReady;
-        if (magicToggle != null) magicToggle.interactable = gm != null && !gm.GameEnded;
-        if (gm == null || gm.GameEnded) CloseMagicFlyout();
     }
 
     void UpdateEncounter()
@@ -475,7 +446,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     void UpdateSelected()
     {
         Tower selected = placement != null ? placement.SelectedTower : null;
-        bool visible = selected != null && !defenseDockOpen && (magicFlyout == null || !magicFlyout.activeSelf);
+        bool visible = selected != null && !defenseDockOpen;
         if (selectedCard != null) selectedCard.SetActive(visible);
         if (!visible) return;
         PositionSelectedCard(selected);
@@ -505,7 +476,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void HandlePcHotkeys()
     {
-        if (placement == null || (magicFlyout != null && magicFlyout.activeSelf)) return;
+        if (placement == null) return;
         for (int i = 0; i < buildTypes.Length; i++)
         {
             if (!GameInput.BuildSlotPressed(i + 1)) continue;

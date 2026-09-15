@@ -32,7 +32,6 @@ public static class ChapterOneRuntimeInstaller
         EnsureHector(camera, mapBuilder.Paths);
         EnsureComponent<HectorHUD>("HectorHUD");
         EnsureComponent<EnemyInspectorPresentation>("EnemyInspector");
-        EnsureComponent<CombatActionClarityPresentation>("CombatActionClarity");
         EnsureComponent<PreMapPatronSelectionPresentation>("PreMapPatronSelection");
         EnsureComponent<PatronCommentaryPresentation>("PatronCommentary");
         EnsureComponent<LandingPresentation>("LandingPresentation");

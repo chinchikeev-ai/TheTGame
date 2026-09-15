@@ -40,8 +40,8 @@ public class BossHUD : MonoBehaviour
         bg.color = Color.white;
         RectTransform rr = bg.rectTransform;
         rr.anchorMin = rr.anchorMax = rr.pivot = new Vector2(.5f,1f);
-        rr.anchoredPosition = new Vector2(0,-166);
-        rr.sizeDelta = new Vector2(760,118);
+        rr.anchoredPosition = new Vector2(-80,-184);
+        rr.sizeDelta = new Vector2(700,118);
 
         GameObject glowObj = new GameObject("DangerGlow");
         glowObj.transform.SetParent(root.transform,false);

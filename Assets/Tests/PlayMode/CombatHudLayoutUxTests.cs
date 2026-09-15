@@ -72,17 +72,62 @@ public class CombatHudLayoutUxTests
     }
 
     [UnityTest]
-    public IEnumerator DivineGiftChoice_ContainsFourGodOptions()
+    public IEnumerator DivinePower_HasOneDirectPortraitLedAction()
     {
         yield return null;
         yield return null;
 
-        Transform overlay = FindSceneTransform("DivineGiftChoiceOverlay");
-        Assert.NotNull(overlay, "Combat HUD must create the divine gift chooser.");
-        Assert.NotNull(FindChildRecursive(overlay, "Gift_Ares"));
-        Assert.NotNull(FindChildRecursive(overlay, "Gift_Athena"));
-        Assert.NotNull(FindChildRecursive(overlay, "Gift_Apollo"));
-        Assert.NotNull(FindChildRecursive(overlay, "Gift_Poseidon"));
+        Transform actions = FindSceneTransform("DivinePowerActions");
+        Assert.NotNull(actions, "Combat HUD must expose one Divine Power block.");
+        Transform action = actions.Find("Magic_Primary");
+        Assert.NotNull(action);
+        Assert.NotNull(action.Find("MagicIcon")?.GetComponent<Image>(), "Divine Power must use the same portrait/icon hierarchy as Hector abilities.");
+        Assert.IsNull(FindSceneTransform("MagicToggle"), "A second corner magic control must not compete with the primary action.");
+        Assert.IsNull(FindSceneTransform("DivineGiftChoiceOverlay"), "Patron selection belongs to the pre-map flow, not the combat HUD.");
+    }
+
+    [UnityTest]
+    public IEnumerator MainCombatCards_UseTrojanPanelArtAndSemanticIcons()
+    {
+        yield return null;
+        yield return null;
+
+        Transform resources = FindSceneTransform("TopResources");
+        Transform wave = FindSceneTransform("WaveStatus");
+        Assert.NotNull(resources);
+        Assert.NotNull(wave);
+        Assert.NotNull(resources.Find("GoldResourcePanel")?.GetComponent<Image>()?.sprite);
+        Assert.NotNull(wave?.GetComponent<Image>()?.sprite);
+        Assert.NotNull(resources.Find("GateIcon")?.GetComponent<Image>()?.sprite);
+        Assert.NotNull(wave.Find("WaveCrest")?.GetComponent<Image>()?.sprite);
+    }
+
+    [UnityTest]
+    public IEnumerator SelectedPatron_WatchesBattlefieldFromRightCommentaryPanel()
+    {
+        yield return null;
+        yield return null;
+
+        Assert.NotNull(GameManager.Instance);
+        if (GameManager.Instance.GiftAvailable)
+            Assert.IsTrue(GameManager.Instance.UseGift(DivineGiftType.Athena));
+
+        yield return null;
+        yield return null;
+
+        Transform panel = FindSceneTransform("PatronCommentaryCard");
+        Assert.NotNull(panel, "Selected patron must own a dedicated observer panel.");
+        RectTransform panelRect = panel as RectTransform;
+        Assert.NotNull(panelRect);
+        Assert.AreEqual(1f, panelRect.anchorMin.x, .01f, "Patron observer must be anchored on the right side.");
+        Assert.AreEqual(1f, panelRect.anchorMin.y, .01f, "Patron observer must be anchored near the top edge.");
+
+        Image portrait = FindChildRecursive(panel, "PatronPortrait")?.GetComponent<Image>();
+        Assert.NotNull(portrait);
+        Assert.NotNull(portrait.sprite, "Selected patron portrait must load from project Resources.");
+        Assert.NotNull(FindChildRecursive(panel, "PatronSpeech"), "Patron panel must expose the current event commentary.");
+        Assert.IsNull(FindSceneTransform("PatronObserverPanel"), "The imported observer must not duplicate the canonical patron panel.");
+        Assert.NotNull(FindSceneTransform("HectorCommentary"), "Preserve the approved illustrated Hector block.");
     }
 
     static Transform FindSceneTransform(string name)

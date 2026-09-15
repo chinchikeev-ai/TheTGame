@@ -24,7 +24,7 @@ One visual domain has one runtime owner. New visual work must replace or extend 
 | Runtime effect audio/general non-projectile effects | `RuntimeEffects` | Projectile impact graphics |
 | Main combat HUD layout/content, controls, encounter strip, contextual selected-defense panel, build details, corner Divine Power controls | `ModernCombatHud` | Patron selection/commentary or secondary combat/build canvas |
 | Pre-map Patron God selection | `PreMapPatronSelectionPresentation` | In-map patron re-selection or combat HUD ownership |
-| Selected Patron God portrait + battlefield commentary | `PatronCommentaryPresentation` | Patron selection, objectives, generic combat notifications |
+| Selected Patron God portrait + battlefield commentary | `PatronCommentaryPresentation` + `DivinePatronCommentaryCatalog` | Patron selection, objectives, generic combat notifications |
 | Combat HUD legacy Gift/Wave presentation suppression during migration | `CombatHudLegacyCleanup` | New gameplay/UI features; this is migration-only debt |
 | Combat HUD decorative sprites/colors/unique icons | `TroyCombatHudSkin` | Panel position/size/anchors; duplicate content/icons |
 | Settings UI including audio layout | `ModernSettingsPresentation` | Runtime layout polishers or duplicate settings canvases |

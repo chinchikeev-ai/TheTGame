@@ -149,11 +149,14 @@ Exact manual protocols:
 Implemented presentation work includes:
 
 - responsive combat HUD for 1920x1080 and 1366/1376x768 target layouts;
+- unified Trojan combat HUD cards using the same dark-stone, bronze-framed, portrait-led language as the Hector block;
+- one direct Divine Power action with effect/readiness copy instead of competing duplicate controls;
 - separate encounter, boss, Hector, build and selected-unit regions;
 - selected-defense contextual menu around the unit;
 - pre-map Patron God selection; the selected Patron cannot be changed after the map starts;
 - upper-right selected Patron portrait/commentary for Chapter I event feedback;
 - obsolete in-map `DivineGiftChoice` / `CombatActions` removed from `ModernCombatHud`; the combat HUD now uses direct `EncounterRuntime` state and Encounter/Бой player-facing copy without `CombatHudLegacyCleanup`;
+- distinct EN/RU patron reactions for wave flow, defenses, gate pressure, kill milestones, Hector, Menelaus and Divine Power use;
 - tower hover/selection/range feedback;
 - projectile trails and type-specific hit feedback;
 - tower recoil;

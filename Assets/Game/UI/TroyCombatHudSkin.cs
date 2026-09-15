@@ -48,7 +48,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
     {
         SkinPanel(hud.Find("TopResources"),StoneSoft);
         SkinPanel(hud.Find("WaveStatus"),Stone);
-        SkinPanel(hud.Find("CombatActions"),Stone);
+        SkinPanel(hud.Find("DivinePowerActions"),Stone);
         SkinPanel(hud.Find("BuildDock"),StoneSoft);
         SkinPanel(hud.Find("SelectedTowerCard"),Stone);
         SkinPanel(hud.Find("PcHints"),new Color(.10f,.09f,.08f,.84f));
@@ -63,16 +63,18 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
                 Image coinImage = coin.GetComponent<Image>();
                 if (coinImage != null) coinImage.sprite = TroyHudArt.Icon("gold");
             }
+            Transform gate = top.Find("GateIcon");
+            if (gate != null && gate.TryGetComponent(out Image gateImage)) gateImage.sprite = TroyHudArt.Icon("gate");
         }
 
         Transform wave = hud.Find("WaveStatus");
         if (wave != null) EnsureIcon(wave,"WaveCrest",new Vector2(-390,0),48,TroyHudArt.Icon("sword"));
 
-        Transform actions = hud.Find("CombatActions");
+        Transform actions = hud.Find("DivinePowerActions");
         if (actions != null)
         {
-            EnsureIcon(actions,"MagicIcon",new Vector2(54,28),38,TroyHudArt.Ability("magic"));
-            EnsureIcon(actions,"GiftIcon",new Vector2(54,-42),36,TroyHudArt.Ability("gift"));
+            Transform magic = actions.Find("Magic_Primary/MagicIcon");
+            if (magic != null && magic.TryGetComponent(out Image magicImage)) magicImage.sprite = TroyHudArt.Ability("magic");
         }
 
         Transform dock = hud.Find("BuildDock");

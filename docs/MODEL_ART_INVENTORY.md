@@ -14,6 +14,17 @@ This is the authoritative source for **art/model completion status**. Design int
 
 A builder succeeding does **not** promote an asset to `DONE`.
 
+## UI character portraits
+
+| Asset | Status | Current candidate / note |
+|---|---|---|
+| Ares patron portrait | GENERATED PLACEHOLDER | AI-generated transparent upper-body HUD candidate facing the battlefield; real Unity visual QA pending |
+| Athena patron portrait | GENERATED PLACEHOLDER | AI-generated transparent upper-body HUD candidate facing the battlefield; real Unity visual QA pending |
+| Apollo patron portrait | GENERATED PLACEHOLDER | AI-generated transparent upper-body HUD candidate facing the battlefield; real Unity visual QA pending |
+| Poseidon patron portrait | GENERATED PLACEHOLDER | AI-generated transparent upper-body HUD candidate facing the battlefield; real Unity visual QA pending |
+
+These portraits support the patron-commentary UX but are not `DONE` until the final UI art direction and RU/EN gameplay-layout QA are accepted.
+
 ## Chapter I characters
 
 Hector HUD artwork: GENERATED PLACEHOLDER pending in-game visual acceptance.
