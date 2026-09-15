@@ -165,6 +165,22 @@ public class GameMenuController : MonoBehaviour
     void BuildSettingsMenu()
     {
         settingsMenu = MakeScreen(canvas, "Settings", new Color(.02f, .015f, .012f, .99f));
+
+        Texture2D background = Resources.Load<Texture2D>("Menu/Settings_background");
+        if (background != null)
+        {
+            GameObject backgroundObject = new GameObject("Background");
+            backgroundObject.transform.SetParent(settingsMenu.transform, false);
+            Image backgroundImage = backgroundObject.AddComponent<Image>();
+            backgroundImage.sprite = Sprite.Create(background, new Rect(0f, 0f, background.width, background.height), new Vector2(.5f, .5f));
+            backgroundImage.type = Image.Type.Simple;
+            backgroundImage.raycastTarget = false;
+            StretchToParent(backgroundImage.rectTransform);
+
+            AspectRatioFitter fitter = backgroundObject.AddComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fitter.aspectRatio = (float)background.width / background.height;
+        }
     }
 
     void BuildPauseMenu()
