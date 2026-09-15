@@ -196,7 +196,7 @@ public static class GameMenuUiFactory
         return illustratedButtonSprite;
     }
 
-    static void StretchToParent(RectTransform rect)
+    public static void StretchToParent(RectTransform rect)
     {
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;
