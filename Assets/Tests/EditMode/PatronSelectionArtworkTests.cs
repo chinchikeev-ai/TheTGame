@@ -57,10 +57,13 @@ public sealed class PatronSelectionArtworkTests
         foreach (var image in images) Assert.IsNotNull(image.texture, image.name);
     }
 
-    [TestCase(1600, 900)]
-    [TestCase(1366, 768)]
-    [TestCase(1024, 768)]
-    public void CaptureLayoutWithoutChangingPlayerSave(int width, int height)
+    [TestCase(1600, 900, true)]
+    [TestCase(1366, 768, true)]
+    [TestCase(1024, 768, true)]
+    [TestCase(1600, 900, false)]
+    [TestCase(1366, 768, false)]
+    [TestCase(1024, 768, false)]
+    public void CaptureLayoutWithoutChangingPlayerSave(int width, int height, bool russian)
     {
         var scene = EditorSceneManager.NewPreviewScene();
         var pipeline = GraphicsSettings.defaultRenderPipeline;
@@ -86,6 +89,7 @@ public sealed class PatronSelectionArtworkTests
             canvas.planeDistance = 1;
             Canvas.ForceUpdateCanvases();
             typeof(PatronSelectionArtwork).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(view, null);
+            typeof(PatronSelectionArtwork).GetMethod("ApplyLanguage", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(view, new object[] { russian });
             root.transform.Find("GodsLayout/Patron_Athena").GetComponent<Button>().onClick.Invoke();
             Canvas.ForceUpdateCanvases();
             foreach (var text in root.GetComponentsInChildren<Text>())
@@ -101,7 +105,7 @@ public sealed class PatronSelectionArtworkTests
             }
             finally { RenderTexture.active = previous; }
             Directory.CreateDirectory("Logs/Validation/PatronSelection");
-            File.WriteAllBytes($"Logs/Validation/PatronSelection/{GameLanguage.Code}-{width}.png", pixels.EncodeToPNG());
+            File.WriteAllBytes($"Logs/Validation/PatronSelection/{(russian ? "RU" : "EN")}-{width}.png", pixels.EncodeToPNG());
         }
         finally
         {

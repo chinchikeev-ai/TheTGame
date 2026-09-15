@@ -8,6 +8,7 @@ public sealed class PatronSelectionArtwork : MonoBehaviour
     RectTransform content;
     readonly Outline[] highlights = new Outline[4];
     readonly GameObject[] translations = new GameObject[4];
+    readonly Text[] selectionLabels = new Text[4];
     readonly DivineGiftType[] gifts = { DivineGiftType.Athena, DivineGiftType.Ares, DivineGiftType.Apollo, DivineGiftType.Poseidon };
     Button confirm;
     Text heading, backLabel, confirmLabel;
@@ -57,6 +58,8 @@ public sealed class PatronSelectionArtwork : MonoBehaviour
             plate.raycastTarget = false;
             Label("Caption", translation, Vector2.zero, new Vector2(414, 112), 20).text = english[i];
             translations[i] = translation.gameObject;
+            selectionLabels[i] = Label("Selected", rect, new Vector2(0, 142), new Vector2(240, 30), 20);
+            selectionLabels[i].gameObject.SetActive(false);
         }
         var backButton = Command("Back", new Vector2(-635, -403), new Vector2(260, 62), back);
         backLabel = backButton.GetComponentInChildren<Text>();
@@ -70,13 +73,18 @@ public sealed class PatronSelectionArtwork : MonoBehaviour
     {
         selected = -1;
         foreach (var highlight in highlights) if (highlight != null) highlight.enabled = false;
+        foreach (var label in selectionLabels) if (label != null) label.gameObject.SetActive(false);
         if (confirm != null) confirm.interactable = false;
     }
 
     void Select(int index)
     {
         selected = index;
-        for (int i = 0; i < highlights.Length; i++) highlights[i].enabled = i == selected;
+        for (int i = 0; i < highlights.Length; i++)
+        {
+            highlights[i].enabled = i == selected;
+            selectionLabels[i].gameObject.SetActive(i == selected);
+        }
         confirm.interactable = true;
     }
 
@@ -95,10 +103,16 @@ public sealed class PatronSelectionArtwork : MonoBehaviour
         if (content == null) return;
         var available = ((RectTransform)transform).rect.size;
         content.localScale = Vector3.one * Mathf.Min(available.x / 1600f, available.y / 900f);
-        heading.text = GameLanguage.T("CHOOSE A PATRON GOD", "ВЫБОР БОГА-ПОКРОВИТЕЛЯ");
-        backLabel.text = GameLanguage.T("BACK", "НАЗАД");
-        confirmLabel.text = GameLanguage.T("CONFIRM CHOICE", "ПОДТВЕРДИТЬ ВЫБОР");
-        foreach (var translation in translations) translation.SetActive(!GameLanguage.Russian);
+        ApplyLanguage(GameLanguage.Russian);
+    }
+
+    void ApplyLanguage(bool russian)
+    {
+        heading.text = russian ? "ВЫБОР БОГА-ПОКРОВИТЕЛЯ" : "CHOOSE A PATRON GOD";
+        backLabel.text = russian ? "НАЗАД" : "BACK";
+        confirmLabel.text = russian ? "ПОДТВЕРДИТЬ ВЫБОР" : "CONFIRM CHOICE";
+        foreach (var label in selectionLabels) label.text = russian ? "ВЫБРАНО" : "SELECTED";
+        foreach (var translation in translations) translation.SetActive(!russian);
     }
 
     Button Command(string name, Vector2 position, Vector2 size, Action action)
