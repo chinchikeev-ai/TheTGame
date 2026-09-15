@@ -27,6 +27,7 @@ public static class TowerFactory
         muzzle.transform.localPosition = new Vector3(0f,0f,1.45f);
 
         TowerArtDirector.Enhance(root, type);
+        CharacterUrpMaterialAdapter.ApplyTo(root);
 
         BoxCollider interaction = root.AddComponent<BoxCollider>();
         interaction.center = new Vector3(0f,.55f,0f);
