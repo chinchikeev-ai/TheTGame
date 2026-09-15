@@ -8,6 +8,7 @@ public static class ChapterOneArmorCandidateBuilder
     const string GreekRoot = CharacterRoot + "/Greek/";
     const string TrojanRoot = CharacterRoot + "/Trojan/";
     const string HeroRoot = CharacterRoot + "/Heroes/";
+    const string HectorPrefabPath = HeroRoot + "Hero_Hector.prefab";
     const string CuirassPath = "Assets/Game/Art/Characters/Equipment/DendraCuirassCandidate.obj";
     const string HelmetPath = "Assets/Game/Art/Characters/Equipment/BoarTuskHelmetCandidate.obj";
     const string SourceCuirassName = "SourceArmor_DendraCandidate";
@@ -45,7 +46,7 @@ public static class ChapterOneArmorCandidateBuilder
         new ArmorTarget(GreekRoot + "Enemy_Boss.prefab", 1.14f, 1.08f),
         new ArmorTarget(TrojanRoot + "Trojan_Infantry.prefab", 1.00f, 1.00f),
         new ArmorTarget(TrojanRoot + "Trojan_Guard.prefab", 1.10f, 1.06f),
-        new ArmorTarget(HeroRoot + "Hero_Hector.prefab", 1.15f, 1.10f),
+        new ArmorTarget(HectorPrefabPath, 1.15f, 1.10f),
         new ArmorTarget(HeroRoot + "Hero_Menelaus.prefab", 1.12f, 1.08f)
     };
 
@@ -64,6 +65,38 @@ public static class ChapterOneArmorCandidateBuilder
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("Chapter I Late Bronze Age armor pass upgraded " + upgraded + " prefab(s). Armor now rigidly follows resolved torso/head bones where available, but meshes are still unskinned production candidates pending real Unity animation-clearance, material and gameplay-camera QA.");
+    }
+
+    public static bool ApplyHectorIfAvailable(bool logIfMissing = false)
+    {
+        GameObject cuirass = AssetDatabase.LoadAssetAtPath<GameObject>(CuirassPath);
+        GameObject helmet = AssetDatabase.LoadAssetAtPath<GameObject>(HelmetPath);
+        if (cuirass == null || helmet == null)
+        {
+            if (logIfMissing)
+                Debug.LogWarning("Hector armor recovery skipped because authored armor source is missing. Cuirass=" + CuirassPath + ", helmet=" + HelmetPath);
+            return false;
+        }
+
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(HectorPrefabPath) == null)
+        {
+            if (logIfMissing) Debug.LogWarning("Hector armor recovery skipped because prefab is missing: " + HectorPrefabPath);
+            return false;
+        }
+
+        foreach (ArmorTarget target in Targets)
+        {
+            if (!string.Equals(target.prefabPath, HectorPrefabPath, StringComparison.Ordinal)) continue;
+            bool upgraded = Upgrade(target, cuirass, helmet);
+            if (upgraded)
+            {
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+            return upgraded;
+        }
+
+        return false;
     }
 
     static bool Upgrade(ArmorTarget target, GameObject cuirassSource, GameObject helmetSource)
@@ -188,8 +221,6 @@ public static class ChapterOneArmorCandidateBuilder
             return;
         }
 
-        // Preserve the authored/rest-pose world transform while making the static mesh follow the animated bone.
-        // This is a rigid attachment only; it does not claim skinning or deformation quality.
         item.transform.SetParent(bone, true);
     }
 
