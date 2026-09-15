@@ -64,6 +64,7 @@ One commit should describe one coherent change. Avoid vague messages like `updat
 - `docs/PROJECT_STATUS.md` is authoritative for current implementation state.
 - `docs/MODEL_ART_INVENTORY.md` is authoritative for production-art completion.
 - `docs/ARCHITECTURE.md` is authoritative for module ownership/dependency rules.
+- `docs/EDITOR_MENU.md` is authoritative for Unity Editor menu naming and placement.
 - `docs/UNITY_ROADMAP.md` describes future milestone order, not current completion.
 - audit documents are diagnostic snapshots and must not override current code/status/validation.
 
@@ -91,7 +92,7 @@ Authored ScriptableObject assets are the runtime source of truth.
 - Wave pacing/config -> `WaveData` assets
 - Chapter setup -> `ChapterData` assets
 - Change balance in assets, not runtime fallback/default code
-- `TheTroyGame/Data/Create Missing Default Assets` may create only absent assets
+- `The Troy Game/Data/Create Missing Default Assets` may create only absent assets
 - Existing authored assets must never be auto-overwritten
 - Missing authored runtime data is a validation failure, never a silent fallback
 
@@ -145,6 +146,7 @@ Keep runtime classes in the global namespace for now. Do not introduce `namespac
 - user-facing gameplay text supports EN/RU through the language layer
 - language switching must not reload the active scene
 - UI must not own gameplay state or persistence implementation
+- project-owned Unity Editor commands use the single canonical root `The Troy Game/`; do not add `TheTroyGame/...`, `Tools/TheTroyGame/...`, or `Tools/The Troy Game/...` menu paths. See `docs/EDITOR_MENU.md`.
 
 ## Required change workflow
 1. Identify owner module/system using `docs/MODULE_MAP.md`.
