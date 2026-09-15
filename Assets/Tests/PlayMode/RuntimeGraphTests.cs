@@ -49,6 +49,9 @@ public class RuntimeGraphTests
         Assert.NotNull(FindNamed(coast.transform,"Shore Wet Band"));
         Assert.NotNull(FindNamed(coast.transform,"Shore Dry Sand Band"));
         Assert.NotNull(FindNamed(coast.transform,"Shore Land Transition Band"));
+        Assert.NotNull(FindNamed(coast.transform,"Aegean Shelf Transition"));
+        Assert.NotNull(FindNamed(coast.transform,"Aegean Mid Shelf"));
+        Assert.GreaterOrEqual(CountNamed(coast.transform,"Submerged Shoal"),5,"Near-shore depth variation should break up the flat water plane.");
         Assert.GreaterOrEqual(CountNamed(coast.transform,"Beach Pebble"),28,"Pebble fields should break up the flat beach without becoming gameplay blockers.");
         Assert.GreaterOrEqual(CountNamed(coast.transform,"Driftwood"),4,"Washed-up debris should make the landing edge read as a real coast.");
 
@@ -56,6 +59,21 @@ public class RuntimeGraphTests
         float center = CoastEnvironmentBuilder.ShorelineX(0f);
         float right = CoastEnvironmentBuilder.ShorelineX(8f);
         Assert.Greater(Mathf.Abs(left-center)+Mathf.Abs(center-right),.18f,"The authored shoreline must not collapse back to a straight edge.");
+    }
+
+    [UnityTest]
+    public IEnumerator ChapterOne_WaterAndSurfHaveLayeredMotionWithoutGameplayColliders()
+    {
+        yield return null;
+        yield return null;
+
+        GameObject shore = GameObject.Find("Chapter01_ShoreLife");
+        Assert.NotNull(shore,"Chapter I dynamic shore-life root must exist.");
+        Assert.GreaterOrEqual(CountNamed(shore.transform,"Shallow Swell"),12,"Shallow water needs restrained moving swell cues.");
+        Assert.GreaterOrEqual(CountNamed(shore.transform,"Breaking Shore Foam"),20,"Surf should be visibly broken into irregular sections.");
+        Assert.GreaterOrEqual(CountNamed(shore.transform,"Shore Backwash"),8,"Wet sand should show a readable backwash response.");
+        Assert.GreaterOrEqual(CountNamed(shore.transform,"Ship Wake Arm"),6,"Each parked Greek ship should have a two-sided wake silhouette.");
+        Assert.AreEqual(0,shore.GetComponentsInChildren<Collider>(true).Length,"Dynamic sea/surf dressing must remain presentation-only and collider-free.");
     }
 
     [UnityTest]

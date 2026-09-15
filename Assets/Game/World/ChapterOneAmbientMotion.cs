@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ChapterOneAmbientMotion : MonoBehaviour
 {
-    public enum MotionKind { Sea, Flame, Banner, Smoke, Dust, Ember, HeatShimmer }
+    public enum MotionKind { Sea, Flame, Banner, Smoke, Dust, Ember, HeatShimmer, Surf, Swell }
     public MotionKind kind;
     public float phase;
     Vector3 basePosition;
@@ -50,6 +50,16 @@ public class ChapterOneAmbientMotion : MonoBehaviour
             case MotionKind.HeatShimmer:
                 transform.localPosition = basePosition + new Vector3(Mathf.Sin(t * 4.1f) * .025f, Mathf.Sin(t * 3.4f) * .035f, 0f);
                 transform.localScale = new Vector3(baseScale.x * (1f + Mathf.Sin(t * 3.7f) * .08f), baseScale.y * (1f + Mathf.Cos(t * 4.3f) * .11f), baseScale.z);
+                break;
+            case MotionKind.Surf:
+                float surfPulse = (Mathf.Sin(t * 1.35f) + 1f) * .5f;
+                transform.localPosition = basePosition + new Vector3(surfPulse * .12f, Mathf.Sin(t * 2.1f) * .006f, Mathf.Sin(t * .62f) * .025f);
+                transform.localScale = new Vector3(baseScale.x * (.84f + surfPulse * .24f), baseScale.y, baseScale.z * (.94f + Mathf.Cos(t * .74f) * .05f));
+                break;
+            case MotionKind.Swell:
+                float swellPulse = (Mathf.Sin(t * .78f) + 1f) * .5f;
+                transform.localPosition = basePosition + new Vector3(Mathf.Sin(t * .72f) * .055f, Mathf.Sin(t * 1.1f) * .012f, Mathf.Cos(t * .51f) * .018f);
+                transform.localScale = new Vector3(baseScale.x * (.88f + swellPulse * .18f), baseScale.y, baseScale.z * (1f + Mathf.Cos(t * .64f) * .035f));
                 break;
         }
     }

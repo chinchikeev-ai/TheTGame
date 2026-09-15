@@ -9,6 +9,7 @@ public static class CoastEnvironmentBuilder
     static readonly Color WetSand = new Color(.47f,.41f,.30f);
     static readonly Color DryTransition = new Color(.60f,.50f,.32f);
     static readonly Color ShallowWater = new Color(.09f,.38f,.46f);
+    static readonly Color ShelfWater = new Color(.075f,.33f,.43f);
     static readonly Color Water = new Color(.055f,.27f,.39f);
     static readonly Color DeepWater = new Color(.03f,.13f,.24f);
     static readonly Color Rock = new Color(.35f,.34f,.30f);
@@ -75,6 +76,9 @@ public static class CoastEnvironmentBuilder
         Primitive(parent,"Aegean Mid Water",PrimitiveType.Cube,new Vector3(-21.9f,-.29f,0f),new Vector3(7.9f,.11f,25f),Water);
         Primitive(parent,"Deep Aegean Sea",PrimitiveType.Cube,new Vector3(-29.8f,-.34f,0f),new Vector3(8f,.10f,25f),DeepWater);
 
+        CreateShoreBand(parent,"Aegean Shelf Transition",-5.55f,-2.40f,-.181f,ShelfWater,.17f,.65f);
+        CreateShoreBand(parent,"Aegean Mid Shelf",-8.65f,-5.25f,-.224f,Water*1.08f,.16f,1.45f);
+
         float[] sandbarZ = { -7.8f,-3.7f,.2f,4.3f,8.2f };
         for (int i = 0; i < sandbarZ.Length; i++)
         {
@@ -83,6 +87,16 @@ public static class CoastEnvironmentBuilder
                 new Vector3(1.75f,.025f,1.4f + (i % 2) * .45f),
                 new Color(.13f,.43f,.48f),
                 Quaternion.Euler(0f,-8f + i * 4f,0f));
+        }
+
+        float[] shoalZ = { -8.8f,-5.4f,-1.9f,1.9f,5.4f,8.7f };
+        for(int i=0;i<shoalZ.Length;i++)
+        {
+            float z=shoalZ[i];
+            float x=ShorelineX(z)-1.35f-(i%3)*.31f;
+            Primitive(parent,"Submerged Shoal",PrimitiveType.Sphere,new Vector3(x,-.149f,z),
+                new Vector3(.58f+(i%2)*.16f,.008f,.92f+(i%3)*.20f),
+                ShallowWater*(1.08f+(i%2)*.035f),Quaternion.Euler(0f,-12f+i*9f,0f));
         }
     }
 

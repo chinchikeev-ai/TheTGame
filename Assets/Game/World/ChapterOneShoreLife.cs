@@ -4,6 +4,8 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
 {
     static readonly Color Foam = new Color(.91f,.94f,.89f);
     static readonly Color ThinFoam = new Color(.70f,.84f,.82f);
+    static readonly Color Backwash = new Color(.43f,.57f,.55f);
+    static readonly Color SwellBlue = new Color(.17f,.47f,.53f);
     static readonly Color SeaGlint = new Color(.24f,.56f,.64f);
     static readonly Color SeaMist = new Color(.54f,.72f,.73f);
 
@@ -19,61 +21,97 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
         if (GameObject.Find("Chapter01_ShoreLife") != null) return;
         GameObject root = new GameObject("Chapter01_ShoreLife");
+        BuildShallowSwells(root.transform);
         BuildFoam(root.transform);
+        BuildBackwash(root.transform);
         BuildSeaGlints(root.transform);
         BuildShipWakes(root.transform);
         BuildSeaMist(root.transform);
         BuildCampfires(root.transform);
     }
 
-    void BuildFoam(Transform parent)
+    void BuildShallowSwells(Transform parent)
     {
-        BuildFoamRibbon(parent,-.62f,-9.2f,11,1.82f,.24f,1.18f,Foam,0f);
-        BuildFoamRibbon(parent,-1.15f,-8.4f,9,2.08f,.14f,.94f,ThinFoam,.9f);
-        BuildFoamRibbon(parent,-.08f,-7.9f,8,2.22f,.12f,.70f,Foam*.88f,1.8f);
-
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 14; i++)
         {
-            float z = -9f + i * 1.95f;
-            float x = CoastEnvironmentBuilder.ShorelineX(z) - .38f + ((i * 7) % 5) * .08f;
-            GameObject fleck = Primitive(parent,"Shore Foam Fleck",PrimitiveType.Sphere,
-                new Vector3(x,.002f,z),
-                new Vector3(.10f + (i % 3) * .035f,.008f,.28f + (i % 2) * .12f),
-                Foam * (.88f + (i % 2) * .08f),
-                Quaternion.Euler(0f,-18f + i * 11f,0f));
-            AddSeaMotion(fleck,2.4f + i * .31f);
+            float z = -9.5f + i * 1.46f;
+            float shoreOffset = -1.72f - (i % 3) * .64f;
+            float x = CoastEnvironmentBuilder.ShorelineX(z) + shoreOffset + Mathf.Sin(i * 1.21f) * .11f;
+            GameObject swell = Primitive(parent,"Shallow Swell",PrimitiveType.Sphere,
+                new Vector3(x,-.148f,z),
+                new Vector3(.085f + (i % 2) * .025f,.008f,.62f + (i % 4) * .15f),
+                SwellBlue * (.88f + (i % 3) * .045f),
+                Quaternion.Euler(0f,-7f + (i % 5) * 3.5f,0f));
+            AddSwellMotion(swell,.35f+i*.41f);
         }
     }
 
-    void BuildFoamRibbon(Transform parent,float shoreOffset,float startZ,int count,float spacing,float width,float length,Color color,float phaseOffset)
+    void BuildFoam(Transform parent)
+    {
+        BuildBrokenSurfRibbon(parent,-.42f,-9.5f,13,1.55f,.25f,1.22f,Foam,0f,5);
+        BuildBrokenSurfRibbon(parent,-.92f,-8.8f,11,1.78f,.16f,1.00f,ThinFoam,.8f,4);
+        BuildBrokenSurfRibbon(parent,-1.38f,-8.2f,9,2.02f,.11f,.78f,Foam*.86f,1.65f,3);
+
+        for (int i = 0; i < 11; i++)
+        {
+            float z = -9.2f + i * 1.82f;
+            float x = CoastEnvironmentBuilder.ShorelineX(z) - .24f + ((i * 7) % 5) * .06f;
+            GameObject fleck = Primitive(parent,"Shore Foam Fleck",PrimitiveType.Sphere,
+                new Vector3(x,.002f,z),
+                new Vector3(.09f + (i % 3) * .035f,.008f,.23f + (i % 2) * .11f),
+                Foam * (.86f + (i % 2) * .09f),
+                Quaternion.Euler(0f,-18f + i * 11f,0f));
+            AddSurfMotion(fleck,2.4f + i * .31f);
+        }
+    }
+
+    void BuildBrokenSurfRibbon(Transform parent,float shoreOffset,float startZ,int count,float spacing,float width,float length,Color color,float phaseOffset,int gapSeed)
     {
         for (int i = 0; i < count; i++)
         {
+            if (i > 0 && i < count-1 && ((i + gapSeed) % 6 == 0 || (gapSeed < 5 && (i + gapSeed) % 8 == 3))) continue;
+
             float z = startZ + i * spacing;
-            float wobble = Mathf.Sin(i * 1.37f + phaseOffset) * .16f;
-            float segmentLength = length * (.78f + (i % 4) * .09f);
-            float x = CoastEnvironmentBuilder.ShorelineX(z) + shoreOffset + wobble;
+            float lateralNoise = Mathf.Sin(i * 1.37f + phaseOffset) * .13f;
+            float segmentLength = length * (.72f + (i % 4) * .11f);
+            float segmentWidth = width * (.82f + ((i * 3 + gapSeed) % 4) * .07f);
+            float x = CoastEnvironmentBuilder.ShorelineX(z) + shoreOffset + lateralNoise;
             GameObject foam = Primitive(parent,"Breaking Shore Foam",PrimitiveType.Sphere,
                 new Vector3(x,.002f,z),
-                new Vector3(width,.010f,segmentLength),
-                color * (.92f + (i % 3) * .035f),
-                Quaternion.Euler(0f,-9f + (i % 5) * 4f,0f));
-            AddSeaMotion(foam,phaseOffset + i * .37f);
+                new Vector3(segmentWidth,.010f,segmentLength),
+                color * (.90f + (i % 3) * .035f),
+                Quaternion.Euler(0f,-12f + ((i * 7 + gapSeed) % 7) * 4f,0f));
+            AddSurfMotion(foam,phaseOffset + i * .37f);
+        }
+    }
+
+    void BuildBackwash(Transform parent)
+    {
+        for(int i=0;i<9;i++)
+        {
+            float z=-8.7f+i*2.15f;
+            float x=CoastEnvironmentBuilder.ShorelineX(z)+.30f+(i%3)*.09f;
+            GameObject wash=Primitive(parent,"Shore Backwash",PrimitiveType.Sphere,
+                new Vector3(x,-.020f,z),
+                new Vector3(.16f,.006f,.58f+(i%3)*.14f),
+                Backwash*(.88f+(i%2)*.06f),
+                Quaternion.Euler(0f,-10f+i*5f,0f));
+            AddSurfMotion(wash,1.1f+i*.53f);
         }
     }
 
     void BuildSeaGlints(Transform parent)
     {
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < 10; i++)
         {
-            float x = -16.1f - (i % 4) * 2.15f;
-            float z = -9.1f + (i * 3.15f) % 18.2f;
-            float length = 1.15f + (i % 5) * .42f;
+            float x = -15.7f - (i % 4) * 2.35f - (i/4)*.35f;
+            float z = -8.9f + (i * 3.47f) % 17.8f;
+            float length = .95f + (i % 5) * .39f;
             GameObject glint = Primitive(parent,"Moving Sea Glint",PrimitiveType.Sphere,
                 new Vector3(x,-.165f,z),
-                new Vector3(length,.009f,.055f + (i % 2) * .025f),
-                SeaGlint * (.82f + (i % 4) * .06f),
-                Quaternion.Euler(0f,-7f + (i % 5) * 3f,0f));
+                new Vector3(length,.008f,.045f + (i % 2) * .022f),
+                SeaGlint * (.80f + (i % 4) * .055f),
+                Quaternion.Euler(0f,-8f + (i % 5) * 3.5f,0f));
             AddSeaMotion(glint,1.4f + i * .29f);
         }
     }
@@ -86,17 +124,27 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
             new Vector3(-18.9f,-.145f,.5f),
             new Vector3(-17.4f,-.145f,-5.7f)
         };
+        float[] yaw = { -8f,5f,-4f };
 
         for (int i = 0; i < wakes.Length; i++)
         {
-            GameObject wakeA = Primitive(parent,"Moored Ship Wake",PrimitiveType.Sphere,wakes[i],
-                new Vector3(1.8f,.010f,.075f),ThinFoam,Quaternion.Euler(0f,-5f+i*6f,0f));
-            AddSeaMotion(wakeA,.7f+i*.8f);
+            GameObject wakeRoot = new GameObject("Greek Ship Wake");
+            wakeRoot.transform.SetParent(parent,false);
+            wakeRoot.transform.localPosition = wakes[i];
+            wakeRoot.transform.localRotation = Quaternion.Euler(0f,yaw[i],0f);
 
-            GameObject wakeB = Primitive(parent,"Moored Ship Wake",PrimitiveType.Sphere,
-                wakes[i]+new Vector3(-.55f,-.006f,i%2==0?.18f:-.18f),
-                new Vector3(1.15f,.008f,.045f),ThinFoam*.80f,Quaternion.Euler(0f,7f-i*5f,0f));
-            AddSeaMotion(wakeB,1.3f+i*.65f);
+            GameObject left = Primitive(wakeRoot.transform,"Ship Wake Arm",PrimitiveType.Sphere,
+                new Vector3(-.72f,0f,.16f),new Vector3(1.38f,.010f,.060f),ThinFoam,
+                Quaternion.Euler(0f,-7f,0f));
+            GameObject right = Primitive(wakeRoot.transform,"Ship Wake Arm",PrimitiveType.Sphere,
+                new Vector3(-.72f,-.004f,-.16f),new Vector3(1.30f,.009f,.052f),ThinFoam*.90f,
+                Quaternion.Euler(0f,7f,0f));
+            GameObject churn = Primitive(wakeRoot.transform,"Ship Wake Turbulence",PrimitiveType.Sphere,
+                new Vector3(-.18f,.004f,0f),new Vector3(.58f,.012f,.22f),Foam*.82f,
+                Quaternion.Euler(0f,3f-i*2f,0f));
+            AddSwellMotion(left,.7f+i*.8f);
+            AddSwellMotion(right,1.1f+i*.71f);
+            AddSeaMotion(churn,1.45f+i*.63f);
         }
     }
 
@@ -180,6 +228,20 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
     {
         ChapterOneAmbientMotion motion = go.AddComponent<ChapterOneAmbientMotion>();
         motion.kind = ChapterOneAmbientMotion.MotionKind.Sea;
+        motion.phase = phase;
+    }
+
+    static void AddSurfMotion(GameObject go,float phase)
+    {
+        ChapterOneAmbientMotion motion = go.AddComponent<ChapterOneAmbientMotion>();
+        motion.kind = ChapterOneAmbientMotion.MotionKind.Surf;
+        motion.phase = phase;
+    }
+
+    static void AddSwellMotion(GameObject go,float phase)
+    {
+        ChapterOneAmbientMotion motion = go.AddComponent<ChapterOneAmbientMotion>();
+        motion.kind = ChapterOneAmbientMotion.MotionKind.Swell;
         motion.phase = phase;
     }
 
