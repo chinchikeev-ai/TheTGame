@@ -16,6 +16,12 @@ A builder succeeding does **not** promote an asset to `DONE`.
 
 ## UI character portraits
 
+Main screen (2026-09-16): SOURCE ONLY supplied artwork integrated as a UI candidate.
+Five original transparent PNGs under `Assets/Game/Art/Resources/MainScreen` provide
+the logo and four actions over the existing `Menu/Main_screen` background. Eight
+isolated RU/EN Unity Canvas captures were inspected; full in-game acceptance remains
+pending. No 3D asset or production-art completion status is promoted by this change.
+
 Patron selection page: SOURCE ONLY supplied artwork integrated as a UI candidate.
 Five textures under Assets/Game/Art/Resources/PatronSelection provide the background
 and four individual selection cards. Runtime wiring is present; visual QA is pending.

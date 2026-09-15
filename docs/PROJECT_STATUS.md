@@ -6,6 +6,16 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Main-screen artwork (2026-09-16): the production main menu now uses the supplied
+MainScreen logo, Play, Heroes, Settings and Exit PNGs over the clean Troy background.
+Textures are packaged under `Assets/Game/Art/Resources/MainScreen`. Buttons retain
+the existing chapter/settings/quit flow; Heroes opens Hector information with modal
+input blocking and a Back action. RU captions, hover feedback, a Settings tooltip
+and uniform layout scaling are implemented. Unity compilation and ten focused
+EditMode tests passed, including controller navigation/rebinding and eight RU/EN
+Canvas captures at 1600x900, 1366x768, 1024x768 and 2560x1080. Architecture guard
+passed. Full PlayMode acceptance and a new Windows build are not claimed.
+
 Patron selection artwork (2026-09-15): the pre-map screen uses the supplied Gods
 background and four separate illustrated cards. A pending selection is highlighted;
 only confirmation applies the gift through the existing controller. Back returns to
