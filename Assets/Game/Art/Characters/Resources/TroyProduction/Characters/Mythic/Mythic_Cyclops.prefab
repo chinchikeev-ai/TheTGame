@@ -794,6 +794,10 @@ PrefabInstance:
       propertyPath: primaryWeapon
       value: throwing boulder
       objectReference: {fileID: 0}
+    - target: {fileID: 1609136829939835133, guid: 11cae57352a8cfc49847d8138b4f1af2, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 6612f73044b33e5448b60fe2cf6c7f33, type: 2}
     - target: {fileID: 2008792898696015472, guid: 11cae57352a8cfc49847d8138b4f1af2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
