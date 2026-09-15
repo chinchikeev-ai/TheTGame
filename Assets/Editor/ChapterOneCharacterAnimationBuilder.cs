@@ -206,18 +206,29 @@ public static class ChapterOneCharacterAnimationBuilder
             AnimationClip q = PickBest(clips, "taunt", "cheer", "shout", "cast");
             AnimationClip e = shieldBlock != null ? shieldBlock :
                 PickBestAction(clips, ShieldRoleTokens, ShieldActionTokens, ShieldAvoidTokens);
-            AnimationClip r = spearPoke != null ? spearPoke :
-                PickBestAction(clips, SpearRoleTokens, new[] { "throw", "thrust", "stab", "attack" }, SpearAvoidTokens);
+            AnimationClip dedicatedThrow = PickBestAction(clips,
+                SpearRoleTokens,
+                new[] { "throw", "hurl", "toss", "javelin" },
+                SpearAvoidTokens);
+            AnimationClip r = dedicatedThrow != null ? dedicatedThrow :
+                spearPoke != null ? spearPoke :
+                PickBestAction(clips, SpearRoleTokens, new[] { "thrust", "stab", "attack" }, SpearAvoidTokens);
             AnimationClip f = PickBestAction(clips,
                 new[] { "heavy", "hero", "attack" },
                 new[] { "heavy", "attack", "slash", "swing", "cast" },
                 new[] { "bow", "shoot", "death", "die" });
+
             AddAction(controller, machine, idleState, "AbilityQ", q != null ? q : attack, .90f);
             AddAction(controller, machine, idleState, "AbilityE", e != null ? e : attack, .90f);
             AddAction(controller, machine, idleState, "AbilityR", r != null ? r : attack, .88f);
             AddAction(controller, machine, idleState, "AbilityF", f != null ? f : attack, .92f);
+            AddPersistentBoolState(controller, machine, idleState, "Blocking", "ShieldHold", e != null ? e : shieldBlock != null ? shieldBlock : idle);
+
+            ReportBinding(profileName, "AbilityQ", q, attack);
             ReportBinding(profileName, "AbilityE", e, attack);
-            ReportBinding(profileName, "AbilityR", r, attack);
+            ReportBinding(profileName, "AbilityR", dedicatedThrow, spearPoke != null ? spearPoke : attack);
+            ReportBinding(profileName, "AbilityF", f, attack);
+            ReportBinding(profileName, "ShieldHold", e != null ? e : shieldBlock, idle);
         }
 
         if (death != null)
@@ -267,6 +278,26 @@ public static class ChapterOneCharacterAnimationBuilder
         exit.hasExitTime = true;
         exit.exitTime = exitTime;
         exit.duration = .08f;
+    }
+
+    static void AddPersistentBoolState(AnimatorController controller, AnimatorStateMachine machine, AnimatorState idleState,
+        string parameter, string stateName, AnimationClip clip)
+    {
+        if (clip == null) return;
+        controller.AddParameter(parameter, AnimatorControllerParameterType.Bool);
+        AnimatorState state = machine.AddState(stateName);
+        state.motion = clip;
+
+        AnimatorStateTransition enter = machine.AddAnyStateTransition(state);
+        enter.hasExitTime = false;
+        enter.duration = .06f;
+        enter.canTransitionToSelf = false;
+        enter.AddCondition(AnimatorConditionMode.If, 0f, parameter);
+
+        AnimatorStateTransition exit = state.AddTransition(idleState);
+        exit.hasExitTime = false;
+        exit.duration = .10f;
+        exit.AddCondition(AnimatorConditionMode.IfNot, 0f, parameter);
     }
 
     static int AssignControllers(Dictionary<string, RuntimeAnimatorController> controllers)
