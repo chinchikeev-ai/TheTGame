@@ -5,6 +5,7 @@ public static class CartoonCharacterAutoBuilder
 {
     const string SourceRoot = "Assets/ThirdParty/KayKitAdventurers";
     const string ProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Greek/Enemy_Infantry.prefab";
+    const string HectorProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Heroes/Hero_Hector.prefab";
     const string SupportProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Trojan/Trojan_BallistaCrew.prefab";
     const string AnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_BallistaCrew.controller";
     const string HectorAnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_Hector.controller";
@@ -20,9 +21,13 @@ public static class CartoonCharacterAutoBuilder
 
         bool changed = false;
 
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(ProbePrefab) == null)
+        bool coreCharactersMissing = AssetDatabase.LoadAssetAtPath<GameObject>(ProbePrefab) == null;
+        bool hectorMissing = AssetDatabase.LoadAssetAtPath<GameObject>(HectorProbePrefab) == null;
+        if (coreCharactersMissing || hectorMissing)
         {
-            Debug.Log("Troy characters: generating missing Chapter I production candidates.");
+            Debug.Log(coreCharactersMissing
+                ? "Troy characters: generating missing Chapter I production candidates."
+                : "Troy characters: Hector production candidate is missing; regenerating Chapter I production candidates so Hector exists before refinement/binding.");
             CartoonCharacterPrefabBuilder.BuildAll();
             changed = true;
         }

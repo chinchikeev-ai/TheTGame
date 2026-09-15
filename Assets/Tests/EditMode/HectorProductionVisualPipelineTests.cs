@@ -62,5 +62,17 @@ namespace TheTroyGame.Tests
             Assert.GreaterOrEqual(visual, 0, "Auto builder does not call Hector visual refinement.");
             Assert.Greater(animation, visual, "Hector animation binding should run after the visual refinement pass.");
         }
+
+        [Test]
+        public void AutoBuilder_RebuildsCharacterCandidatesWhenHectorPrefabIsMissing()
+        {
+            Assert.IsTrue(File.Exists(AutoBuilderPath), "Missing Chapter I art auto builder.");
+            string source = File.ReadAllText(AutoBuilderPath);
+
+            StringAssert.Contains("Hero_Hector.prefab", source);
+            StringAssert.Contains("hectorMissing", source);
+            StringAssert.Contains("coreCharactersMissing || hectorMissing", source);
+            StringAssert.Contains("CartoonCharacterPrefabBuilder.BuildAll()", source);
+        }
     }
 }
