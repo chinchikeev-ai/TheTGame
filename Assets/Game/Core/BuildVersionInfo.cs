@@ -7,13 +7,30 @@ public static class BuildVersionInfo
     public const string ProductVersion = "0.6";
     const int ShortShaLength = 8;
 
+#if UNITY_EDITOR
+    static string editorRemoteSha;
+    static bool editorRemoteKnown;
+    static bool editorOutdated;
+    static bool editorDirty;
+#endif
+
     public static string MenuBadge
     {
         get
         {
 #if UNITY_EDITOR
             if (TryGetRepositoryIdentity(out string branch, out string sha))
-                return FormatBadge(branch, sha);
+            {
+                string badge = FormatBadge(branch, sha);
+                if (editorRemoteKnown)
+                {
+                    badge += editorOutdated
+                        ? " • OUTDATED→" + editorRemoteSha.ToUpperInvariant()
+                        : " • SYNC";
+                    if (editorDirty) badge += " • DIRTY";
+                }
+                return badge;
+            }
 #endif
             return BadgeFromStampedVersion(Application.version);
         }
@@ -33,6 +50,28 @@ public static class BuildVersionInfo
         sha = ShortSha(sha);
         return !string.IsNullOrWhiteSpace(branch) && !string.IsNullOrWhiteSpace(sha);
     }
+
+#if UNITY_EDITOR
+    public static bool RefreshEditorMainSyncState(out string branch, out string localSha, out string remoteSha, out bool dirty)
+    {
+        branch = NormalizeToken(RunGit("rev-parse --abbrev-ref HEAD"));
+        localSha = ShortSha(RunGit("rev-parse HEAD"));
+        dirty = !string.IsNullOrWhiteSpace(RunGit("status --porcelain --untracked-files=no"));
+
+        bool fetchSucceeded = RunGitCommand("fetch origin main --quiet", out _);
+        remoteSha = ShortSha(RunGit("rev-parse origin/main"));
+
+        editorRemoteKnown = !string.IsNullOrWhiteSpace(remoteSha);
+        editorRemoteSha = remoteSha;
+        editorOutdated = editorRemoteKnown && !string.Equals(localSha, remoteSha, StringComparison.OrdinalIgnoreCase);
+        editorDirty = dirty;
+
+        return fetchSucceeded
+            && !string.IsNullOrWhiteSpace(branch)
+            && !string.IsNullOrWhiteSpace(localSha)
+            && editorRemoteKnown;
+    }
+#endif
 
     public static string ComposeStampedVersion(string branch, string sha)
     {
@@ -94,6 +133,12 @@ public static class BuildVersionInfo
 #if UNITY_EDITOR
     static string RunGit(string arguments)
     {
+        return RunGitCommand(arguments, out string output) ? output : string.Empty;
+    }
+
+    static bool RunGitCommand(string arguments, out string output)
+    {
+        output = string.Empty;
         try
         {
             string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
@@ -111,14 +156,16 @@ public static class BuildVersionInfo
             using (var process = new System.Diagnostics.Process { StartInfo = startInfo })
             {
                 process.Start();
-                string output = process.StandardOutput.ReadToEnd();
-                if (!process.WaitForExit(1200) || process.ExitCode != 0) return string.Empty;
-                return output.Trim();
+                string stdout = process.StandardOutput.ReadToEnd();
+                process.StandardError.ReadToEnd();
+                if (!process.WaitForExit(5000) || process.ExitCode != 0) return false;
+                output = stdout.Trim();
+                return true;
             }
         }
         catch
         {
-            return string.Empty;
+            return false;
         }
     }
 #endif

@@ -5,6 +5,8 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
 {
     GameObject boundMainMenu;
     GameObject badge;
+    Text label;
+    float nextRefreshAt;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -15,8 +17,18 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
 
     void Update()
     {
-        if (boundMainMenu != null && badge != null) return;
+        if (boundMainMenu == null || badge == null || label == null)
+            BindOrBuildBadge();
 
+        if (label != null && Time.unscaledTime >= nextRefreshAt)
+        {
+            label.text = BuildVersionInfo.MenuBadge;
+            nextRefreshAt = Time.unscaledTime + 1f;
+        }
+    }
+
+    void BindOrBuildBadge()
+    {
         GameObject mainMenu = GameObject.Find("MainMenu");
         if (mainMenu == null) return;
 
@@ -25,38 +37,40 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
         if (existing != null)
         {
             badge = existing.gameObject;
+            label = badge.GetComponentInChildren<Text>();
             return;
         }
 
-        badge = BuildBadge(mainMenu.transform);
+        badge = BuildBadge(mainMenu.transform, out label);
+        nextRefreshAt = 0f;
     }
 
-    static GameObject BuildBadge(Transform parent)
+    static GameObject BuildBadge(Transform parent, out Text label)
     {
         GameObject root = new GameObject("BuildVersionBadge");
         root.transform.SetParent(parent, false);
 
         Image background = root.AddComponent<Image>();
-        background.color = new Color(.035f, .018f, .010f, .78f);
+        background.color = new Color(.035f, .018f, .010f, .84f);
         background.raycastTarget = false;
 
         RectTransform rect = background.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 1f);
         rect.anchoredPosition = new Vector2(22f, -22f);
-        rect.sizeDelta = new Vector2(390f, 50f);
+        rect.sizeDelta = new Vector2(610f, 50f);
 
         Outline outline = root.AddComponent<Outline>();
-        outline.effectColor = new Color(.73f, .43f, .16f, .55f);
+        outline.effectColor = new Color(.73f, .43f, .16f, .65f);
         outline.effectDistance = new Vector2(1f, -1f);
 
         GameObject labelObject = new GameObject("BuildVersionText");
         labelObject.transform.SetParent(root.transform, false);
-        Text label = labelObject.AddComponent<Text>();
+        label = labelObject.AddComponent<Text>();
         label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         label.text = BuildVersionInfo.MenuBadge;
         label.fontSize = 15;
         label.fontStyle = FontStyle.Bold;
-        label.color = new Color(1f, .82f, .52f, .96f);
+        label.color = new Color(1f, .82f, .52f, .98f);
         label.alignment = TextAnchor.MiddleLeft;
         label.horizontalOverflow = HorizontalWrapMode.Overflow;
         label.verticalOverflow = VerticalWrapMode.Truncate;
@@ -69,7 +83,7 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
         labelRect.offsetMax = new Vector2(-12f, 0f);
 
         Shadow shadow = labelObject.AddComponent<Shadow>();
-        shadow.effectColor = new Color(0f, 0f, 0f, .75f);
+        shadow.effectColor = new Color(0f, 0f, 0f, .80f);
         shadow.effectDistance = new Vector2(1f, -1f);
 
         return root;
