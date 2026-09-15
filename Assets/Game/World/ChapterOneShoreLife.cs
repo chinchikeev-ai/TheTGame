@@ -28,14 +28,14 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
 
     void BuildFoam(Transform parent)
     {
-        BuildFoamRibbon(parent,-13.72f,-9.2f,11,1.82f,.24f,1.18f,Foam,0f);
-        BuildFoamRibbon(parent,-14.25f,-8.4f,9,2.08f,.14f,.94f,ThinFoam,.9f);
-        BuildFoamRibbon(parent,-13.18f,-7.9f,8,2.22f,.12f,.70f,Foam*.88f,1.8f);
+        BuildFoamRibbon(parent,-.62f,-9.2f,11,1.82f,.24f,1.18f,Foam,0f);
+        BuildFoamRibbon(parent,-1.15f,-8.4f,9,2.08f,.14f,.94f,ThinFoam,.9f);
+        BuildFoamRibbon(parent,-.08f,-7.9f,8,2.22f,.12f,.70f,Foam*.88f,1.8f);
 
         for (int i = 0; i < 10; i++)
         {
             float z = -9f + i * 1.95f;
-            float x = -13.45f + ((i * 7) % 5) * .16f;
+            float x = CoastEnvironmentBuilder.ShorelineX(z) - .38f + ((i * 7) % 5) * .08f;
             GameObject fleck = Primitive(parent,"Shore Foam Fleck",PrimitiveType.Sphere,
                 new Vector3(x,.002f,z),
                 new Vector3(.10f + (i % 3) * .035f,.008f,.28f + (i % 2) * .12f),
@@ -45,14 +45,16 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
         }
     }
 
-    void BuildFoamRibbon(Transform parent,float x,float startZ,int count,float spacing,float width,float length,Color color,float phaseOffset)
+    void BuildFoamRibbon(Transform parent,float shoreOffset,float startZ,int count,float spacing,float width,float length,Color color,float phaseOffset)
     {
         for (int i = 0; i < count; i++)
         {
-            float wobble = Mathf.Sin(i * 1.37f + phaseOffset) * .20f;
+            float z = startZ + i * spacing;
+            float wobble = Mathf.Sin(i * 1.37f + phaseOffset) * .16f;
             float segmentLength = length * (.78f + (i % 4) * .09f);
+            float x = CoastEnvironmentBuilder.ShorelineX(z) + shoreOffset + wobble;
             GameObject foam = Primitive(parent,"Breaking Shore Foam",PrimitiveType.Sphere,
-                new Vector3(x + wobble,.002f,startZ + i * spacing),
+                new Vector3(x,.002f,z),
                 new Vector3(width,.010f,segmentLength),
                 color * (.92f + (i % 3) * .035f),
                 Quaternion.Euler(0f,-9f + (i % 5) * 4f,0f));
@@ -100,19 +102,30 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
 
     void BuildSeaMist(Transform parent)
     {
-        Vector3[] wisps =
+        float[] shoreZ = { -7.2f,-2.8f,1.7f,5.9f };
+        for(int i=0;i<shoreZ.Length;i++)
         {
-            new Vector3(-13.45f,.16f,-7.2f), new Vector3(-13.65f,.13f,-2.8f),
-            new Vector3(-13.38f,.15f,1.7f), new Vector3(-13.62f,.12f,5.9f),
-            new Vector3(-15.1f,.08f,-5.0f), new Vector3(-15.25f,.09f,4.2f)
-        };
-        for(int i=0;i<wisps.Length;i++)
-        {
-            GameObject wisp=Primitive(parent,"Sea Spray Wisp",PrimitiveType.Sphere,wisps[i],
+            float z=shoreZ[i];
+            Vector3 position=new Vector3(CoastEnvironmentBuilder.ShorelineX(z)-.42f,.12f+(i%2)*.03f,z);
+            GameObject wisp=Primitive(parent,"Sea Spray Wisp",PrimitiveType.Sphere,position,
                 new Vector3(.48f+(i%3)*.12f,.045f,.92f+(i%2)*.26f),SeaMist*(.82f+(i%2)*.07f),Quaternion.Euler(0f,-8f+i*7f,0f));
             ChapterOneAmbientMotion motion=wisp.AddComponent<ChapterOneAmbientMotion>();
             motion.kind=ChapterOneAmbientMotion.MotionKind.Dust;
             motion.phase=.4f+i*.73f;
+        }
+
+        Vector3[] outerWisps =
+        {
+            new Vector3(-15.1f,.08f,-5.0f),
+            new Vector3(-15.25f,.09f,4.2f)
+        };
+        for(int i=0;i<outerWisps.Length;i++)
+        {
+            GameObject wisp=Primitive(parent,"Sea Spray Wisp",PrimitiveType.Sphere,outerWisps[i],
+                new Vector3(.60f,.045f,1.05f),SeaMist*.84f,Quaternion.Euler(0f,10f-i*13f,0f));
+            ChapterOneAmbientMotion motion=wisp.AddComponent<ChapterOneAmbientMotion>();
+            motion.kind=ChapterOneAmbientMotion.MotionKind.Dust;
+            motion.phase=3.8f+i*.73f;
         }
     }
 

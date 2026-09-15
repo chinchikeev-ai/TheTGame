@@ -7,15 +7,25 @@ public static class CoastEnvironmentBuilder
     static readonly Color Sand = new Color(.70f,.58f,.37f);
     static readonly Color LightSand = new Color(.82f,.69f,.44f);
     static readonly Color WetSand = new Color(.47f,.41f,.30f);
+    static readonly Color DryTransition = new Color(.60f,.50f,.32f);
     static readonly Color ShallowWater = new Color(.09f,.38f,.46f);
     static readonly Color Water = new Color(.055f,.27f,.39f);
     static readonly Color DeepWater = new Color(.03f,.13f,.24f);
     static readonly Color Rock = new Color(.35f,.34f,.30f);
+    static readonly Color PebbleLight = new Color(.48f,.46f,.39f);
+    static readonly Color PebbleDark = new Color(.29f,.29f,.27f);
     static readonly Color Wood = new Color(.31f,.18f,.075f);
     static readonly Color GreekCloth = new Color(.29f,.39f,.56f);
     static readonly Color GreekDark = new Color(.16f,.25f,.40f);
     static readonly Color Bronze = new Color(.66f,.43f,.15f);
     static readonly Color Terracotta = new Color(.56f,.27f,.14f);
+
+    public static float ShorelineX(float z)
+    {
+        return -13.05f
+            + Mathf.Sin(z * .43f) * .30f
+            + Mathf.Sin(z * .91f + 1.15f) * .13f;
+    }
 
     public static void Build()
     {
@@ -23,27 +33,17 @@ public static class CoastEnvironmentBuilder
         GameObject root = new GameObject("Chapter01_CoastEnvironment");
         CreateGround(root.transform);
         CreateSea(root.transform);
+        CreateShorelineBands(root.transform);
+        CreateBeachSurfaceDetails(root.transform);
         CreateGreekLanding(root.transform);
         CreateGreekCampLandmarks(root.transform);
         CreateDunesAndRocks(root.transform);
+        CreateWashedDebris(root.transform);
     }
 
     static void CreateGround(Transform parent)
     {
         Primitive(parent,"Sandy Coast Base",PrimitiveType.Cube,new Vector3(2f,-.20f,0f),new Vector3(30f,.18f,22f),Sand);
-        Primitive(parent,"Wet Shore Base",PrimitiveType.Cube,new Vector3(-12.65f,-.11f,0f),new Vector3(2.05f,.075f,22f),WetSand);
-
-        float[] wetZ = { -9.1f,-6.7f,-4.2f,-1.8f,.7f,3.2f,5.7f,8.4f };
-        for (int i = 0; i < wetZ.Length; i++)
-        {
-            float x = -12.15f + (i % 3 - 1) * .18f;
-            float length = 1.65f + (i % 4) * .18f;
-            Primitive(parent,"Irregular Wet Sand",PrimitiveType.Sphere,
-                new Vector3(x,-.055f,wetZ[i]),
-                new Vector3(1.55f,.055f,length),
-                i % 2 == 0 ? WetSand : WetSand * 1.06f,
-                Quaternion.Euler(0f,(i % 2 == 0 ? 8f : -11f),0f));
-        }
 
         Vector3[] dryTongues =
         {
@@ -83,6 +83,101 @@ public static class CoastEnvironmentBuilder
                 new Vector3(1.75f,.025f,1.4f + (i % 2) * .45f),
                 new Color(.13f,.43f,.48f),
                 Quaternion.Euler(0f,-8f + i * 4f,0f));
+        }
+    }
+
+    static void CreateShorelineBands(Transform parent)
+    {
+        CreateShoreBand(parent,"Shore Shallow Gradient Band",-2.55f,-.10f,-.168f,ShallowWater*1.08f,.10f,.3f);
+        CreateShoreBand(parent,"Shore Wet Band",-.14f,1.34f,-.073f,WetSand,.10f,1.2f);
+        CreateShoreBand(parent,"Shore Dry Sand Band",1.12f,4.55f,-.082f,LightSand*.98f,.20f,2.0f);
+        CreateShoreBand(parent,"Shore Land Transition Band",4.20f,7.25f,-.094f,DryTransition,.18f,2.8f);
+    }
+
+    static void CreateShoreBand(Transform parent,string name,float leftOffset,float rightOffset,float y,Color color,float edgeWave,float phase)
+    {
+        const int segments = 30;
+        const float minZ = -11.0f;
+        const float maxZ = 11.0f;
+        Vector3[] vertices = new Vector3[(segments + 1) * 2];
+        Vector2[] uvs = new Vector2[vertices.Length];
+        int[] triangles = new int[segments * 6];
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float t = i / (float)segments;
+            float z = Mathf.Lerp(minZ,maxZ,t);
+            float shore = ShorelineX(z);
+            float left = shore + leftOffset + Mathf.Sin(z*.57f+phase)*edgeWave*.18f;
+            float right = shore + rightOffset + Mathf.Sin(z*.36f+phase)*edgeWave;
+            float microHeight = Mathf.Sin(z*.73f+phase)*.004f;
+            vertices[i*2] = new Vector3(left,y+microHeight,z);
+            vertices[i*2+1] = new Vector3(right,y-microHeight*.35f,z);
+            uvs[i*2] = new Vector2(0f,t);
+            uvs[i*2+1] = new Vector2(1f,t);
+        }
+
+        for (int i = 0; i < segments; i++)
+        {
+            int v = i * 2;
+            int q = i * 6;
+            triangles[q] = v;
+            triangles[q+1] = v+2;
+            triangles[q+2] = v+1;
+            triangles[q+3] = v+1;
+            triangles[q+4] = v+2;
+            triangles[q+5] = v+3;
+        }
+
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent,false);
+        Mesh mesh = new Mesh { name = name + " Mesh" };
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.uv = uvs;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        go.AddComponent<MeshRenderer>();
+        TowerFactory.SetColor(go,color);
+    }
+
+    static void CreateBeachSurfaceDetails(Transform parent)
+    {
+        float[] pebbleZ = { -8.6f,-6.4f,-1.8f,1.7f,6.3f,8.55f };
+        for(int c=0;c<pebbleZ.Length;c++)
+        {
+            float z = pebbleZ[c];
+            float x = ShorelineX(z) + 1.65f + (c%2)*.38f;
+            CreatePebbleCluster(parent,new Vector3(x,-.012f,z),c);
+        }
+
+        Vector3[] berms =
+        {
+            new Vector3(-10.0f,-.018f,9.05f), new Vector3(-8.6f,-.018f,7.65f),
+            new Vector3(-9.3f,-.018f,-8.95f), new Vector3(-7.5f,-.018f,-7.65f),
+            new Vector3(-6.0f,-.018f,9.25f), new Vector3(-5.5f,-.018f,-9.15f)
+        };
+        for(int i=0;i<berms.Length;i++)
+        {
+            Primitive(parent,"Low Shore Berm",PrimitiveType.Sphere,berms[i],
+                new Vector3(1.55f+(i%2)*.28f,.12f,.66f+(i%3)*.10f),
+                LightSand*(.92f+(i%3)*.025f),Quaternion.Euler(0f,-18f+i*29f,0f));
+        }
+    }
+
+    static void CreatePebbleCluster(Transform parent,Vector3 center,int seed)
+    {
+        GameObject root = new GameObject("Pebble Cluster");
+        root.transform.SetParent(parent,false);
+        root.transform.localPosition = center;
+        for(int i=0;i<7;i++)
+        {
+            float angle = (seed*41f+i*53f)*Mathf.Deg2Rad;
+            float radius = .18f + (i%4)*.12f;
+            Vector3 p = new Vector3(Mathf.Cos(angle)*radius,.025f,Mathf.Sin(angle)*radius*.78f);
+            Vector3 scale = new Vector3(.10f+(i%3)*.045f,.035f+(i%2)*.018f,.08f+((i+1)%3)*.040f);
+            Primitive(root.transform,"Beach Pebble",PrimitiveType.Sphere,p,scale,i%2==0?PebbleLight:PebbleDark,Quaternion.Euler(0f,seed*23f+i*37f,0f));
         }
     }
 
@@ -236,6 +331,37 @@ public static class CoastEnvironmentBuilder
         {
             Vector3 scale = new Vector3(.72f + (i % 3) * .18f,.28f + (i % 2) * .12f,.56f + ((i + 1) % 3) * .14f);
             Primitive(parent,"Coast Rock",PrimitiveType.Sphere,rocks[i],scale,Rock * (.92f + i * .018f),Quaternion.Euler(0f,19f + i * 37f,0f));
+        }
+
+        float[] shoreRockZ = { -9.1f,-6.7f,6.9f,9.0f };
+        for(int i=0;i<shoreRockZ.Length;i++)
+        {
+            float z=shoreRockZ[i];
+            float x=ShorelineX(z)+1.25f+(i%2)*.35f;
+            Primitive(parent,"Shore Boulder",PrimitiveType.Sphere,new Vector3(x,.10f,z),
+                new Vector3(.48f+(i%2)*.17f,.22f+(i%3)*.05f,.40f+((i+1)%2)*.14f),
+                Rock*(.95f+(i%2)*.04f),Quaternion.Euler(0f,17f+i*41f,0f));
+        }
+    }
+
+    static void CreateWashedDebris(Transform parent)
+    {
+        float[] driftZ = { -8.0f,-5.7f,-1.2f,2.1f,5.8f,8.35f };
+        for(int i=0;i<driftZ.Length;i++)
+        {
+            float z=driftZ[i];
+            GameObject root=new GameObject("Washed Driftwood Cluster");
+            root.transform.SetParent(parent,false);
+            root.transform.localPosition=new Vector3(ShorelineX(z)+.35f,.015f,z);
+            root.transform.localRotation=Quaternion.Euler(0f,-24f+i*23f,0f);
+
+            Primitive(root.transform,"Driftwood",PrimitiveType.Cylinder,new Vector3(0f,.055f,0f),
+                new Vector3(.035f,.52f,.035f),Wood*(.72f+(i%3)*.08f),Quaternion.Euler(88f,0f,12f));
+            if((i&1)==0)
+                Primitive(root.transform,"Wreck Plank",PrimitiveType.Cube,new Vector3(.28f,.035f,.17f),
+                    new Vector3(.52f,.055f,.13f),Wood*.84f,Quaternion.Euler(0f,18f,3f));
+            Primitive(root.transform,"Washed Stone",PrimitiveType.Sphere,new Vector3(-.24f,.035f,-.18f),
+                new Vector3(.16f,.07f,.12f),i%2==0?PebbleDark:PebbleLight,Quaternion.Euler(0f,i*37f,0f));
         }
     }
 
