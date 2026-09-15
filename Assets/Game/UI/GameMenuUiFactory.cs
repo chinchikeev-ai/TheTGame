@@ -119,19 +119,19 @@ public static class GameMenuUiFactory
         rect.sizeDelta = new Vector2(width, 2f);
     }
 
-    public static Button AddButton(Transform parent, string label, Vector2 position, UnityAction action, Vector2? customSize = null, MenuButtonStyle style = MenuButtonStyle.Default)
+    public static Button AddButton(Transform parent, string label, Vector2 position, UnityAction action, Vector2? customSize = null, MenuButtonStyle style = MenuButtonStyle.Default, string artKey = null)
     {
         GameObject go = new GameObject(string.IsNullOrEmpty(label) ? "Button" : label);
         go.transform.SetParent(parent, false);
         Image image = go.AddComponent<Image>();
 
-        Sprite art = GetIllustratedButtonSprite();
+        Sprite art = !string.IsNullOrEmpty(artKey) ? GetCustomButtonSprite(artKey) : GetIllustratedButtonSprite();
         if (art != null)
         {
             image.sprite = art;
             image.type = Image.Type.Simple;
             image.preserveAspect = false;
-            image.color = ButtonTint(style);
+            image.color = !string.IsNullOrEmpty(artKey) ? Color.white : ButtonTint(style);
         }
         else
         {
@@ -162,19 +162,29 @@ public static class GameMenuUiFactory
         shadow.effectColor = new Color(.04f, .015f, .006f, .72f);
         shadow.effectDistance = new Vector2(0f, -5f);
 
-        Text text = AddTitle(go.transform, label, Vector2.zero, style == MenuButtonStyle.Highlight ? 25 : 21, MenuTextStyle.Button);
-        text.color = style == MenuButtonStyle.Highlight
-            ? new Color(.20f, .075f, .015f, 1f)
-            : style == MenuButtonStyle.Ghost
-                ? new Color(.22f, .08f, .025f, 1f)
-                : new Color(.18f, .065f, .02f, 1f);
+        if (string.IsNullOrEmpty(artKey))
+        {
+            Text text = AddTitle(go.transform, label, Vector2.zero, style == MenuButtonStyle.Highlight ? 25 : 21, MenuTextStyle.Button);
+            text.color = style == MenuButtonStyle.Highlight
+                ? new Color(.20f, .075f, .015f, 1f)
+                : style == MenuButtonStyle.Ghost
+                    ? new Color(.22f, .08f, .025f, 1f)
+                    : new Color(.18f, .065f, .02f, 1f);
 
-        RectTransform textRect = text.rectTransform;
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = textRect.offsetMax = Vector2.zero;
-        textRect.pivot = new Vector2(.5f, .5f);
+            RectTransform textRect = text.rectTransform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = textRect.offsetMax = Vector2.zero;
+            textRect.pivot = new Vector2(.5f, .5f);
+        }
         return button;
+    }
+
+    static Sprite GetCustomButtonSprite(string resource)
+    {
+        Texture2D texture = Resources.Load<Texture2D>(resource);
+        if (texture == null) return null;
+        return Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(.5f, .5f), 100f);
     }
 
     static Sprite GetIllustratedButtonSprite()

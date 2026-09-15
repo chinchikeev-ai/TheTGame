@@ -129,11 +129,11 @@ public class GameMenuController : MonoBehaviour
             MenuTextStyle.Muted,
             new Vector2(610f, 42f));
 
-        AddButton(panel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(0f, 112f), ShowLevels, new Vector2(560f, 86f), MenuButtonStyle.Highlight);
+        AddButton(panel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(0f, 112f), ShowLevels, new Vector2(560f, 86f), MenuButtonStyle.Highlight, "Menu/Buttons/ButtonStart");
         AddButton(panel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(0f, 8f), StartNewCampaign, new Vector2(520f, 72f), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0f, -82f), ShowLevels, new Vector2(520f, 72f), MenuButtonStyle.Stone);
-        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0f, -172f), ShowSettingsFromMain, new Vector2(520f, 72f), MenuButtonStyle.Ghost);
-        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0f, -262f), QuitGame, new Vector2(520f, 68f), MenuButtonStyle.Ghost);
+        AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0f, -172f), ShowSettingsFromMain, new Vector2(520f, 72f), MenuButtonStyle.Ghost, "Menu/Buttons/ButtonSettings");
+        AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0f, -262f), QuitGame, new Vector2(520f, 68f), MenuButtonStyle.Ghost, "Menu/Buttons/ButtonExit");
 
         AddTitle(
             panel.transform,
