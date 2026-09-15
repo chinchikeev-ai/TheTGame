@@ -42,6 +42,12 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
+        if (HectorProductionVisualRefinementBuilder.ApplyIfAvailable())
+        {
+            Debug.Log("Troy characters: applied Hector-specific rig-following production silhouette refinement.");
+            changed = true;
+        }
+
         if (HectorProductionAnimationBinder.ApplyIfAvailable())
         {
             Debug.Log("Troy characters: applied Hector-specific KayKit production animation candidates.");
