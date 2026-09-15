@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -41,8 +42,8 @@ public static class ChapterOneProductionEquipmentBuilder
             throw new InvalidOperationException("Pinned Chapter I spear source failed to import: " + ChapterOneSpearSourceInstaller.GetAssetPath());
 
         int upgradedArchers = 0;
-        if (UpgradeArcher(GreekArcherPath, bowSource, .95f)) upgradedArchers++;
-        if (UpgradeArcher(TrojanArcherPath, bowSource, .92f)) upgradedArchers++;
+        if (UpgradeArcher(GreekArcherPath, bowSource, .72f)) upgradedArchers++;
+        if (UpgradeArcher(TrojanArcherPath, bowSource, .70f)) upgradedArchers++;
 
         int upgradedSpearBearers = 0;
         foreach (string path in SpearBearerPaths)
@@ -53,7 +54,35 @@ public static class ChapterOneProductionEquipmentBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Chapter I equipment pass upgraded " + upgradedArchers + " archer prefab(s), " + upgradedSpearBearers + " spear-bearer prefab(s), added weapon release sockets, and applied authored Late Bronze Age shield/armor candidates. Final materials, grip clearance, socket offsets and gameplay-camera QA are still required.");
+        Debug.Log("Chapter I equipment pass upgraded " + upgradedArchers + " archer prefab(s), " + upgradedSpearBearers + " spear-bearer prefab(s), added weapon release sockets, and applied authored Late Bronze Age shield/armor candidates. Weapons are attached to resolved rig hands and normalized against body height; gameplay-camera QA is still required.");
+    }
+
+    public static int ApplyExistingWeaponGeometryIfSourcesAvailable(bool logSummary = false)
+    {
+        int upgraded = 0;
+        GameObject spearSource = ChapterOneSpearSourceInstaller.LoadSpear();
+        if (spearSource != null)
+        {
+            foreach (string path in SpearBearerPaths)
+                if (UpgradeSpearBearer(path, spearSource)) upgraded++;
+        }
+
+        GameObject bowSource = ChapterOneWeaponSourceInstaller.LoadBow();
+        if (bowSource != null)
+        {
+            if (UpgradeArcher(GreekArcherPath, bowSource, .72f)) upgraded++;
+            if (UpgradeArcher(TrojanArcherPath, bowSource, .70f)) upgraded++;
+        }
+
+        if (upgraded > 0)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        if (logSummary)
+            Debug.Log("Chapter I offline weapon geometry recovery updated " + upgraded + " prefab(s) using already imported pinned sources.");
+        return upgraded;
     }
 
     public static bool ApplyHectorSpearIfSourceAvailable(bool logIfMissing = false)
@@ -64,8 +93,6 @@ public static class ChapterOneProductionEquipmentBuilder
             return false;
         }
 
-        // Recovery must remain deterministic and offline-safe. Do not call Install() here:
-        // the explicit full equipment command is responsible for downloading/verifying the pinned CC0 source.
         GameObject spearSource = ChapterOneSpearSourceInstaller.LoadSpear();
         if (spearSource == null)
         {
@@ -83,7 +110,7 @@ public static class ChapterOneProductionEquipmentBuilder
         return upgraded;
     }
 
-    static bool UpgradeArcher(string prefabPath, GameObject bowSource, float scale)
+    static bool UpgradeArcher(string prefabPath, GameObject bowSource, float bodyHeightRatio)
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         if (prefab == null)
@@ -95,14 +122,21 @@ public static class ChapterOneProductionEquipmentBuilder
         GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
         try
         {
+            Transform rightHand = FindRightHand(root);
+            if (rightHand == null)
+            {
+                Debug.LogWarning("Chapter I bow pass cannot resolve right-hand rig bone; refusing root-space fallback: " + prefabPath);
+                return false;
+            }
+
             RemovePreviousSourceBow(root);
             RemoveProceduralBow(root);
 
-            Transform parent = FindRightHand(root) ?? root.transform;
-            GameObject bow = InstantiateSource(bowSource, SourceBowName, parent);
+            GameObject bow = InstantiateSource(bowSource, SourceBowName, rightHand);
             bow.transform.localPosition = new Vector3(.03f, .02f, .05f);
             bow.transform.localRotation = Quaternion.Euler(4f, 8f, 88f);
-            bow.transform.localScale = Vector3.one * scale;
+            bow.transform.localScale = Vector3.one;
+            NormalizeLongestDimension(bow, MeasureBodyHeight(root) * bodyHeightRatio);
             CreateReleaseSocket(bow.transform, ArrowSocketName, new Vector3(0f, 0f, .18f));
             ValidateDecorativeSource(bow, "bow");
 
@@ -127,27 +161,35 @@ public static class ChapterOneProductionEquipmentBuilder
         GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
         try
         {
-            Transform procedural = FindProceduralSpear(root);
-            Transform previousSource = FindByName(root, SourceSpearName);
-            Transform poseSource = procedural != null ? procedural : previousSource;
-            if (poseSource == null)
+            Transform rightHand = FindRightHand(root);
+            if (rightHand == null)
             {
-                Debug.LogWarning("Chapter I spear pass found no recognized spear pose in prefab: " + prefabPath);
+                Debug.LogWarning("Chapter I spear pass cannot resolve right-hand rig bone; refusing root-space fallback: " + prefabPath);
                 return false;
             }
 
-            Transform parent = poseSource.parent ?? root.transform;
-            Vector3 localPosition = poseSource.localPosition;
-            Quaternion localRotation = poseSource.localRotation;
-            Vector3 localScale = poseSource.localScale;
+            Transform procedural = FindProceduralSpear(root);
+            Transform previousSource = FindByName(root, SourceSpearName);
+            Transform poseSource = procedural != null ? procedural : previousSource;
+
+            Vector3 localPosition = new Vector3(0f, -.05f, .08f);
+            Quaternion localRotation = Quaternion.Euler(90f, 0f, 0f);
+            if (poseSource != null && poseSource.parent == rightHand)
+            {
+                localPosition = poseSource.localPosition;
+                localRotation = poseSource.localRotation;
+            }
 
             RemovePreviousSourceSpear(root);
             RemoveProceduralSpear(root);
 
-            GameObject spear = InstantiateSource(spearSource, SourceSpearName, parent);
+            GameObject spear = InstantiateSource(spearSource, SourceSpearName, rightHand);
             spear.transform.localPosition = localPosition;
             spear.transform.localRotation = localRotation;
-            spear.transform.localScale = localScale;
+            spear.transform.localScale = Vector3.one;
+            float bodyHeight = MeasureBodyHeight(root);
+            float ratio = string.Equals(prefabPath, HectorPrefabPath, StringComparison.Ordinal) ? 1.42f : 1.28f;
+            NormalizeLongestDimension(spear, bodyHeight * ratio);
             CreateReleaseSocket(spear.transform, SpearSocketName, new Vector3(0f, 0f, .10f));
             ValidateDecorativeSource(spear, "spear");
 
@@ -273,20 +315,96 @@ public static class ChapterOneProductionEquipmentBuilder
     static Transform FindRightHand(GameObject root)
     {
         Animator animator = root.GetComponentInChildren<Animator>(true);
-        if (animator != null && animator.isHuman)
+        if (animator != null && animator.avatar != null && animator.avatar.isHuman)
         {
             Transform humanoidHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
             if (humanoidHand != null) return humanoidHand;
         }
 
-        string[] hints = { "righthand", "right_hand", "hand_r", "mixamorig:righthand", "hand.r" };
-        Transform[] all = root.GetComponentsInChildren<Transform>(true);
+        return FindRigBone(root, new[] { "righthand", "handr", "rhand" });
+    }
+
+    static Transform FindRigBone(GameObject root, string[] hints)
+    {
+        var bones = new HashSet<Transform>();
+        foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (renderer == null) continue;
+            foreach (Transform bone in renderer.bones)
+                if (bone != null) bones.Add(bone);
+        }
+
         foreach (string hint in hints)
         {
-            string wanted = hint.ToLowerInvariant();
-            foreach (Transform transform in all)
-                if (transform.name.ToLowerInvariant().Contains(wanted)) return transform;
+            string wanted = Normalize(hint);
+            foreach (Transform bone in bones)
+            {
+                string candidate = Normalize(bone.name);
+                if (candidate == wanted || candidate.EndsWith(wanted, StringComparison.Ordinal)) return bone;
+            }
+        }
+
+        foreach (string hint in hints)
+        {
+            string wanted = Normalize(hint);
+            foreach (Transform transform in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (transform == null || transform == root.transform) continue;
+                string candidate = Normalize(transform.name);
+                if (candidate == wanted || candidate.EndsWith(wanted, StringComparison.Ordinal)) return transform;
+            }
         }
         return null;
+    }
+
+    static float MeasureBodyHeight(GameObject root)
+    {
+        Transform visual = root.transform.Find("Visual");
+        GameObject target = visual != null ? visual.gameObject : root;
+        SkinnedMeshRenderer[] renderers = target.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        bool hasBounds = false;
+        Bounds bounds = default;
+        foreach (SkinnedMeshRenderer renderer in renderers)
+        {
+            if (renderer == null) continue;
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        return hasBounds ? Mathf.Max(bounds.size.y, 1f) : 1.8f;
+    }
+
+    static void NormalizeLongestDimension(GameObject item, float targetSize)
+    {
+        Renderer[] renderers = item.GetComponentsInChildren<Renderer>(true);
+        bool hasBounds = false;
+        Bounds bounds = default;
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null) continue;
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        if (!hasBounds) return;
+        float current = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
+        if (current <= .0001f) return;
+        item.transform.localScale *= targetSize / current;
+    }
+
+    static string Normalize(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        char[] buffer = new char[value.Length];
+        int count = 0;
+        foreach (char c in value)
+            if (char.IsLetterOrDigit(c)) buffer[count++] = char.ToLowerInvariant(c);
+        return new string(buffer, 0, count);
     }
 }
