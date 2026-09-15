@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,28 +18,28 @@ public static class ChapterOneShieldCandidateBuilder
     {
         public string prefabPath;
         public bool figureEight;
-        public float scaleMultiplier;
+        public float bodyHeightRatio;
         public bool horseEmblem;
 
-        public ShieldTarget(string prefabPath, bool figureEight, float scaleMultiplier, bool horseEmblem = false)
+        public ShieldTarget(string prefabPath, bool figureEight, float bodyHeightRatio, bool horseEmblem = false)
         {
             this.prefabPath = prefabPath;
             this.figureEight = figureEight;
-            this.scaleMultiplier = scaleMultiplier;
+            this.bodyHeightRatio = bodyHeightRatio;
             this.horseEmblem = horseEmblem;
         }
     }
 
     static readonly ShieldTarget[] Targets =
     {
-        new ShieldTarget(GreekRoot + "Enemy_Infantry.prefab", false, 1.00f),
-        new ShieldTarget(GreekRoot + "Enemy_ShieldBearer.prefab", false, 1.08f),
-        new ShieldTarget(GreekRoot + "Enemy_HeavyHoplite.prefab", true, .94f),
-        new ShieldTarget(GreekRoot + "Enemy_Boss.prefab", false, 1.08f),
-        new ShieldTarget(TrojanRoot + "Trojan_Infantry.prefab", false, 1.00f),
-        new ShieldTarget(TrojanRoot + "Trojan_Guard.prefab", true, 1.00f),
-        new ShieldTarget(HectorPrefabPath, false, 1.10f, true),
-        new ShieldTarget(HeroRoot + "Hero_Menelaus.prefab", false, 1.05f)
+        new ShieldTarget(GreekRoot + "Enemy_Infantry.prefab", false, .56f),
+        new ShieldTarget(GreekRoot + "Enemy_ShieldBearer.prefab", false, .64f),
+        new ShieldTarget(GreekRoot + "Enemy_HeavyHoplite.prefab", true, .70f),
+        new ShieldTarget(GreekRoot + "Enemy_Boss.prefab", false, .62f),
+        new ShieldTarget(TrojanRoot + "Trojan_Infantry.prefab", false, .56f),
+        new ShieldTarget(TrojanRoot + "Trojan_Guard.prefab", true, .70f),
+        new ShieldTarget(HectorPrefabPath, false, .62f, true),
+        new ShieldTarget(HeroRoot + "Hero_Menelaus.prefab", false, .60f)
     };
 
     [MenuItem("The Troy Game/Characters/Bind Late Bronze Age Shield Candidates")]
@@ -55,7 +56,7 @@ public static class ChapterOneShieldCandidateBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("Chapter I Late Bronze Age shield pass upgraded " + upgraded + " prefab(s). These authored static meshes remain generated/candidate art until real Unity visual QA and explicit production acceptance.");
+        Debug.Log("Chapter I Late Bronze Age shield pass upgraded " + upgraded + " prefab(s). Shields are bound to resolved left-hand rig bones and normalized against character height; real animation-clearance QA is still required.");
     }
 
     public static bool ApplyHectorIfAvailable(bool logIfMissing = false)
@@ -99,22 +100,26 @@ public static class ChapterOneShieldCandidateBuilder
         GameObject root = PrefabUtility.LoadPrefabContents(target.prefabPath);
         try
         {
-            Transform previousSource = FindByName(root, SourceShieldName);
-            Transform oldShield = FindGeneratedShield(root);
-            Transform poseSource = oldShield != null ? oldShield : previousSource;
-            if (poseSource == null)
+            Transform leftHand = ResolveHand(root, false);
+            if (leftHand == null)
             {
-                Debug.LogWarning("Shield pass found no recognized shield pose: " + target.prefabPath);
+                Debug.LogWarning("Shield pass cannot resolve left-hand rig bone; refusing root-space fallback: " + target.prefabPath);
                 return false;
             }
 
-            Transform parent = poseSource.parent ?? root.transform;
-            Vector3 localPosition = poseSource.localPosition;
-            Quaternion localRotation = poseSource.localRotation;
-            // Do not multiply an already-authored source shield every time the pass is re-run.
-            Vector3 localScale = previousSource != null && oldShield == null
-                ? poseSource.localScale
-                : poseSource.localScale * target.scaleMultiplier;
+            Transform previousSource = FindByName(root, SourceShieldName);
+            Transform oldShield = FindGeneratedShield(root);
+            Transform poseSource = oldShield != null ? oldShield : previousSource;
+            Vector3 localPosition = Vector3.zero;
+            Quaternion localRotation = Quaternion.Euler(0f, 90f, 0f);
+            if (poseSource != null && poseSource.parent == leftHand)
+            {
+                localPosition = poseSource.localPosition;
+                localRotation = poseSource.localRotation;
+            }
+
+            float bodyHeight = MeasureBodyHeight(root);
+            if (bodyHeight <= .25f) bodyHeight = 1.8f;
 
             RemoveByName(root, SourceShieldName);
             RemoveGeneratedShield(root);
@@ -124,10 +129,11 @@ public static class ChapterOneShieldCandidateBuilder
             if (shield == null) throw new InvalidOperationException("Unable to instantiate authored shield candidate.");
 
             shield.name = SourceShieldName;
-            shield.transform.SetParent(parent, false);
+            shield.transform.SetParent(leftHand, false);
             shield.transform.localPosition = localPosition;
             shield.transform.localRotation = localRotation;
-            shield.transform.localScale = localScale;
+            shield.transform.localScale = Vector3.one;
+            NormalizeLongestDimension(shield, bodyHeight * target.bodyHeightRatio);
 
             foreach (Collider collider in shield.GetComponentsInChildren<Collider>(true))
                 UnityEngine.Object.DestroyImmediate(collider);
@@ -149,6 +155,104 @@ public static class ChapterOneShieldCandidateBuilder
         {
             PrefabUtility.UnloadPrefabContents(root);
         }
+    }
+
+    static Transform ResolveHand(GameObject root, bool right)
+    {
+        Animator animator = root.GetComponentInChildren<Animator>(true);
+        if (animator != null && animator.avatar != null && animator.avatar.isHuman)
+        {
+            Transform humanoid = animator.GetBoneTransform(right ? HumanBodyBones.RightHand : HumanBodyBones.LeftHand);
+            if (humanoid != null) return humanoid;
+        }
+
+        return FindRigBone(root, right
+            ? new[] { "righthand", "handr", "rhand" }
+            : new[] { "lefthand", "handl", "lhand" });
+    }
+
+    static Transform FindRigBone(GameObject root, string[] hints)
+    {
+        var bones = new HashSet<Transform>();
+        foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (renderer == null) continue;
+            foreach (Transform bone in renderer.bones)
+                if (bone != null) bones.Add(bone);
+        }
+
+        foreach (string hint in hints)
+        {
+            string wanted = Normalize(hint);
+            foreach (Transform bone in bones)
+            {
+                string candidate = Normalize(bone.name);
+                if (candidate == wanted || candidate.EndsWith(wanted, StringComparison.Ordinal)) return bone;
+            }
+        }
+
+        foreach (string hint in hints)
+        {
+            string wanted = Normalize(hint);
+            foreach (Transform transform in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (transform == null || transform == root.transform) continue;
+                string candidate = Normalize(transform.name);
+                if (candidate == wanted || candidate.EndsWith(wanted, StringComparison.Ordinal)) return transform;
+            }
+        }
+        return null;
+    }
+
+    static float MeasureBodyHeight(GameObject root)
+    {
+        Transform visual = root.transform.Find("Visual");
+        GameObject target = visual != null ? visual.gameObject : root;
+        SkinnedMeshRenderer[] renderers = target.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        bool hasBounds = false;
+        Bounds bounds = default;
+        foreach (SkinnedMeshRenderer renderer in renderers)
+        {
+            if (renderer == null) continue;
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        return hasBounds ? bounds.size.y : 0f;
+    }
+
+    static void NormalizeLongestDimension(GameObject item, float targetSize)
+    {
+        Renderer[] renderers = item.GetComponentsInChildren<Renderer>(true);
+        bool hasBounds = false;
+        Bounds bounds = default;
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null) continue;
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        if (!hasBounds) return;
+        float current = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
+        if (current <= .0001f) return;
+        item.transform.localScale *= targetSize / current;
+    }
+
+    static string Normalize(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        char[] buffer = new char[value.Length];
+        int count = 0;
+        foreach (char c in value)
+            if (char.IsLetterOrDigit(c)) buffer[count++] = char.ToLowerInvariant(c);
+        return new string(buffer, 0, count);
     }
 
     static void AddHorseEmblem(Transform shield)
