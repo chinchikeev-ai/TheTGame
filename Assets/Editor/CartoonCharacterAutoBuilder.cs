@@ -48,6 +48,12 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
+        if (MenelausProductionVisualRefinementBuilder.ApplyIfAvailable())
+        {
+            Debug.Log("Troy characters: applied Menelaus-specific boss/hero production silhouette refinement.");
+            changed = true;
+        }
+
         if (HectorProductionAnimationBinder.ApplyIfAvailable())
         {
             Debug.Log("Troy characters: applied Hector-specific KayKit production animation candidates.");
