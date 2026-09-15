@@ -85,6 +85,12 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
+        // Always repair Animator/controller bindings after character recovery. Existing controller files do not
+        // guarantee newly regenerated prefabs still contain an Animator or reference the correct profile.
+        int verifiedAnimatorBindings = ChapterOneCharacterAnimationBuilder.RepairControllerAssignments(false);
+        if (verifiedAnimatorBindings > 0)
+            Debug.Log("Troy characters: verified/rebound Chapter I Animator components and role controllers on " + verifiedAnimatorBindings + " production candidate(s).");
+
         // Re-apply Hector's production-candidate stack after any core regeneration.
         // The spear pass is intentionally offline-safe and only uses an already imported pinned source.
         if (ChapterOneProductionEquipmentBuilder.ApplyHectorSpearIfSourceAvailable(true))
@@ -144,12 +150,15 @@ public static class CartoonCharacterAutoBuilder
         missing.AddRange(FindMissing<GameObject>(SupportCharacterPrefabs));
         missing.AddRange(FindMissing<RuntimeAnimatorController>(AnimationControllers));
 
+        foreach (string problem in ChapterOneCharacterAnimationBuilder.CollectAnimatorBindingProblems())
+            missing.Add("Animation: " + problem);
+
         foreach (string problem in HectorProductionVisualValidator.CollectProblems())
             missing.Add("Hector: " + problem);
 
         if (missing.Count == 0)
         {
-            Debug.Log("Troy generated-art validation: all required Chapter I generated assets are present and Hector satisfies the source-level production visual contract. Real Play Mode visual QA is still required.");
+            Debug.Log("Troy generated-art validation: all required Chapter I generated assets are present, Animator/controller bindings are valid, and Hector satisfies the source-level production visual contract. Real Play Mode visual QA is still required.");
             return;
         }
 
