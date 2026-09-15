@@ -8,6 +8,7 @@ public static class ChapterOneShieldCandidateBuilder
     const string GreekRoot = CharacterRoot + "/Greek/";
     const string TrojanRoot = CharacterRoot + "/Trojan/";
     const string HeroRoot = CharacterRoot + "/Heroes/";
+    const string HectorPrefabPath = HeroRoot + "Hero_Hector.prefab";
     const string RoundShieldPath = "Assets/Game/Art/Characters/Equipment/AegeanRoundShield.obj";
     const string FigureEightShieldPath = "Assets/Game/Art/Characters/Equipment/FigureEightTowerShield.obj";
     const string SourceShieldName = "SourceShield_LateBronzeAge";
@@ -36,7 +37,7 @@ public static class ChapterOneShieldCandidateBuilder
         new ShieldTarget(GreekRoot + "Enemy_Boss.prefab", false, 1.08f),
         new ShieldTarget(TrojanRoot + "Trojan_Infantry.prefab", false, 1.00f),
         new ShieldTarget(TrojanRoot + "Trojan_Guard.prefab", true, 1.00f),
-        new ShieldTarget(HeroRoot + "Hero_Hector.prefab", false, 1.10f, true),
+        new ShieldTarget(HectorPrefabPath, false, 1.10f, true),
         new ShieldTarget(HeroRoot + "Hero_Menelaus.prefab", false, 1.05f)
     };
 
@@ -55,6 +56,36 @@ public static class ChapterOneShieldCandidateBuilder
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("Chapter I Late Bronze Age shield pass upgraded " + upgraded + " prefab(s). These authored static meshes remain generated/candidate art until real Unity visual QA and explicit production acceptance.");
+    }
+
+    public static bool ApplyHectorIfAvailable(bool logIfMissing = false)
+    {
+        GameObject round = AssetDatabase.LoadAssetAtPath<GameObject>(RoundShieldPath);
+        if (round == null)
+        {
+            if (logIfMissing) Debug.LogWarning("Hector shield recovery skipped because authored round shield is missing: " + RoundShieldPath);
+            return false;
+        }
+
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(HectorPrefabPath) == null)
+        {
+            if (logIfMissing) Debug.LogWarning("Hector shield recovery skipped because prefab is missing: " + HectorPrefabPath);
+            return false;
+        }
+
+        foreach (ShieldTarget target in Targets)
+        {
+            if (!string.Equals(target.prefabPath, HectorPrefabPath, StringComparison.Ordinal)) continue;
+            bool upgraded = Upgrade(target, round);
+            if (upgraded)
+            {
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+            return upgraded;
+        }
+
+        return false;
     }
 
     static bool Upgrade(ShieldTarget target, GameObject shieldSource)
@@ -80,7 +111,10 @@ public static class ChapterOneShieldCandidateBuilder
             Transform parent = poseSource.parent ?? root.transform;
             Vector3 localPosition = poseSource.localPosition;
             Quaternion localRotation = poseSource.localRotation;
-            Vector3 localScale = poseSource.localScale * target.scaleMultiplier;
+            // Do not multiply an already-authored source shield every time the pass is re-run.
+            Vector3 localScale = previousSource != null && oldShield == null
+                ? poseSource.localScale
+                : poseSource.localScale * target.scaleMultiplier;
 
             RemoveByName(root, SourceShieldName);
             RemoveGeneratedShield(root);

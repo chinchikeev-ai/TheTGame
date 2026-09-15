@@ -85,6 +85,26 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
+        // Re-apply Hector's production-candidate stack after any core regeneration.
+        // The spear pass is intentionally offline-safe and only uses an already imported pinned source.
+        if (ChapterOneProductionEquipmentBuilder.ApplyHectorSpearIfSourceAvailable(true))
+        {
+            Debug.Log("Troy characters: applied Hector-specific pinned production spear candidate.");
+            changed = true;
+        }
+
+        if (ChapterOneShieldCandidateBuilder.ApplyHectorIfAvailable(true))
+        {
+            Debug.Log("Troy characters: applied Hector-specific round Trojan shield candidate with horse emblem.");
+            changed = true;
+        }
+
+        if (ChapterOneArmorCandidateBuilder.ApplyHectorIfAvailable(true))
+        {
+            Debug.Log("Troy characters: applied Hector-specific Late Bronze Age cuirass and helmet candidates.");
+            changed = true;
+        }
+
         if (HectorProductionVisualRefinementBuilder.ApplyIfAvailable())
         {
             Debug.Log("Troy characters: applied Hector-specific rig-following production silhouette refinement.");
@@ -124,13 +144,16 @@ public static class CartoonCharacterAutoBuilder
         missing.AddRange(FindMissing<GameObject>(SupportCharacterPrefabs));
         missing.AddRange(FindMissing<RuntimeAnimatorController>(AnimationControllers));
 
+        foreach (string problem in HectorProductionVisualValidator.CollectProblems())
+            missing.Add("Hector: " + problem);
+
         if (missing.Count == 0)
         {
-            Debug.Log("Troy generated-art validation: all required Chapter I character prefabs and animation controllers are present.");
+            Debug.Log("Troy generated-art validation: all required Chapter I generated assets are present and Hector satisfies the source-level production visual contract. Real Play Mode visual QA is still required.");
             return;
         }
 
-        Debug.LogError("Troy generated-art validation: " + missing.Count + " required Chapter I asset(s) are still missing:\n" +
+        Debug.LogError("Troy generated-art validation: " + missing.Count + " required Chapter I asset/visual requirement(s) are still missing:\n" +
                        string.Join("\n", missing));
     }
 }

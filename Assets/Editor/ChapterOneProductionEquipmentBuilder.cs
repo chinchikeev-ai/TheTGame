@@ -11,6 +11,7 @@ public static class ChapterOneProductionEquipmentBuilder
 
     const string GreekArcherPath = GreekRoot + "Enemy_Archer.prefab";
     const string TrojanArcherPath = TrojanRoot + "Trojan_Archer.prefab";
+    const string HectorPrefabPath = HeroRoot + "Hero_Hector.prefab";
     const string SourceBowName = "SourceBow_Quaternius_MedievalWeapons";
     const string SourceSpearName = "SourceSpear_Quaternius_MedievalWeapons";
     const string ArrowSocketName = "Socket_ArrowRelease";
@@ -23,7 +24,7 @@ public static class ChapterOneProductionEquipmentBuilder
         GreekRoot + "Enemy_ShieldBearer.prefab",
         TrojanRoot + "Trojan_Infantry.prefab",
         TrojanRoot + "Trojan_Guard.prefab",
-        HeroRoot + "Hero_Hector.prefab"
+        HectorPrefabPath
     };
 
     [MenuItem("The Troy Game/Characters/Upgrade Chapter I Equipment From CC0 Sources")]
@@ -53,6 +54,33 @@ public static class ChapterOneProductionEquipmentBuilder
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("Chapter I equipment pass upgraded " + upgradedArchers + " archer prefab(s), " + upgradedSpearBearers + " spear-bearer prefab(s), added weapon release sockets, and applied authored Late Bronze Age shield/armor candidates. Final materials, grip clearance, socket offsets and gameplay-camera QA are still required.");
+    }
+
+    public static bool ApplyHectorSpearIfSourceAvailable(bool logIfMissing = false)
+    {
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(HectorPrefabPath) == null)
+        {
+            if (logIfMissing) Debug.LogWarning("Hector spear recovery skipped because prefab is missing: " + HectorPrefabPath);
+            return false;
+        }
+
+        // Recovery must remain deterministic and offline-safe. Do not call Install() here:
+        // the explicit full equipment command is responsible for downloading/verifying the pinned CC0 source.
+        GameObject spearSource = ChapterOneSpearSourceInstaller.LoadSpear();
+        if (spearSource == null)
+        {
+            if (logIfMissing)
+                Debug.LogWarning("Hector production spear source is not imported. Keeping the generated procedural spear. Run 'The Troy Game/Characters/Install CC0 Chapter I Spear' or the full equipment upgrade command, then rebuild/validate Hector. Expected source: " + ChapterOneSpearSourceInstaller.GetAssetPath());
+            return false;
+        }
+
+        bool upgraded = UpgradeSpearBearer(HectorPrefabPath, spearSource);
+        if (upgraded)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+        return upgraded;
     }
 
     static bool UpgradeArcher(string prefabPath, GameObject bowSource, float scale)
