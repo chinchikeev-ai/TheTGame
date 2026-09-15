@@ -6,6 +6,7 @@ namespace TheTroyGame.Tests
     public class ChapterOneGeneratedArtRecoveryTests
     {
         const string AutoBuilderPath = "Assets/Editor/CartoonCharacterAutoBuilder.cs";
+        const string AnimationBuilderPath = "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs";
 
         [Test]
         public void AutoBuilder_TracksEveryCoreChapterOneCharacterPrefab()
@@ -73,6 +74,48 @@ namespace TheTroyGame.Tests
 
             StringAssert.Contains("Validate Generated Chapter I Art", source);
             StringAssert.Contains("ReportMissingAfterBuild", source);
+        }
+
+        [Test]
+        public void AutoBuilder_RepairsAnimatorBindingsEvenWhenControllersAlreadyExist()
+        {
+            string source = File.ReadAllText(AutoBuilderPath);
+            StringAssert.Contains("ChapterOneCharacterAnimationBuilder.RepairControllerAssignments(false)", source);
+            StringAssert.Contains("ChapterOneCharacterAnimationBuilder.CollectAnimatorBindingProblems()", source);
+        }
+
+        [Test]
+        public void AnimationBuilder_CreatesMissingAnimatorInsteadOfSkippingPrefab()
+        {
+            Assert.IsTrue(File.Exists(AnimationBuilderPath), "Missing Chapter I animation builder.");
+            string source = File.ReadAllText(AnimationBuilderPath);
+
+            StringAssert.DoesNotContain("if (animator == null) continue;", source);
+            StringAssert.Contains("EnsureAnimator(root, path, out prefabChanged)", source);
+            StringAssert.Contains("host.AddComponent<Animator>()", source);
+            StringAssert.Contains("root.transform.Find(\"Visual\")", source);
+        }
+
+        [Test]
+        public void AnimationBuilder_RecoversAvatarAndKeepsRootMotionDisabled()
+        {
+            string source = File.ReadAllText(AnimationBuilderPath);
+
+            StringAssert.Contains("FindImportedAvatar(root)", source);
+            StringAssert.Contains("AssetDatabase.GetAssetPath(renderer.sharedMesh)", source);
+            StringAssert.Contains("avatar.isValid", source);
+            StringAssert.Contains("animator.applyRootMotion = false", source);
+        }
+
+        [Test]
+        public void AnimationBuilder_ExposesRepairAndValidationForExistingPrefabs()
+        {
+            string source = File.ReadAllText(AnimationBuilderPath);
+
+            StringAssert.Contains("Repair Chapter I Animator Bindings", source);
+            StringAssert.Contains("public static int RepairControllerAssignments", source);
+            StringAssert.Contains("public static List<string> CollectAnimatorBindingProblems", source);
+            StringAssert.Contains("runtimeAnimatorController == null", source);
         }
     }
 }
