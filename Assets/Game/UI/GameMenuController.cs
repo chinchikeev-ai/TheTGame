@@ -109,20 +109,39 @@ public class GameMenuController : MonoBehaviour
     {
         mainMenu = MakeMainMenuScreen(canvas, MainMenuBackgroundResource);
 
-        GameObject panel = MakePanel(mainMenu.transform, "MainPanel", new Vector2(.76f, .50f), new Vector2(700f, 980f), new Color(.035f, .018f, .010f, .55f));
+        GameObject panel = MakePanel(
+            mainMenu.transform,
+            "MainPanel",
+            new Vector2(.76f, .50f),
+            new Vector2(700f, 980f),
+            new Color(.035f, .018f, .010f, .55f));
+
         Image panelImage = panel.GetComponent<Image>();
         if (panelImage != null) panelImage.raycastTarget = false;
 
         AddTitle(panel.transform, "THE TROY GAME", new Vector2(0f, 350f), 62, MenuTextStyle.Logo, new Vector2(640f, 86f));
         AddTitle(panel.transform, "GODS DEFENSE", new Vector2(0f, 285f), 26, MenuTextStyle.Subtitle, new Vector2(600f, 46f));
-        AddTitle(panel.transform, L("DEFEND TROY. BREAK THE LANDING.", "ЗАЩИТИ ТРОЮ. СОРВИ ВЫСАДКУ."), new Vector2(0f, 228f), 17, MenuTextStyle.Muted, new Vector2(610f, 42f));
+        AddTitle(
+            panel.transform,
+            L("DEFEND TROY. BREAK THE LANDING.", "ЗАЩИТИ ТРОЮ. СОРВИ ВЫСАДКУ."),
+            new Vector2(0f, 228f),
+            17,
+            MenuTextStyle.Muted,
+            new Vector2(610f, 42f));
 
         AddButton(panel.transform, L("CONTINUE", "ПРОДОЛЖИТЬ"), new Vector2(0f, 112f), ShowLevels, new Vector2(560f, 86f), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("NEW CAMPAIGN", "НОВАЯ КАМПАНИЯ"), new Vector2(0f, 8f), StartNewCampaign, new Vector2(520f, 72f), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0f, -82f), ShowLevels, new Vector2(520f, 72f), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0f, -172f), ShowSettingsFromMain, new Vector2(520f, 72f), MenuButtonStyle.Ghost);
         AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0f, -262f), QuitGame, new Vector2(520f, 68f), MenuButtonStyle.Ghost);
-        AddTitle(panel.transform, L("Progress saves automatically", "Прогресс сохраняется автоматически"), new Vector2(0f, -350f), 14, MenuTextStyle.Muted, new Vector2(580f, 34f));
+
+        AddTitle(
+            panel.transform,
+            L("Progress saves automatically", "Прогресс сохраняется автоматически"),
+            new Vector2(0f, -350f),
+            14,
+            MenuTextStyle.Muted,
+            new Vector2(580f, 34f));
         AddTitle(panel.transform, "v0.6 • PRE-ALPHA", new Vector2(0f, -405f), 13, MenuTextStyle.Muted, new Vector2(280f, 28f));
     }
 
@@ -130,9 +149,11 @@ public class GameMenuController : MonoBehaviour
     {
         levelMenu = MakeScreen(canvas, "LevelSelect", new Color(.025f, .018f, .014f, .985f));
         GameObject panel = MakePanel(levelMenu.transform, "LevelCard", new Vector2(.5f, .5f), new Vector2(980, 700), new Color(.08f, .045f, .025f, .98f));
+
         AddTitle(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, 270), 48, MenuTextStyle.Logo);
         AddTitle(panel.transform, L("Choose where the defense of Troy continues", "Выберите этап обороны Трои"), new Vector2(0, 215), 20, MenuTextStyle.Muted);
         AddDivider(panel.transform, new Vector2(0, 180), 700);
+
         AddButton(panel.transform, L("I  •  THE LANDING", "I  •  ВЫСАДКА"), new Vector2(0, 90), StartLevel, new Vector2(700, 78), MenuButtonStyle.Highlight);
         Button map2Button = AddButton(panel.transform, "", new Vector2(0, -10), OnMap2Clicked, new Vector2(700, 78), MenuButtonStyle.Stone);
         map2Label = map2Button.GetComponentInChildren<Text>();
@@ -150,9 +171,11 @@ public class GameMenuController : MonoBehaviour
     {
         pauseMenu = MakeScreen(canvas, "PauseMenu", new Color(.02f, .015f, .012f, .985f));
         GameObject panel = MakePanel(pauseMenu.transform, "PauseCard", new Vector2(.5f, .5f), new Vector2(1000, 720), new Color(.055f, .03f, .018f, .99f));
+
         AddTitle(panel.transform, L("PAUSED", "ПАУЗА"), new Vector2(0, 268), 48, MenuTextStyle.Logo);
         AddTitle(panel.transform, L("The battle waits for your command", "Битва ждёт вашего приказа"), new Vector2(0, 222), 17, MenuTextStyle.Muted, new Vector2(720, 38));
         AddDivider(panel.transform, new Vector2(0, 184), 700);
+
         AddButton(panel.transform, L("RESUME", "ВЕРНУТЬСЯ В ИГРУ"), new Vector2(0, 104), Resume, new Vector2(500, 62), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(0, 30), ShowSettingsFromPause, new Vector2(500, 56), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"), new Vector2(0, -40), RestartChapter, new Vector2(500, 56), MenuButtonStyle.Stone);
@@ -164,10 +187,12 @@ public class GameMenuController : MonoBehaviour
     {
         endMenu = MakeScreen(canvas, "EndMenu", new Color(.02f, .015f, .012f, .99f));
         GameObject panel = MakePanel(endMenu.transform, "ResultCard", new Vector2(.5f, .5f), new Vector2(1160, 800), new Color(.055f, .03f, .018f, .99f));
+
         endTitle = AddTitle(panel.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0, 326), 52, MenuTextStyle.Logo);
         AddTitle(panel.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 278), 16, MenuTextStyle.Muted, new Vector2(760, 34));
         AddDivider(panel.transform, new Vector2(0, 244), 820);
         endSummary = AddTitle(panel.transform, "", new Vector2(0, 34), 18, MenuTextStyle.Normal, new Vector2(900, 390));
+
         AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-330, -322), RestartChapter, new Vector2(280, 58), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, -322), ReturnToChapterSelect, new Vector2(300, 58), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(330, -322), ReturnToMainMenu, new Vector2(280, 58), MenuButtonStyle.Ghost);
@@ -178,6 +203,7 @@ public class GameMenuController : MonoBehaviour
         bool wasSettings = settingsMenu != null && settingsMenu.activeSelf;
         bool wasPause = pauseMenu != null && pauseMenu.activeSelf;
         bool wasLevels = levelMenu != null && levelMenu.activeSelf;
+
         GameLanguage.Toggle();
         RuntimeFileLogger.Event("LANGUAGE", $"Changed language to {GameLanguage.Code}");
         RebuildUiAfterLanguageChange(wasSettings, wasPause, wasLevels);
@@ -188,19 +214,23 @@ public class GameMenuController : MonoBehaviour
         GameObject oldCanvas = canvas != null ? canvas.gameObject : null;
         if (oldCanvas != null) oldCanvas.SetActive(false);
         BuildUI();
+
         if (wasSettings) SetScreenState(settings: true);
         else if (wasPause) SetScreenState(pause: true);
         else if (wasLevels) SetScreenState(levels: true);
         else ShowMainMenu();
+
         if (oldCanvas != null) Destroy(oldCanvas);
     }
 
     void RefreshLevelSelect()
     {
         if (map2Label == null) return;
+
         map2Label.text = IsChapterUnlocked(2)
             ? L("II  •  ROAD TO TROY  •  IN PRODUCTION", "II  •  ДОРОГА К ТРОЕ  •  В РАЗРАБОТКЕ")
             : L("II  •  ROAD TO TROY  •  LOCKED", "II  •  ДОРОГА К ТРОЕ  •  ЗАКРЫТА");
+
         if (map2Info != null) map2Info.text = "";
     }
 
@@ -212,6 +242,7 @@ public class GameMenuController : MonoBehaviour
                 ? L("Chapter II is unlocked, but this build is focused on polishing Chapter I.", "Глава II открыта, но эта сборка пока доводит Главу I.")
                 : L("Complete Chapter I to unlock the road to Troy.", "Пройдите Главу I, чтобы открыть дорогу к Трое.");
         }
+
         RuntimeFileLogger.Event("CAMPAIGN", "Chapter II selected but content is not implemented yet");
     }
 
@@ -277,14 +308,6 @@ public class GameMenuController : MonoBehaviour
         SetScreenState(pause: true);
     }
 
-    public void OpenCombatSettings()
-    {
-        if (!levelStarted || reloading || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
-        paused = true;
-        Time.timeScale = 0f;
-        SetScreenState(settings: true);
-    }
-
     void Resume()
     {
         paused = false;
@@ -292,8 +315,15 @@ public class GameMenuController : MonoBehaviour
         SetScreenState();
     }
 
-    void ShowSettingsFromMain() => SetScreenState(settings: true);
-    void ShowSettingsFromPause() => SetScreenState(settings: true);
+    void ShowSettingsFromMain()
+    {
+        SetScreenState(settings: true);
+    }
+
+    void ShowSettingsFromPause()
+    {
+        SetScreenState(settings: true);
+    }
 
     void BackFromSettings()
     {
@@ -307,13 +337,18 @@ public class GameMenuController : MonoBehaviour
         paused = true;
         GameManager gm = GameManager.Instance;
         if (gm == null) return;
+
         bool victory = gm.EndMessage == "VICTORY";
         endTitle.text = victory ? L("VICTORY", "ПОБЕДА") : L("GAME OVER", "ПОРАЖЕНИЕ");
+
         int totalSeconds = Mathf.RoundToInt(gm.RunTime);
         int min = totalSeconds / 60;
         int sec = totalSeconds % 60;
         string unlock = victory && IsChapterUnlocked(2) ? "\n" + L("CHAPTER II UNLOCKED", "ГЛАВА II ОТКРЫТА") : "";
-        if (victory && IsChapterUnlocked(2)) unlock += "\n" + L("Chapter II is in production. Return to Chapter Select.", "Глава II в разработке. Вернитесь к выбору главы.");
+
+        if (victory && IsChapterUnlocked(2))
+            unlock += "\n" + L("Chapter II is in production. Return to Chapter Select.", "Глава II в разработке. Вернитесь к выбору главы.");
+
         endSummary.text =
             $"{L("MAP", "КАРТА")} {gm.MapNumber}    {L("DIFFICULTY", "СЛОЖНОСТЬ")}: {DifficultyRules.Label(CurrentDifficulty)}\n" +
             $"{L("ENCOUNTERS", "БОИ")}: {gm.CurrentWave}/{gm.MaxWaves}    {L("TIME", "ВРЕМЯ")}: {min:00}:{sec:00}\n\n" +
@@ -322,6 +357,7 @@ public class GameMenuController : MonoBehaviour
             $"{L("GOLD EARNED", "ЗОЛОТО ПОЛУЧЕНО")}: {gm.GoldEarned}    {L("SPENT", "ПОТРАЧЕНО")}: {gm.GoldSpent}\n" +
             $"{L("TOWERS BUILT", "ПОСТРОЕНО БАШЕН")}: {gm.TowersBuilt}    {L("SOLD", "ПРОДАНО")}: {gm.TowersSold}\n" +
             $"{L("GATE HEALTH", "ПРОЧНОСТЬ ВОРОТ")}: {gm.BaseHealth}/{gm.MaxBaseHealth}{unlock}";
+
         SetScreenState(end: true);
     }
 
@@ -333,13 +369,19 @@ public class GameMenuController : MonoBehaviour
         RuntimeFileLogger.Event("MENU", $"Reloading scene buildIndex={scene.buildIndex}, name={scene.name}");
         Time.timeScale = 1f;
         paused = false;
+
         if (canvas != null)
         {
-            foreach (Button button in canvas.GetComponentsInChildren<Button>(true)) button.interactable = false;
+            foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
+                button.interactable = false;
         }
-        if (scene.buildIndex >= 0) SceneManager.LoadScene(scene.buildIndex, LoadSceneMode.Single);
-        else if (!string.IsNullOrEmpty(scene.name)) SceneManager.LoadScene(scene.name, LoadSceneMode.Single);
-        else SceneManager.LoadScene(0, LoadSceneMode.Single);
+
+        if (scene.buildIndex >= 0)
+            SceneManager.LoadScene(scene.buildIndex, LoadSceneMode.Single);
+        else if (!string.IsNullOrEmpty(scene.name))
+            SceneManager.LoadScene(scene.name, LoadSceneMode.Single);
+        else
+            SceneManager.LoadScene(0, LoadSceneMode.Single);
     }
 
     public void RestartChapter()
