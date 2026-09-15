@@ -7,6 +7,7 @@ public static class CartoonCharacterAutoBuilder
     const string ProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Greek/Enemy_Infantry.prefab";
     const string SupportProbePrefab = "Assets/Game/Art/Characters/Resources/TroyProduction/Characters/Trojan/Trojan_BallistaCrew.prefab";
     const string AnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_BallistaCrew.controller";
+    const string HectorAnimationProfileProbe = "Assets/Game/Art/Characters/Animation/ChapterOne_Hector.controller";
 
     [MenuItem("Tools/TheTroyGame/Art/Build Missing Chapter I Art")]
     public static void BuildMissing()
@@ -33,7 +34,8 @@ public static class CartoonCharacterAutoBuilder
             changed = true;
         }
 
-        if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AnimationProfileProbe) == null)
+        if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AnimationProfileProbe) == null ||
+            AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(HectorAnimationProfileProbe) == null)
         {
             Debug.Log("Troy characters: building missing role-specific Chapter I animation profiles.");
             ChapterOneCharacterAnimationBuilder.BuildAll();
