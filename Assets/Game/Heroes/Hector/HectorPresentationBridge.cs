@@ -13,6 +13,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     CharacterPresentationState characterPresentation;
     CharacterWeaponSocketResolver weaponSockets;
     CharacterWeaponPresentation weaponPresentation;
+    HectorMotionFallbackAnimator fallbackAnimator;
     Renderer bodyRenderer;
     Vector3 previousPosition;
     float shieldWallPoseUntil;
@@ -35,7 +36,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
         if (weaponPresentation == null) weaponPresentation = gameObject.AddComponent<CharacterWeaponPresentation>();
         weaponPresentation.Refresh();
 
-        HectorMotionFallbackAnimator fallbackAnimator = GetComponent<HectorMotionFallbackAnimator>();
+        fallbackAnimator = GetComponent<HectorMotionFallbackAnimator>();
         if (fallbackAnimator == null) fallbackAnimator = gameObject.AddComponent<HectorMotionFallbackAnimator>();
         fallbackAnimator.Initialize(controller);
 
@@ -64,7 +65,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
         characterPresentation.PlaySpearAttack(() =>
         {
-            if (hector == null || hector.IsDowned || !SpearAvailable) return;
+            if (!CanResolveAction() || !SpearAvailable) return;
             impact?.Invoke();
             PlayMeleeImpact(point);
         });
@@ -73,6 +74,7 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     public void PlayDamageImpact(float damage)
     {
         characterPresentation?.PlayHit();
+        fallbackAnimator?.PlayHitReaction(false);
         RuntimeEffects.Instance?.PlayHitSound(damage >= 25f);
         CombatImpactPresentation.HeroHit(transform.position + Vector3.up * .7f, damage >= 25f);
     }
@@ -80,15 +82,78 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     public void PlayShieldBlockImpact(float incomingDamage)
     {
         characterPresentation?.SetBlocking(true);
+        fallbackAnimator?.PlayHitReaction(true);
         RuntimeEffects.Instance?.PlayShieldBlockSound(incomingDamage >= 25f);
         CombatImpactPresentation.Pulse(transform.position + transform.forward * .25f + Vector3.up * .75f,
             new Color(.96f,.72f,.26f), incomingDamage >= 25f ? .95f : .72f, .18f);
     }
 
+    public void PlayWarCryImpact(Action impact)
+    {
+        if (characterPresentation == null)
+        {
+            impact?.Invoke();
+            return;
+        }
+
+        characterPresentation.PlayAbilityQ(() =>
+        {
+            if (!CanResolveAction()) return;
+            impact?.Invoke();
+        });
+    }
+
+    public void PlayShieldWallImpact(Action impact)
+    {
+        if (characterPresentation == null)
+        {
+            impact?.Invoke();
+            return;
+        }
+
+        characterPresentation.PlayAbilityE(() =>
+        {
+            if (!CanResolveAction()) return;
+            impact?.Invoke();
+        });
+    }
+
+    public void PlayUltimateImpact(Action impact)
+    {
+        if (characterPresentation == null)
+        {
+            impact?.Invoke();
+            return;
+        }
+
+        characterPresentation.PlayAbilityF(() =>
+        {
+            if (!CanResolveAction()) return;
+            impact?.Invoke();
+        });
+    }
+
+    public void PlayWarCryEffect(float radius)
+    {
+        abilityPresentation?.PlayWarCry(radius);
+    }
+
+    public void PlayShieldWallEffect(Vector3 center, float duration)
+    {
+        shieldWallPoseUntil = Mathf.Max(shieldWallPoseUntil, Time.time + Mathf.Max(.2f, duration));
+        characterPresentation?.SetBlocking(true);
+        abilityPresentation?.PlayShieldWall(center, transform.rotation, duration);
+    }
+
+    public void PlayUltimateEffect(float radius)
+    {
+        abilityPresentation?.PlayUltimate(radius);
+    }
+
     public void PlayWarCry(float radius)
     {
         characterPresentation?.PlayAbilityQ();
-        abilityPresentation?.PlayWarCry(radius);
+        PlayWarCryEffect(radius);
     }
 
     public void PlayShieldWall(Vector3 center)
@@ -98,13 +163,10 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
     public void PlayShieldWall(Vector3 center, float duration)
     {
-        shieldWallPoseUntil = Mathf.Max(shieldWallPoseUntil, Time.time + Mathf.Max(.2f, duration));
         characterPresentation?.PlayAbilityE();
-        characterPresentation?.SetBlocking(true);
-        abilityPresentation?.PlayShieldWall(center, transform.rotation);
+        PlayShieldWallEffect(center, duration);
     }
 
-    // Kept as the animation-release hook for the Chapter I timing contract.
     public void PlaySpearImpact(Vector3 point, Action impact)
     {
         if (!SpearAvailable) return;
@@ -116,14 +178,14 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
         characterPresentation.PlayAbilityR(() =>
         {
-            if (hector == null || hector.IsDowned || !SpearAvailable) return;
+            if (!CanResolveAction() || !SpearAvailable) return;
             impact?.Invoke();
         });
     }
 
     public void LaunchSpearFlight(Transform target, Action<Vector3> impact)
     {
-        if (hector == null || hector.IsDowned || target == null || !SpearAvailable) return;
+        if (!CanResolveAction() || target == null || !SpearAvailable) return;
         Vector3 start = weaponPresentation != null
             ? weaponPresentation.ReleaseSpear()
             : weaponSockets != null
@@ -141,8 +203,28 @@ public sealed class HectorPresentationBridge : MonoBehaviour
     public void PlayUltimate(float radius)
     {
         characterPresentation?.PlayAbilityF();
-        abilityPresentation?.PlayUltimate(radius);
+        PlayUltimateEffect(radius);
     }
+
+    public void SetDownedState(bool downed)
+    {
+        shieldWallPoseUntil = 0f;
+        characterPresentation?.SetBlocking(false);
+        characterPresentation?.SetDowned(downed);
+        previousDowned = downed;
+        if (!downed) weaponPresentation?.RestoreSpear();
+        RefreshSelectionTint();
+    }
+
+    public void PlayReviveEffect()
+    {
+        weaponPresentation?.RestoreSpear();
+        fallbackAnimator?.PlayRevive();
+        CombatImpactPresentation.Pulse(transform.position + Vector3.up * .4f,
+            new Color(.95f, .68f, .18f), 1.8f, .38f);
+    }
+
+    bool CanResolveAction() => hector == null || !hector.IsDowned;
 
     void PlayMeleeImpact(Vector3 point)
     {
@@ -156,18 +238,14 @@ public sealed class HectorPresentationBridge : MonoBehaviour
 
         bool downed = hector.IsDowned;
         if (downed != previousDowned)
-        {
-            characterPresentation.SetDowned(downed);
-            previousDowned = downed;
-            RefreshSelectionTint();
-        }
+            SetDownedState(downed);
 
         bool shieldPoseActive = !downed && Time.time < shieldWallPoseUntil;
-        characterPresentation.SetBlocking(shieldPoseActive);
+        characterPresentation?.SetBlocking(shieldPoseActive);
 
         Vector3 delta = transform.position - previousPosition;
         delta.y = 0f;
-        characterPresentation.SetMoving(!downed && delta.sqrMagnitude > .0004f);
+        characterPresentation?.SetMoving(!downed && delta.sqrMagnitude > .0004f);
         previousPosition = transform.position;
     }
 
