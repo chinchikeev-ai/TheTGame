@@ -7,6 +7,11 @@ namespace TheTroyGame.Tests
     {
         const string AutoBuilderPath = "Assets/Editor/CartoonCharacterAutoBuilder.cs";
         const string AnimationBuilderPath = "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs";
+        const string MaterialAdapterPath = "Assets/Game/World/CharacterUrpMaterialAdapter.cs";
+        const string HeroFactoryPath = "Assets/Game/Heroes/HeroVisualFactory.cs";
+        const string EnemyFactoryPath = "Assets/Game/Enemies/EnemyVisualFactory.cs";
+        const string TowerFactoryPath = "Assets/Game/Towers/TowerFactory.cs";
+        const string TowerBinderPath = "Assets/Game/Towers/TowerProductionArtBinder.cs";
 
         [Test]
         public void AutoBuilder_TracksEveryCoreChapterOneCharacterPrefab()
@@ -116,6 +121,20 @@ namespace TheTroyGame.Tests
             StringAssert.Contains("public static int RepairControllerAssignments", source);
             StringAssert.Contains("public static List<string> CollectAnimatorBindingProblems", source);
             StringAssert.Contains("runtimeAnimatorController == null", source);
+        }
+
+        [Test]
+        public void RuntimeCharacterFactories_ApplyUrpMaterialRecoveryAfterAssembly()
+        {
+            Assert.IsTrue(File.Exists(MaterialAdapterPath), "Missing runtime character material adapter.");
+            string adapter = File.ReadAllText(MaterialAdapterPath);
+            StringAssert.Contains("public static int ApplyTo(GameObject root)", adapter);
+            StringAssert.Contains("sourceShader.isSupported", adapter);
+
+            StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(result)", File.ReadAllText(HeroFactoryPath));
+            StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(instance)", File.ReadAllText(EnemyFactoryPath));
+            StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(root)", File.ReadAllText(TowerFactoryPath));
+            StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(crew)", File.ReadAllText(TowerBinderPath));
         }
     }
 }

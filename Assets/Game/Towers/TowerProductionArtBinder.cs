@@ -90,5 +90,6 @@ public sealed class TowerProductionArtBinder : MonoBehaviour
         crew.transform.localScale = Vector3.one * scale;
         foreach (Collider col in crew.GetComponentsInChildren<Collider>(true)) { col.enabled = false; Destroy(col); }
         foreach (Rigidbody body in crew.GetComponentsInChildren<Rigidbody>(true)) { body.isKinematic = true; body.detectCollisions = false; }
+        CharacterUrpMaterialAdapter.ApplyTo(crew);
     }
 }

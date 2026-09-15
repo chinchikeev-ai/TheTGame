@@ -16,20 +16,31 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         ApplyNow();
     }
 
-    public void ApplyNow()
+    public static int ApplyTo(GameObject root)
     {
-        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
-        foreach (Renderer renderer in renderers)
-            ConvertRenderer(renderer);
+        if (root == null) return 0;
+        CharacterUrpMaterialAdapter adapter = root.GetComponent<CharacterUrpMaterialAdapter>();
+        if (adapter == null) adapter = root.AddComponent<CharacterUrpMaterialAdapter>();
+        return adapter.ApplyNow();
     }
 
-    static void ConvertRenderer(Renderer renderer)
+    public int ApplyNow()
     {
-        if (renderer == null) return;
+        int convertedCount = 0;
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
+            convertedCount += ConvertRenderer(renderer);
+        return convertedCount;
+    }
+
+    static int ConvertRenderer(Renderer renderer)
+    {
+        if (renderer == null) return 0;
 
         Material[] sourceMaterials = renderer.sharedMaterials;
-        if (sourceMaterials == null || sourceMaterials.Length == 0) return;
+        if (sourceMaterials == null || sourceMaterials.Length == 0) return 0;
 
+        int convertedCount = 0;
         bool changed = false;
         Material[] convertedMaterials = new Material[sourceMaterials.Length];
         for (int i = 0; i < sourceMaterials.Length; i++)
@@ -37,18 +48,24 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
             Material source = sourceMaterials[i];
             Material converted = ConvertMaterial(source);
             convertedMaterials[i] = converted;
-            if (converted != source) changed = true;
+            if (converted != source)
+            {
+                changed = true;
+                convertedCount++;
+            }
         }
 
         if (changed)
             renderer.sharedMaterials = convertedMaterials;
+        return convertedCount;
     }
 
     static Material ConvertMaterial(Material source)
     {
         if (source == null) return null;
         Shader sourceShader = source.shader;
-        if (sourceShader != null && sourceShader.name.StartsWith(UrpPrefix, System.StringComparison.Ordinal))
+        if (sourceShader != null && sourceShader.isSupported &&
+            sourceShader.name.StartsWith(UrpPrefix, System.StringComparison.Ordinal))
             return source;
 
         if (Converted.TryGetValue(source, out Material cached) && cached != null)
@@ -60,7 +77,7 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
             if (!loggedMissingTemplate)
             {
                 loggedMissingTemplate = true;
-                Debug.LogError("Character URP material adapter cannot find RuntimeColorMaterial or Universal Render Pipeline/Lit. Non-URP character materials will remain unchanged.");
+                Debug.LogError("Character URP material adapter cannot find RuntimeColorMaterial or Universal Render Pipeline/Lit. Unsupported character materials will remain unchanged.");
             }
             return source;
         }
@@ -93,10 +110,10 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
     {
         if (template != null) return template;
         template = Resources.Load<Material>(RuntimeMaterialResource);
-        if (template != null) return template;
+        if (template != null && template.shader != null && template.shader.isSupported) return template;
 
         Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader != null)
+        if (shader != null && shader.isSupported)
         {
             template = new Material(shader)
             {
