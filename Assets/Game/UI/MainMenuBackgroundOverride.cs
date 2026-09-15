@@ -1,32 +1,22 @@
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class MainMenuBackgroundOverride : MonoBehaviour
 {
-    const string ApprovedMenuResource = "Menu/ApprovedMainMenu";
-    const float ReferenceWidth = 1920f;
-    const float ReferenceHeight = 1080f;
-
-    readonly List<Sprite> runtimeButtonSprites = new List<Sprite>();
+    const string BackgroundResource = "Menu/Main_screen";
 
     GameObject appliedMainMenu;
     GameMenuController controller;
-    Texture2D approvedTexture;
-
-    GameObject featureOverlay;
-    Text featureTitle;
-    Text featureBody;
+    GameObject armyOverlay;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoStart()
     {
         if (FindFirstObjectByType<MainMenuBackgroundOverride>() == null)
-            new GameObject("ApprovedMainMenuPresenter").AddComponent<MainMenuBackgroundOverride>();
+            new GameObject("MainMenuPresenter").AddComponent<MainMenuBackgroundOverride>();
     }
 
     void Awake()
@@ -37,20 +27,16 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        ClearRuntimeSprites();
         appliedMainMenu = null;
         controller = null;
-        featureOverlay = null;
-        featureTitle = null;
-        featureBody = null;
-        approvedTexture = null;
-        RuntimeFileLogger.Event("MENU", $"Approved main-menu presenter rebound after scene load: {scene.name}");
+        armyOverlay = null;
+        RuntimeFileLogger.Event("MENU", $"Main-menu presenter rebound after scene load: {scene.name}");
     }
 
     void Update()
     {
-        if (featureOverlay != null && featureOverlay.activeSelf && GameInput.PausePressed())
-            HideFeature();
+        if (armyOverlay != null && armyOverlay.activeSelf && GameInput.PausePressed())
+            armyOverlay.SetActive(false);
     }
 
     void LateUpdate()
@@ -66,184 +52,180 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         Transform mainMenu = canvasObject.transform.Find("MainMenu");
         if (mainMenu == null) return;
 
-        BuildApprovedMenu(mainMenu);
+        BuildProductionMenu(mainMenu);
         appliedMainMenu = mainMenu.gameObject;
-        RuntimeFileLogger.Event("MENU", "Applied approved main-menu art with stable navigation lifecycle");
+        RuntimeFileLogger.Event("MENU", "Applied clean production main-menu composition");
     }
 
-    void BuildApprovedMenu(Transform mainMenu)
+    void BuildProductionMenu(Transform mainMenu)
     {
         for (int i = 0; i < mainMenu.childCount; i++)
             mainMenu.GetChild(i).gameObject.SetActive(false);
 
-        GameObject root = new GameObject("ApprovedMainMenu");
+        GameObject root = new GameObject("ProductionMainMenu");
         root.transform.SetParent(mainMenu, false);
         Stretch(root.AddComponent<RectTransform>());
 
-        BuildApprovedArt(root.transform);
+        BuildBackground(root.transform);
+        BuildRightReadabilityVeil(root.transform);
 
-        CreateAnimatedButton(root.transform, "PLAY", new Vector2(437f, 286f), new Vector2(548f, 203f), () => InvokeController("ShowLevels"), .24f);
-        CreateAnimatedButton(root.transform, "HEROES", new Vector2(454f, 127f), new Vector2(457f, 116f), () => ShowFeature("HEROES"), .16f);
-        CreateAnimatedButton(root.transform, "TOWERS", new Vector2(454f, 8f), new Vector2(457f, 112f), () => ShowFeature("TOWERS"), .16f);
-        CreateAnimatedButton(root.transform, "UPGRADES", new Vector2(454f, -106f), new Vector2(457f, 110f), () => ShowFeature("UPGRADES"), .16f);
-        CreateAnimatedButton(root.transform, "SHOP", new Vector2(454f, -217f), new Vector2(457f, 106f), () => ShowFeature("SHOP"), .16f);
-        CreateAnimatedButton(root.transform, "SETTINGS", new Vector2(861f, 473f), new Vector2(104f, 100f), () => InvokeController("ShowSettingsFromMain"), .20f);
-        CreateAnimatedButton(root.transform, "EXIT", new Vector2(791f, -469f), new Vector2(208f, 118f), () => InvokeController("QuitGame"), .18f);
+        CreateMenuButton(root.transform, "PLAY", GameLanguage.T("PLAY", "ИГРАТЬ"), new Vector2(470f, 118f), new Vector2(540f, 132f), true, () => InvokeController("ShowLevels"));
+        CreateMenuButton(root.transform, "ARMY", GameLanguage.T("ARMY", "АРМИЯ"), new Vector2(470f, -30f), new Vector2(470f, 92f), false, ShowArmy);
+        CreateMenuButton(root.transform, "SETTINGS", GameLanguage.T("SETTINGS", "НАСТРОЙКИ"), new Vector2(470f, -146f), new Vector2(470f, 92f), false, () => InvokeController("ShowSettingsFromMain"));
+        CreateMenuButton(root.transform, "EXIT", GameLanguage.T("EXIT", "ВЫХОД"), new Vector2(470f, -262f), new Vector2(470f, 92f), false, () => InvokeController("QuitGame"));
 
-        BuildFeatureOverlay(root.transform);
+        BuildArmyOverlay(root.transform);
     }
 
-    void BuildApprovedArt(Transform parent)
+    void BuildBackground(Transform parent)
     {
-        GameObject backgroundObject = new GameObject("ApprovedReferenceArt");
+        GameObject backgroundObject = new GameObject("CleanIllustratedBackground");
         backgroundObject.transform.SetParent(parent, false);
         Image background = backgroundObject.AddComponent<Image>();
         background.raycastTarget = false;
         Stretch(background.rectTransform);
 
-        approvedTexture = Resources.Load<Texture2D>(ApprovedMenuResource);
-        if (approvedTexture == null)
+        Texture2D texture = Resources.Load<Texture2D>(BackgroundResource);
+        if (texture == null)
         {
-            RuntimeFileLogger.Event("MENU", "Approved main-menu reference art is missing");
             background.color = new Color(.10f, .06f, .03f, 1f);
+            RuntimeFileLogger.Event("MENU", "Main menu background is missing: " + BackgroundResource);
             return;
         }
 
-        Sprite backgroundSprite = Sprite.Create(
-            approvedTexture,
-            new Rect(0f, 0f, approvedTexture.width, approvedTexture.height),
-            new Vector2(.5f, .5f),
-            100f);
-        runtimeButtonSprites.Add(backgroundSprite);
-
-        background.sprite = backgroundSprite;
+        background.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(.5f, .5f), 100f);
         background.type = Image.Type.Simple;
         background.preserveAspect = false;
         background.color = Color.white;
     }
 
-    void CreateAnimatedButton(
-        Transform parent,
-        string name,
-        Vector2 position,
-        Vector2 size,
-        UnityAction action,
-        float glowAlpha)
+    static void BuildRightReadabilityVeil(Transform parent)
     {
-        GameObject root = new GameObject(name + "_Button");
+        GameObject veilObject = new GameObject("MenuReadabilityVeil");
+        veilObject.transform.SetParent(parent, false);
+        Image veil = veilObject.AddComponent<Image>();
+        veil.color = new Color(.025f, .012f, .008f, .24f);
+        veil.raycastTarget = false;
+
+        RectTransform rect = veil.rectTransform;
+        rect.anchorMin = new Vector2(.56f, 0f);
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+    }
+
+    void CreateMenuButton(Transform parent, string objectName, string label, Vector2 position, Vector2 size, bool primary, UnityAction action)
+    {
+        GameObject root = new GameObject(objectName + "_Button");
         root.transform.SetParent(parent, false);
 
-        Image input = root.AddComponent<Image>();
-        input.color = new Color(1f, 1f, 1f, .001f);
-        input.raycastTarget = true;
+        Image image = root.AddComponent<Image>();
+        image.color = primary ? new Color(.69f, .12f, .035f, .97f) : new Color(.22f, .085f, .025f, .95f);
 
-        RectTransform rootRect = input.rectTransform;
-        rootRect.anchorMin = rootRect.anchorMax = rootRect.pivot = new Vector2(.5f, .5f);
-        rootRect.anchoredPosition = position;
-        rootRect.sizeDelta = size;
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+
+        Outline outline = root.AddComponent<Outline>();
+        outline.effectColor = primary ? new Color(1f, .66f, .16f, .95f) : new Color(.78f, .45f, .16f, .88f);
+        outline.effectDistance = new Vector2(3f, -3f);
+
+        Shadow shadow = root.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.02f, .006f, .002f, .82f);
+        shadow.effectDistance = new Vector2(0f, -7f);
 
         Button button = root.AddComponent<Button>();
-        button.targetGraphic = input;
-        button.transition = Selectable.Transition.None;
+        button.targetGraphic = image;
+        button.transition = Selectable.Transition.ColorTint;
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.08f, 1.04f, .91f, 1f);
+        colors.pressedColor = new Color(.78f, .70f, .58f, 1f);
+        colors.selectedColor = new Color(1.03f, .98f, .84f, 1f);
+        colors.fadeDuration = .08f;
+        button.colors = colors;
         button.onClick.AddListener(action);
 
-        Sprite buttonSprite = CreateButtonSprite(position, size);
-        if (buttonSprite == null) return;
+        AddButtonText(root.transform, label, new Vector2(-6f, 0f), primary ? 36 : 28, true);
+        AddButtonText(root.transform, "›", new Vector2(size.x * .40f, 1f), primary ? 46 : 38, true, new Vector2(48f, size.y));
 
-        GameObject baseObject = new GameObject("PressedBase");
-        baseObject.transform.SetParent(root.transform, false);
-        Image pressedBase = baseObject.AddComponent<Image>();
-        pressedBase.sprite = buttonSprite;
-        pressedBase.type = Image.Type.Simple;
-        pressedBase.preserveAspect = false;
-        pressedBase.color = new Color(.48f, .40f, .31f, 1f);
-        pressedBase.raycastTarget = false;
-        Stretch(pressedBase.rectTransform);
-
-        GameObject faceObject = new GameObject("AnimatedFace");
-        faceObject.transform.SetParent(root.transform, false);
-        Image face = faceObject.AddComponent<Image>();
-        face.sprite = buttonSprite;
-        face.type = Image.Type.Simple;
-        face.preserveAspect = false;
-        face.color = Color.white;
-        face.raycastTarget = false;
-        Stretch(face.rectTransform);
-
-        Outline glow = faceObject.AddComponent<Outline>();
-        glow.effectColor = new Color(1f, .72f, .18f, 0f);
-        glow.effectDistance = new Vector2(3f, -3f);
-
-        Shadow shadow = faceObject.AddComponent<Shadow>();
-        shadow.effectColor = new Color(.05f, .012f, .002f, .72f);
-        shadow.effectDistance = new Vector2(0f, -6f);
-
-        ApprovedMenuButtonFeedback feedback = root.AddComponent<ApprovedMenuButtonFeedback>();
-        feedback.Configure(face.rectTransform, face, glow, glowAlpha);
+        GameObject accent = new GameObject("LeftAccent");
+        accent.transform.SetParent(root.transform, false);
+        Image accentImage = accent.AddComponent<Image>();
+        accentImage.color = primary ? new Color(1f, .67f, .18f, .92f) : new Color(.86f, .52f, .18f, .80f);
+        accentImage.raycastTarget = false;
+        RectTransform accentRect = accentImage.rectTransform;
+        accentRect.anchorMin = accentRect.anchorMax = accentRect.pivot = new Vector2(.5f, .5f);
+        accentRect.anchoredPosition = new Vector2(-size.x * .42f, 0f);
+        accentRect.sizeDelta = new Vector2(6f, size.y * .62f);
     }
 
-    Sprite CreateButtonSprite(Vector2 position, Vector2 size)
+    static Text AddButtonText(Transform parent, string value, Vector2 position, int fontSize, bool bold, Vector2? size = null)
     {
-        if (approvedTexture == null) return null;
+        GameObject go = new GameObject("Label");
+        go.transform.SetParent(parent, false);
+        Text text = go.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.text = value;
+        text.fontSize = fontSize;
+        text.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.color = new Color(1f, .91f, .72f, 1f);
+        text.raycastTarget = false;
 
-        float scaleX = approvedTexture.width / ReferenceWidth;
-        float scaleY = approvedTexture.height / ReferenceHeight;
-
-        float x = (ReferenceWidth * .5f + position.x - size.x * .5f) * scaleX;
-        float y = (ReferenceHeight * .5f + position.y - size.y * .5f) * scaleY;
-        float width = size.x * scaleX;
-        float height = size.y * scaleY;
-
-        x = Mathf.Clamp(x, 0f, approvedTexture.width - 1f);
-        y = Mathf.Clamp(y, 0f, approvedTexture.height - 1f);
-        width = Mathf.Clamp(width, 1f, approvedTexture.width - x);
-        height = Mathf.Clamp(height, 1f, approvedTexture.height - y);
-
-        Sprite sprite = Sprite.Create(
-            approvedTexture,
-            new Rect(x, y, width, height),
-            new Vector2(.5f, .5f),
-            100f);
-        runtimeButtonSprites.Add(sprite);
-        return sprite;
+        RectTransform rect = text.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size ?? new Vector2(360f, 70f);
+        return text;
     }
 
-    void BuildFeatureOverlay(Transform parent)
+    void BuildArmyOverlay(Transform parent)
     {
-        featureOverlay = new GameObject("FeatureOverlay");
-        featureOverlay.transform.SetParent(parent, false);
+        armyOverlay = new GameObject("ArmyOverlay");
+        armyOverlay.transform.SetParent(parent, false);
 
-        Image blocker = featureOverlay.AddComponent<Image>();
-        blocker.color = new Color(.025f, .012f, .006f, .96f);
+        Image blocker = armyOverlay.AddComponent<Image>();
+        blocker.color = new Color(.018f, .008f, .004f, .90f);
         blocker.raycastTarget = true;
         Stretch(blocker.rectTransform);
 
-        GameObject panel = new GameObject("FeatureCard");
-        panel.transform.SetParent(featureOverlay.transform, false);
+        GameObject panel = new GameObject("ArmyCard");
+        panel.transform.SetParent(armyOverlay.transform, false);
         Image panelImage = panel.AddComponent<Image>();
         panelImage.color = new Color(.10f, .045f, .018f, .98f);
-        panelImage.raycastTarget = false;
-
         RectTransform panelRect = panelImage.rectTransform;
         panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(.5f, .5f);
-        panelRect.sizeDelta = new Vector2(760f, 430f);
+        panelRect.sizeDelta = new Vector2(760f, 360f);
 
         Outline outline = panel.AddComponent<Outline>();
-        outline.effectColor = new Color(.95f, .54f, .14f, .85f);
+        outline.effectColor = new Color(.93f, .52f, .14f, .90f);
         outline.effectDistance = new Vector2(3f, -3f);
 
-        featureTitle = AddOverlayText(panel.transform, "", new Vector2(0f, 105f), new Vector2(620f, 80f), 44, FontStyle.Bold, new Color(1f, .68f, .18f, 1f));
-        featureBody = AddOverlayText(panel.transform, "", new Vector2(0f, 20f), new Vector2(620f, 110f), 20, FontStyle.Normal, new Color(.90f, .80f, .66f, 1f));
+        AddOverlayText(panel.transform, GameLanguage.T("ARMY", "АРМИЯ"), new Vector2(0f, 90f), 42, FontStyle.Bold, new Color(1f, .68f, .18f, 1f));
+        AddOverlayText(panel.transform, GameLanguage.T("Army management is prepared for the next production pass.", "Управление армией будет подключено на следующем этапе разработки."), new Vector2(0f, 18f), 19, FontStyle.Normal, new Color(.91f, .82f, .70f, 1f), new Vector2(620f, 92f));
 
-        CreateOverlayButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0f, -125f), HideFeature);
-        featureOverlay.SetActive(false);
+        GameObject back = new GameObject("BackButton");
+        back.transform.SetParent(panel.transform, false);
+        Image backImage = back.AddComponent<Image>();
+        backImage.color = new Color(.62f, .15f, .04f, 1f);
+        RectTransform backRect = backImage.rectTransform;
+        backRect.anchorMin = backRect.anchorMax = backRect.pivot = new Vector2(.5f, .5f);
+        backRect.anchoredPosition = new Vector2(0f, -105f);
+        backRect.sizeDelta = new Vector2(280f, 62f);
+        Button button = back.AddComponent<Button>();
+        button.targetGraphic = backImage;
+        button.onClick.AddListener(() => armyOverlay.SetActive(false));
+        AddButtonText(back.transform, GameLanguage.T("BACK", "НАЗАД"), Vector2.zero, 23, true, new Vector2(250f, 58f));
+
+        armyOverlay.SetActive(false);
     }
 
-    Text AddOverlayText(Transform parent, string value, Vector2 position, Vector2 size, int fontSize, FontStyle style, Color color)
+    static Text AddOverlayText(Transform parent, string value, Vector2 position, int fontSize, FontStyle style, Color color, Vector2? size = null)
     {
         GameObject go = new GameObject("Text");
         go.transform.SetParent(parent, false);
-
         Text text = go.AddComponent<Text>();
         text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         text.text = value;
@@ -252,57 +234,21 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         text.alignment = TextAnchor.MiddleCenter;
         text.color = color;
         text.raycastTarget = false;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Overflow;
 
         RectTransform rect = text.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
         rect.anchoredPosition = position;
-        rect.sizeDelta = size;
+        rect.sizeDelta = size ?? new Vector2(620f, 70f);
         return text;
     }
 
-    void CreateOverlayButton(Transform parent, string label, Vector2 position, UnityAction action)
+    void ShowArmy()
     {
-        GameObject go = new GameObject("BackButton");
-        go.transform.SetParent(parent, false);
-
-        Image image = go.AddComponent<Image>();
-        image.color = new Color(.65f, .16f, .045f, 1f);
-
-        RectTransform rect = image.rectTransform;
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-        rect.anchoredPosition = position;
-        rect.sizeDelta = new Vector2(280f, 66f);
-
-        Outline outline = go.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, .62f, .16f, .95f);
-        outline.effectDistance = new Vector2(3f, -3f);
-
-        Button button = go.AddComponent<Button>();
-        button.targetGraphic = image;
-        button.onClick.AddListener(action);
-        go.AddComponent<MenuButtonFeedback>();
-
-        Text labelText = AddOverlayText(go.transform, label, Vector2.zero, new Vector2(260f, 58f), 24, FontStyle.Bold, Color.white);
-        labelText.raycastTarget = false;
-    }
-
-    void ShowFeature(string feature)
-    {
-        if (featureOverlay == null || featureTitle == null || featureBody == null) return;
-
-        featureTitle.text = feature;
-        featureBody.text = GameLanguage.T(
-            "This section is prepared for a later production pass.",
-            "Этот раздел будет подключён на следующем этапе разработки.");
-        featureOverlay.SetActive(true);
-        RuntimeFileLogger.Event("MENU", $"Opened main-menu section: {feature}");
-    }
-
-    void HideFeature()
-    {
-        if (featureOverlay == null) return;
-        featureOverlay.SetActive(false);
-        RuntimeFileLogger.Event("MENU", "Returned from main-menu section to approved main menu");
+        if (armyOverlay == null) return;
+        armyOverlay.SetActive(true);
+        RuntimeFileLogger.Event("MENU", "Opened Army placeholder from production main menu");
     }
 
     void InvokeController(string methodName)
@@ -310,27 +256,13 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         if (controller == null) controller = FindFirstObjectByType<GameMenuController>();
         if (controller == null) return;
 
-        MethodInfo method = typeof(GameMenuController).GetMethod(
-            methodName,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
+        MethodInfo method = typeof(GameMenuController).GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         if (method == null)
         {
             RuntimeFileLogger.Event("MENU", "Menu action not found: " + methodName);
             return;
         }
-
         method.Invoke(controller, null);
-    }
-
-    void ClearRuntimeSprites()
-    {
-        for (int i = 0; i < runtimeButtonSprites.Count; i++)
-        {
-            if (runtimeButtonSprites[i] != null)
-                Destroy(runtimeButtonSprites[i]);
-        }
-        runtimeButtonSprites.Clear();
     }
 
     static void Stretch(RectTransform rect)
@@ -344,115 +276,5 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
     void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        ClearRuntimeSprites();
-    }
-}
-
-public sealed class ApprovedMenuButtonFeedback : MonoBehaviour,
-    IPointerEnterHandler,
-    IPointerExitHandler,
-    IPointerDownHandler,
-    IPointerUpHandler,
-    ISelectHandler,
-    IDeselectHandler
-{
-    const float HoverScale = 1.055f;
-    const float PressScale = .92f;
-    const float ReleaseKickScale = 1.08f;
-    const float Speed = 18f;
-
-    RectTransform animatedFace;
-    Image faceImage;
-    Outline glow;
-    float hoverGlowAlpha;
-    Vector3 wantedScale = Vector3.one;
-    float wantedGlow;
-    bool highlighted;
-
-    public void Configure(RectTransform face, Image image, Outline outline, float glowAlpha)
-    {
-        animatedFace = face;
-        faceImage = image;
-        glow = outline;
-        hoverGlowAlpha = glowAlpha;
-        wantedScale = Vector3.one;
-        wantedGlow = 0f;
-        ApplyVisuals(0f);
-    }
-
-    void Update()
-    {
-        if (animatedFace == null) return;
-
-        float t = 1f - Mathf.Exp(-Speed * Time.unscaledDeltaTime);
-        animatedFace.localScale = Vector3.Lerp(animatedFace.localScale, wantedScale, t);
-
-        float currentGlow = glow != null ? glow.effectColor.a : 0f;
-        float nextGlow = Mathf.Lerp(currentGlow, wantedGlow, t);
-        ApplyVisuals(nextGlow);
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (!IsInteractable()) return;
-        highlighted = true;
-        wantedScale = Vector3.one * HoverScale;
-        wantedGlow = hoverGlowAlpha;
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        highlighted = false;
-        wantedScale = Vector3.one;
-        wantedGlow = 0f;
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        if (!IsInteractable()) return;
-        wantedScale = Vector3.one * PressScale;
-        wantedGlow = hoverGlowAlpha * 1.35f;
-    }
-
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        if (!IsInteractable()) return;
-        if (animatedFace != null)
-            animatedFace.localScale = Vector3.one * ReleaseKickScale;
-        wantedScale = Vector3.one * (highlighted ? HoverScale : 1f);
-        wantedGlow = highlighted ? hoverGlowAlpha : 0f;
-    }
-
-    public void OnSelect(BaseEventData eventData)
-    {
-        if (!IsInteractable()) return;
-        highlighted = true;
-        wantedScale = Vector3.one * HoverScale;
-        wantedGlow = hoverGlowAlpha;
-    }
-
-    public void OnDeselect(BaseEventData eventData)
-    {
-        highlighted = false;
-        wantedScale = Vector3.one;
-        wantedGlow = 0f;
-    }
-
-    void ApplyVisuals(float glowAlpha)
-    {
-        if (faceImage != null)
-        {
-            float warmth = highlighted ? .94f : 1f;
-            faceImage.color = new Color(1f, warmth, highlighted ? .84f : 1f, 1f);
-        }
-
-        if (glow != null)
-            glow.effectColor = new Color(1f, .72f, .18f, Mathf.Clamp01(glowAlpha));
-    }
-
-    bool IsInteractable()
-    {
-        Button button = GetComponent<Button>();
-        return button == null || button.interactable;
     }
 }

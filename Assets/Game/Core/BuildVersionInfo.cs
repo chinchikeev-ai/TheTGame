@@ -36,6 +36,18 @@ public static class BuildVersionInfo
         }
     }
 
+    public static string CompactMenuBadge
+    {
+        get
+        {
+#if UNITY_EDITOR
+            if (TryGetRepositoryIdentity(out _, out string sha))
+                return FormatCompactBadge(sha);
+#endif
+            return CompactBadgeFromStampedVersion(Application.version);
+        }
+    }
+
     public static bool TryGetRepositoryIdentity(out string branch, out string sha)
     {
         branch = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
@@ -84,20 +96,36 @@ public static class BuildVersionInfo
 
     public static string BadgeFromStampedVersion(string version)
     {
-        string prefix = ProductVersion + "-";
-        if (!string.IsNullOrWhiteSpace(version) && version.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
-            string payload = version.Substring(prefix.Length);
-            int separator = payload.LastIndexOf('-');
-            if (separator > 0 && separator < payload.Length - 1)
-            {
-                string branch = payload.Substring(0, separator);
-                string sha = payload.Substring(separator + 1);
-                return FormatBadge(branch, sha);
-            }
-        }
+        if (TryParseStampedVersion(version, out string branch, out string sha))
+            return FormatBadge(branch, sha);
 
         return $"BUILD v{ProductVersion} • UNSTAMPED";
+    }
+
+    public static string CompactBadgeFromStampedVersion(string version)
+    {
+        if (TryParseStampedVersion(version, out _, out string sha))
+            return FormatCompactBadge(sha);
+
+        return $"v{ProductVersion} · UNSTAMPED";
+    }
+
+    static bool TryParseStampedVersion(string version, out string branch, out string sha)
+    {
+        branch = string.Empty;
+        sha = string.Empty;
+
+        string prefix = ProductVersion + "-";
+        if (string.IsNullOrWhiteSpace(version) || !version.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        string payload = version.Substring(prefix.Length);
+        int separator = payload.LastIndexOf('-');
+        if (separator <= 0 || separator >= payload.Length - 1) return false;
+
+        branch = payload.Substring(0, separator);
+        sha = payload.Substring(separator + 1);
+        return true;
     }
 
     static string FormatBadge(string branch, string sha)
@@ -107,6 +135,13 @@ public static class BuildVersionInfo
         if (string.IsNullOrWhiteSpace(normalizedBranch)) normalizedBranch = "UNKNOWN";
         if (string.IsNullOrWhiteSpace(shortSha)) shortSha = "UNKNOWN";
         return $"BUILD v{ProductVersion} • {normalizedBranch} • {shortSha}";
+    }
+
+    static string FormatCompactBadge(string sha)
+    {
+        string shortSha = ShortSha(sha).ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(shortSha)) shortSha = "UNKNOWN";
+        return $"v{ProductVersion} · {shortSha}";
     }
 
     static string NormalizeToken(string value)
