@@ -15,7 +15,7 @@ MonoBehaviour:
   id: greek_infantry
   displayName: Greek Infantry
   archetype: 0
-  hpMultiplier: 1
+  hpMultiplier: 1.5
   speedMultiplier: 1
   reward: 20
   baseDamage: 1
