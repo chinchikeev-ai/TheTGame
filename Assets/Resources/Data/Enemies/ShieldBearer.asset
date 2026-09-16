@@ -15,7 +15,7 @@ MonoBehaviour:
   id: shield_bearer
   displayName: Shield Bearer
   archetype: 3
-  hpMultiplier: 2.1
+  hpMultiplier: 3.15
   speedMultiplier: 0.82
   reward: 42
   baseDamage: 2
