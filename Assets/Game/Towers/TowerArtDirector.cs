@@ -202,7 +202,10 @@ public static class TowerArtDirector
             collider.enabled=false;
             Object.Destroy(collider);
         }
-        RuntimeVisualAudit.Report("TowerCrew:"+prefabName,source,detail);
+        int repairedMaterials=CharacterUrpMaterialAdapter.ApplyTo(crew);
+        if(repairedMaterials>0)
+            detail += "; urpMaterialRepair="+repairedMaterials;
+        RuntimeVisualAudit.ReportDetailed("TowerCrew:"+prefabName,source,detail,crew);
     }
 
     static void AddPriest(Transform parent,Vector3 localPosition,float yaw)
