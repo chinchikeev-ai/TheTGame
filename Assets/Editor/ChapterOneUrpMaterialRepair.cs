@@ -78,25 +78,32 @@ public static class ChapterOneUrpMaterialRepair
 
         EnsureFolder(MaterialRoot);
         Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        CharacterVisualIdentity identity = root.GetComponent<CharacterVisualIdentity>();
+        if (identity == null) identity = root.GetComponentInChildren<CharacterVisualIdentity>(true);
+
         int changed = 0;
         for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
         {
             Renderer renderer = renderers[rendererIndex];
             if (renderer == null) continue;
 
-            Material[] materials = renderer.sharedMaterials;
+            Material[] materials = renderer.sharedMaterials ?? Array.Empty<Material>();
+            int requiredSlots = RequiredMaterialSlots(renderer);
+            if (requiredSlots > materials.Length)
+                Array.Resize(ref materials, requiredSlots);
+            if (materials.Length == 0) continue;
+
             bool rendererChanged = false;
             for (int slot = 0; slot < materials.Length; slot++)
             {
                 Material source = materials[slot];
-                if (source == null) continue;
-
                 string assetPath = MaterialPath(prefabName, rendererIndex, slot);
                 Material stable = AssetDatabase.LoadAssetAtPath<Material>(assetPath);
-                Texture texture = ReadTexture(source);
-                Vector2 scale = ReadTextureScale(source);
-                Vector2 offset = ReadTextureOffset(source);
-                Color color = SanitizeColor(ReadColor(source));
+
+                Texture texture = source != null ? ReadTexture(source) : null;
+                Vector2 scale = source != null ? ReadTextureScale(source) : Vector2.one;
+                Vector2 offset = source != null ? ReadTextureOffset(source) : Vector2.zero;
+                Color color = source != null ? SanitizeColor(ReadColor(source)) : ResolveMissingSlotColor(renderer, identity);
                 if (tint.HasValue) color = Color.Lerp(color, tint.Value, .32f);
 
                 if (stable == null)
@@ -148,7 +155,14 @@ public static class ChapterOneUrpMaterialRepair
 
                 foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
                 {
-                    Material[] materials = renderer.sharedMaterials;
+                    Material[] materials = renderer.sharedMaterials ?? Array.Empty<Material>();
+                    int requiredSlots = RequiredMaterialSlots(renderer);
+                    if (materials.Length < requiredSlots)
+                    {
+                        problems.Add(path + ": renderer " + renderer.name + " has " + materials.Length + " material slot(s) but mesh needs " + requiredSlots + ".");
+                        continue;
+                    }
+
                     for (int i = 0; i < materials.Length; i++)
                     {
                         Material material = materials[i];
@@ -172,6 +186,37 @@ public static class ChapterOneUrpMaterialRepair
             }
         }
         return problems;
+    }
+
+    static int RequiredMaterialSlots(Renderer renderer)
+    {
+        if (renderer is SkinnedMeshRenderer skinned && skinned.sharedMesh != null)
+            return Mathf.Max(1, skinned.sharedMesh.subMeshCount);
+
+        MeshFilter filter = renderer.GetComponent<MeshFilter>();
+        if (filter != null && filter.sharedMesh != null)
+            return Mathf.Max(1, filter.sharedMesh.subMeshCount);
+
+        return renderer.sharedMaterials != null ? renderer.sharedMaterials.Length : 0;
+    }
+
+    static Color ResolveMissingSlotColor(Renderer renderer, CharacterVisualIdentity identity)
+    {
+        string lower = renderer != null ? renderer.name.ToLowerInvariant() : string.Empty;
+        bool trojan = identity == null || identity.faction == TroyFaction.Trojan;
+
+        if (lower.Contains("head") || lower.Contains("face") || lower.Contains("arm") || lower.Contains("hand"))
+            return new Color(.86f, .52f, .32f, 1f);
+        if (lower.Contains("helmet") || lower.Contains("shield"))
+            return new Color(.63f, .40f, .14f, 1f);
+        if (lower.Contains("sword") || lower.Contains("blade"))
+            return new Color(.58f, .62f, .67f, 1f);
+        if (lower.Contains("cape") || lower.Contains("cloth"))
+            return trojan ? new Color(.55f, .08f, .045f, 1f) : new Color(.18f, .30f, .52f, 1f);
+        if (lower.Contains("leg") || lower.Contains("boot") || lower.Contains("foot"))
+            return trojan ? new Color(.28f, .12f, .07f, 1f) : new Color(.20f, .24f, .31f, 1f);
+
+        return trojan ? new Color(.63f, .30f, .12f, 1f) : new Color(.38f, .50f, .67f, 1f);
     }
 
     static string MaterialPath(string prefabName, int rendererIndex, int slot)
@@ -224,7 +269,6 @@ public static class ChapterOneUrpMaterialRepair
 
     static Color SanitizeColor(Color color)
     {
-        // Bright Unity-error magenta must never be propagated into the stabilized material.
         if (color.r >= .85f && color.g <= .25f && color.b >= .85f) return Color.white;
         return color;
     }
