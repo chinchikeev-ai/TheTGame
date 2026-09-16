@@ -6,22 +6,26 @@ public static class BuildVersionInfo
 {
     public const string ProductVersion = "0.6";
     const int ShortShaLength = 8;
+    const string StampFileName = "build_version.stamp";
 
 #if UNITY_EDITOR
     static string editorRemoteSha;
     static bool editorRemoteKnown;
     static bool editorOutdated;
     static bool editorDirty;
+#else
+    static string playerStampedVersion;
+    static bool playerStampedResolved;
 #endif
 
     public static string MenuBadge
     {
         get
         {
-#if UNITY_EDITOR
             if (TryGetRepositoryIdentity(out string branch, out string sha))
             {
                 string badge = FormatBadge(branch, sha);
+#if UNITY_EDITOR
                 if (editorRemoteKnown)
                 {
                     badge += editorOutdated
@@ -29,9 +33,9 @@ public static class BuildVersionInfo
                         : " • SYNC";
                     if (editorDirty) badge += " • DIRTY";
                 }
+#endif
                 return badge;
             }
-#endif
             return BadgeFromStampedVersion(Application.version);
         }
     }
@@ -40,10 +44,8 @@ public static class BuildVersionInfo
     {
         get
         {
-#if UNITY_EDITOR
             if (TryGetRepositoryIdentity(out _, out string sha))
                 return FormatCompactBadge(sha);
-#endif
             return CompactBadgeFromStampedVersion(Application.version);
         }
     }
@@ -56,6 +58,17 @@ public static class BuildVersionInfo
 #if UNITY_EDITOR
         if (string.IsNullOrWhiteSpace(branch)) branch = RunGit("rev-parse --abbrev-ref HEAD");
         if (string.IsNullOrWhiteSpace(sha)) sha = RunGit("rev-parse HEAD");
+#else
+        if (string.IsNullOrWhiteSpace(branch) || string.IsNullOrWhiteSpace(sha))
+        {
+            string stampedVersion = GetPlayerStampedVersion();
+            if (!string.IsNullOrEmpty(stampedVersion) &&
+                TryParseStampedVersion(stampedVersion, out string stampedBranch, out string stampedSha))
+            {
+                if (string.IsNullOrWhiteSpace(branch)) branch = stampedBranch;
+                if (string.IsNullOrWhiteSpace(sha)) sha = stampedSha;
+            }
+        }
 #endif
 
         branch = NormalizeToken(branch);
@@ -164,6 +177,26 @@ public static class BuildVersionInfo
         string value = sha.Trim();
         return value.Length <= ShortShaLength ? value : value.Substring(0, ShortShaLength);
     }
+
+#if !UNITY_EDITOR
+    static string GetPlayerStampedVersion()
+    {
+        if (playerStampedResolved) return playerStampedVersion;
+        playerStampedResolved = true;
+
+        try
+        {
+            string stampPath = Path.Combine(Application.dataPath, StampFileName);
+            if (File.Exists(stampPath))
+                playerStampedVersion = File.ReadAllText(stampPath).Trim();
+        }
+        catch
+        {
+            playerStampedVersion = null;
+        }
+        return playerStampedVersion;
+    }
+#endif
 
 #if UNITY_EDITOR
     static string RunGit(string arguments)
