@@ -15,7 +15,7 @@ MonoBehaviour:
   id: battering_ram
   displayName: Battering Ram
   archetype: 5
-  hpMultiplier: 5.5
+  hpMultiplier: 8.25
   speedMultiplier: 0.42
   reward: 110
   baseDamage: 7
