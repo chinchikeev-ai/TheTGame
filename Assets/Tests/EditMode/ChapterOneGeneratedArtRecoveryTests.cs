@@ -154,6 +154,17 @@ namespace TheTroyGame.Tests
         }
 
         [Test]
+        public void RuntimeCharacterMaterialRecovery_FillsNullRendererMaterialSlots()
+        {
+            string adapter = File.ReadAllText(MaterialAdapterPath);
+
+            StringAssert.Contains("RequiredMaterialSlots(renderer)", adapter);
+            StringAssert.Contains("if (source == null)", adapter);
+            StringAssert.Contains("GetMissingSlotMaterial(baseTemplate, renderer, slot)", adapter);
+            StringAssert.Contains("ResolveMissingSlotColor(renderer, identity)", adapter);
+        }
+
+        [Test]
         public void CharacterBuilder_DoesNotPersistKayKitShadersIntoGeneratedPrefabs()
         {
             Assert.IsTrue(File.Exists(CharacterBuilderPath), "Missing character prefab builder.");
@@ -174,7 +185,9 @@ namespace TheTroyGame.Tests
             StringAssert.Contains("renderer.sharedMaterials = materials", repair);
             StringAssert.Contains("uses external/non-stabilized material", repair);
             StringAssert.Contains("does not use RuntimeColorMaterial shader", repair);
-            StringAssert.Contains("Bright Unity-error magenta must never be propagated", repair);
+            StringAssert.Contains("SanitizeColor(ReadColor(source))", repair);
+            StringAssert.Contains("source != null ? SanitizeColor(ReadColor(source)) : ResolveMissingSlotColor(renderer, identity)", repair);
+            StringAssert.Contains("RequiredMaterialSlots(renderer)", repair);
         }
     }
 }
