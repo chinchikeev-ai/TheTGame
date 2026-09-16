@@ -15,7 +15,7 @@ MonoBehaviour:
   id: heavy_hoplite
   displayName: Heavy Hoplite
   archetype: 2
-  hpMultiplier: 3.2
+  hpMultiplier: 4.8
   speedMultiplier: 0.68
   reward: 58
   baseDamage: 2
