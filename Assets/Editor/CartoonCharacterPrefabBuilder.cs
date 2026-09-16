@@ -274,28 +274,22 @@ public static class CartoonCharacterPrefabBuilder
         tip.name = "BronzeTip";
         tip.transform.SetParent(spear.transform, false);
         tip.transform.localPosition = new Vector3(0f, .78f, 0f);
-        tip.transform.localScale = new Vector3(.06f, .16f, .025f);
+        tip.transform.localScale = new Vector3(.065f, .16f, .035f);
         tip.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
         DestroyCollider(tip);
-        TowerFactory.SetColor(tip, new Color(.72f, .50f, .20f));
+        TowerFactory.SetColor(tip, new Color(.78f, .58f, .22f));
     }
 
     static void AttachProceduralBow(GameObject root, Transform parent, float scale)
     {
         if (parent == null) parent = root.transform;
-        GameObject bow = new GameObject("Bow");
-        bow.transform.SetParent(parent, false);
-        bow.transform.localPosition = new Vector3(.03f, .02f, .05f);
-        bow.transform.localRotation = Quaternion.Euler(4f, 8f, 88f);
-        bow.transform.localScale = Vector3.one * scale;
-
-        Color wood = new Color(.34f, .19f, .08f);
-        Color stringColor = new Color(.76f, .70f, .55f);
-        GameObject upper = PrimitivePart(bow.transform, "UpperLimb", PrimitiveType.Cylinder, new Vector3(0f, .28f, 0f), new Vector3(.025f, .34f, .025f), wood);
-        upper.transform.localRotation = Quaternion.Euler(0f, 0f, -18f);
-        GameObject lower = PrimitivePart(bow.transform, "LowerLimb", PrimitiveType.Cylinder, new Vector3(0f, -.28f, 0f), new Vector3(.025f, .34f, .025f), wood);
-        lower.transform.localRotation = Quaternion.Euler(0f, 0f, 18f);
-        PrimitivePart(bow.transform, "BowString", PrimitiveType.Cylinder, new Vector3(-.10f, 0f, 0f), new Vector3(.007f, .61f, .007f), stringColor);
+        Transform bow = new GameObject("Bow").transform;
+        bow.SetParent(parent, false);
+        bow.localPosition = new Vector3(.02f, -.02f, .06f);
+        bow.localRotation = Quaternion.Euler(0f, 0f, -10f);
+        bow.localScale = Vector3.one * scale;
+        PrimitivePart(bow, "Upper", PrimitiveType.Cylinder, new Vector3(0f,.30f,0f), new Vector3(.025f,.32f,.025f), new Color(.35f,.18f,.075f));
+        PrimitivePart(bow, "Lower", PrimitiveType.Cylinder, new Vector3(0f,-.30f,0f), new Vector3(.025f,.32f,.025f), new Color(.35f,.18f,.075f));
     }
 
     static void AddLateBronzeAgeKit(GameObject root, TroyFaction faction, bool heavy, bool light)
@@ -428,20 +422,8 @@ public static class CartoonCharacterPrefabBuilder
 
     static void ApplyTint(GameObject root, Color tint)
     {
-        foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
-        {
-            Material[] materials = renderer.sharedMaterials;
-            for (int i = 0; i < materials.Length; i++)
-            {
-                Material source = materials[i];
-                if (source == null) continue;
-                Material clone = new Material(source) { name = source.name + "_TroyVariant" };
-                if (clone.HasProperty("_BaseColor")) clone.SetColor("_BaseColor", Color.Lerp(clone.GetColor("_BaseColor"), tint, .32f));
-                if (clone.HasProperty("_Color")) clone.SetColor("_Color", Color.Lerp(clone.GetColor("_Color"), tint, .32f));
-                materials[i] = clone;
-            }
-            renderer.sharedMaterials = materials;
-        }
+        string prefabName = root.transform.parent != null ? root.transform.parent.name : root.name;
+        ChapterOneUrpMaterialRepair.StabilizeMaterials(root, prefabName, tint);
     }
 
     static void EnsureFolders()
