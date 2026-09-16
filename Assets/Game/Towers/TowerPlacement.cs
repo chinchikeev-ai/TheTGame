@@ -44,6 +44,15 @@ public class TowerPlacement : MonoBehaviour
         else rangeIndicator?.Hide();
     }
 
+    public void ClearSelection()
+    {
+        BuildModeActive = false;
+        SelectedTower = null;
+        ClearHoveredPoint();
+        placementPreview?.Hide();
+        rangeIndicator?.Hide();
+    }
+
     public void UpgradeSelected()
     {
         if (SelectedTower == null) return;
@@ -74,6 +83,12 @@ public class TowerPlacement : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.GameEnded) return;
         if (gameCamera == null) gameCamera = Camera.main;
         if (gameCamera == null) return;
+
+        if (GameInput.SecondaryPressed())
+        {
+            ClearSelection();
+            return;
+        }
 
         Vector2 pointer = GameInput.PointerPosition;
         bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
