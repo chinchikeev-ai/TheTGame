@@ -7,6 +7,9 @@ using UnityEngine.Rendering;
 
 public static class BuildPlayerCommand
 {
+    const string PlayerName = "TheTGame_VisibleMap";
+    const string StampFileName = "build_version.stamp";
+
     [MenuItem("The Troy Game/Build/Windows Visible Map")]
     public static void BuildWindowsVisibleMap()
     {
@@ -36,7 +39,7 @@ public static class BuildPlayerCommand
         if (scenes.Length == 0)
             scenes = new[] { "Assets/Scenes/SampleScene.unity" };
 
-        string exePath = Path.Combine(buildDir, "TheTGame_VisibleMap.exe");
+        string exePath = Path.Combine(buildDir, PlayerName + ".exe");
         BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
         {
             scenes = scenes,
@@ -49,6 +52,26 @@ public static class BuildPlayerCommand
         Debug.Log($"Build result: {summary.result}; errors: {summary.totalErrors}; warnings: {summary.totalWarnings}; path: {exePath}");
 
         if (summary.result != BuildResult.Succeeded)
+        {
             EditorApplication.Exit(1);
+            return;
+        }
+
+        WriteBuildVersionStamp(buildDir);
+    }
+
+    static void WriteBuildVersionStamp(string buildDir)
+    {
+        bool identityAvailable = BuildVersionInfo.TryGetRepositoryIdentity(out string branch, out string sha);
+        string stampedVersion = BuildVersionInfo.ComposeStampedVersion(branch, sha);
+        string dataDir = Path.Combine(buildDir, PlayerName + "_Data");
+        Directory.CreateDirectory(dataDir);
+        string stampPath = Path.Combine(dataDir, StampFileName);
+        File.WriteAllText(stampPath, stampedVersion);
+
+        if (identityAvailable)
+            Debug.Log($"Build version stamp: {stampedVersion} -> {stampPath}");
+        else
+            Debug.LogWarning($"Build version identity was unavailable; wrote fallback stamp {stampedVersion} -> {stampPath}");
     }
 }
