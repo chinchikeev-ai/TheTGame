@@ -15,7 +15,7 @@ MonoBehaviour:
   id: greek_archer
   displayName: Greek Archer
   archetype: 4
-  hpMultiplier: 0.9
+  hpMultiplier: 1.35
   speedMultiplier: 0.9
   reward: 30
   baseDamage: 1
