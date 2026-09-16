@@ -90,6 +90,7 @@ public static class ChapterOneWallLife
         guard.transform.localScale *= .82f;
         foreach (Collider collider in guard.GetComponentsInChildren<Collider>(true)) Object.Destroy(collider);
         EnemyMotionAnimator.Attach(guard, EnemyArchetype.ShieldBearer);
+        CharacterUrpMaterialAdapter.ApplyTo(guard);
     }
 
     static void AddStandard(Transform parent, Vector3 position)
