@@ -22,7 +22,8 @@ public sealed class ChapterOneCoastEdgeClosure : MonoBehaviour
         yield return null;
         yield return null;
 
-        if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1)
+        if (GameObject.Find("Chapter01_CoastEnvironment") == null ||
+            (GameManager.Instance != null && GameManager.Instance.MapNumber != 1))
         {
             Destroy(gameObject);
             yield break;
