@@ -15,7 +15,7 @@ MonoBehaviour:
   id: menelaus
   displayName: Menelaus
   archetype: 6
-  hpMultiplier: 15
+  hpMultiplier: 22.5
   speedMultiplier: 0.68
   reward: 500
   baseDamage: 6
