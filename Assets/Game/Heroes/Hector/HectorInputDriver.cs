@@ -5,7 +5,6 @@ public sealed class HectorInputDriver : MonoBehaviour
 {
     HectorController hector;
     Camera gameCamera;
-    readonly Plane battlefieldPlane = new Plane(Vector3.up, Vector3.zero);
 
     public void Initialize(HectorController controller, Camera camera = null)
     {
@@ -29,12 +28,17 @@ public sealed class HectorInputDriver : MonoBehaviour
         if (!pointerOverUi && GameInput.PrimaryPressed())
             UpdateSelection(cam);
 
-        if (!hector.Selected) return;
+        if (GameInput.SecondaryPressed())
+        {
+            if (hector.Selected)
+            {
+                hector.SetSelected(false);
+                RuntimeFileLogger.Event("HECTOR_INPUT", "Deselected by secondary pointer action.");
+            }
+            return;
+        }
 
-        if (!pointerOverUi && hector.CanMove && GameInput.SecondaryPressed())
-            MoveSelectedHector(cam);
-
-        if (!hector.CanAcceptCombatCommand) return;
+        if (!hector.Selected || !hector.CanAcceptCombatCommand) return;
         if (GameInput.Ability1Pressed()) hector.UseWarCry();
         if (GameInput.Ability2Pressed()) hector.UseShieldWall();
         if (GameInput.Ability3Pressed()) hector.UseSpearThrow();
@@ -74,16 +78,5 @@ public sealed class HectorInputDriver : MonoBehaviour
         if (changed)
             RuntimeFileLogger.Event("HECTOR_INPUT", selected ? "Selected by pointer." : "Deselected by pointer.");
         return selected;
-    }
-
-    void MoveSelectedHector(Camera cam)
-    {
-        Ray ray = cam.ScreenPointToRay(GameInput.PointerPosition);
-        if (!battlefieldPlane.Raycast(ray, out float enter)) return;
-        Vector3 requested = ray.GetPoint(enter);
-        Vector3 destination = hector.ConstrainMoveDestination(requested);
-        hector.MoveTo(destination);
-        HectorCommandFeedback.ShowMove(destination);
-        RuntimeFileLogger.Event("HECTOR_INPUT", $"Move command requested=({requested.x:0.0},{requested.z:0.0}) road=({destination.x:0.0},{destination.z:0.0})");
     }
 }
