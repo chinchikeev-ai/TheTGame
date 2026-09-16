@@ -51,14 +51,12 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         Transform tooltip = FindDescendant(hud.transform, "BuildHoverTooltip");
         SetScale(tooltip, .84f);
 
-        Transform magicToggle = FindDescendant(hud.transform, "MagicToggle");
-        SetScale(magicToggle, .82f);
+        Transform divinePower = FindDescendant(hud.transform, "DivinePowerActions");
+        SetScale(divinePower, .82f);
+        SetBottomRight(divinePower, new Vector2(-24f, 156f));
 
         Transform defendersToggle = FindDescendant(hud.transform, "DefendersToggle");
         SetScale(defendersToggle, .82f);
-
-        Transform magicFlyout = FindDescendant(hud.transform, "MagicFlyout");
-        SetScale(magicFlyout, .80f);
     }
 
     void ApplyGuidanceCards()
@@ -113,6 +111,14 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
     {
         RectTransform rect = target as RectTransform;
         if (rect != null) rect.anchoredPosition = position;
+    }
+
+    static void SetBottomRight(Transform target, Vector2 position)
+    {
+        RectTransform rect = target as RectTransform;
+        if (rect == null) return;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1f, 0f);
+        rect.anchoredPosition = position;
     }
 
     static void SetPanelAlpha(Transform target, float alpha)
