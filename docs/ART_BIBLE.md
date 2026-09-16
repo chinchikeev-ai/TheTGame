@@ -1,22 +1,44 @@
-# TheTroyGame — Canonical Art Bible
+# TheTroyGame — Canonical Art Bible v2.0
 
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-16
 
-This is the **single canonical creative + visual direction document** for TheTroyGame.
+This is the **single canonical creative + visual direction authority** for TheTroyGame.
 
-`MODEL_ART_INVENTORY.md` remains the authority for implementation/completion status. Current code remains the authority for actual runtime behavior. This document defines what the game should look and feel like.
+`MODEL_ART_INVENTORY.md` remains the authority for implementation/completion status. Current code remains the authority for actual runtime behavior. Task contracts may define implementation work, but they must not silently redefine the visual direction established here.
 
-## 1. Core identity
+The purpose of this document is not only to answer **“what should the game look like?”**. It must also make it possible to reject a visually attractive asset that belongs to the wrong game.
 
-Canonical formula:
+---
+
+## 0. Authority, precedence and interpretation
+
+When visual sources disagree, use this order:
+
+1. **This `ART_BIBLE.md`.**
+2. Repository-tracked **Golden Reference Frames** explicitly approved under this document.
+3. Current real gameplay camera, scale and runtime composition.
+4. Feature/task contracts that reference this Art Bible.
+5. Generated concept art and external references.
+
+Generated images, moodboards and beauty shots are **reference material only** until explicitly promoted to Golden Reference status. A concept never overrides gameplay readability, camera scale or this document.
+
+If an asset follows the theme but violates the production view, it fails.
+
+If an asset is beautiful but looks like another game, it fails.
+
+---
+
+## 1. Visual Constitution
+
+### 1.1 Canonical formula
 
 **Trojan War × Cartoon × Grotesque Heroic Comedy × Selective Sex Appeal.**
 
-Runtime presentation:
+### 1.2 Runtime presentation
 
 **Stylized tactical board / toy battlefield.**
 
-The game should feel immediately recognizable, stylish, funny, exaggerated and heroic. It is not a historical simulator, not grim-dark, not photoreal, not anime, not generic mobile fantasy and not a solemn museum reconstruction.
+The game should feel immediately recognizable, stylish, funny, exaggerated and heroic.
 
 The emotional target is:
 
@@ -30,104 +52,169 @@ The emotional target is:
 - sexy where intentionally assigned;
 - increasingly dramatic as Troy approaches its fall.
 
-A successful frame should communicate **Trojan War + cartoon adventure + personality** before the player studies details.
+A successful gameplay frame should communicate **Trojan War + cartoon adventure + personality** before the player studies details.
 
-## 2. The five mandatory style pillars
+### 1.3 The five mandatory style pillars
 
-Every major art decision should be checked against these pillars.
+Every major visual decision must support all applicable pillars:
 
-### 2.1 Vibe
+1. **Vibe** — swagger, attitude, theatrical confidence.
+2. **Cartoon** — exaggerated proportions and strong readable forms.
+3. **Humor** — primarily physical, visual and performance-driven.
+4. **Grotesque exaggeration** — appealing pushed traits, never gore for its own sake.
+5. **Selective sex appeal** — intentional, adult-only, characterful and never generic pin-up design.
 
-The game must have attitude, not just readability.
+---
 
-Preferred qualities:
+## 2. Style Lock — non-negotiable rules
 
-- swagger;
-- bold poses;
-- confident silhouettes;
-- sun, bronze, fire, dust and sea;
-- theatrical entrances and reactions;
-- playful visual tension between heroic stakes and exaggerated behavior;
-- memorable shapes instead of neutral low-poly placeholders.
+These rules are the fastest visual gate for any asset, screenshot or concept.
 
-Avoid sterile prototype presentation, generic fantasy neutrality and visually timid designs.
+### MUST
 
-### 2.2 Cartoon
+- Read as **Late Bronze Age / Mycenaean-inspired Trojan War** before reading as generic fantasy.
+- Be visibly **cartoon-stylized** at gameplay distance.
+- Use **large, deliberate silhouettes** rather than detail-dependent identity.
+- Treat the battlefield as a **toy-like tactical board**, not a realistic diorama.
+- Keep the real gameplay camera and current tactical scale as the production baseline.
+- Keep Troy warm, fortified and theatrical.
+- Keep Greeks cooler, expeditionary and slightly sharper in shape language.
+- Make gameplay actors and states more visually important than decorative ground detail.
+- Keep permanent HUD on the perimeter.
+- Use one coherent material language across HUD: warm dark stone/wood, bronze, selective gold, Trojan red, parchment where appropriate.
+- Prefer bold illustrated icons and portraits over thin software glyphs.
+- Preserve generous tactical breathing room on the battlefield.
 
-Cartoon is mandatory, not optional flavor.
+### MUST NOT
 
-Use:
+Reject work that reads primarily as:
 
-- stylized proportions;
-- slightly oversized heads where useful;
-- oversized shields, helmets, bows, spears, hands and role props;
-- simplified armor layers;
-- strong shape language;
-- expressive faces and body poses;
-- clear, readable materials and color blocking;
-- controlled squash/stretch where technically safe.
+- photoreal;
+- painterly realistic RTS;
+- grim-dark;
+- dirty gray/brown historical simulation;
+- generic medieval fantasy;
+- generic mobile-fantasy clone;
+- Classical-Spartan shorthand used everywhere;
+- anime/manga character construction;
+- polished Disney/Pixar imitation;
+- cute toy style with no heroic edge;
+- modern flat-app UI;
+- sci-fi UI;
+- glassmorphism;
+- noisy micro-textured terrain;
+- crowded diorama where every empty space is filled with props;
+- concept-art camera that does not match real gameplay;
+- technically clean but personality-free placeholder art.
 
-Avoid realistic body proportion as the default target and avoid surface detail that only works in close-up.
+---
 
-### 2.3 Humor
+## 3. Three visual layers — do not mix them
 
-Humor is primarily **physical and visual**.
+A major source of style drift is applying the right idea to the wrong layer. The game has three distinct but related visual layers.
 
-Preferred devices:
+### 3.1 WORLD / 3D BATTLEFIELD
 
-- exaggerated anticipation and recovery;
-- panic, surprise, frustration, pride and triumph reactions;
-- oversized equipment used for both readability and comedy;
-- overcommitted attacks;
-- boss and hero entrances with theatrical timing;
-- small environmental gags that never hide gameplay state;
-- contrast between disciplined formations and ridiculous individual reactions when things go wrong.
+Target:
 
-Avoid meme-heavy writing, constant joke dialogue, modern internet slang as default tone, gore-driven humor and jokes that erase dramatic stakes.
+**Stylized low-poly / primitive-friendly 3D upgraded into a coherent authored toy-battlefield look.**
 
-### 2.4 Grotesque exaggeration
+World art should use:
 
-Grotesque means **appealing exaggeration**, not gore or body horror.
+- clean forms;
+- broad value groups;
+- readable terrain masses;
+- limited low-frequency surface variation;
+- simplified but recognizable materials;
+- large props with strong silhouettes;
+- controlled cel-like/light stylized shading where practical.
 
-Each important character/role should have at least one intentionally pushed trait:
+The world is **not** a painted illustration pasted under the HUD.
 
-- too-wide shoulders;
-- too-large shield;
-- too-long spear;
-- too-thin nervous engineer;
-- too-broad guard;
-- too-hunched pyromaniac;
-- too-grand hero crest;
-- too-big Cyclops hand/boulder;
-- exaggerated nose, brow, beard, jaw, posture or cape shape.
+### 3.2 CHARACTERS / UNITS
 
-The purpose is silhouette, humor and personality. Do not make every character uniformly cute or uniformly handsome. The roster needs contrast.
+Target:
 
-### 2.5 Selective sex appeal
+**Exaggerated cartoon Bronze Age characters designed for small on-screen size.**
 
-Sex appeal is a deliberate art-direction layer for **adult characters only**.
+Character identity comes from:
 
-**Adult female characters:** sex appeal should normally be present as part of the character language unless story/role intentionally calls for a different treatment. It should come through:
+- body mass;
+- head/crest shape;
+- shield/weapon/role prop;
+- cape/cloth mass;
+- posture;
+- faction color block;
+- animation rhythm.
 
-- confident posture;
-- attractive silhouette;
-- stylish costume shaping;
-- expressive face and hair;
-- strong legs/waist/shoulder rhythm where appropriate;
-- charisma, competence and attitude;
-- elegant or provocative styling that still belongs to the Bronze Age cartoon world.
+Face detail is secondary at gameplay zoom.
 
-**Adult male characters:** reserve deliberately sexy/glamorous treatment for roughly **10% of male character designs**. Most men should instead cover the wider roster of heroic, rugged, comic, old, heavy, nervous, strange or monstrous archetypes. The selected sexy male designs should read through heroic physique, posture, face, costume, cape/armor styling and swagger.
+### 3.3 UI / 2D PRESENTATION
 
-Sexy does **not** mean explicit nudity, pornographic presentation, modern fetishwear or sacrificing role readability. At gameplay distance, sex appeal should survive mainly through silhouette, movement, posture and overall styling.
+Target:
 
-The rule is: **appealing first, characterful second, never generic pin-up.**
+**Painted Bronze Age cartoon command frame.**
 
-## 3. Current gameplay view is the production baseline
+UI may be richer and more illustrative than the battlefield itself:
 
-Art must be built for the **current real Chapter I game**, not for a separate concept-art camera.
+- carved dark panels;
+- bronze/gold framing;
+- red cloth;
+- laurel;
+- parchment;
+- portrait illustration;
+- sculpted iconography;
+- theatrical bevels and highlights.
 
-Current baseline:
+Do **not** transfer the UI’s painterly richness onto every terrain surface.
+
+---
+
+## 4. Golden Reference Frames
+
+Text alone is not enough. The project must maintain a small set of explicitly approved visual anchors.
+
+### 4.1 Golden Reference categories
+
+The target set is:
+
+- Main Menu;
+- Gameplay 1920×1080;
+- Gameplay 1366/1376×768;
+- Pause Menu;
+- Settings Menu;
+- Hector combat block;
+- one canonical Trojan soldier;
+- one canonical Greek soldier;
+- one canonical Tower-Unit;
+- one canonical Patron God corner presentation.
+
+### 4.2 Current runtime anchors
+
+Until repository-tracked reference frames are explicitly promoted:
+
+- the existing **HectorHUD** is the strongest runtime reference for combat-HUD material language;
+- the current real Chapter I camera is the authority for gameplay composition and scale;
+- generated concept art is never canonical by default.
+
+### 4.3 Promotion rule
+
+A Golden Reference must:
+
+1. be stored in the repository or other versioned project source;
+2. be named in this section or an approved reference index;
+3. be accepted from the real target camera/resolution where applicable;
+4. not contradict this Art Bible.
+
+If a reference and this document conflict, this document wins until intentionally revised.
+
+---
+
+## 5. Gameplay camera and scale contract
+
+Art is built for the **current real game**, not for a separate concept-art camera.
+
+Current Chapter I baseline:
 
 - orthographic top-down / isometric-like tactical view;
 - approximately `73°` camera pitch;
@@ -145,28 +232,89 @@ Therefore:
 - final acceptance happens from the real gameplay camera first;
 - beauty-shot or portrait readability is secondary.
 
-Do not redesign the camera, map layout or gameplay scale to fit a newly painted concept. Concept art may influence palette, props, costume, atmosphere and silhouette only.
+Do not redesign camera, map layout or gameplay scale to make a concept image work. Concept art may influence palette, props, atmosphere, silhouette and material treatment only.
 
-## 4. Visual hierarchy at gameplay zoom
+---
 
-Read order:
+## 6. Gameplay visual hierarchy and detail density
+
+### 6.1 Read order
+
+At gameplay zoom, the intended read order is:
 
 1. faction;
 2. body mass / silhouette;
 3. role-defining weapon, shield or prop;
-4. threat/hero hierarchy;
+4. threat / hero hierarchy;
 5. current action pose;
-6. color accents;
-7. face/personality;
-8. decorative detail.
+6. gameplay state / telegraph;
+7. color accent;
+8. face / personality;
+9. decorative detail.
 
-If a unit only reads because of facial detail or a tiny costume element, the design fails.
+If a unit only reads because of a small face detail or tiny costume element, the design fails.
 
-## 5. Historical vocabulary
+### 6.2 Three detail bands
+
+**Primary gameplay layer**
+
+- units;
+- heroes;
+- bosses;
+- Tower-Units;
+- projectiles;
+- placement state;
+- telegraphs;
+- critical combat VFX.
+
+This layer receives the highest local contrast and clearest silhouettes.
+
+**Secondary environment layer**
+
+- roads;
+- walls;
+- gates;
+- ships;
+- major rocks;
+- tents;
+- large barricades;
+- large props.
+
+Readable and attractive, but never louder than active gameplay actors.
+
+**Tertiary decoration layer**
+
+- small stones;
+- grass tufts;
+- debris;
+- small barrels;
+- broken boards;
+- tiny environmental jokes.
+
+Low contrast, sparse and optional. If this layer competes with units, remove it before adding more detail.
+
+### 6.3 Breathing-room rule
+
+Empty readable ground is a feature, not unfinished art.
+
+The tactical board must contain visible open space between:
+
+- lanes;
+- build positions;
+- units;
+- props;
+- walls;
+- major environmental landmarks.
+
+Never fill empty tactical space merely because it looks empty in a screenshot.
+
+---
+
+## 7. Historical vocabulary
 
 The world should read as stylized **Late Bronze Age / Mycenaean-inspired Trojan War**.
 
-Use as visual vocabulary:
+Use:
 
 - bronze and leather armor;
 - spears;
@@ -180,57 +328,279 @@ Use as visual vocabulary:
 
 Historical research defines vocabulary, not realistic proportion. Exaggeration is expected.
 
-Avoid Classical-Spartan shorthand as the universal solution, medieval plate armor and generic fantasy armor kits.
+Avoid:
 
-## 6. Faction language
+- medieval plate armor;
+- generic fantasy armor kits;
+- universal Spartan red-cape shorthand;
+- Roman imperial visual language as the default substitute for Bronze Age forms.
 
-### Troy
+---
+
+## 8. Shape language and faction identity
+
+Color supports faction identity. Shape must work even before color.
+
+### 8.1 Troy
 
 Troy = **warm, fortified, heroic, theatrical**.
 
-Primary family:
+Shape language:
 
-- dark red;
-- Trojan red;
-- bronze;
-- selective gold;
-- ochre;
-- terracotta;
-- warm leather;
-- charcoal;
-- fire orange as accent.
+- broad;
+- stable;
+- shield-like;
+- blocky fortified masses;
+- strong vertical banners;
+- circular/sun motifs;
+- thick defensive silhouettes;
+- monumental gate/wall forms.
 
-Visual ideas:
+Trojan props should feel planted, defensive and weighty.
 
-- shields;
-- red cloth masses;
-- banners;
-- broad defensive shapes;
-- sun/fire motifs;
-- monumental city silhouettes.
-
-### Greeks / Achaeans
+### 8.2 Greeks / Achaeans
 
 Greece = **cooler, organized, numerous, expeditionary**.
 
-Primary family:
+Shape language:
 
-- muted/desaturated blue;
-- pale/white cloth;
+- slightly sharper;
+- more directional;
+- spear-like;
+- sail-like;
+- narrower massing;
+- expedition camp structures;
+- repeated formation rhythm.
+
+Greek silhouettes should feel more mobile and campaign-oriented than Trojan defenders.
+
+### 8.3 Divine / mythic
+
+Divine elements may use:
+
+- circular discs;
+- rays;
+- stars;
+- controlled glow;
+- symbolic silhouettes;
+- stronger symmetry.
+
+Divine shapes must still belong to the Bronze Age cartoon world.
+
+---
+
+## 9. Canonical color system
+
+The values below are reference anchors for UI, concept work and material tuning. They are not a command to flatten all materials into exact solid colors.
+
+| Token | Reference | Primary use |
+| --- | --- | --- |
+| `TroyRed` | `#8F211C` | Trojan cloth, major action framing |
+| `TroyDeepRed` | `#4A1715` | deep cloth/shadow/action backing |
+| `Bronze` | `#A66A32` | primary metal language |
+| `GoldFocus` | `#D8A43D` | selection, premium focus, active trim |
+| `WarmStone` | `#D2B88F` | pale/warm stone |
+| `Sand` | `#D9B875` | Chapter I ground family |
+| `Charcoal` | `#241A17` | dark panel bodies / deepest UI value |
+| `DarkWood` | `#4A2B1D` | UI/world timber family |
+| `Parchment` | `#E5D1A4` | advice/information surfaces |
+| `GreekBlue` | `#61788D` | Greek cloth/faction contrast |
+| `SeaBlue` | `#2F7F9F` | Aegean water family |
+| `FireOrange` | `#E66B24` | restrained fire/impact accent |
+| `ReadyGreen` | `#6F8D50` | confirmation/readiness only |
+
+Rules:
+
+- Troy should read warmer than Greece.
+- Greek blue is a faction color, not the generic interface color.
+- Gold is selective; if everything is gold, nothing is selected.
+- Fire orange is an accent, not the overall Chapter I grade.
+- Green is functional and sparse.
+- Critical state must never rely on color alone.
+
+---
+
+## 10. Materials and lighting
+
+### 10.1 Rendering target
+
+Use:
+
+- clean material separation;
+- readable cel-like/light stylized shading where practical;
+- broad value groups;
+- controlled roughness/specular response;
+- strong form lighting;
+- restrained stylized texture variation.
+
+Avoid:
+
+- photoreal PBR as the primary look;
+- noisy texture detail;
+- muddy gray/brown realism;
+- uniform material response across every object;
+- random saturated colors with no faction logic.
+
+### 10.2 Material rules
+
+**Bronze**
+
+- warm;
+- readable highlight edge;
+- slightly exaggerated material identity;
+- not mirror-metal;
+- not rust-brown iron.
+
+**Cloth**
+
+- identity comes from silhouette/fold mass/color first;
+- broad folds beat tiny weave texture;
+- red Trojan cloth should remain visible at gameplay zoom.
+
+**Wood**
+
+- simple grain direction;
+- clear plank/bevel construction;
+- avoid high-frequency photographic grain.
+
+**Stone**
+
+- broad warm planes;
+- selective cracks/chips;
+- do not turn every surface into noisy rubble texture.
+
+**Sand / ground**
+
+- low-frequency variation;
+- soft readable path separation;
+- avoid repeating checkerboard or tile noise.
+
+### 10.3 Lighting
+
+Chapter I lighting should feel:
+
+- bright;
+- warm;
+- coastal;
+- clear;
+- heroic;
+- readable.
+
+Use directional sunlight and clear cast shadows to reinforce form. Do not crush the map into dark cinematic contrast that damages gameplay readability.
+
+---
+
+## 11. Chapter I environment contract
+
+Chapter I = **bright warm coastal landing under pressure**.
+
+The full battlefield should read as:
+
+**Aegean sea → landing beach → Greek expedition zone → two attack lanes → Trojan defense zone → wall / gate / city.**
+
+Required scene read:
+
+- Aegean sea on the west/landing side;
+- sandy landing beach;
+- two readable attack lanes;
+- Greek ships/camp/landing debris;
+- Troy on the east/defended side;
+- wall, towers, gatehouse, banners and braziers;
+- city silhouette stronger than random decoration.
+
+Environment family:
+
+- sand;
+- pale and warm stone;
 - bronze;
-- cooler leather/wood context;
-- sea and sail contrast.
+- red cloth;
+- wood;
+- rope;
+- sea blue;
+- sparse green scrub;
+- selective smoke/fire.
 
-Greek silhouettes should feel slightly sharper and more expeditionary than Trojan defenders.
+### 11.1 Battlefield readability rules
 
-Factions must remain readable even when units overlap.
+- Build points remain clearly interactive but visually **secondary** when not selected.
+- Repeating build-point shapes must not become the strongest pattern on screen.
+- Roads/lanes remain readable without looking like debug tiles.
+- Ground variation remains broad and low-frequency.
+- Units, towers, projectiles and combat feedback carry stronger contrast than decorative ground detail.
+- Decorative props should generally have no gameplay colliders.
+- Props must support lane readability rather than visually close off usable space.
+- The player should perceive **space between combat objects**, not a packed historical diorama.
 
-## 7. Character body archetypes
+`Troy = Fire` is a campaign motif, not a command to make Chapter I an orange inferno. Fire is an accent against bright coast, blue sea and pale stone.
 
-Use clear body-type contrast across the roster.
+---
+
+## 12. Character design rules
+
+### 12.1 Cartoon is mandatory
+
+Use:
+
+- stylized proportions;
+- slightly oversized heads where useful;
+- oversized shields, helmets, bows, spears, hands and role props;
+- simplified armor layers;
+- expressive faces;
+- strong body-shape contrast;
+- clear color blocking;
+- controlled squash/stretch where technically safe.
+
+Avoid realistic body proportion as the default target and avoid detail that only works in close-up.
+
+### 12.2 Grotesque exaggeration
+
+Grotesque means **appealing exaggeration**, not gore or body horror.
+
+Each important role should have at least one intentionally pushed trait, for example:
+
+- too-wide shoulders;
+- too-large shield;
+- too-long spear;
+- too-thin nervous engineer;
+- too-broad guard;
+- too-hunched pyromaniac;
+- too-grand hero crest;
+- too-big Cyclops hand/boulder;
+- exaggerated nose, brow, beard, jaw, posture or cape shape.
+
+The purpose is silhouette, humor and personality.
+
+### 12.3 Selective sex appeal
+
+Sex appeal is a deliberate art-direction layer for **adult characters only**.
+
+Adult female characters may use:
+
+- confident posture;
+- attractive silhouette;
+- stylish costume shaping;
+- expressive face and hair;
+- strong body rhythm where appropriate;
+- charisma, competence and attitude;
+- elegant or provocative styling that still belongs to the Bronze Age cartoon world.
+
+Adult male characters:
+
+- reserve deliberately sexy/glamorous treatment for roughly **10%** of male designs;
+- the rest of the roster should cover heroic, rugged, comic, old, heavy, nervous, strange and monstrous archetypes.
+
+Sexy does **not** mean explicit nudity, modern fetishwear or sacrificing role readability.
+
+Rule: **appealing first, characterful second, never generic pin-up.**
+
+---
+
+## 13. Character body archetypes
+
+Use visible body-type contrast across the roster.
 
 ### Heroic Large
-Tall, broad shoulders, narrower waist, strong upright posture. Named heroes and elite figures.
+Tall, broad shoulders, narrower waist, upright command posture. Named heroes and elite figures.
 
 ### Standard Soldier
 Medium height, sturdy, compact military stance.
@@ -252,7 +622,9 @@ Massive scale, asymmetric anatomy, huge hands/feet/shoulders, monster-first silh
 
 Do not reuse one heroic body/head across all classes.
 
-## 8. Chapter I Trojan character contract
+---
+
+## 14. Chapter I Trojan character contract
 
 ### Hector
 
@@ -263,16 +635,15 @@ Do not reuse one heroic body/head across all classes.
 - Strong jaw / mature heroic face.
 - Full visual hierarchy must be obvious from gameplay zoom.
 - Humor comes from timing/reactions, not from making Hector look foolish.
-
-Hector is one of the rare male designs that may receive stronger heroic glamour/sex appeal if desired, but his primary read is commander/hero.
+- Stronger heroic glamour is allowed, but commander/hero readability comes first.
 
 ### Trojan Spearman
 
 - Standard Soldier.
 - Spear + round shield.
-- Reliable, disciplined, ordinary professional soldier.
+- Reliable, disciplined professional soldier.
 - Red/ochre, bronze, leather.
-- Must remain clearly below Hector in visual hierarchy.
+- Clearly below Hector in visual hierarchy.
 
 ### Trojan Archer
 
@@ -287,12 +658,12 @@ Hector is one of the rare male designs that may receive stronger heroic glamour/
 - Heavy Broad.
 - Huge shield + spear.
 - Dense bronze mass, deep red, planted stance.
-- Veteran face/body.
+- Veteran read.
 - Shield is a class identifier and may be intentionally oversized.
 
 ### Ballista Crew
 
-Crew must read as a small cast rather than duplicated soldiers:
+Crew should read as a small cast rather than duplicated soldiers:
 
 - nervous/thin master ballistician or engineer;
 - practical assistant/loader;
@@ -306,7 +677,7 @@ Tools, ammunition and work posture matter more than soldier armor.
 - Cream/ochre/light robes + gold/bronze.
 - Sun staff/disc or sacred vessel.
 - Deliberate ritual movement.
-- Must not look like infantry.
+- Must not read as infantry.
 
 ### Fire Keeper / Fire Thrower
 
@@ -324,7 +695,9 @@ Tools, ammunition and work posture matter more than soldier armor.
 - Heavy full-body windup and slow recovery.
 - Must not be a scaled-up normal human.
 
-## 9. Greek enemy character contract
+---
+
+## 15. Greek enemy character contract
 
 - **Infantry:** spear + round shield; simple mass-unit silhouette.
 - **Runner:** lighter, narrower, more elastic and fast-looking.
@@ -336,9 +709,13 @@ Tools, ammunition and work posture matter more than soldier armor.
 
 Role readability comes from silhouette/equipment before color.
 
-## 10. Tower-Unit visual contract
+---
 
-Troy does not build anonymous fantasy turrets. Defenses are **Tower-Units**:
+## 16. Tower-Unit visual contract
+
+Troy does not build anonymous fantasy turrets.
+
+Defenses are **Tower-Units**:
 
 `Build Position -> Trojan Unit / Crew / Creature -> Functions as Tower`
 
@@ -377,7 +754,7 @@ At gameplay zoom each defense must be recognizable in about one second.
 
 - fire bowl / pitch / bottles;
 - orange fire and controlled smoke;
-- visibly unstable fire-keeper silhouette;
+- unstable fire-keeper silhouette;
 - throw/stoke acting.
 
 ### Trojan Guard
@@ -391,70 +768,11 @@ At gameplay zoom each defense must be recognizable in about one second.
 - huge mythic artillery body;
 - boulder is the role-defining prop.
 
-## 11. Chapter I environment target
+---
 
-Chapter I = **bright warm coastal landing under pressure**.
+## 17. Animation direction
 
-Required scene read:
-
-- Aegean sea on the west/landing side;
-- sandy landing beach;
-- two readable attack lanes;
-- Greek ships/camp/landing debris;
-- Troy on the east/defended side;
-- wall, towers, gatehouse, banners and braziers;
-- city silhouette stronger than random decoration.
-
-Environment materials:
-
-- sand;
-- pale and warm stone;
-- bronze;
-- red cloth;
-- wood;
-- rope;
-- sea blue;
-- sparse green scrub;
-- smoke/fire used selectively.
-
-### Current-view readability fixes
-
-The battlefield background must support units rather than compete with them.
-
-- Build points remain clearly interactive but visually **secondary** when not selected.
-- Repeating build-point shapes must not become the strongest pattern on the screen.
-- Roads/lanes remain readable without looking like debug checkerboard tiles.
-- Ground variation should be broad and low-frequency; avoid noisy micro-patterns behind units.
-- Units, towers, projectiles and combat feedback must carry stronger contrast than decorative ground detail.
-- Decorative props should generally have no gameplay colliders.
-
-`Troy = Fire` is a campaign motif, not a command to make Chapter I an orange inferno. In Chapter I, fire is an accent against bright coast, blue sea and pale stone.
-
-## 12. Materials and rendering
-
-Target: stylized low-poly / primitive-friendly 3D upgraded into a coherent authored look.
-
-Use:
-
-- clean material separation;
-- readable cel-like/light stylized shading where practical;
-- broad value groups;
-- controlled roughness/specular response;
-- bronze that reads as bronze without AAA realism;
-- cloth that reads as cloth through shape/color before texture;
-- wood/stone/sand with enough variation to stop reading as flat color cubes.
-
-Avoid:
-
-- photoreal PBR as the primary look;
-- noisy texture detail;
-- dirty gray/brown realism;
-- uniform material response across every object;
-- random saturated colors with no faction logic.
-
-## 13. Animation direction
-
-Animation should communicate personality and gameplay state simultaneously.
+Animation communicates personality and gameplay state simultaneously.
 
 Use:
 
@@ -479,232 +797,11 @@ Examples:
 
 Gameplay timing, hit windows and telegraphs remain authoritative. Animation may exaggerate but must never lie about combat state.
 
-## 14. UI direction
+Humor should come primarily from timing, overcommitment, reaction and contrast rather than constant joke text.
 
-UI belongs to the same world as the battlefield. It must feel like a **painted Bronze Age cartoon command frame**, not a neutral software overlay.
+---
 
-The approved combat-HUD direction is a perimeter-based composition that frames the battlefield while leaving the tactical center readable. Permanent information belongs around the edges; only encounter/boss information may occupy the upper center.
-
-### 14.1 Visual language
-
-Use:
-
-- dark warm stone / charcoal / dark-brown panel bodies;
-- bronze and selective gold framing;
-- Trojan red cloth, ribbons and primary-action accents;
-- parchment only for advice/information panels that should read as a field note;
-- sculpted shield, column, spear, laurel, banner and fortress motifs;
-- bold illustrated icons rather than thin software glyphs;
-- warm highlights and restrained fire/ember accents;
-- exaggerated but readable cartoon bevels, shadows and silhouettes;
-- clear separation between frame, content and interactive state.
-
-The HUD should look hand-authored and theatrical, but **never obscure the battle to prove that it is decorative**.
-
-Avoid:
-
-- plain prototype rectangles;
-- generic blue sci-fi panels;
-- flat modern-mobile cards with no world language;
-- excessive gradients or glassmorphism;
-- tiny gray text;
-- decorative elements that compete with enemies, projectiles or placement circles;
-- large opaque blocks over the center of the battlefield.
-
-### 14.2 Combat HUD layout contract
-
-The canonical combat HUD uses the following screen zones.
-
-**Top-left — economy and utility cluster**
-
-- Gold is the first and most immediate value.
-- **Speed control and Settings sit directly to the right of Gold in the same horizontal utility cluster.**
-- Speed must show its active value (`1x`, `2x`, etc.) without opening a menu.
-- Settings is a compact gear/control button, not a separate large panel.
-- Gate/Fortress health sits below this cluster and is visually heavier than the utility buttons.
-- Gold, speed and settings must not be scattered into different screen corners.
-
-**Top-center — encounter state**
-
-- Encounter number/progress and timer occupy the strongest top-center banner.
-- Remaining enemies / next pressure message sits inside or directly under the same banner.
-- A boss banner/health bar appears directly below the encounter banner when a boss is active.
-- Boss name, portrait, title/role, HP and key mechanics belong to one coherent boss block.
-- Boss information must not be duplicated in another permanent panel.
-
-**Upper corners — Patron God presence**
-
-- Patron Gods are presented as illustrated characters integrated into the screen corner, not as neutral front-facing ID cards.
-- A god must **look diagonally inward toward the battlefield center**.
-- The body/head/frame may be slightly rotated or perspective-skewed so the character feels as if they are watching the battle from the edge of the screen.
-- Top-right gods look down-left/inward; a mirrored top-left god would look down-right/inward.
-- Favor a three-quarter face/body angle over a passport-style frontal portrait.
-- The outer edge of the frame may be cropped by the screen edge to make the god feel embedded in the HUD.
-- Divine readiness, patron name and one short state line may be integrated into this corner composition.
-- Divine glow/rays must stay close to the corner and must not wash out the tactical center.
-
-**Left-middle — contextual advice**
-
-- Battle advice, boss hint or tutorial note may appear below the gate block.
-- This panel is temporary/contextual, not a permanent wall of text.
-- Parchment treatment is preferred for advice.
-- Keep the advice away from the primary enemy lane whenever possible.
-
-**Bottom-left — Hector / hero state**
-
-- Hector gets a strong illustrated portrait and compact status panel.
-- Show only information that affects immediate decisions: availability/downed state, HP or respawn state, and critical ability state when needed.
-- When Hector is downed, the failure state must be unmistakable at a glance.
-- Flavor text may appear as a short one-line quote, but it must not compete with status information.
-
-**Bottom-center — defender deployment strip**
-
-- The defender/build strip is the main tactical selection bar.
-- Unit cards use large role icons/portraits, hotkey number, name and gold cost.
-- Selected defender gets a strong gold/orange glow and raised/active treatment.
-- Unaffordable/locked choices must be readable without becoming visually louder than the selected choice.
-- The strip should feel like a Trojan command dais: stone/bronze structure, red cloth accents, readable card divisions.
-- The strip may collapse or reduce itself when no build interaction is needed if that improves battlefield visibility.
-
-**Bottom-right — Magic and Defenders entry controls**
-
-- The lower-right corner is reserved for two major action openers: **MAGIC** and **DEFENDERS**.
-- These are large, high-recognition illustrated buttons with strong silhouettes.
-- `MAGIC` opens divine/magic abilities; `DEFENDERS` opens or focuses the defender deployment/build interface.
-- Their iconography must be recognizable before text: divine/sun/fire/lightning language for magic; shield/helmet/formation language for defenders.
-- Ready/cooldown/locked states must be visible directly on these controls.
-- Do not place Speed or Settings in this corner; they belong beside Gold.
-
-### 14.3 Battlefield visibility rule
-
-The HUD frames the fight; it does not sit on top of it.
-
-- Keep the central tactical area visually open.
-- Permanent HUD should hug edges and corners.
-- The only persistent element allowed to project meaningfully into the upper central field is encounter/boss information.
-- Avoid covering the center of build circles, hero movement space, main lanes or boss telegraphs.
-- Contextual panels should disappear when their information is no longer needed.
-- If two HUD blocks compete for the same space, the lower-priority block must collapse, move or hide.
-
-Player attention order during combat:
-
-1. battlefield threats and placement;
-2. boss/encounter state;
-3. gate survival;
-4. gold and available actions;
-5. defender selection;
-6. Hector state;
-7. patron-god/magic readiness;
-8. advice/flavor text.
-
-### 14.4 Color and state language
-
-Canonical state language:
-
-- **Trojan red / dark red:** primary action framing, danger, damage pressure, important hostile state;
-- **gold / bronze / warm orange:** selected, active, important, interactable, premium visual focus;
-- **pale parchment / warm cream:** readable informational text surface;
-- **green:** reserved for clear positive readiness/confirmation such as a ready Divine Power; use sparingly;
-- **desaturated gray/brown:** unavailable, locked, cooldown or secondary state;
-- **Greek blue/cool accents:** enemy/faction context only when useful, not as the generic HUD color.
-
-Never use color alone for a critical state. Pair color with icon, label, fill level, shape or animation.
-
-### 14.5 Typography
-
-- Use bold, compact, high-readability display text for major labels.
-- Major combat labels may be uppercase.
-- Numbers that change rapidly must be larger and cleaner than surrounding prose.
-- Avoid long sentences in permanent combat HUD.
-- Russian and English must fit the **same containers** without shrinking to unreadable sizes.
-- If RU copy is longer, rewrite the copy before reducing font size aggressively.
-- Boss names, encounter numbers, gold, gate HP and hotkeys must remain readable at `1366×768`.
-
-### 14.6 Interaction and motion
-
-HUD motion should feel responsive and game-like, not like a website.
-
-Recommended button feedback:
-
-- hover: approximately `1.04–1.06x` scale plus warm highlight;
-- pointer/key press: approximately `0.92x` compression;
-- release: short overshoot around `1.08x`, then settle;
-- use unscaled time so feedback still works while the game is paused.
-
-Use stronger motion for important state changes:
-
-- boss arrival;
-- Divine Power becoming ready;
-- Hector being downed/returning;
-- gate entering danger state;
-- newly unlocked defender/magic action.
-
-Do not make every HUD element pulse continuously. Constant movement destroys hierarchy.
-
-Patron Gods may use very subtle idle life — breathing, cloth/hair movement, light flicker or a tiny inward lean — but must remain anchored to their corner.
-
-### 14.7 Icon and portrait rules
-
-- Important portraits must use the same cartoon character language as the rest of the game.
-- Portrait crops should preserve helmet/crest/hair/weapon cues that identify the character.
-- Gods and heroes should feel like illustrated personalities, not circular inventory thumbnails.
-- Unit cards should prioritize the role-defining prop/silhouette over facial detail.
-- Magic icons should be bold emblem shapes that remain readable at small size.
-- Avoid mixing unrelated icon styles (flat line icons beside painted cartoon portraits, for example).
-
-### 14.8 Responsive layout and safe areas
-
-Primary HUD composition is authored against **1920×1080, 16:9** and must be validated at **1366/1376×768**.
-
-Rules:
-
-- anchor edge UI to actual screen edges/safe areas, not absolute scene positions;
-- preserve the relative zone contract when resolution changes;
-- top-left utility cluster stays together;
-- top-center encounter/boss block stays centered;
-- Patron God remains attached to the assigned corner and still looks inward;
-- bottom-center deployment strip remains centered;
-- Magic/Defenders remain bottom-right;
-- Hector remains bottom-left;
-- never solve lower resolution by uniformly shrinking all text until it becomes unreadable;
-- collapse optional decoration before shrinking critical interaction targets.
-
-### 14.9 HUD information discipline
-
-Each fact has one primary home.
-
-- Gold: top-left only.
-- Speed/Settings: immediately right of Gold.
-- Gate health: top-left gate block.
-- Encounter/timer: top-center.
-- Boss HP/mechanics: central boss block.
-- Hector status: bottom-left.
-- Defender selection/cost: bottom-center deployment strip.
-- Patron Divine Power state: Patron God corner and/or Magic panel, but do not duplicate full descriptions in both places.
-- Magic/Defenders entry points: bottom-right.
-
-Duplicate critical warnings are allowed only temporarily when a short-lived alert is needed.
-
-### 14.10 Combat HUD acceptance checklist
-
-A HUD revision is directionally acceptable only when all of the following are true:
-
-1. the battlefield remains the largest visual area;
-2. the player can find Gold, Gate HP, encounter/timer and current defender in under one second;
-3. Speed and Settings are directly to the right of Gold;
-4. Magic and Defenders openers are in the bottom-right;
-5. Patron God art is corner-anchored and visibly angled/looking toward the map center;
-6. boss information is centralized and not duplicated;
-7. Hector state is readable bottom-left;
-8. the defender strip is readable without hiding the central fight;
-9. selected/ready/danger/locked states are distinguishable without relying only on color;
-10. hover/press feedback is visible but not distracting;
-11. English and Russian fit without broken hierarchy;
-12. the layout is checked at 1920×1080 and 1366/1376×768;
-13. no prototype/debug-looking panel is more visually dominant than the authored HUD;
-14. no decorative element hides a gameplay telegraph or placement decision.
-
-## 15. VFX direction
+## 18. VFX direction
 
 VFX should be bold, readable and slightly theatrical.
 
@@ -720,9 +817,427 @@ Minimum Chapter I language:
 - Shield Wall placement/readiness;
 - clear slow/burn/support feedback where needed.
 
-VFX is gameplay communication first, decoration second.
+VFX rules:
 
-## 16. Audio direction
+- gameplay communication first;
+- decorative spectacle second;
+- use large readable shapes rather than particle noise;
+- do not hide unit silhouettes or placement state;
+- important telegraphs must survive bright sand, dark walls and sea backgrounds;
+- persistent glows should be restrained.
+
+---
+
+## 19. UI Design System
+
+UI belongs to the same world as the battlefield. It must feel like a **painted Bronze Age cartoon command frame**, not a neutral software overlay.
+
+The approved combat-HUD direction is perimeter-based: it frames the battlefield while leaving the tactical center readable.
+
+### 19.1 Core visual language
+
+Use:
+
+- dark warm stone / charcoal / dark-brown panel bodies;
+- bronze and selective gold framing;
+- Trojan red cloth, ribbons and primary-action accents;
+- parchment only for advice/information panels that should read as field notes;
+- shield, column, spear, laurel, banner and fortress motifs;
+- bold illustrated icons rather than thin software glyphs;
+- warm highlights and restrained fire/ember accents;
+- exaggerated but readable cartoon bevels, shadows and silhouettes;
+- clear separation between frame, content and interactive state.
+
+Avoid:
+
+- plain prototype rectangles;
+- generic blue sci-fi panels;
+- flat modern-mobile cards;
+- excessive gradients;
+- glassmorphism;
+- tiny gray text;
+- large opaque blocks over the tactical center.
+
+### 19.2 Canonical reusable component grammar
+
+Reusable UI should be built from a small visual grammar rather than redrawing every screen independently.
+
+Canonical components:
+
+- `PanelDark` — dark stone/wood system panel;
+- `PanelParchment` — temporary advice/information;
+- `ButtonSecondary` — stone/wood neutral action;
+- `ButtonPrimary` — Trojan red + gold primary action;
+- `TabNormal` — neutral category tab;
+- `TabSelected` — brighter gold/amber selected tab;
+- `PortraitFrameHero`;
+- `PortraitFrameEnemy`;
+- `PortraitFrameGod`;
+- `ResourceChip`;
+- `AbilityTile`;
+- `DefenderCard`;
+- `BossBlock`;
+- `Tooltip/ContextCard`;
+- `EncounterBanner`;
+- `BuildPointMarker`.
+
+Every interactive component should define at least:
+
+- normal;
+- hover/focus;
+- pressed;
+- selected where applicable;
+- disabled/locked;
+- cooldown where applicable.
+
+### 19.3 Text and icons are separate assets
+
+For reusable UI components:
+
+- **do not bake labels into PNG backgrounds**;
+- **do not bake language-specific text into reusable buttons**;
+- use TextMeshPro/localized runtime text;
+- keep icons separate when they need to change by context/state;
+- use 9-sliced or otherwise scalable frames where practical.
+
+Baked text is allowed only for intentional fixed artwork such as a logo, emblem or approved one-language decorative title where localization is not required.
+
+This rule applies to AI-generated UI assets as well.
+
+---
+
+## 20. Combat HUD layout contract
+
+### 20.1 Overall geometry budget
+
+The battlefield must remain the dominant visual surface.
+
+Target budgets at 16:9:
+
+- permanent HUD should normally occupy **no more than ~25%** of total screen area;
+- if permanent HUD approaches **30%**, it requires explicit review;
+- the central tactical region must remain visually open;
+- only encounter/boss information may meaningfully project into the upper-center field;
+- contextual panels must collapse or disappear when their information is no longer needed.
+
+These are composition budgets, not pixel-perfect runtime assertions. Readability and interaction remain authoritative.
+
+### 20.2 Top-left — economy and utility cluster
+
+- Gold is the first and most immediate value.
+- **Speed and Settings sit directly to the right of Gold in the same horizontal cluster.**
+- Speed shows active value (`1x`, `2x`, etc.) without opening a menu.
+- Settings is compact.
+- Gate/Fortress health sits below and is visually heavier than utility buttons.
+- Gold, Speed and Settings must not be scattered into different corners.
+
+### 20.3 Top-center — encounter state
+
+- Encounter number/progress and timer occupy the strongest top-center banner.
+- Remaining enemies / next pressure message belongs inside or directly below the same banner.
+- Boss banner/health appears directly below when active.
+- Boss portrait, name, role, HP and key mechanics belong to one coherent block.
+- Boss information must not be duplicated in another permanent panel.
+
+Target: encounter banner should normally remain under roughly **42% screen width** and **12% screen height** before a temporary boss extension.
+
+### 20.4 Upper corners — Patron God presence
+
+- Patron Gods are illustrated personalities integrated into the corner, not passport cards.
+- God looks diagonally inward toward battlefield center.
+- Favor three-quarter face/body angle.
+- Outer frame may crop at the screen edge.
+- Divine readiness, patron name and one short state line may integrate into the composition.
+- Glow/rays stay near the corner and must not wash out the tactical center.
+
+### 20.5 Left-middle — contextual advice
+
+- Tutorial/boss/advice appears below the gate cluster.
+- Temporary/contextual, not a permanent wall of text.
+- Parchment treatment preferred.
+- Keep away from the primary enemy lane where possible.
+- Prefer short copy over smaller font.
+
+### 20.6 Bottom-left — Hector / hero state
+
+- Hector gets a strong portrait and **compact** status block.
+- Show only immediate decision information: availability/downed, HP/respawn and critical ability state where needed.
+- Flavor text is one short line maximum.
+- When downed, failure state is unmistakable.
+
+Target at 1920×1080:
+
+- roughly **≤18% screen width**;
+- roughly **≤22% screen height**;
+- compactness takes priority over decorative expansion.
+
+### 20.7 Bottom-center — defender deployment strip
+
+- Main tactical selection bar.
+- Unit cards use role icon/portrait, hotkey, name and Gold cost.
+- Selected defender gets clear gold/orange active treatment.
+- Locked/unaffordable remains readable but visually quieter.
+- Strip feels like a Trojan command dais.
+- It may collapse/reduce when no build interaction is needed.
+
+### 20.8 Bottom-right — Magic and Defenders
+
+The lower-right corner is reserved for two major action openers:
+
+- **MAGIC**;
+- **DEFENDERS**.
+
+Rules:
+
+- the two controls should be approximately equal in size and visual weight;
+- both are compact high-recognition illustrated buttons;
+- Magic uses divine/sun/fire/lightning language;
+- Defenders uses shield/helmet/formation/fortress language;
+- ready/cooldown/locked state is visible directly on the control;
+- Speed and Settings never belong here.
+
+### 20.9 Battlefield visibility rule
+
+The HUD frames the fight; it does not sit on top of it.
+
+- Keep central tactical area open.
+- Permanent HUD hugs edges/corners.
+- Do not cover build-circle centers, hero movement space, primary lanes or boss telegraphs.
+- If two HUD blocks compete, lower-priority content collapses, moves or hides.
+
+Player attention order:
+
+1. battlefield threats and placement;
+2. boss/encounter state;
+3. gate survival;
+4. gold and available actions;
+5. defender selection;
+6. Hector state;
+7. patron/magic readiness;
+8. advice/flavor text.
+
+---
+
+## 21. UI state, typography and icon rules
+
+### 21.1 State language
+
+- **Trojan red / dark red:** primary action framing, danger, damage pressure, important hostile state;
+- **gold / bronze / warm orange:** selected, active, important, interactable, premium focus;
+- **pale parchment / warm cream:** readable information surface;
+- **green:** readiness/confirmation only, use sparingly;
+- **desaturated gray/brown:** unavailable, locked, cooldown or secondary;
+- **Greek blue/cool accents:** faction context, never generic HUD chrome.
+
+Never use color alone for a critical state. Pair it with icon, label, fill, shape, contrast or motion.
+
+### 21.2 Typography
+
+- bold, compact, high-readability display text for major labels;
+- uppercase allowed for major combat labels;
+- rapidly changing numbers are larger and cleaner than prose;
+- avoid long sentences in permanent HUD;
+- Russian and English use the **same target containers**;
+- rewrite copy before shrinking text aggressively;
+- boss names, encounter numbers, Gold, Gate HP and hotkeys remain readable at `1366×768`.
+
+### 21.3 Icons and portraits
+
+- use one illustrated icon family;
+- avoid mixing flat line icons with painted portraits;
+- role-defining prop/silhouette beats face detail on unit cards;
+- magic icons use bold emblem shapes;
+- portraits preserve helmet/crest/hair/weapon cues;
+- hero/god portraits feel like personalities, not inventory thumbnails.
+
+### 21.4 Interaction motion
+
+Recommended button feedback:
+
+- hover/focus: `1.04–1.06x` plus warm highlight;
+- press: about `0.92x` compression;
+- release: short overshoot near `1.08x`, then settle;
+- use unscaled time where menus can pause gameplay.
+
+Use stronger motion only for meaningful state changes:
+
+- boss arrival;
+- Divine Power ready;
+- Hector downed/returning;
+- Gate danger;
+- newly unlocked action.
+
+Do not make everything pulse continuously.
+
+---
+
+## 22. Responsive layout and safe areas
+
+Primary composition is authored at **1920×1080 / 16:9** and must be validated at **1366×768** and **1376×768**.
+
+Rules:
+
+- anchor edge UI to real screen edges/safe areas;
+- preserve zone ownership across resolutions;
+- top-left utility cluster stays together;
+- top-center encounter block stays centered;
+- Patron God stays corner-attached and looks inward;
+- bottom-center defender strip stays centered;
+- Magic/Defenders remain bottom-right;
+- Hector remains bottom-left;
+- collapse decoration before shrinking critical interaction targets;
+- do not solve low resolution by shrinking all text into unreadability.
+
+Each fact has one primary home:
+
+- Gold: top-left;
+- Speed/Settings: immediately right of Gold;
+- Gate health: top-left below utility;
+- Encounter/timer: top-center;
+- Boss: central boss block;
+- Hector: bottom-left;
+- Defender selection/cost: bottom-center;
+- Patron Divine state: Patron corner and/or Magic surface without duplicated full descriptions;
+- Magic/Defenders entry points: bottom-right.
+
+---
+
+## 23. Menu-screen direction
+
+Pause, Settings, Main Menu and other blocking surfaces must use the same world language as combat HUD.
+
+### 23.1 Menu composition
+
+- one dominant focal panel rather than many competing rectangles;
+- dark wood/stone/bronze base;
+- red cloth and laurel as selective decoration;
+- large readable controls;
+- strong separation between decorative frame and runtime text;
+- background art may remain visible but subdued.
+
+### 23.2 Settings-specific rule
+
+Settings UI should be composed from reusable components:
+
+- blank header art + TMP title/subtitle;
+- blank normal/selected tabs + separate icons + TMP labels;
+- empty content frame + runtime rows;
+- blank secondary button + runtime label/icon;
+- blank red primary button + runtime label/icon.
+
+Do not generate separate baked-text PNG buttons for every language or label.
+
+---
+
+## 24. AI asset generation contract
+
+Because AI is part of the production workflow, prompts must preserve the same art direction automatically.
+
+### 24.1 Required prompt ingredients
+
+Every art-generation request should specify, where relevant:
+
+- `TheTroyGame` canonical style formula;
+- correct visual layer: WORLD / CHARACTER / UI;
+- real gameplay camera if gameplay-visible;
+- faction;
+- role/silhouette requirement;
+- material family;
+- palette family;
+- gameplay readability requirement;
+- output type and transparency;
+- whether text/icons must be excluded.
+
+### 24.2 Canonical style phrase
+
+Use this as a stable prompt anchor:
+
+> **Stylized Bronze Age Trojan War cartoon; grotesque heroic comedy; strong readable toy-battlefield silhouettes; warm bronze/red Troy vs cooler blue/pale Greek contrast; authored stylized 3D world with painted Bronze Age cartoon UI.**
+
+### 24.3 Mandatory negative direction
+
+When generating gameplay/world assets, explicitly avoid:
+
+- photorealism;
+- painterly realistic RTS;
+- medieval fantasy;
+- anime;
+- hyper-detailed PBR;
+- cluttered diorama composition;
+- noisy ground micro-detail;
+- cinematic camera changes;
+- tiny realistic proportions.
+
+When generating reusable UI sprites, explicitly include:
+
+- `NO TEXT`;
+- `NO LETTERS`;
+- `NO LANGUAGE-SPECIFIC LABELS`;
+- transparent background where appropriate;
+- isolated reusable component;
+- separate icon when state/context can change.
+
+### 24.4 AI output is never auto-approved
+
+AI output must pass the same gameplay-camera, faction, silhouette, composition and implementation review as manually created art.
+
+---
+
+## 25. Visual acceptance checklist
+
+A visual candidate is acceptable only when the answers below are all satisfactory.
+
+### 25.1 Five-second identity check
+
+Within five seconds, can a reviewer tell that this is:
+
+- Trojan War;
+- cartoon;
+- heroic;
+- personality-driven;
+- this game rather than a generic fantasy RTS?
+
+If not, reject or revise.
+
+### 25.2 Gameplay check
+
+- Does it read from the real gameplay camera?
+- Is faction clear?
+- Is role clear in roughly one second?
+- Does silhouette work before small detail?
+- Is action/telegraph readable in motion?
+- Is tactical ground less visually dominant than active gameplay actors?
+- Is there enough breathing room around lanes/build positions?
+
+### 25.3 Style-drift check
+
+Reject if the result has drifted toward:
+
+- realistic historical diorama;
+- painterly RTS concept art;
+- generic fantasy;
+- medieval visual language;
+- mobile flat UI;
+- sci-fi UI;
+- orange/brown monotony;
+- overdecorated HUD;
+- empty personality-free low-poly placeholder art.
+
+### 25.4 UI check
+
+- Is the battlefield still the largest visual area?
+- Can Gold, Gate HP, encounter/timer and current defender be found in under one second?
+- Are Speed and Settings next to Gold?
+- Are Magic and Defenders together bottom-right and equal in visual weight?
+- Is Hector compact and readable bottom-left?
+- Is boss information centralized?
+- Does contextual advice use parchment and disappear when irrelevant?
+- Are RU/EN layouts readable at target resolutions?
+- Are reusable backgrounds free of baked labels?
+
+---
+
+## 26. Audio direction
 
 Music:
 
@@ -743,34 +1258,21 @@ SFX priorities:
 
 SFX may be slightly exaggerated when that improves readability and comedy.
 
-## 17. Campaign tonal arc
+---
 
-- Chapters I-II: bright, adventurous, energetic, playful.
-- Chapters III-IV: larger spectacle, stronger hero personalities and mythic elements.
+## 27. Campaign tonal arc
+
+- Chapters I–II: bright, adventurous, energetic, playful.
+- Chapters III–IV: larger spectacle, stronger hero personalities and mythic elements.
 - Chapter V: maximum siege spectacle; comedy lives mainly in reactions.
 - Chapter VI: strange calm, suspicion, deliberate tonal pause.
 - Chapter VII: tragic climax; same stylized language, less overt comedy, stronger emotional weight.
 
 The fall of Troy remains serious in outcome even though the visual language is cartoon and grotesque.
 
-## 18. Global exclusions
+---
 
-Reject art that reads as:
-
-- photoreal;
-- grim-dark;
-- generic medieval fantasy;
-- generic mobile-fantasy clone;
-- anime/manga character construction;
-- polished Disney/Pixar imitation;
-- realistic military simulation;
-- cute toy style with no heroic edge;
-- grotesque only through ugliness/gore;
-- sexy only through nudity or modern fetish styling;
-- beautiful close-up art that fails from the gameplay camera;
-- technically clean but personality-free.
-
-## 19. Production acceptance / definition of done
+## 28. Production acceptance / definition of done
 
 A visual candidate is directionally acceptable only when:
 
@@ -779,38 +1281,62 @@ A visual candidate is directionally acceptable only when:
 3. role is clear in roughly one second;
 4. silhouette and role prop work before small details;
 5. cartoon stylization is obvious;
-6. at least one intentional grotesque/exaggerated trait is present where appropriate;
-7. the character/asset has attitude and personality rather than neutral prototype energy;
-8. humor/comic acting supports rather than obscures gameplay;
-9. sex-appeal treatment follows the adult-female / ~10%-male rule where applicable;
-10. palette/materials fit the faction/world;
-11. gameplay colliders and logic are unchanged unless a separate gameplay task requires it;
-12. close-up polish does not compensate for poor gameplay readability.
+6. at least one intentional exaggerated/personality trait is present where appropriate;
+7. the asset has attitude rather than neutral prototype energy;
+8. humor supports rather than obscures gameplay;
+9. selective sex-appeal treatment follows this bible where applicable;
+10. palette/materials fit faction and world;
+11. environment does not out-noise gameplay actors;
+12. HUD respects zone ownership and battlefield visibility;
+13. gameplay colliders and logic remain unchanged unless a separate gameplay task requires it;
+14. close-up polish does not compensate for poor gameplay readability;
+15. the asset passes the relevant target-resolution check.
 
-Production-art status is **not** assigned here. `MODEL_ART_INVENTORY.md` is the only authority for `DONE`, `GENERATED PLACEHOLDER`, `PROCEDURAL`, `SOURCE ONLY` and `MISSING`.
+Production-art status is **not** assigned here. `MODEL_ART_INVENTORY.md` remains the authority for `DONE`, `GENERATED PLACEHOLDER`, `PROCEDURAL`, `SOURCE ONLY` and `MISSING`.
 
 Final `DONE` still requires final derivative assets, runtime adoption and real visual QA according to repository rules.
 
-## 20. Art workflow rule
+---
+
+## 29. Art workflow rule
 
 For any new or revised asset:
 
-1. design for current gameplay camera first;
-2. check faction/role silhouette;
-3. apply cartoon exaggeration;
-4. add one strong grotesque/personality hook;
-5. apply selective sex appeal only according to this bible;
-6. verify material/palette consistency;
-7. verify gameplay readability in motion;
-8. inspect close-up second;
-9. only then consider production acceptance.
+1. identify the visual layer: WORLD / CHARACTER / UI;
+2. design for the real gameplay camera first if gameplay-visible;
+3. check faction and role silhouette;
+4. apply cartoon exaggeration;
+5. add one strong personality/grotesque hook where appropriate;
+6. apply selective sex appeal only according to this bible;
+7. verify material and palette consistency;
+8. verify detail-density hierarchy;
+9. verify gameplay readability in motion;
+10. verify responsive UI/state rules where applicable;
+11. inspect close-up second;
+12. compare against Golden References;
+13. only then consider production acceptance.
 
-Generated concept art is reference material only. It never overrides the current gameplay view or this Art Bible.
+---
 
-## 21. Asset rules
+## 30. Asset implementation rules
 
 - Track Unity `.meta` files for committed assets.
 - Production game assets live under `Assets`.
 - Local/reference folders do not count as runtime adoption.
 - Decorative additions should avoid gameplay colliders unless intentionally gameplay-relevant.
 - Runtime procedural fallbacks may remain during migration but are not final art by default.
+- Reusable UI backgrounds should be scalable where practical.
+- UI text should normally be runtime text, not baked into image assets.
+- Language-specific duplication of identical decorative UI is discouraged.
+
+---
+
+## 31. Final visual test
+
+Before approving any major screenshot, ask three questions:
+
+1. **Does this unmistakably look like TheTroyGame?**
+2. **Does the real gameplay remain clearer than the decoration?**
+3. **Could another competent artist or AI reproduce the same visual family from this Art Bible without guessing the genre?**
+
+If any answer is “no”, the visual direction is not yet sufficiently locked.
