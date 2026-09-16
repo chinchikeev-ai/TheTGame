@@ -16,6 +16,9 @@ public sealed class BuildVersionOverlay : MonoBehaviour
 
     void OnGUI()
     {
+        // Keep build identity visible on menu/pause screens without occupying combat HUD space.
+        if (Time.timeScale > .001f) return;
+
         if (style == null)
         {
             style = new GUIStyle(GUI.skin.label)
