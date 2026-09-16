@@ -129,12 +129,26 @@ namespace TheTroyGame.Tests
             Assert.IsTrue(File.Exists(MaterialAdapterPath), "Missing runtime character material adapter.");
             string adapter = File.ReadAllText(MaterialAdapterPath);
             StringAssert.Contains("public static int ApplyTo(GameObject root)", adapter);
-            StringAssert.Contains("sourceShader.isSupported", adapter);
+            StringAssert.Contains("ApplyNow(true)", adapter);
 
             StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(result)", File.ReadAllText(HeroFactoryPath));
             StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(instance)", File.ReadAllText(EnemyFactoryPath));
             StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(root)", File.ReadAllText(TowerFactoryPath));
             StringAssert.Contains("CharacterUrpMaterialAdapter.ApplyTo(crew)", File.ReadAllText(TowerBinderPath));
+        }
+
+        [Test]
+        public void RuntimeCharacterMaterialRecovery_ForcesStableTemplateAndRepeatsAfterAssembly()
+        {
+            string adapter = File.ReadAllText(MaterialAdapterPath);
+
+            StringAssert.Contains("const int DeferredPassCount = 2", adapter);
+            StringAssert.Contains("void LateUpdate()", adapter);
+            StringAssert.Contains("ApplyNow(true)", adapter);
+            StringAssert.Contains("forceStableCharacterMaterial", adapter);
+            StringAssert.Contains("source == baseTemplate", adapter);
+            StringAssert.Contains("new Material(baseTemplate)", adapter);
+            StringAssert.Contains("ConvertedSuffix", adapter);
         }
     }
 }
