@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,14 +7,26 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
 {
     const string RuntimeMaterialResource = "RuntimeColorMaterial";
     const string UrpPrefix = "Universal Render Pipeline/";
+    const string ConvertedSuffix = "_URP_Runtime";
+    const int DeferredPassCount = 2;
 
     static readonly Dictionary<Material, Material> Converted = new Dictionary<Material, Material>();
     static Material template;
     static bool loggedMissingTemplate;
 
+    int deferredPasses;
+
     void Awake()
     {
-        ApplyNow();
+        deferredPasses = DeferredPassCount;
+        ApplyNow(true);
+    }
+
+    void LateUpdate()
+    {
+        if (deferredPasses <= 0) return;
+        ApplyNow(true);
+        deferredPasses--;
     }
 
     public static int ApplyTo(GameObject root)
@@ -21,19 +34,25 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         if (root == null) return 0;
         CharacterUrpMaterialAdapter adapter = root.GetComponent<CharacterUrpMaterialAdapter>();
         if (adapter == null) adapter = root.AddComponent<CharacterUrpMaterialAdapter>();
-        return adapter.ApplyNow();
+        adapter.deferredPasses = DeferredPassCount;
+        return adapter.ApplyNow(true);
     }
 
     public int ApplyNow()
     {
+        return ApplyNow(true);
+    }
+
+    public int ApplyNow(bool forceStableCharacterMaterial)
+    {
         int convertedCount = 0;
         Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
         foreach (Renderer renderer in renderers)
-            convertedCount += ConvertRenderer(renderer);
+            convertedCount += ConvertRenderer(renderer, forceStableCharacterMaterial);
         return convertedCount;
     }
 
-    static int ConvertRenderer(Renderer renderer)
+    static int ConvertRenderer(Renderer renderer, bool forceStableCharacterMaterial)
     {
         if (renderer == null) return 0;
 
@@ -46,7 +65,7 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         for (int i = 0; i < sourceMaterials.Length; i++)
         {
             Material source = sourceMaterials[i];
-            Material converted = ConvertMaterial(source);
+            Material converted = ConvertMaterial(source, forceStableCharacterMaterial);
             convertedMaterials[i] = converted;
             if (converted != source)
             {
@@ -60,16 +79,9 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         return convertedCount;
     }
 
-    static Material ConvertMaterial(Material source)
+    static Material ConvertMaterial(Material source, bool forceStableCharacterMaterial)
     {
         if (source == null) return null;
-        Shader sourceShader = source.shader;
-        if (sourceShader != null && sourceShader.isSupported &&
-            sourceShader.name.StartsWith(UrpPrefix, System.StringComparison.Ordinal))
-            return source;
-
-        if (Converted.TryGetValue(source, out Material cached) && cached != null)
-            return cached;
 
         Material baseTemplate = GetTemplate();
         if (baseTemplate == null)
@@ -77,14 +89,26 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
             if (!loggedMissingTemplate)
             {
                 loggedMissingTemplate = true;
-                Debug.LogError("Character URP material adapter cannot find RuntimeColorMaterial or Universal Render Pipeline/Lit. Unsupported character materials will remain unchanged.");
+                Debug.LogError("Character URP material adapter cannot find RuntimeColorMaterial or Universal Render Pipeline/Lit. Character materials will remain unchanged.");
             }
             return source;
         }
 
+        if (source == baseTemplate) return source;
+        if (source.shader == baseTemplate.shader && source.name.EndsWith(ConvertedSuffix, StringComparison.Ordinal))
+            return source;
+
+        Shader sourceShader = source.shader;
+        if (!forceStableCharacterMaterial && sourceShader != null && sourceShader.isSupported &&
+            sourceShader.name.StartsWith(UrpPrefix, StringComparison.Ordinal))
+            return source;
+
+        if (Converted.TryGetValue(source, out Material cached) && cached != null)
+            return cached;
+
         Material material = new Material(baseTemplate)
         {
-            name = source.name + "_URP_Runtime",
+            name = source.name + ConvertedSuffix,
             hideFlags = HideFlags.DontSave
         };
 
@@ -108,7 +132,7 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
 
     static Material GetTemplate()
     {
-        if (template != null) return template;
+        if (template != null && template.shader != null && template.shader.isSupported) return template;
         template = Resources.Load<Material>(RuntimeMaterialResource);
         if (template != null && template.shader != null && template.shader.isSupported) return template;
 
