@@ -4,13 +4,14 @@
 Generated Chapter I character prefabs and runtime-created character instances must not render magenta in the URP runtime when KayKit source materials use unsupported/non-URP shaders.
 
 ## Why
-Play Mode shows multiple Greek and Trojan character meshes as magenta while project-owned procedural URP parts render correctly. The first recovery pass installed an adapter on generated prefabs, but a later Play Mode screenshot still showed magenta. Runtime factories finish assembling/enhancing heroes, enemies and tower crews after prefab instantiation, so relying only on `Awake()` is insufficient. A shader can also carry an URP-looking name while being unsupported in the active runtime.
+Repeated Play Mode screenshots showed Greek and Trojan character meshes remaining magenta while project-owned procedural URP parts rendered correctly. Runtime-only recovery was insufficient because the character builder persisted cloned KayKit materials into generated prefabs. The durable fix is therefore asset-level: generated character renderer slots must reference project-owned materials derived from the known-good `RuntimeColorMaterial`, with runtime conversion retained only as a safety net.
 
 ## Owner module
 Editor art pipeline plus runtime character presentation/material finalization.
 
 ## Allowed files
 - Assets/Editor/ChapterOneUrpMaterialRepair.cs
+- Assets/Editor/CartoonCharacterPrefabBuilder.cs
 - Assets/Editor/CartoonCharacterAutoBuilder.cs
 - Assets/Game/World/CharacterUrpMaterialAdapter.cs
 - Assets/Game/Heroes/HeroVisualFactory.cs
@@ -24,13 +25,14 @@ Editor art pipeline plus runtime character presentation/material finalization.
 Gameplay balance, colliders, navigation, animation timing, KayKit submodule contents, or Assets/Resources/Music/BeyazGiyme.mp3.
 
 ## Acceptance criteria
-- Existing generated character prefabs can receive URP material recovery without full regeneration.
-- Build Missing Chapter I Art installs recovery automatically.
-- Runtime factories execute a final material pass after hero/enemy/tower-crew assembly.
-- Supported URP materials remain unchanged.
-- Unsupported or non-URP materials are converted at runtime while preserving base texture/color when available.
-- Runtime visual audit can show when material repair actually replaced materials.
-- Validation reports prefabs missing the adapter.
+- New generated character prefabs do not persist KayKit/external shaders in renderer material slots.
+- Existing generated character prefabs can be repaired without full regeneration.
+- Each repaired renderer slot points to a deterministic project-owned material under `Assets/Game/Art/Characters/Resources/TroyProduction/Materials`.
+- Stable materials use the same shader as `Assets/Resources/RuntimeColorMaterial.mat` and preserve source texture/UV transform/base color when available.
+- Bright Unity-error magenta is never copied forward as a base color.
+- Build Missing Chapter I Art invokes URP material repair automatically.
+- Runtime factories retain final material recovery as a safety net after hero/enemy/tower-crew assembly.
+- Validation reports missing adapter, missing materials, external/non-stabilized materials and shader mismatches.
 - Final Play Mode check shows no magenta Chapter I character meshes.
 
 ## Validation
