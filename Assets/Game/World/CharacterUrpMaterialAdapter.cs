@@ -11,6 +11,7 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
     const int DeferredPassCount = 2;
 
     static readonly Dictionary<Material, Material> Converted = new Dictionary<Material, Material>();
+    static readonly Dictionary<string, Material> MissingSlotMaterials = new Dictionary<string, Material>();
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
     static readonly MaterialPropertyBlock PropertyBlock = new MaterialPropertyBlock();
@@ -60,15 +61,18 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         if (renderer == null) return 0;
 
         int convertedCount = SanitizeErrorMagentaPropertyBlock(renderer);
-        Material[] sourceMaterials = renderer.sharedMaterials;
-        if (sourceMaterials == null || sourceMaterials.Length == 0) return convertedCount;
+        Material[] sourceMaterials = renderer.sharedMaterials ?? Array.Empty<Material>();
+        int requiredSlots = RequiredMaterialSlots(renderer);
+        if (requiredSlots > sourceMaterials.Length)
+            Array.Resize(ref sourceMaterials, requiredSlots);
+        if (sourceMaterials.Length == 0) return convertedCount;
 
         bool changed = false;
         Material[] convertedMaterials = new Material[sourceMaterials.Length];
         for (int i = 0; i < sourceMaterials.Length; i++)
         {
             Material source = sourceMaterials[i];
-            Material converted = ConvertMaterial(source, forceStableCharacterMaterial);
+            Material converted = ConvertMaterial(source, forceStableCharacterMaterial, renderer, i);
             convertedMaterials[i] = converted;
             if (converted != source)
             {
@@ -80,6 +84,18 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         if (changed)
             renderer.sharedMaterials = convertedMaterials;
         return convertedCount;
+    }
+
+    static int RequiredMaterialSlots(Renderer renderer)
+    {
+        if (renderer is SkinnedMeshRenderer skinned && skinned.sharedMesh != null)
+            return Mathf.Max(1, skinned.sharedMesh.subMeshCount);
+
+        MeshFilter filter = renderer.GetComponent<MeshFilter>();
+        if (filter != null && filter.sharedMesh != null)
+            return Mathf.Max(1, filter.sharedMesh.subMeshCount);
+
+        return renderer.sharedMaterials != null ? renderer.sharedMaterials.Length : 0;
     }
 
     static int SanitizeErrorMagentaPropertyBlock(Renderer renderer)
@@ -100,10 +116,8 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         return 1;
     }
 
-    static Material ConvertMaterial(Material source, bool forceStableCharacterMaterial)
+    static Material ConvertMaterial(Material source, bool forceStableCharacterMaterial, Renderer renderer, int slot)
     {
-        if (source == null) return null;
-
         Material baseTemplate = GetTemplate();
         if (baseTemplate == null)
         {
@@ -114,6 +128,9 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
             }
             return source;
         }
+
+        if (source == null)
+            return GetMissingSlotMaterial(baseTemplate, renderer, slot);
 
         if (source == baseTemplate) return source;
         if (source.shader == baseTemplate.shader && source.name.EndsWith(ConvertedSuffix, StringComparison.Ordinal))
@@ -150,14 +167,71 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         }
 
         Color color = SanitizeColor(ReadBaseColor(source));
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
+        ApplyColor(material, color);
 
         CopyTextureTransform(source, material, "_BaseMap");
         if (!source.HasProperty("_BaseMap")) CopyTextureTransform(source, material, "_MainTex");
 
         Converted[source] = material;
         return material;
+    }
+
+    static Material GetMissingSlotMaterial(Material baseTemplate, Renderer renderer, int slot)
+    {
+        CharacterVisualIdentity identity = renderer != null ? renderer.GetComponentInParent<CharacterVisualIdentity>() : null;
+        string semantic = MaterialSemantic(renderer != null ? renderer.name : string.Empty);
+        string faction = identity != null ? identity.faction.ToString() : "Unknown";
+        string role = identity != null ? identity.role.ToString() : "Unknown";
+        string key = faction + ":" + role + ":" + semantic + ":" + slot;
+
+        if (MissingSlotMaterials.TryGetValue(key, out Material cached) && cached != null)
+            return cached;
+
+        Material material = new Material(baseTemplate)
+        {
+            name = "Missing_" + semantic + "_" + faction + "_M" + slot + ConvertedSuffix,
+            hideFlags = HideFlags.DontSave
+        };
+        ApplyColor(material, ResolveMissingSlotColor(renderer, identity));
+        MissingSlotMaterials[key] = material;
+        return material;
+    }
+
+    static string MaterialSemantic(string rendererName)
+    {
+        string lower = (rendererName ?? string.Empty).ToLowerInvariant();
+        if (lower.Contains("head") || lower.Contains("face")) return "SkinHead";
+        if (lower.Contains("arm") || lower.Contains("hand")) return "SkinArm";
+        if (lower.Contains("helmet")) return "Helmet";
+        if (lower.Contains("cape") || lower.Contains("cloth")) return "Cape";
+        if (lower.Contains("shield")) return "Shield";
+        if (lower.Contains("sword") || lower.Contains("blade")) return "Steel";
+        if (lower.Contains("leg") || lower.Contains("boot") || lower.Contains("foot")) return "Legs";
+        return "Body";
+    }
+
+    static Color ResolveMissingSlotColor(Renderer renderer, CharacterVisualIdentity identity)
+    {
+        string semantic = MaterialSemantic(renderer != null ? renderer.name : string.Empty);
+        bool trojan = identity == null || identity.faction == TroyFaction.Trojan;
+
+        switch (semantic)
+        {
+            case "SkinHead":
+            case "SkinArm":
+                return new Color(.86f, .52f, .32f, 1f);
+            case "Helmet":
+            case "Shield":
+                return new Color(.63f, .40f, .14f, 1f);
+            case "Steel":
+                return new Color(.58f, .62f, .67f, 1f);
+            case "Cape":
+                return trojan ? new Color(.55f, .08f, .045f, 1f) : new Color(.18f, .30f, .52f, 1f);
+            case "Legs":
+                return trojan ? new Color(.28f, .12f, .07f, 1f) : new Color(.20f, .24f, .31f, 1f);
+            default:
+                return trojan ? new Color(.63f, .30f, .12f, 1f) : new Color(.38f, .50f, .67f, 1f);
+        }
     }
 
     static void SanitizeMaterialColor(Material material)
@@ -223,6 +297,12 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         if (source.HasProperty("_BaseColor")) return source.GetColor("_BaseColor");
         if (source.HasProperty("_Color")) return source.GetColor("_Color");
         return Color.white;
+    }
+
+    static void ApplyColor(Material material, Color color)
+    {
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
     }
 
     static void CopyTextureTransform(Material source, Material target, string property)
