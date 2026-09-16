@@ -48,7 +48,7 @@ public static class HeroVisualFactory
         int repairedMaterials = CharacterUrpMaterialAdapter.ApplyTo(result);
         if (repairedMaterials > 0)
             detail += "; urpMaterialRepair=" + repairedMaterials;
-        RuntimeVisualAudit.Report("Hero:" + heroId, source, detail);
+        RuntimeVisualAudit.ReportDetailed("Hero:" + heroId, source, detail, result);
         return result;
     }
 

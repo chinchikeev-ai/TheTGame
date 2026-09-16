@@ -52,7 +52,7 @@ public static class EnemyVisualFactory
         int repairedMaterials = CharacterUrpMaterialAdapter.ApplyTo(instance);
         if (repairedMaterials > 0)
             detail += "; urpMaterialRepair=" + repairedMaterials;
-        RuntimeVisualAudit.Report("Enemy:" + archetype, source, detail);
+        RuntimeVisualAudit.ReportDetailed("Enemy:" + archetype, source, detail, instance);
         return instance;
     }
 
