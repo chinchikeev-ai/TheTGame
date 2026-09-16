@@ -6,7 +6,9 @@ namespace TheTroyGame.Tests
     public class ChapterOneGeneratedArtRecoveryTests
     {
         const string AutoBuilderPath = "Assets/Editor/CartoonCharacterAutoBuilder.cs";
+        const string CharacterBuilderPath = "Assets/Editor/CartoonCharacterPrefabBuilder.cs";
         const string AnimationBuilderPath = "Assets/Editor/ChapterOneCharacterAnimationBuilder.cs";
+        const string MaterialRepairPath = "Assets/Editor/ChapterOneUrpMaterialRepair.cs";
         const string MaterialAdapterPath = "Assets/Game/World/CharacterUrpMaterialAdapter.cs";
         const string HeroFactoryPath = "Assets/Game/Heroes/HeroVisualFactory.cs";
         const string EnemyFactoryPath = "Assets/Game/Enemies/EnemyVisualFactory.cs";
@@ -149,6 +151,30 @@ namespace TheTroyGame.Tests
             StringAssert.Contains("source == baseTemplate", adapter);
             StringAssert.Contains("new Material(baseTemplate)", adapter);
             StringAssert.Contains("ConvertedSuffix", adapter);
+        }
+
+        [Test]
+        public void CharacterBuilder_DoesNotPersistKayKitShadersIntoGeneratedPrefabs()
+        {
+            Assert.IsTrue(File.Exists(CharacterBuilderPath), "Missing character prefab builder.");
+            string builder = File.ReadAllText(CharacterBuilderPath);
+            StringAssert.DoesNotContain("new Material(source)", builder);
+            StringAssert.Contains("ChapterOneUrpMaterialRepair.StabilizeMaterials(root, prefabName, tint)", builder);
+        }
+
+        [Test]
+        public void MaterialRepair_BakesProjectOwnedMaterialsAndValidatesEveryRendererSlot()
+        {
+            Assert.IsTrue(File.Exists(MaterialRepairPath), "Missing Chapter I URP material repair.");
+            string repair = File.ReadAllText(MaterialRepairPath);
+
+            StringAssert.Contains("Assets/Game/Art/Characters/Resources/TroyProduction/Materials", repair);
+            StringAssert.Contains("Assets/Resources/RuntimeColorMaterial.mat", repair);
+            StringAssert.Contains("AssetDatabase.CreateAsset(stable, assetPath)", repair);
+            StringAssert.Contains("renderer.sharedMaterials = materials", repair);
+            StringAssert.Contains("uses external/non-stabilized material", repair);
+            StringAssert.Contains("does not use RuntimeColorMaterial shader", repair);
+            StringAssert.Contains("Bright Unity-error magenta must never be propagated", repair);
         }
     }
 }
