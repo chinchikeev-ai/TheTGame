@@ -18,6 +18,7 @@ Chapter I World/UI/Enemies input presentation.
 - `Assets/Game/World/ChapterOneCoastEdgeClosure.cs.meta`
 - `Assets/Game/UI/ChapterOneUiCompactPresentation.cs`
 - `Assets/Game/Towers/TowerPlacement.cs`
+- `Assets/Game/Heroes/Hector/HectorInputDriver.cs`
 - `Assets/Resources/Data/Enemies/*.asset`
 - `Assets/Tests/EditMode/ChapterOneBattlefieldPolishTests.cs`
 - `Assets/Tests/EditMode/ChapterOneBattlefieldPolishTests.cs.meta`
@@ -39,28 +40,38 @@ Chapter I World/UI/Enemies input presentation.
 
 ## Acceptance criteria
 - [x] Troy wall guards run the same missing-material recovery used by Hector and tower crews.
-- [ ] Water no longer appears around the north/south sides of the playable beach frame.
-- [ ] Divine-power action panel is anchored at the lower-right, above the defenders control.
-- [ ] Every authored enemy archetype has 1.5x its prior HP multiplier.
-- [ ] Right mouse button cancels build mode and selected tower state.
-- [ ] Source-level regression coverage added.
+- [x] North/south coast-edge water is covered by Chapter I presentation-only land extensions without changing the authored shoreline.
+- [x] Divine-power action panel is anchored at the lower-right, above the defenders control.
+- [x] Every authored enemy archetype has 1.5x its prior HP multiplier.
+- [x] Right mouse button cancels build mode, selected tower state and Hector selection.
+- [x] Source-level regression coverage added.
 
 ## Automated validation
-- [ ] `python tools/check-architecture.py`
-- [ ] EditMode tests required/updated
-- [ ] PlayMode tests required/updated
-- [ ] Full Unity validation when available
+- [ ] `python tools/check-architecture.py` not executed in this GitHub-only change.
+- [x] EditMode source-level regression test added; execution not claimed.
+- [ ] PlayMode validation pending local visual/interaction QA.
+- [ ] Full Unity validation pending local workflow.
 
 ## Manual validation
-- Chapter I gameplay screenshot confirms no purple wall guards, no side-water leak and correct lower HUD placement.
-- Right click visually clears the active tower/build selection.
+- Chapter I gameplay screenshot should confirm no purple wall guards, no side-water leak and correct lower HUD placement.
+- Right click should visually clear active tower/build/Hector selection.
+- Recheck Chapter I duration after the +50% enemy-health balance increase.
 
 ## Known risks
 - Coast edge closure is presentation-only and must not overlap the intended central Aegean shoreline.
-- +50% HP materially changes encounter duration and will require later pacing review.
+- +50% HP materially changes encounter duration and will require pacing review.
+- Right click no longer issues Hector movement commands; it is now reserved for cancel/deselect as requested.
 
 ## Result
-In progress.
+Implemented directly on `main`:
+- wall-guard null-material recovery;
+- Chapter I north/south coast edge closure;
+- lower-right divine-power HUD placement;
+- +50% HP on all seven authored enemy archetypes;
+- global secondary-click deselection for tower/build/Hector state;
+- source-level regression coverage.
+
+Implementation commits run through `02bbd19100e3e04d9254a4ed58196cd582c56902`; manual visual acceptance remains pending.
 
 ## Status
 `IN_PROGRESS`
