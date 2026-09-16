@@ -11,6 +11,9 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
     const int DeferredPassCount = 2;
 
     static readonly Dictionary<Material, Material> Converted = new Dictionary<Material, Material>();
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    static readonly int ColorId = Shader.PropertyToID("_Color");
+    static readonly MaterialPropertyBlock PropertyBlock = new MaterialPropertyBlock();
     static Material template;
     static bool loggedMissingTemplate;
 
@@ -56,10 +59,10 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
     {
         if (renderer == null) return 0;
 
+        int convertedCount = SanitizeErrorMagentaPropertyBlock(renderer);
         Material[] sourceMaterials = renderer.sharedMaterials;
-        if (sourceMaterials == null || sourceMaterials.Length == 0) return 0;
+        if (sourceMaterials == null || sourceMaterials.Length == 0) return convertedCount;
 
-        int convertedCount = 0;
         bool changed = false;
         Material[] convertedMaterials = new Material[sourceMaterials.Length];
         for (int i = 0; i < sourceMaterials.Length; i++)
@@ -79,6 +82,24 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
         return convertedCount;
     }
 
+    static int SanitizeErrorMagentaPropertyBlock(Renderer renderer)
+    {
+        PropertyBlock.Clear();
+        renderer.GetPropertyBlock(PropertyBlock);
+        if (PropertyBlock.isEmpty) return 0;
+
+        Color baseOverride = PropertyBlock.GetColor(BaseColorId);
+        Color colorOverride = PropertyBlock.GetColor(ColorId);
+        bool baseMagenta = IsErrorMagenta(baseOverride);
+        bool colorMagenta = IsErrorMagenta(colorOverride);
+        if (!baseMagenta && !colorMagenta) return 0;
+
+        if (baseMagenta) PropertyBlock.SetColor(BaseColorId, Color.white);
+        if (colorMagenta) PropertyBlock.SetColor(ColorId, Color.white);
+        renderer.SetPropertyBlock(PropertyBlock);
+        return 1;
+    }
+
     static Material ConvertMaterial(Material source, bool forceStableCharacterMaterial)
     {
         if (source == null) return null;
@@ -96,15 +117,24 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
 
         if (source == baseTemplate) return source;
         if (source.shader == baseTemplate.shader && source.name.EndsWith(ConvertedSuffix, StringComparison.Ordinal))
+        {
+            SanitizeMaterialColor(source);
             return source;
+        }
 
         Shader sourceShader = source.shader;
         if (!forceStableCharacterMaterial && sourceShader != null && sourceShader.isSupported &&
             sourceShader.name.StartsWith(UrpPrefix, StringComparison.Ordinal))
+        {
+            SanitizeMaterialColor(source);
             return source;
+        }
 
         if (Converted.TryGetValue(source, out Material cached) && cached != null)
+        {
+            SanitizeMaterialColor(cached);
             return cached;
+        }
 
         Material material = new Material(baseTemplate)
         {
@@ -119,7 +149,7 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
             if (material.HasProperty("_MainTex")) material.SetTexture("_MainTex", texture);
         }
 
-        Color color = ReadBaseColor(source);
+        Color color = SanitizeColor(ReadBaseColor(source));
         if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color")) material.SetColor("_Color", color);
 
@@ -128,6 +158,31 @@ public sealed class CharacterUrpMaterialAdapter : MonoBehaviour
 
         Converted[source] = material;
         return material;
+    }
+
+    static void SanitizeMaterialColor(Material material)
+    {
+        if (material == null) return;
+        if (material.HasProperty("_BaseColor"))
+        {
+            Color color = material.GetColor("_BaseColor");
+            if (IsErrorMagenta(color)) material.SetColor("_BaseColor", Color.white);
+        }
+        if (material.HasProperty("_Color"))
+        {
+            Color color = material.GetColor("_Color");
+            if (IsErrorMagenta(color)) material.SetColor("_Color", Color.white);
+        }
+    }
+
+    static Color SanitizeColor(Color color)
+    {
+        return IsErrorMagenta(color) ? Color.white : color;
+    }
+
+    static bool IsErrorMagenta(Color color)
+    {
+        return color.a > .5f && color.r >= .90f && color.g <= .12f && color.b >= .90f;
     }
 
     static Material GetTemplate()
