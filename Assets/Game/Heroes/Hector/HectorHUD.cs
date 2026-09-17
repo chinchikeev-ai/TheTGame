@@ -65,19 +65,21 @@ public class HectorHUD : MonoBehaviour
         panel.sprite = Art("Panel");
         panel.type = Image.Type.Simple;
         panel.color = Color.white;
+        panel.raycastTarget = true;
         RectTransform pr = panel.rectTransform;
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(0f, 0f);
         pr.anchoredPosition = new Vector2(18f, 18f);
         pr.sizeDelta = new Vector2(440f, 292f);
 
+        Button panelButton = root.AddComponent<Button>();
+        panelButton.targetGraphic = panel;
+        panelButton.transition = Selectable.Transition.None;
+        panelButton.onClick.AddListener(SelectHectorFromHud);
+
         AddImage(root.transform, "HectorPortraitFrame", new Vector2(-137, 76), new Vector2(156, 156), Art("PortraitFrame"));
         Image mask = AddImage(root.transform, "PortraitMask", new Vector2(-133, 76), new Vector2(116, 116), CreatePortraitMask());
         mask.gameObject.AddComponent<Mask>().showMaskGraphic = false;
-        Image portrait = AddImage(mask.transform, "HectorPortrait", Vector2.zero, new Vector2(116, 116), Art("Portrait"));
-        portrait.raycastTarget = true;
-        Button portraitButton = portrait.gameObject.AddComponent<Button>();
-        portraitButton.targetGraphic = portrait;
-        portraitButton.onClick.AddListener(SelectHectorFromHud);
+        AddImage(mask.transform, "HectorPortrait", Vector2.zero, new Vector2(116, 116), Art("Portrait"));
 
         AddImage(root.transform, "HectorNameBanner", new Vector2(76, 106), new Vector2(240, 46), Art("Nameplate"));
         nameText = AddText(root.transform, "HECTOR", new Vector2(76, 106), new Vector2(182, 28), 22, new Color(1f, .93f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
@@ -311,7 +313,7 @@ public class HectorHUD : MonoBehaviour
         HectorController h = HectorController.Instance;
         if (h == null || h.IsDowned) return;
         h.SetSelected(true);
-        RuntimeFileLogger.Event("HECTOR_INPUT", "Selected from HUD portrait.");
+        RuntimeFileLogger.Event("HECTOR_INPUT", "Selected from HUD card.");
     }
 
     void UseAbilityFromHud(int index)
