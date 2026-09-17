@@ -64,7 +64,8 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
                 if (coinImage != null) coinImage.sprite = TroyHudArt.Icon("gold");
             }
             Transform gate = top.Find("GateIcon");
-            if (gate != null && gate.TryGetComponent(out Image gateImage)) gateImage.sprite = TroyHudArt.Icon("gate");
+            if (gate != null && top.GetComponentInChildren<GateHudArtwork>() == null && gate.TryGetComponent(out Image gateImage))
+                gateImage.sprite = TroyHudArt.Icon("gate");
         }
 
         Transform wave = hud.Find("WaveStatus");

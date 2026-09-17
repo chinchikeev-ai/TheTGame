@@ -139,10 +139,12 @@ public sealed class ModernCombatHud : MonoBehaviour
             settingsLabel.resizeTextMaxSize = 10;
         }
 
-        Panel(bar.transform, "GateResourcePanel", new Vector2(-35f, -38f), new Vector2(450f, 76f), new Color(.070f, .041f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Icon(bar.transform, "GateIcon", new Vector2(-232f, -38f), new Vector2(58f, 58f), TroyHudArt.Icon("gate"));
-        gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(-82f, -18f), new Vector2(270f, 28f), 17, new Color(1f, .86f, .55f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(34f, -54f), new Vector2(320f, 18f), new Color(.18f, .08f, .045f, 1f), new Color(.88f, .12f, .07f, 1f));
+        GameObject gatePanel = Panel(bar.transform, "GateResourcePanel", new Vector2(-35f, -38f), new Vector2(450f, 76f), Color.white, new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Image gateIcon = Icon(bar.transform, "GateIcon", new Vector2(-216f, -38f), new Vector2(68f, 68f), null);
+        gateText = Text(bar.transform, L("GATE", "ВОРОТА"), new Vector2(18f, -22f), new Vector2(310f, 28f), 22, new Color(1f, .94f, .72f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+        gateText.gameObject.name = "GateHealthLabel";
+        gateHealthFill = ProgressBar(bar.transform, "GateHealthProgress", new Vector2(18f, -54f), new Vector2(310f, 20f), new Color(.11f, .025f, .02f, 1f), new Color(.92f, .035f, .07f, 1f));
+        gatePanel.AddComponent<GateHudArtwork>().Apply(gatePanel.GetComponent<Image>(), gateIcon, gateHealthFill);
     }
 
     void BuildEncounterBar(Transform parent)

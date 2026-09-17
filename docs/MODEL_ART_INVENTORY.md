@@ -16,6 +16,10 @@ A builder succeeding does **not** promote an asset to `DONE`.
 
 ## UI character portraits
 
+Gate HUD: GENERATED PLACEHOLDER pending user acceptance. Two separate generated
+textures under Assets/Game/Art/Resources/GateHud are wired into the resource block;
+live text and HP fill remain independent. Three isolated Unity render tests passed.
+
 Main screen (2026-09-16): SOURCE ONLY supplied artwork integrated as a UI candidate.
 Five original transparent PNGs under `Assets/Game/Art/Resources/MainScreen` provide
 the logo and four actions over the existing `Menu/Main_screen` background. Eight

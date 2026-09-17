@@ -6,6 +6,13 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Gate HUD artwork (2026-09-18): compact dark/gold frame and separate illustrated gate
+replace the gate resource placeholder. ModernCombatHud retains live HP/localization;
+the decorative skin preserves the new icon. Three focused EditMode tests passed,
+with full/half/empty HP Canvas captures. User acceptance and gameplay QA pending.
+No EXE build. Architecture guard currently reports an unrelated scene-wide search
+in ChapterOneAegeanSeaPresentation.
+
 Main-screen artwork (2026-09-16): the production main menu now uses the supplied
 MainScreen logo, Play, Heroes, Settings and Exit PNGs over the clean Troy background.
 Textures are packaged under `Assets/Game/Art/Resources/MainScreen`. Buttons retain
