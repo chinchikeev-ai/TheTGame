@@ -46,6 +46,7 @@ public class TrojanGuardSquad : MonoBehaviour
     public void Initialize(Tower tower)
     {
         ownerTower = tower;
+        SyncCombatRange();
         Health = maxHealth;
     }
 
@@ -81,6 +82,7 @@ public class TrojanGuardSquad : MonoBehaviour
     void Update()
     {
         if (!IsAlive || GameManager.Instance == null || GameManager.Instance.GameEnded) return;
+        SyncCombatRange();
         if (Time.time >= rallyUntil)
         {
             rallyDamage = 1f;
@@ -106,6 +108,12 @@ public class TrojanGuardSquad : MonoBehaviour
                 presentation.PlaySpearAttack(() => ApplyAttackImpact(attackTarget, attackDamage));
             }
         }
+    }
+
+    void SyncCombatRange()
+    {
+        if (ownerTower == null) return;
+        blockRadius = Mathf.Max(.1f, ownerTower.range);
     }
 
     void UpdateDefensivePresentation()
