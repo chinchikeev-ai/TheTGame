@@ -9,6 +9,8 @@ public class GameMenuController : MonoBehaviour
 
     static bool openLevelSelectAfterReload;
     static bool startLevelAfterReload;
+    static bool restartGiftPending;
+    static DivineGiftType restartGift;
     public static bool QuitRequested { get; private set; }
 
     Canvas canvas;
@@ -42,6 +44,14 @@ public class GameMenuController : MonoBehaviour
         {
             startLevelAfterReload = false;
             openLevelSelectAfterReload = false;
+
+            GameManager gm = GameManager.Instance;
+            if (restartGiftPending && gm != null && !gm.GiftSelected)
+            {
+                gm.UseGift(restartGift);
+                RuntimeFileLogger.Event("MENU", $"Restart restored patron={restartGift} before level start");
+            }
+            restartGiftPending = false;
             StartLevel();
         }
         else if (openLevelSelectAfterReload)
@@ -264,6 +274,7 @@ public class GameMenuController : MonoBehaviour
 
     void StartNewCampaign()
     {
+        restartGiftPending = false;
         CampaignController.Instance?.ResetProgress();
         RuntimeFileLogger.Event("CAMPAIGN", "New campaign started from main menu");
         ShowLevels();
@@ -292,6 +303,7 @@ public class GameMenuController : MonoBehaviour
     public void ReturnToMainMenu()
     {
         RuntimeFileLogger.Event("MENU", "Returning to main menu through scene reset");
+        restartGiftPending = false;
         startLevelAfterReload = false;
         openLevelSelectAfterReload = false;
         RestartScene();
@@ -300,6 +312,7 @@ public class GameMenuController : MonoBehaviour
     public void ReturnToChapterSelect()
     {
         RuntimeFileLogger.Event("MENU", "Returning to chapter select through scene reset");
+        restartGiftPending = false;
         startLevelAfterReload = false;
         openLevelSelectAfterReload = true;
         RestartScene();
@@ -402,6 +415,9 @@ public class GameMenuController : MonoBehaviour
 
     public void RestartChapter()
     {
+        GameManager gm = GameManager.Instance;
+        restartGiftPending = gm != null && gm.GiftSelected;
+        if (restartGiftPending) restartGift = gm.SelectedGift;
         startLevelAfterReload = true;
         openLevelSelectAfterReload = false;
         RestartScene();
@@ -411,6 +427,7 @@ public class GameMenuController : MonoBehaviour
     {
         RuntimeFileLogger.Event("MENU", "Exit requested");
         QuitRequested = true;
+        restartGiftPending = false;
         Time.timeScale = 1f;
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
