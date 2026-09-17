@@ -3,21 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Presentation-only sea pass for Chapter I.
-// The water is intentionally built as one coherent blue field with narrow,
-// shoreline-following depth bands. This avoids the hard vertical stripes and
-// oversized teal blocks that were visible from the real tactical camera.
+// The sea is one continuous mesh from deep water to the shoreline. There are no
+// large depth-color bands or separate base slabs, because those produced visible
+// vertical cuts from the real tactical camera. Depth is now suggested only by
+// restrained wave/current accents and the shoreline surf.
 public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 {
-    static readonly Color OceanBase = new Color(.028f, .32f, .58f);
-    static readonly Color OceanDeep = new Color(.024f, .27f, .52f);
-    static readonly Color ShelfBlue = new Color(.045f, .43f, .64f);
-    static readonly Color Turquoise = new Color(.055f, .54f, .68f);
-    static readonly Color Lagoon = new Color(.12f, .64f, .71f);
-    static readonly Color Undertow = new Color(.035f, .39f, .57f);
-    static readonly Color WaveBlue = new Color(.34f, .72f, .80f);
+    static readonly Color OceanBase = new Color(.025f, .335f, .60f);
+    static readonly Color Undertow = new Color(.035f, .42f, .60f);
+    static readonly Color WaveBlue = new Color(.34f, .73f, .81f);
     static readonly Color Foam = new Color(.96f, .985f, .96f);
-    static readonly Color ThinFoam = new Color(.76f, .91f, .90f);
-    static readonly Color SunGlint = new Color(.84f, .95f, .93f);
+    static readonly Color ThinFoam = new Color(.77f, .92f, .91f);
+    static readonly Color SunGlint = new Color(.86f, .96f, .94f);
+
+    static readonly HashSet<string> LegacyWaterObjects = new HashSet<string>
+    {
+        "Deep Aegean Sea",
+        "Aegean Mid Water",
+        "Aegean Shallows",
+        "Aegean Shelf Transition",
+        "Aegean Mid Shelf",
+        "Shore Shallow Gradient Band",
+        "Shallow Water Variation",
+        "Submerged Shoal",
+        "Shallow Swell",
+        "Shore Foam Fleck",
+        "Breaking Shore Foam",
+        "Shore Backwash",
+        "Moving Sea Glint",
+        "Sea Spray Wisp",
+        "Greek Ship Wake",
+        "Coast Side Sea Extension"
+    };
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -41,6 +58,9 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
             yield break;
         }
 
+        // Wait until ShoreLife / edge-closure presentation objects have had a chance
+        // to appear, then take exclusive visual ownership of the sea surface.
+        yield return null;
         yield return null;
         yield return null;
 
@@ -50,87 +70,65 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
             yield break;
         }
 
-        DisableLegacyBlobWaterDetails();
-        TintExistingSeaBase();
+        DisableLegacySeaRenderers();
 
         GameObject root = new GameObject("Chapter01_AegeanSeaPresentation");
-        BuildDepthBands(root.transform);
+        BuildContinuousOcean(root.transform);
         BuildOpenWaterCurrents(root.transform);
         BuildWavelets(root.transform);
         BuildShoreBreakers(root.transform);
         BuildSunGlints(root.transform);
     }
 
-    static void DisableLegacyBlobWaterDetails()
-    {
-        HashSet<string> names = new HashSet<string>
-        {
-            "Shallow Water Variation",
-            "Submerged Shoal",
-            "Shallow Swell",
-            "Shore Foam Fleck",
-            "Breaking Shore Foam",
-            "Shore Backwash",
-            "Moving Sea Glint",
-            "Sea Spray Wisp",
-            "Greek Ship Wake"
-        };
-
-        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < all.Length; i++)
-        {
-            Transform t = all[i];
-            if (t == null || !names.Contains(t.name)) continue;
-            t.gameObject.SetActive(false);
-        }
-    }
-
-    static void TintExistingSeaBase()
-    {
-        // The three structural sea slabs now share one base hue. Depth is expressed
-        // by organic shoreline bands instead of visible rectangular color seams.
-        Recolor("Deep Aegean Sea", OceanBase);
-        Recolor("Aegean Mid Water", OceanBase);
-        Recolor("Aegean Shallows", OceanBase);
-        Recolor("Aegean Shelf Transition", OceanBase);
-        Recolor("Aegean Mid Shelf", OceanBase);
-        Recolor("Shore Shallow Gradient Band", Turquoise * .94f);
-    }
-
-    static void Recolor(string objectName, Color color)
+    static void DisableLegacySeaRenderers()
     {
         Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < all.Length; i++)
         {
             Transform t = all[i];
-            if (t != null && t.name == objectName)
-                TowerFactory.SetColor(t.gameObject, color);
+            if (t == null || !LegacyWaterObjects.Contains(t.name)) continue;
+            Renderer renderer = t.GetComponent<Renderer>();
+            if (renderer != null) renderer.enabled = false;
         }
     }
 
-    static void BuildDepthBands(Transform parent)
+    static void BuildContinuousOcean(Transform parent)
     {
-        // Wide-to-narrow depth progression, always following the coastline.
-        CreateCoastBand(parent, "Aegean Deep Transition", -7.2f, -4.65f, -.154f, OceanDeep * 1.02f, .16f, .2f);
-        CreateCoastBand(parent, "Aegean Blue Shelf", -5.0f, -2.85f, -.150f, ShelfBlue * .90f, .14f, .8f);
-        CreateCoastBand(parent, "Aegean Turquoise Shelf", -3.05f, -1.55f, -.146f, Turquoise * .86f, .11f, 1.4f);
-        CreateCoastBand(parent, "Aegean Lagoon Edge", -1.75f, -.68f, -.141f, Turquoise, .085f, 2.0f);
-        CreateCoastBand(parent, "Aegean Nearshore Light", -.92f, -.24f, -.136f, Lagoon * .96f, .060f, 2.6f);
+        const int segments = 72;
+        const float minZ = -27f;
+        const float maxZ = 27f;
+        const float openSeaX = -40f;
+        const float waterY = -.142f;
+
+        Vector3[] vertices = new Vector3[(segments + 1) * 2];
+        int[] triangles = new int[segments * 6];
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float t = i / (float)segments;
+            float z = Mathf.Lerp(minZ, maxZ, t);
+            float shoreX = CoastEnvironmentBuilder.ShorelineX(z) - .10f;
+            vertices[i * 2] = new Vector3(openSeaX, waterY, z);
+            vertices[i * 2 + 1] = new Vector3(shoreX, waterY, z);
+        }
+
+        FillStripTriangles(triangles, segments);
+        CreateMeshObject(parent, "Aegean Continuous Ocean", vertices, triangles, OceanBase);
     }
 
     static void BuildOpenWaterCurrents(Transform parent)
     {
-        float[] zBands = { -7.5f, -3.7f, .2f, 4.2f, 7.4f };
+        float[] zBands = { -8.0f, -4.2f, -.3f, 3.8f, 7.8f };
         for (int i = 0; i < zBands.Length; i++)
         {
             GameObject current = CreateOpenWaterRibbon(parent,
                 "Aegean Current Ribbon",
-                -30.0f,
-                -16.0f,
+                -31.5f,
+                -16.5f,
                 zBands[i],
-                -.132f - (i % 2) * .006f,
-                .045f + (i % 3) * .010f,
-                WaveBlue * (.60f + i * .035f),
+                -.132f - (i % 2) * .004f,
+                .032f + (i % 3) * .008f,
+                WaveBlue * (.55f + i * .025f),
                 i * .83f);
             AddSeaMotion(current, .5f + i * .64f);
         }
@@ -138,78 +136,56 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 
     static void BuildWavelets(Transform parent)
     {
-        for (int i = 0; i < 18; i++)
+        for (int i = 0; i < 22; i++)
         {
-            float x = -17.0f - (i % 5) * 2.25f - (i / 5) * .30f;
-            float z = -8.8f + ((i * 3.31f) % 17.6f);
-            float length = .42f + (i % 4) * .16f;
-            Vector3 a = new Vector3(x, -.127f - (i % 4) * .003f, z);
-            Vector3 b = a + new Vector3(length, 0f, .04f + (i % 2) * .045f);
+            float x = -16.8f - (i % 6) * 2.20f - (i / 6) * .20f;
+            float z = -9.4f + ((i * 3.17f) % 18.8f);
+            float length = .32f + (i % 5) * .13f;
+            Vector3 a = new Vector3(x, -.126f - (i % 3) * .002f, z);
+            Vector3 b = a + new Vector3(length, 0f, .025f + (i % 2) * .035f);
             GameObject wavelet = CreateSegmentRibbon(parent, "Aegean Small Wave", a, b,
-                .026f + (i % 3) * .007f,
-                i % 5 == 0 ? ThinFoam * .86f : WaveBlue * .78f);
+                .018f + (i % 3) * .005f,
+                i % 6 == 0 ? ThinFoam * .83f : WaveBlue * .72f);
             AddSeaMotion(wavelet, 1.0f + i * .21f);
         }
     }
 
     static void BuildShoreBreakers(Transform parent)
     {
-        GameObject undertow = CreateCoastRibbon(parent, "Aegean Undertow Line", -1.18f, -.134f, .095f, Undertow, .12f, .0f);
-        GameObject outer = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.83f, -.130f, .095f, ThinFoam, .12f, .4f);
-        GameObject main = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.43f, -.123f, .145f, Foam, .14f, 1.2f);
-        GameObject inner = CreateCoastRibbon(parent, "Bright Surf Curl", -.15f, -.118f, .060f, Foam * .97f, .09f, 2.0f);
+        // Three very narrow lines define the active surf zone. They are not depth
+        // slices: all of them sit within ~1 metre of the real shoreline.
+        GameObject undertow = CreateCoastRibbon(parent, "Aegean Undertow Line", -1.02f, -.131f, .060f, Undertow, .10f, .0f);
+        GameObject outer = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.66f, -.126f, .070f, ThinFoam, .10f, .4f);
+        GameObject main = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.33f, -.120f, .105f, Foam, .12f, 1.2f);
         AddSeaMotion(undertow, .2f);
         AddSurfMotion(outer, .6f);
         AddSurfMotion(main, 1.4f);
-        AddSurfMotion(inner, 2.2f);
     }
 
     static void BuildSunGlints(Transform parent)
     {
-        for (int i = 0; i < 14; i++)
+        for (int i = 0; i < 16; i++)
         {
-            float x = -16.6f - (i % 5) * 2.25f - (i / 5) * .22f;
-            float z = -8.7f + ((i * 4.11f) % 17.4f);
-            Vector3 a = new Vector3(x, -.124f, z);
-            Vector3 b = a + new Vector3(.30f + (i % 4) * .12f, 0f, .03f + (i % 2) * .035f);
+            float x = -16.4f - (i % 5) * 2.35f - (i / 5) * .20f;
+            float z = -9.0f + ((i * 4.03f) % 18.0f);
+            Vector3 a = new Vector3(x, -.122f, z);
+            Vector3 b = a + new Vector3(.24f + (i % 4) * .10f, 0f, .02f + (i % 2) * .025f);
             GameObject glint = CreateSegmentRibbon(parent, "Aegean Sun Glint", a, b,
-                .018f + (i % 2) * .008f,
-                SunGlint * (.76f + (i % 3) * .065f));
+                .012f + (i % 2) * .006f,
+                SunGlint * (.74f + (i % 3) * .06f));
             AddSeaMotion(glint, 3.0f + i * .19f);
         }
-    }
-
-    static GameObject CreateCoastBand(Transform parent, string name, float leftOffset, float rightOffset,
-        float y, Color color, float edgeWave, float phase)
-    {
-        const int segments = 40;
-        Vector3[] vertices = new Vector3[(segments + 1) * 2];
-        int[] triangles = new int[segments * 6];
-
-        for (int i = 0; i <= segments; i++)
-        {
-            float t = i / (float)segments;
-            float z = Mathf.Lerp(-11.0f, 11.0f, t);
-            float shore = CoastEnvironmentBuilder.ShorelineX(z);
-            float waveA = Mathf.Sin(z * .52f + phase) * edgeWave;
-            float waveB = Mathf.Sin(z * .31f + phase * 1.7f) * edgeWave * .55f;
-            vertices[i * 2] = new Vector3(shore + leftOffset + waveA, y, z);
-            vertices[i * 2 + 1] = new Vector3(shore + rightOffset + waveB, y + .001f, z);
-        }
-
-        FillStripTriangles(triangles, segments);
-        return CreateMeshObject(parent, name, vertices, triangles, color);
     }
 
     static GameObject CreateCoastRibbon(Transform parent, string name, float shoreOffset, float y,
         float width, Color color, float edgeWave, float phase)
     {
-        const int segments = 40;
+        const int segments = 48;
         Vector3[] centers = new Vector3[segments + 1];
         for (int i = 0; i <= segments; i++)
         {
             float t = i / (float)segments;
-            float z = Mathf.Lerp(-10.7f, 10.7f, t);
+            float z = Mathf.Lerp(-11.0f, 11.0f, t);
             float x = CoastEnvironmentBuilder.ShorelineX(z) + shoreOffset + Mathf.Sin(z * .71f + phase) * edgeWave;
             centers[i] = new Vector3(x, y, z);
         }
@@ -219,13 +195,13 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
     static GameObject CreateOpenWaterRibbon(Transform parent, string name, float startX, float endX,
         float zCenter, float y, float width, Color color, float phase)
     {
-        const int points = 14;
+        const int points = 16;
         Vector3[] centers = new Vector3[points];
         for (int i = 0; i < points; i++)
         {
             float t = i / (float)(points - 1);
             float x = Mathf.Lerp(startX, endX, t);
-            float z = zCenter + Mathf.Sin(t * 5.1f + phase) * .20f + Mathf.Sin(t * 9.4f + phase * .6f) * .055f;
+            float z = zCenter + Mathf.Sin(t * 5.1f + phase) * .18f + Mathf.Sin(t * 9.4f + phase * .6f) * .045f;
             centers[i] = new Vector3(x, y, z);
         }
         return CreatePolylineRibbon(parent, name, centers, width, color);
