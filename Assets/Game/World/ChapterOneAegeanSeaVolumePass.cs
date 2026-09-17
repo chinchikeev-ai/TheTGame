@@ -1,10 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-// Second-stage presentation pass for Chapter I sea. This adds visible water volume
-// at tactical camera distance: raised breaker bodies, foam wrapping shore boulders,
-// and readable V-shaped wakes behind the Greek landing ships. Gameplay geometry,
-// routes, build cells and colliders are intentionally untouched.
+// Second-stage presentation pass for Chapter I sea.
+// Uses mesh ribbons instead of stretched primitive spheres so the shoreline reads
+// as continuous water from the tactical camera rather than as discrete blobs.
 public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
 {
     static readonly Color WaveFace = new Color(.035f, .50f, .61f);
@@ -49,39 +48,17 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
 
     static void BuildRaisedBreakers(Transform parent)
     {
-        float[] zValues = { -9.1f, -7.0f, -4.7f, -2.4f, .1f, 2.6f, 5.0f, 7.2f, 9.25f };
-        for (int i = 0; i < zValues.Length; i++)
-        {
-            float z = zValues[i];
-            float shore = CoastEnvironmentBuilder.ShorelineX(z);
-            float phase = .45f + i * .47f;
+        GameObject bodyOuter = CreateCoastRibbon(parent, "Raised Aegean Breaker Body", -.88f, -.119f, .22f, WaveFace, .12f, .4f);
+        GameObject bodyInner = CreateCoastRibbon(parent, "Raised Aegean Breaker Body", -.62f, -.104f, .15f, WaveLit, .10f, 1.2f);
+        GameObject crestOuter = CreateCoastRibbon(parent, "Raised Aegean White Crest", -.72f, -.069f, .065f, ThinFoam, .11f, .8f);
+        GameObject crestInner = CreateCoastRibbon(parent, "Raised Aegean White Crest", -.45f, -.057f, .090f, Foam, .13f, 1.7f);
+        GameObject trailing = CreateCoastRibbon(parent, "Breaker Trailing Foam", -.24f, -.018f, .050f, ThinFoam, .08f, 2.5f);
 
-            // The body is intentionally tall enough to read as an actual wave ridge,
-            // while remaining far below unit silhouettes and tactical telegraphs.
-            GameObject body = Part(parent, "Raised Aegean Breaker Body", PrimitiveType.Sphere,
-                new Vector3(shore - 1.12f, -.118f, z),
-                new Vector3(.24f + (i % 3) * .025f, .075f, .78f + (i % 4) * .14f),
-                i % 2 == 0 ? WaveFace : WaveLit,
-                Quaternion.Euler(0f, -8f + (i % 5) * 4f, 0f));
-            AddSwellMotion(body, phase);
-
-            GameObject crest = Part(parent, "Raised Aegean White Crest", PrimitiveType.Sphere,
-                new Vector3(shore - .94f, -.052f, z + .03f),
-                new Vector3(.070f + (i % 2) * .012f, .024f, .70f + (i % 4) * .13f),
-                Foam,
-                Quaternion.Euler(0f, -10f + (i % 5) * 4f, 0f));
-            AddSurfMotion(crest, phase + .22f);
-
-            if ((i & 1) == 0)
-            {
-                GameObject trailingFoam = Part(parent, "Breaker Trailing Foam", PrimitiveType.Sphere,
-                    new Vector3(shore - .62f, -.010f, z - .08f),
-                    new Vector3(.055f, .009f, .46f + (i % 3) * .10f),
-                    ThinFoam,
-                    Quaternion.Euler(0f, -14f + i * 3f, 0f));
-                AddSurfMotion(trailingFoam, phase + .48f);
-            }
-        }
+        AddSwellMotion(bodyOuter, .4f);
+        AddSwellMotion(bodyInner, 1.1f);
+        AddSurfMotion(crestOuter, .9f);
+        AddSurfMotion(crestInner, 1.6f);
+        AddSurfMotion(trailing, 2.3f);
     }
 
     static void BuildRockWash(Transform parent)
@@ -92,30 +69,15 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
             float z = shoreRockZ[i];
             float x = CoastEnvironmentBuilder.ShorelineX(z) + 1.25f + (i % 2) * .35f;
 
-            GameObject root = new GameObject("Shore Boulder Foam Wrap");
-            root.transform.SetParent(parent, false);
-            root.transform.localPosition = new Vector3(x, 0f, z);
-
-            for (int j = 0; j < 5; j++)
-            {
-                float angle = (-115f + j * 56f) * Mathf.Deg2Rad;
-                float radiusX = .42f + (j % 2) * .09f;
-                float radiusZ = .34f + ((j + 1) % 2) * .08f;
-                Vector3 local = new Vector3(Mathf.Cos(angle) * radiusX, .012f, Mathf.Sin(angle) * radiusZ);
-                GameObject foam = Part(root.transform, "Boulder Wash Foam", PrimitiveType.Sphere,
-                    local,
-                    new Vector3(.12f + (j % 3) * .025f, .010f, .22f + (j % 2) * .08f),
-                    j == 2 ? Foam : ThinFoam,
-                    Quaternion.Euler(0f, j * 37f + i * 11f, 0f));
-                AddSurfMotion(foam, 1.4f + i * .8f + j * .24f);
-            }
-
-            GameObject wash = Part(root.transform, "Boulder Backwash", PrimitiveType.Sphere,
-                new Vector3(-.34f, -.016f, 0f),
-                new Vector3(.34f, .007f, .52f),
-                WaveLit * .88f,
-                Quaternion.Euler(0f, 4f - i * 3f, 0f));
-            AddSeaMotion(wash, 3.2f + i * .51f);
+            Vector3 center = new Vector3(x, .008f, z);
+            GameObject foamArc = CreateArcRibbon(parent, "Boulder Wash Foam", center, .46f, .31f, -145f, 145f, .055f, i % 2 == 0 ? Foam : ThinFoam);
+            GameObject backwash = CreateSegmentRibbon(parent, "Boulder Backwash",
+                center + new Vector3(-.28f, -.018f, -.28f),
+                center + new Vector3(-.62f, -.018f, .28f),
+                .075f,
+                WaveLit * .86f);
+            AddSurfMotion(foamArc, 1.4f + i * .7f);
+            AddSeaMotion(backwash, 3.0f + i * .5f);
         }
     }
 
@@ -133,57 +95,110 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
         {
             GameObject wakeRoot = new GameObject("Greek Landing Ship Hero Wake");
             wakeRoot.transform.SetParent(parent, false);
-            wakeRoot.transform.localPosition = new Vector3(ships[i].x, -.145f, ships[i].z);
+            wakeRoot.transform.localPosition = new Vector3(ships[i].x, -.142f, ships[i].z);
             wakeRoot.transform.localRotation = Quaternion.Euler(0f, yaw[i], 0f);
 
-            // Ship local +X is the prow, so the wake stretches into local -X.
-            for (int j = 0; j < 4; j++)
-            {
-                float x = -1.65f - j * .72f;
-                GameObject churn = Part(wakeRoot.transform, "Ship Wake Churn", PrimitiveType.Sphere,
-                    new Vector3(x, .004f, Mathf.Sin(j * 1.3f) * .035f),
-                    new Vector3(.52f + j * .10f, .014f, .23f + j * .055f),
-                    j == 0 ? Foam * .93f : ThinFoam * (.92f - j * .035f),
-                    Quaternion.Euler(0f, j % 2 == 0 ? -2f : 2f, 0f));
-                AddSeaMotion(churn, .8f + i * .9f + j * .22f);
-            }
+            Vector3 centerA = new Vector3(-1.0f, 0f, 0f);
+            Vector3 centerB = new Vector3(-3.8f, 0f, 0f);
+            GameObject center = CreateSegmentRibbon(wakeRoot.transform, "Ship Wake Churn", centerA, centerB, .20f, ThinFoam * .94f);
+            AddSeaMotion(center, .8f + i * .7f);
 
             for (int side = -1; side <= 1; side += 2)
             {
-                GameObject arm = Part(wakeRoot.transform, "Ship Wake V Arm", PrimitiveType.Sphere,
-                    new Vector3(-2.45f, -.002f, side * .52f),
-                    new Vector3(1.85f, .010f, .075f),
-                    ThinFoam,
-                    Quaternion.Euler(0f, side * 9f, 0f));
-                AddSwellMotion(arm, 2.1f + i * .7f + side * .12f);
+                Vector3 armA = new Vector3(-1.15f, 0f, side * .18f);
+                Vector3 armB = new Vector3(-4.25f, 0f, side * 1.18f);
+                GameObject arm = CreateSegmentRibbon(wakeRoot.transform, "Ship Wake V Arm", armA, armB, .085f, ThinFoam);
+                AddSwellMotion(arm, 2.1f + i * .6f + side * .10f);
 
-                GameObject blueEdge = Part(wakeRoot.transform, "Ship Wake Blue Edge", PrimitiveType.Sphere,
-                    new Vector3(-2.15f, -.010f, side * .34f),
-                    new Vector3(1.55f, .007f, .045f),
-                    WakeBlue * .90f,
-                    Quaternion.Euler(0f, side * 8f, 0f));
-                AddSeaMotion(blueEdge, 3.3f + i * .6f + side * .16f);
+                Vector3 blueA = new Vector3(-1.35f, -.006f, side * .12f);
+                Vector3 blueB = new Vector3(-3.85f, -.006f, side * .80f);
+                GameObject edge = CreateSegmentRibbon(wakeRoot.transform, "Ship Wake Blue Edge", blueA, blueB, .045f, WakeBlue * .88f);
+                AddSeaMotion(edge, 3.1f + i * .5f + side * .12f);
             }
         }
     }
 
-    static GameObject Part(Transform parent, string name, PrimitiveType type, Vector3 position,
-        Vector3 scale, Color color, Quaternion? rotation = null)
+    static GameObject CreateCoastRibbon(Transform parent, string name, float shoreOffset, float y,
+        float width, Color color, float edgeWave, float phase)
     {
-        GameObject go = GameObject.CreatePrimitive(type);
-        go.name = name;
+        const int segments = 34;
+        Vector3[] centers = new Vector3[segments + 1];
+        for (int i = 0; i <= segments; i++)
+        {
+            float t = i / (float)segments;
+            float z = Mathf.Lerp(-10.7f, 10.7f, t);
+            float x = CoastEnvironmentBuilder.ShorelineX(z) + shoreOffset + Mathf.Sin(z * .67f + phase) * edgeWave;
+            centers[i] = new Vector3(x, y, z);
+        }
+        return CreatePolylineRibbon(parent, name, centers, width, color);
+    }
+
+    static GameObject CreateArcRibbon(Transform parent, string name, Vector3 center, float radiusX,
+        float radiusZ, float startDegrees, float endDegrees, float width, Color color)
+    {
+        const int points = 13;
+        Vector3[] centers = new Vector3[points];
+        for (int i = 0; i < points; i++)
+        {
+            float t = i / (float)(points - 1);
+            float angle = Mathf.Lerp(startDegrees, endDegrees, t) * Mathf.Deg2Rad;
+            centers[i] = center + new Vector3(Mathf.Cos(angle) * radiusX, 0f, Mathf.Sin(angle) * radiusZ);
+        }
+        return CreatePolylineRibbon(parent, name, centers, width, color);
+    }
+
+    static GameObject CreateSegmentRibbon(Transform parent, string name, Vector3 a, Vector3 b, float width, Color color)
+    {
+        return CreatePolylineRibbon(parent, name, new[] { a, b }, width, color);
+    }
+
+    static GameObject CreatePolylineRibbon(Transform parent, string name, Vector3[] centers, float width, Color color)
+    {
+        if (centers == null || centers.Length < 2) return null;
+        Vector3[] vertices = new Vector3[centers.Length * 2];
+        int[] triangles = new int[(centers.Length - 1) * 6];
+
+        for (int i = 0; i < centers.Length; i++)
+        {
+            Vector3 prev = centers[Mathf.Max(0, i - 1)];
+            Vector3 next = centers[Mathf.Min(centers.Length - 1, i + 1)];
+            Vector3 tangent = next - prev;
+            tangent.y = 0f;
+            if (tangent.sqrMagnitude < .0001f) tangent = Vector3.forward;
+            tangent.Normalize();
+            Vector3 side = new Vector3(-tangent.z, 0f, tangent.x) * (width * .5f);
+            vertices[i * 2] = centers[i] - side;
+            vertices[i * 2 + 1] = centers[i] + side;
+        }
+
+        for (int i = 0; i < centers.Length - 1; i++)
+        {
+            int v = i * 2;
+            int q = i * 6;
+            triangles[q] = v;
+            triangles[q + 1] = v + 2;
+            triangles[q + 2] = v + 1;
+            triangles[q + 3] = v + 1;
+            triangles[q + 4] = v + 2;
+            triangles[q + 5] = v + 3;
+        }
+
+        GameObject go = new GameObject(name);
         go.transform.SetParent(parent, false);
-        go.transform.localPosition = position;
-        go.transform.localScale = scale;
-        if (rotation.HasValue) go.transform.localRotation = rotation.Value;
-        Collider collider = go.GetComponent<Collider>();
-        if (collider != null) Object.Destroy(collider);
+        Mesh mesh = new Mesh { name = name + " Mesh" };
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        go.AddComponent<MeshRenderer>();
         TowerFactory.SetColor(go, color);
         return go;
     }
 
     static void AddSeaMotion(GameObject go, float phase)
     {
+        if (go == null) return;
         ChapterOneAmbientMotion motion = go.AddComponent<ChapterOneAmbientMotion>();
         motion.kind = ChapterOneAmbientMotion.MotionKind.Sea;
         motion.phase = phase;
@@ -191,6 +206,7 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
 
     static void AddSurfMotion(GameObject go, float phase)
     {
+        if (go == null) return;
         ChapterOneAmbientMotion motion = go.AddComponent<ChapterOneAmbientMotion>();
         motion.kind = ChapterOneAmbientMotion.MotionKind.Surf;
         motion.phase = phase;
@@ -198,6 +214,7 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
 
     static void AddSwellMotion(GameObject go, float phase)
     {
+        if (go == null) return;
         ChapterOneAmbientMotion motion = go.AddComponent<ChapterOneAmbientMotion>();
         motion.kind = ChapterOneAmbientMotion.MotionKind.Swell;
         motion.phase = phase;
