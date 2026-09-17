@@ -19,6 +19,17 @@ namespace TheTroyGame.Tests
         }
 
         [Test]
+        public void VolumePass_UsesContinuousMeshRibbons()
+        {
+            string source = File.ReadAllText(VolumePass);
+            StringAssert.Contains("CreatePolylineRibbon", source);
+            StringAssert.Contains("CreateCoastRibbon", source);
+            StringAssert.Contains("CreateArcRibbon", source);
+            StringAssert.Contains("new Mesh", source);
+            StringAssert.DoesNotContain("GameObject.CreatePrimitive", source);
+        }
+
+        [Test]
         public void VolumePass_UsesExistingAmbientMotionSystem()
         {
             string source = File.ReadAllText(VolumePass);
@@ -31,11 +42,10 @@ namespace TheTroyGame.Tests
         public void VolumePass_RemainsPresentationOnly()
         {
             string source = File.ReadAllText(VolumePass);
-            StringAssert.Contains("Object.Destroy(collider)", source);
             StringAssert.DoesNotContain("BuildPoint", source);
             StringAssert.DoesNotContain("Route_A", source);
             StringAssert.DoesNotContain("Route_B", source);
-            StringAssert.DoesNotContain("AddComponent<BoxCollider>", source);
+            StringAssert.DoesNotContain("Collider", source);
         }
     }
 }
