@@ -6,6 +6,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Сейчас
 
+- Выполнить `ART-007-CHAPTER-I-GOLDEN-REFERENCE-ALIGNMENT`: сначала Visual Gap Audit текущего Chapter I против `ART_BIBLE.md` v2.0 и `GOLDEN_REFERENCES.md`, затем production-pass Battlefield -> HUD -> Units -> Tower-Units -> Menus -> VFX -> Polish без изменения gameplay.
+- Скопировать утверждённые 10 Golden Reference PNG в `docs/art/golden-references/` под canonical именами `GR-001`…`GR-010`; до появления бинарников в репозитории они считаются approved candidates, а не repository-tracked Golden References.
 - Проверить в игре главное меню с графикой MainScreen: ИГРАТЬ / ГЕРОИ / НАСТРОЙКИ / ВЫХОД (RU/EN Canvas и переходы проверены автоматически).
 - Полировка боя Chapter I: графика, анимации, читаемость атак и попаданий.
 - Провести ручной проход Chapter I после последних gameplay/balance изменений.
@@ -16,6 +18,12 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- ART-007: поле боя остаётся крупнейшей визуальной областью; море -> берег -> две линии -> зона обороны -> ворота/Троя читаются за один взгляд.
+- ART-007: свободное тактическое пространство не заполняется декором; tertiary props не конкурируют с юнитами, build points и telegraphs.
+- ART-007: блок Гектора снизу слева компактен и стремится к `<=18%` ширины и `<=22%` высоты экрана на 1920x1080, не теряя HP/downed/ability readability.
+- ART-007: `MAGIC` и `DEFENDERS` находятся рядом снизу справа, примерно одинаковы по размеру/визуальному весу и показывают ready/cooldown/locked state прямо на контролах.
+- ART-007: Patron God остаётся привязан к верхнему углу, смотрит по диагонали внутрь карты и не превращается в большой фронтальный ID-card.
+- ART-007: визуально сравнить runtime с `GR-002`, `GR-003`, `GR-006`, `GR-010`; supporting references `GR-007/008/009` использовать только по правилам `GOLDEN_REFERENCES.md`.
 - Главное меню показывает только четыре рабочих пункта: ИГРАТЬ / АРМИЯ / НАСТРОЙКИ / ВЫХОД; старые HEROES / TOWERS / UPGRADES / SHOP не кликаются и визуально не мешают.
 - ИГРАТЬ — самая крупная и заметная кнопка; АРМИЯ вторична; НАСТРОЙКИ / ВЫХОД визуально не конкурируют с запуском кампании.
 - АРМИЯ открывает единый экран с левой навигацией ГЕКТОР / ЗАЩИТНИКИ / ВРАГИ и правой информационной карточкой; активная вкладка визуально выделена.
@@ -57,6 +65,7 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Потом
 
+- После ART-007 пройти остальные Golden Reference области: Main Menu, Pause, Settings, Character sheets и Tower-Units как отдельные production-alignment passes, не смешивая их с gameplay/balance задачами.
 - Второй проход полировки боя: улучшить конкретные attack/hit/death анимации персонажей после визуальной проверки первого impact-pass.
 - Добавлять сюда только конкретные отложенные задачи, которые действительно планируется делать.
 
