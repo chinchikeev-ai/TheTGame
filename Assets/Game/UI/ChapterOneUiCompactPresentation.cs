@@ -7,7 +7,11 @@ using UnityEngine.UI;
 public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
 {
     const float HectorScale = .75f;
+    const float CornerActionGap = 12f;
     static readonly Vector2 CornerActionSize = new Vector2(128f, 112f);
+    static readonly Vector2 CornerActionPairSize = new Vector2(
+        CornerActionSize.x * 2f + CornerActionGap,
+        CornerActionSize.y);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate()
@@ -77,11 +81,22 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
     {
         Transform defenders = FindDescendant(hudRoot, "DefendersToggle");
         Transform magicPanel = FindDescendant(hudRoot, "DivinePowerActions");
-        Transform magicButton = FindDescendant(hudRoot, "Magic_Primary");
+        if (defenders == null || magicPanel == null) return;
 
-        ConfigureCornerAction(defenders, new Vector2(-18f, 18f));
-        ConfigureCornerAction(magicPanel, new Vector2(-158f, 18f));
+        RectTransform pair = EnsureActionPair(hudRoot);
+        if (pair == null) return;
 
+        // The pair owns only layout. Existing ModernCombatHud controls keep all
+        // gameplay handlers/state. Reparenting makes the Golden Reference
+        // relationship structural instead of relying on two unrelated offsets.
+        if (magicPanel.parent != pair) magicPanel.SetParent(pair, false);
+        if (defenders.parent != pair) defenders.SetParent(pair, false);
+
+        ConfigurePairChild(magicPanel, new Vector2(0f, 0f), new Vector2(0f, 0f));
+        ConfigurePairChild(defenders, new Vector2(1f, 0f), new Vector2(1f, 0f));
+
+        // Keep MAGIC visually identical in footprint to DEFENDERS.
+        Transform magicButton = FindDescendant(magicPanel, "Magic_Primary");
         RectTransform magicButtonRect = magicButton as RectTransform;
         if (magicButtonRect != null)
         {
@@ -108,6 +123,7 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
                 textRect.anchoredPosition = new Vector2(0f, -31f);
                 textRect.sizeDelta = new Vector2(112f, 42f);
                 magicText.fontSize = 13;
+                magicText.alignment = TextAnchor.MiddleCenter;
                 magicText.lineSpacing = .88f;
                 magicText.resizeTextForBestFit = true;
                 magicText.resizeTextMinSize = 9;
@@ -115,6 +131,37 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
                 magicText.text = BuildCompactMagicLabel();
             }
         }
+    }
+
+    static RectTransform EnsureActionPair(Transform hudRoot)
+    {
+        Transform existing = FindDescendant(hudRoot, "CombatActionPair");
+        RectTransform pair = existing as RectTransform;
+        if (pair == null)
+        {
+            GameObject pairObject = new GameObject("CombatActionPair", typeof(RectTransform));
+            pairObject.transform.SetParent(hudRoot, false);
+            pair = pairObject.GetComponent<RectTransform>();
+        }
+
+        pair.anchorMin = pair.anchorMax = pair.pivot = new Vector2(1f, 0f);
+        pair.anchoredPosition = new Vector2(-18f, 18f);
+        pair.sizeDelta = CornerActionPairSize;
+        pair.localScale = Vector3.one;
+        pair.SetAsLastSibling();
+        return pair;
+    }
+
+    static void ConfigurePairChild(Transform target, Vector2 anchor, Vector2 pivot)
+    {
+        RectTransform rect = target as RectTransform;
+        if (rect == null) return;
+
+        rect.anchorMin = rect.anchorMax = anchor;
+        rect.pivot = pivot;
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = CornerActionSize;
+        rect.localScale = Vector3.one;
     }
 
     static string BuildCompactMagicLabel()
@@ -135,16 +182,6 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
             return GameLanguage.T("MAGIC\nWAIT", "МАГИЯ\nОЖИДАНИЕ");
 
         return GameLanguage.T("MAGIC\nREADY", "МАГИЯ\nГОТОВО");
-    }
-
-    static void ConfigureCornerAction(Transform target, Vector2 position)
-    {
-        RectTransform rect = target as RectTransform;
-        if (rect == null) return;
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1f, 0f);
-        rect.anchoredPosition = position;
-        rect.sizeDelta = CornerActionSize;
-        rect.localScale = Vector3.one;
     }
 
     void ApplyGuidanceCards()
