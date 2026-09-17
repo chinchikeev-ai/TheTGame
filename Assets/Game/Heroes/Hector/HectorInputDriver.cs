@@ -25,18 +25,12 @@ public sealed class HectorInputDriver : MonoBehaviour
         if (cam == null) return;
 
         bool pointerOverUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
         if (!pointerOverUi && GameInput.PrimaryPressed())
             UpdateSelection(cam);
 
-        if (GameInput.SecondaryPressed())
-        {
-            if (hector.Selected)
-            {
-                hector.SetSelected(false);
-                RuntimeFileLogger.Event("HECTOR_INPUT", "Deselected by secondary pointer action.");
-            }
-            return;
-        }
+        if (!pointerOverUi && GameInput.SecondaryPressed())
+            TryMoveAtScreenPoint(GameInput.PointerPosition);
 
         if (!hector.Selected || !hector.CanAcceptCombatCommand) return;
         if (GameInput.Ability1Pressed()) hector.UseWarCry();
@@ -50,6 +44,22 @@ public sealed class HectorInputDriver : MonoBehaviour
         Camera cam = gameCamera != null ? gameCamera : Camera.main;
         if (cam == null || hector == null || hector.IsDowned) return false;
         return ApplySelectionRay(cam.ScreenPointToRay(screenPoint));
+    }
+
+    public bool TryMoveAtScreenPoint(Vector2 screenPoint)
+    {
+        Camera cam = gameCamera != null ? gameCamera : Camera.main;
+        if (cam == null || hector == null || hector.IsDowned || !hector.Selected || !hector.CanMove) return false;
+
+        Ray ray = cam.ScreenPointToRay(screenPoint);
+        Plane movementPlane = new Plane(Vector3.up, hector.transform.position);
+        if (!movementPlane.Raycast(ray, out float enter) || enter < 0f) return false;
+
+        Vector3 requested = ray.GetPoint(enter);
+        Vector3 destination = hector.ConstrainMoveDestination(requested);
+        hector.MoveTo(destination);
+        RuntimeFileLogger.Event("HECTOR_INPUT", $"Move command to {destination}.");
+        return true;
     }
 
     void UpdateSelection(Camera cam)
