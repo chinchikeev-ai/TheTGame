@@ -207,6 +207,7 @@ public class GameMenuController : MonoBehaviour
         AddButton(panel.transform, L("RESTART CHAPTER", "ПЕРЕЗАПУСТИТЬ ГЛАВУ"), new Vector2(0, -40), RestartChapter, new Vector2(500, 56), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(0, -110), ReturnToMainMenu, new Vector2(500, 56), MenuButtonStyle.Ghost);
         AddButton(panel.transform, L("EXIT", "ВЫХОД"), new Vector2(0, -180), QuitGame, new Vector2(500, 52), MenuButtonStyle.Ghost);
+        pauseMenu.AddComponent<PauseMenuArtwork>().Apply(panel.GetComponent<RectTransform>(), GameLanguage.Russian);
     }
 
     void BuildEndMenu()

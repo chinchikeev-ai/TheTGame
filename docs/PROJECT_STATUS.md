@@ -6,6 +6,12 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Pause-menu artwork (2026-09-18): six supplied PNG elements now decorate the
+existing in-game pause buttons over a blocking dimmed battlefield. Controller
+callbacks and the existing settings screen are unchanged. RU uses supplied
+lettering; EN uses live text on framed panels. Focused Canvas tests cover five
+preserved button callbacks and 16:9/4:3 layouts. Full gameplay QA pending; no EXE.
+
 Gate HUD artwork (2026-09-18): compact dark/gold frame and separate illustrated gate
 replace the gate resource placeholder. ModernCombatHud retains live HP/localization;
 the decorative skin preserves the new icon. Three focused EditMode tests passed,

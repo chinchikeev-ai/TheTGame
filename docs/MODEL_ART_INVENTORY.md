@@ -6,6 +6,10 @@ This is the authoritative source for **art/model completion status**. Design int
 
 ## Status definitions
 
+Pause menu (2026-09-18): `SOURCE ONLY` pending real Play Mode visual acceptance.
+Six supplied pieces are integrated under `Assets/Game/Art/Resources/PauseMenu`;
+isolated Canvas previews are not final gameplay acceptance.
+
 - `DONE` — final production asset is committed under `Assets/Game/Art/...`, runtime uses it, required materials/animations/colliders are correct, and real Play Mode visual QA passed.
 - `GENERATED PLACEHOLDER` — reproducible prefab/model candidate exists, but Troy-specific final production art is incomplete.
 - `PROCEDURAL` — visible presentation is assembled from primitives/generated geometry/code.

@@ -138,6 +138,7 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
 
     void StylePauseMenu(Transform root)
     {
+        if (root.GetComponent<PauseMenuArtwork>() != null) return;
         StylePauseBattleBackdrop(root);
 
         Transform card = root.Find("PauseCard");
