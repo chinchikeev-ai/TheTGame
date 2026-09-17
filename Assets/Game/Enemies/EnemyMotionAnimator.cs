@@ -15,7 +15,14 @@ public class EnemyMotionAnimator : MonoBehaviour
 
     public static void Attach(GameObject target, EnemyArchetype enemyArchetype)
     {
-        if (target == null || target.GetComponent<EnemyMotionAnimator>() != null) return;
+        if (target == null) return;
+
+        // Decorative landing Greeks use this path without EnemyVisualFactory, so repair
+        // imported materials here as well. This prevents unsupported shaders from
+        // rendering Unity error-magenta during the Chapter I landing presentation.
+        CharacterUrpMaterialAdapter.ApplyTo(target);
+
+        if (target.GetComponent<EnemyMotionAnimator>() != null) return;
         EnemyMotionAnimator animator = target.AddComponent<EnemyMotionAnimator>();
         animator.archetype = enemyArchetype;
     }
