@@ -1,4 +1,8 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem.UI;
+#endif
 
 public static class ChapterOneRuntimeInstaller
 {
@@ -8,6 +12,7 @@ public static class ChapterOneRuntimeInstaller
     public static ChapterRuntimeContext Install(ChapterData chapter, Camera camera)
     {
         ConfigureCameraAndLighting(camera);
+        EnsureUiEventSystem();
 
         MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
         bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
@@ -53,6 +58,19 @@ public static class ChapterOneRuntimeInstaller
     {
         T existing = Object.FindFirstObjectByType<T>();
         return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
+    }
+
+    static void EnsureUiEventSystem()
+    {
+        if (Object.FindFirstObjectByType<EventSystem>() != null) return;
+
+        GameObject eventSystemObject = new GameObject("EventSystem");
+        eventSystemObject.AddComponent<EventSystem>();
+#if ENABLE_INPUT_SYSTEM
+        eventSystemObject.AddComponent<InputSystemUIInputModule>();
+#else
+        eventSystemObject.AddComponent<StandaloneInputModule>();
+#endif
     }
 
     static void EnsureHector(Camera camera, Transform[][] routes)
