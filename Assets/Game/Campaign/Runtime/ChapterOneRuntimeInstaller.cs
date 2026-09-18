@@ -62,14 +62,27 @@ public static class ChapterOneRuntimeInstaller
 
     static void EnsureUiEventSystem()
     {
-        if (Object.FindFirstObjectByType<EventSystem>() != null) return;
+        EventSystem eventSystem = Object.FindFirstObjectByType<EventSystem>();
+        if (eventSystem == null)
+        {
+            GameObject eventSystemObject = new GameObject("EventSystem");
+            eventSystem = eventSystemObject.AddComponent<EventSystem>();
+        }
 
-        GameObject eventSystemObject = new GameObject("EventSystem");
-        eventSystemObject.AddComponent<EventSystem>();
 #if ENABLE_INPUT_SYSTEM
-        eventSystemObject.AddComponent<InputSystemUIInputModule>();
+        InputSystemUIInputModule inputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
+        if (inputModule == null)
+        {
+            BaseInputModule[] oldModules = eventSystem.GetComponents<BaseInputModule>();
+            for (int i = 0; i < oldModules.Length; i++)
+                oldModules[i].enabled = false;
+            inputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+        }
+        inputModule.AssignDefaultActions();
 #else
-        eventSystemObject.AddComponent<StandaloneInputModule>();
+        StandaloneInputModule inputModule = eventSystem.GetComponent<StandaloneInputModule>();
+        if (inputModule == null)
+            eventSystem.gameObject.AddComponent<StandaloneInputModule>();
 #endif
     }
 
