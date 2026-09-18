@@ -19,7 +19,19 @@ public sealed class PauseMenuArtwork : MonoBehaviour
         var outline = card.GetComponent<Outline>();
         if (outline != null) outline.enabled = false;
         var backdrop = GetComponent<Image>();
-        backdrop.color = new Color(.012f, .019f, .025f, .72f);
+        var background = Resources.Load<Texture2D>("PauseMenu/GameMenuBackground");
+        if (background != null)
+        {
+            var sprite = Sprite.Create(background, new Rect(0, 0, background.width, background.height), new Vector2(.5f, .5f));
+            ownedSprites.Add(sprite);
+            backdrop.sprite = sprite;
+            backdrop.color = Color.white;
+            backdrop.type = Image.Type.Simple;
+        }
+        else
+        {
+            backdrop.color = new Color(.012f, .019f, .025f, .72f);
+        }
         backdrop.raycastTarget = true;
 
         var body = Picture("PauseBody", card, new Vector2(0, -105), new Vector2(660, 700), Resources.Load<Sprite>("HectorHud/Panel"));
