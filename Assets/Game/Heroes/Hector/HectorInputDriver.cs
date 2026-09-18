@@ -1,8 +1,13 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public sealed class HectorInputDriver : MonoBehaviour
 {
+    const float HectorScreenSelectRadius = 72f;
+
+    readonly List<RaycastResult> uiHits = new List<RaycastResult>(16);
     HectorController hector;
     Camera gameCamera;
 
@@ -24,7 +29,7 @@ public sealed class HectorInputDriver : MonoBehaviour
         Camera cam = gameCamera != null ? gameCamera : Camera.main;
         if (cam == null) return;
 
-        bool pointerOverUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        bool pointerOverUi = IsPointerOverInteractiveUi(GameInput.PointerPosition);
 
         if (!pointerOverUi && GameInput.PrimaryPressed())
             UpdateSelection(cam);
@@ -64,7 +69,39 @@ public sealed class HectorInputDriver : MonoBehaviour
 
     void UpdateSelection(Camera cam)
     {
-        ApplySelectionRay(cam.ScreenPointToRay(GameInput.PointerPosition));
+        Vector2 pointer = GameInput.PointerPosition;
+        if (ApplySelectionRay(cam.ScreenPointToRay(pointer))) return;
+
+        Vector3 hectorScreen = cam.WorldToScreenPoint(hector.transform.position + Vector3.up * .9f);
+        if (hectorScreen.z <= 0f) return;
+
+        float scale = Mathf.Max(.75f, Screen.height / 1080f);
+        if (Vector2.Distance(pointer, new Vector2(hectorScreen.x, hectorScreen.y)) <= HectorScreenSelectRadius * scale)
+        {
+            hector.SetSelected(true);
+            RuntimeFileLogger.Event("HECTOR_INPUT", "Selected by screen proximity fallback.");
+        }
+    }
+
+    bool IsPointerOverInteractiveUi(Vector2 screenPoint)
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null) return false;
+
+        PointerEventData pointer = new PointerEventData(eventSystem) { position = screenPoint };
+        uiHits.Clear();
+        eventSystem.RaycastAll(pointer, uiHits);
+
+        for (int i = 0; i < uiHits.Count; i++)
+        {
+            GameObject target = uiHits[i].gameObject;
+            if (target == null) continue;
+            Selectable selectable = target.GetComponentInParent<Selectable>();
+            if (selectable != null && selectable.IsActive() && selectable.IsInteractable())
+                return true;
+        }
+
+        return false;
     }
 
     bool ApplySelectionRay(Ray ray)
