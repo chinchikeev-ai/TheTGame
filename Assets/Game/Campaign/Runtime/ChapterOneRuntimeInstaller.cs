@@ -1,8 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem.UI;
-#endif
 
 public static class ChapterOneRuntimeInstaller
 {
@@ -12,7 +8,6 @@ public static class ChapterOneRuntimeInstaller
     public static ChapterRuntimeContext Install(ChapterData chapter, Camera camera)
     {
         ConfigureCameraAndLighting(camera);
-        EnsureUiEventSystem();
 
         MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
         bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
@@ -58,32 +53,6 @@ public static class ChapterOneRuntimeInstaller
     {
         T existing = Object.FindFirstObjectByType<T>();
         return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
-    }
-
-    static void EnsureUiEventSystem()
-    {
-        EventSystem eventSystem = Object.FindFirstObjectByType<EventSystem>();
-        if (eventSystem == null)
-        {
-            GameObject eventSystemObject = new GameObject("EventSystem");
-            eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        }
-
-#if ENABLE_INPUT_SYSTEM
-        InputSystemUIInputModule inputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
-        if (inputModule == null)
-        {
-            BaseInputModule[] oldModules = eventSystem.GetComponents<BaseInputModule>();
-            for (int i = 0; i < oldModules.Length; i++)
-                oldModules[i].enabled = false;
-            inputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-        }
-        inputModule.AssignDefaultActions();
-#else
-        StandaloneInputModule inputModule = eventSystem.GetComponent<StandaloneInputModule>();
-        if (inputModule == null)
-            eventSystem.gameObject.AddComponent<StandaloneInputModule>();
-#endif
     }
 
     static void EnsureHector(Camera camera, Transform[][] routes)
