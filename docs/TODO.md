@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- Runtime input: в сцене существует ровно один `RuntimeInputBootstrap` и один `EventSystem`; после Pause/Settings/Resume и Restart Chapter I не появляются дубликаты и управление Гектором сохраняется.
+- Combat HUD: декоративные панели/тексты/иконки не перехватывают pointer; только `Button/Selectable` остаются raycast-target.
 - ART-007: поле боя остаётся крупнейшей визуальной областью; море -> берег -> две линии -> зона обороны -> ворота/Троя читаются за один взгляд.
 - ART-007: свободное тактическое пространство не заполняется декором; tertiary props не конкурируют с юнитами, build points и telegraphs.
 - ART-007: блок Гектора снизу слева компактен и стремится к `<=18%` ширины и `<=22%` высоты экрана на 1920x1080, не теряя HP/downed/ability readability.
