@@ -3,7 +3,11 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem.UI;
+#endif
 
 public class CombatHudLayoutUxTests
 {
@@ -190,11 +194,89 @@ public class CombatHudLayoutUxTests
         Assert.AreEqual(.5f, encounter.anchorMin.x, .01f);
         Assert.AreEqual(1f, encounter.anchorMin.y, .01f);
         Assert.AreEqual(1f, divine.anchorMin.x, .01f);
-        Assert.AreEqual(1f, divine.anchorMin.y, .01f);
-        Assert.AreEqual(1f, buildDock.anchorMin.x, .01f);
+        Assert.AreEqual(0f, divine.anchorMin.y, .01f);
+        Assert.AreEqual(.5f, buildDock.anchorMin.x, .01f);
         Assert.AreEqual(0f, buildDock.anchorMin.y, .01f);
         Assert.AreEqual(0f, hector.anchorMin.x, .01f);
         Assert.AreEqual(0f, hector.anchorMin.y, .01f);
+    }
+
+    [UnityTest]
+    public IEnumerator RuntimeInput_HasOneBootstrapAndOneEventSystem()
+    {
+        yield return null;
+        yield return null;
+
+        RuntimeInputBootstrap[] bootstraps = Resources.FindObjectsOfTypeAll<RuntimeInputBootstrap>()
+            .Where(x => x != null && x.gameObject.scene.IsValid()).ToArray();
+        EventSystem[] eventSystems = Resources.FindObjectsOfTypeAll<EventSystem>()
+            .Where(x => x != null && x.gameObject.scene.IsValid()).ToArray();
+
+        Assert.AreEqual(1, bootstraps.Length, "Runtime input must have one project-wide owner.");
+        Assert.AreEqual(1, eventSystems.Length, "Only one runtime EventSystem may exist.");
+#if ENABLE_INPUT_SYSTEM
+        InputSystemUIInputModule module = eventSystems[0].GetComponent<InputSystemUIInputModule>();
+        Assert.NotNull(module);
+        Assert.IsTrue(module.enabled);
+#endif
+    }
+
+    [UnityTest]
+    public IEnumerator CombatHud_RaycastTargetsBelongOnlyToInteractiveControls()
+    {
+        yield return null;
+        yield return null;
+
+        Transform[] roots =
+        {
+            FindSceneTransform("ModernCombatHUD"),
+            FindSceneTransform("HectorHUDCanvas")
+        };
+
+        foreach (Transform root in roots)
+        {
+            Assert.NotNull(root);
+            foreach (Graphic graphic in root.GetComponentsInChildren<Graphic>(true))
+            {
+                if (!graphic.raycastTarget) continue;
+                Selectable selectable = graphic.GetComponentInParent<Selectable>();
+                Assert.NotNull(selectable, $"{graphic.name} blocks pointer input without an interactive Selectable owner.");
+            }
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator MagicAndDefenders_AreEqualBottomRightActions()
+    {
+        yield return null;
+        yield return null;
+
+        RectTransform magic = FindSceneTransform("Magic_Primary") as RectTransform;
+        RectTransform defenders = FindSceneTransform("DefendersToggle") as RectTransform;
+        RectTransform actions = FindSceneTransform("DivinePowerActions") as RectTransform;
+        Assert.NotNull(magic);
+        Assert.NotNull(defenders);
+        Assert.NotNull(actions);
+
+        Assert.AreEqual(1f, actions.anchorMin.x, .01f);
+        Assert.AreEqual(0f, actions.anchorMin.y, .01f);
+        Assert.AreEqual(1f, defenders.anchorMin.x, .01f);
+        Assert.AreEqual(0f, defenders.anchorMin.y, .01f);
+        Assert.AreEqual(magic.sizeDelta.x, defenders.sizeDelta.x, .01f);
+        Assert.AreEqual(magic.sizeDelta.y, defenders.sizeDelta.y, .01f);
+    }
+
+    [UnityTest]
+    public IEnumerator HectorHud_StaysCompactAtReferenceResolution()
+    {
+        yield return null;
+        yield return null;
+
+        RectTransform hector = FindSceneTransform("HectorPanel") as RectTransform;
+        Assert.NotNull(hector);
+        Assert.LessOrEqual(hector.localScale.x, .85f);
+        Assert.LessOrEqual(hector.sizeDelta.x * hector.localScale.x, 1920f * .18f + 20f);
+        Assert.LessOrEqual(hector.sizeDelta.y * hector.localScale.y, 1080f * .22f + 10f);
     }
 
     [UnityTest]
