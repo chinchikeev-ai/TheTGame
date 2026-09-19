@@ -21,6 +21,7 @@ public static class CombatHudUiFactory
         image.sprite = TroyHudArt.Panel();
         image.type = Image.Type.Sliced;
         image.color = Color.white;
+        image.raycastTarget = false;
         RectTransform rt = image.rectTransform;
         rt.anchorMin = rt.anchorMax = anchor;
         rt.pivot = pivot;
@@ -82,6 +83,7 @@ public static class CombatHudUiFactory
         text.alignment = alignment;
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Truncate;
+        text.raycastTarget = false;
 
         RectTransform rt = text.rectTransform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
