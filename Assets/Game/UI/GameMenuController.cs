@@ -158,18 +158,7 @@ public class GameMenuController : MonoBehaviour
     void BuildLevelMenu()
     {
         levelMenu = MakeScreen(canvas, "LevelSelect", new Color(.025f, .018f, .014f, .985f));
-        GameObject panel = MakePanel(levelMenu.transform, "LevelCard", new Vector2(.5f, .5f), new Vector2(980, 700), new Color(.08f, .045f, .025f, .98f));
-
-        AddTitle(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, 270), 48, MenuTextStyle.Logo);
-        AddTitle(panel.transform, L("Choose where the defense of Troy continues", "Выберите этап обороны Трои"), new Vector2(0, 215), 20, MenuTextStyle.Muted);
-        AddDivider(panel.transform, new Vector2(0, 180), 700);
-
-        AddButton(panel.transform, L("I  •  THE LANDING", "I  •  ВЫСАДКА"), new Vector2(0, 90), StartLevel, new Vector2(700, 78), MenuButtonStyle.Highlight);
-        Button map2Button = AddButton(panel.transform, "", new Vector2(0, -10), OnMap2Clicked, new Vector2(700, 78), MenuButtonStyle.Stone);
-        map2Label = map2Button.GetComponentInChildren<Text>();
-        map2Info = AddTitle(panel.transform, "", new Vector2(0, -82), 18, MenuTextStyle.Muted, new Vector2(760, 58));
-        AddButton(panel.transform, L("BACK", "НАЗАД"), new Vector2(0, -235), ShowMainMenu, new Vector2(280, 58), MenuButtonStyle.Ghost);
-        RefreshLevelSelect();
+        levelMenu.AddComponent<ChapterSelectionArtwork>().Build(StartLevel, ShowMainMenu, IsChapterUnlocked, GameLanguage.Russian);
     }
 
     void BuildSettingsMenu()

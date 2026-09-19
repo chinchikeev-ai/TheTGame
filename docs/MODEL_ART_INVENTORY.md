@@ -6,6 +6,11 @@ This is the authoritative source for **art/model completion status**. Design int
 
 ## Status definitions
 
+Chapter selection (2026-09-19): `SOURCE ONLY` pending real Play Mode visual acceptance.
+Reference atlas plus generated clean map and blank parchment are integrated under
+Assets/Game/Art/Resources/ChapterSelect. Separate runtime elements support live text
+and chapter selection; this is not a single screenshot used as the whole interface.
+
 Pause menu (2026-09-18): `SOURCE ONLY` pending real Play Mode visual acceptance.
 Six supplied pieces are integrated under `Assets/Game/Art/Resources/PauseMenu`;
 isolated Canvas previews are not final gameplay acceptance.

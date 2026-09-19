@@ -95,6 +95,7 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
 
     void StyleLevelSelect(Transform root)
     {
+        if (root.GetComponent<ChapterSelectionArtwork>() != null) return;
         StyleScreenBackground(root, new Color(.38f, .17f, .055f, .92f));
 
         Transform card = root.Find("LevelCard");

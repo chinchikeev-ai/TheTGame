@@ -6,6 +6,12 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Chapter selection artwork (2026-09-19): the old chapter list is replaced with a
+reference-derived coastal map, separate chapter nodes, detail panel and start/back
+buttons. Chapter I uses the existing start action; II-V remain non-playable with
+locked/in-development messaging. RU/EN and responsive Canvas checks added; full
+gameplay acceptance pending. No EXE build.
+
 PlayMode compile fix (2026-09-19): added the explicit Unity.InputSystem assembly
 reference required by CombatHudLayoutUxTests. Unity batch compilation completed
 with exit code 0. No PlayMode execution or Windows player build in this check.
