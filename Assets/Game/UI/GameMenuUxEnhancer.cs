@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 public sealed class GameMenuUxEnhancer : MonoBehaviour
@@ -14,20 +13,9 @@ public sealed class GameMenuUxEnhancer : MonoBehaviour
         canvas = FindMenuCanvas();
         if (canvas == null) yield break;
 
-        EnsureEventSystem();
         EnhanceScreens();
         EnhanceButtons();
         SelectFirstAvailableButton();
-    }
-
-    void EnsureEventSystem()
-    {
-        if (FindFirstObjectByType<EventSystem>() != null) return;
-
-        GameObject eventSystemObject = new GameObject("EventSystem");
-        eventSystemObject.AddComponent<EventSystem>();
-        InputSystemUIInputModule inputModule = eventSystemObject.AddComponent<InputSystemUIInputModule>();
-        inputModule.AssignDefaultActions();
     }
 
     void EnhanceScreens()
