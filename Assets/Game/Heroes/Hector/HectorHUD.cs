@@ -70,7 +70,7 @@ public class HectorHUD : MonoBehaviour
         pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(0f, 0f);
         pr.anchoredPosition = new Vector2(14f, 14f);
         pr.sizeDelta = new Vector2(440f, 292f);
-        pr.localScale = Vector3.one * .82f;
+        pr.localScale = Vector3.one * .78f;
 
         Button panelButton = root.AddComponent<Button>();
         panelButton.targetGraphic = panel;
