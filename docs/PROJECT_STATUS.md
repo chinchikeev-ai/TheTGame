@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Runtime input/HUD perimeter pass (2026-09-19): runtime EventSystem ownership is now centralized in `RuntimeInputBootstrap`, created by `GameBootstrap` before chapter/UI composition. Chapter I and menu enhancement no longer create EventSystems. The combat HUD factory defaults decorative panels/text/icons to non-raycast Graphics, while interactive Buttons retain pointer ownership. Hector is compacted to ~82% scale; MAGIC and DEFENDERS are equal-size bottom-right actions; the expanded defender strip is bottom-center. PlayMode contracts were extended for these rules. Unity compile/PlayMode and RU/EN resolution QA remain pending in this GitHub-only session.
+
 Pause-menu artwork (2026-09-18): six supplied PNG elements now decorate the
 existing in-game pause buttons over a blocking dimmed battlefield. Controller
 callbacks and the existing settings screen are unchanged. RU uses supplied
