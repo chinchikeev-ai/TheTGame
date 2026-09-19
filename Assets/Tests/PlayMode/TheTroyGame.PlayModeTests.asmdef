@@ -2,7 +2,8 @@
   "name": "TheTroyGame.PlayModeTests",
   "rootNamespace": "TheTroyGame.Tests",
   "references": [
-    "TheTroyGame.Runtime"
+    "TheTroyGame.Runtime",
+    "Unity.InputSystem"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
