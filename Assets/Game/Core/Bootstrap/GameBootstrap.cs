@@ -17,6 +17,7 @@ public class GameBootstrap : MonoBehaviour
 
         EnsureComponent<GameManager>("GameManager");
         EnsureComponent<GameStateController>("GameState");
+        EnsureComponent<RuntimeInputBootstrap>("RuntimeInput");
         EnsureComponent<RuntimeEffects>("RuntimeEffects");
         EnsureComponent<AncientMusicController>("AncientMusic");
 
