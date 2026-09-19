@@ -172,7 +172,7 @@ public sealed class ModernCombatHud : MonoBehaviour
         actionsRect.anchoredPosition = new Vector2(-24f, 24f);
         actionsRect.sizeDelta = new Vector2(340f, 116f);
 
-        magicAction = Button(actions.transform, "", new Vector2(-86f, 0f), new Vector2(164f, 112f), CastMagic, true);
+        magicAction = Button(actions.transform, "", new Vector2(-106f, 0f), new Vector2(164f, 112f), CastMagic, true);
         magicAction.gameObject.name = "Magic_Primary";
         Icon(magicAction.transform, "MagicIcon", new Vector2(0f, 27f), new Vector2(54f, 54f), TroyHudArt.Ability("magic"));
         magicActionText = magicAction.GetComponentInChildren<Text>();
