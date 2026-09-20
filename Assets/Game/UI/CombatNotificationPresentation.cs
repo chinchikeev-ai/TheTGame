@@ -19,7 +19,7 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
     bool bossWasActive;
     bool bossDefeated;
 
-    void Start(){spawner=EnemySpawner.Instance;GameObject menu=GameObject.Find("MenuCanvas");menuCanvas=menu!=null?menu.GetComponent<Canvas>():null;Build();}
+    void Start(){spawner=EnemySpawner.Instance;menuCanvas=GameMenuController.Instance!=null?GameMenuController.Instance.MenuCanvas:null;Build();}
 
     void Build()
     {
