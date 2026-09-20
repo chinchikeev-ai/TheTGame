@@ -19,7 +19,6 @@ public sealed class ModernCombatHud : MonoBehaviour
     CanvasGroup group;
     TowerPlacement placement;
     EnemySpawner spawner;
-    Canvas legacyCanvas;
     Canvas menuCanvas;
     Camera gameplayCamera;
 
@@ -108,10 +107,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void FindCanvases()
     {
-        GameObject legacyObject = GameObject.Find("GameCanvas");
-        legacyCanvas = legacyObject != null ? legacyObject.GetComponent<Canvas>() : null;
         menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
-        if (legacyCanvas != null) legacyCanvas.enabled = false;
     }
 
     void Build()
