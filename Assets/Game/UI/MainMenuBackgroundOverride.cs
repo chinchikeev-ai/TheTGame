@@ -1,6 +1,5 @@
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class MainMenuBackgroundOverride : MonoBehaviour
@@ -8,50 +7,21 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
     GameObject appliedMainMenu;
     GameMenuController controller;
     GameObject armyOverlay;
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoStart()
+    public void Initialize(GameMenuController owner)
     {
-        if (FindFirstObjectByType<MainMenuBackgroundOverride>() == null)
-            new GameObject("MainMenuPresenter").AddComponent<MainMenuBackgroundOverride>();
-    }
+        controller = owner;
+        GameObject main = owner != null ? owner.MainMenuRoot : null;
+        if (main == null || appliedMainMenu == main) return;
 
-    void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        appliedMainMenu = null;
-        controller = null;
-        armyOverlay = null;
-        RuntimeFileLogger.Event("MENU", $"Main-menu presenter rebound after scene load: {scene.name}");
+        BuildProductionMenu(main.transform);
+        appliedMainMenu = main;
+        RuntimeFileLogger.Event("MENU", "Applied clean production main-menu composition");
     }
 
     void Update()
     {
         if (armyOverlay != null && armyOverlay.activeSelf && GameInput.PausePressed())
             HideArmy();
-    }
-
-    void LateUpdate()
-    {
-        if (appliedMainMenu != null) return;
-
-        controller = FindFirstObjectByType<GameMenuController>();
-        if (controller == null) return;
-
-        GameObject canvasObject = GameObject.Find("MenuCanvas");
-        if (canvasObject == null) return;
-
-        Transform mainMenu = canvasObject.transform.Find("MainMenu");
-        if (mainMenu == null) return;
-
-        BuildProductionMenu(mainMenu);
-        appliedMainMenu = mainMenu.gameObject;
-        RuntimeFileLogger.Event("MENU", "Applied clean production main-menu composition");
     }
 
     void BuildProductionMenu(Transform mainMenu)
@@ -182,7 +152,7 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
 
     void InvokeController(string methodName)
     {
-        if (controller == null) controller = FindFirstObjectByType<GameMenuController>();
+        if (controller == null) controller = GameMenuController.Instance;
         if (controller == null) return;
 
         MethodInfo method = typeof(GameMenuController).GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -200,10 +170,5 @@ public sealed class MainMenuBackgroundOverride : MonoBehaviour
         rect.anchorMax = Vector2.one;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
-    }
-
-    void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 }
