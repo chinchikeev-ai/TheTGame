@@ -13,9 +13,16 @@ public class ChapterOneAtmosphereController : MonoBehaviour
     static readonly Color SunLift = new Color(1f, .88f, .69f);
     static readonly Color Dust = new Color(.58f,.47f,.31f);
 
+    Camera gameplayCamera;
     Light sun;
     float phase;
     VolumeProfile runtimeProfile;
+
+    public void Initialize(Camera camera, Light directionalSun)
+    {
+        gameplayCamera = camera;
+        sun = directionalSun;
+    }
 
     void Start()
     {
@@ -30,7 +37,7 @@ public class ChapterOneAtmosphereController : MonoBehaviour
         RenderSettings.ambientGroundColor = GroundAmbient;
         RenderSettings.reflectionIntensity = .90f;
 
-        Camera cam = Camera.main;
+        Camera cam = gameplayCamera != null ? gameplayCamera : Camera.main;
         if (cam != null)
         {
             cam.clearFlags = CameraClearFlags.SolidColor;
@@ -43,9 +50,6 @@ public class ChapterOneAtmosphereController : MonoBehaviour
             cameraData.renderPostProcessing = true;
         }
 
-        GameObject sunObject = GameObject.Find("Directional Light");
-        sun = sunObject != null ? sunObject.GetComponent<Light>() : FindFirstObjectByType<Light>();
-        if (sun != null && sun.type != LightType.Directional) sun = null;
         if (sun != null)
         {
             sun.color = SunWarm;
@@ -64,9 +68,8 @@ public class ChapterOneAtmosphereController : MonoBehaviour
 
     void BuildPostProcessing()
     {
-        if (GameObject.Find("Chapter01_GlobalVolume") != null) return;
-
         GameObject volumeObject = new GameObject("Chapter01_GlobalVolume");
+        volumeObject.transform.SetParent(transform, false);
         Volume volume = volumeObject.AddComponent<Volume>();
         volume.isGlobal = true;
         volume.priority = 40f;
@@ -103,8 +106,8 @@ public class ChapterOneAtmosphereController : MonoBehaviour
 
     void BuildBattlefieldAir()
     {
-        if (GameObject.Find("Chapter01_BattlefieldAir") != null) return;
         GameObject root=new GameObject("Chapter01_BattlefieldAir");
+        root.transform.SetParent(transform, false);
         Vector3[] wisps=
         {
             new Vector3(-8.0f,.17f,5.25f), new Vector3(-6.4f,.15f,-5.1f),
