@@ -9,6 +9,18 @@ using UnityEngine;
 // restrained wave/current accents and the shoreline surf.
 public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 {
+    Transform coastRoot;
+    ChapterOneShoreLife shoreLife;
+    ChapterOneCoastEdgeClosure edgeClosure;
+    public Transform Root { get; private set; }
+
+    public void Initialize(Transform coast, ChapterOneShoreLife shore, ChapterOneCoastEdgeClosure edge)
+    {
+        coastRoot = coast;
+        shoreLife = shore;
+        edgeClosure = edge;
+    }
+
     static readonly Color OceanBase = new Color(.025f, .335f, .60f);
     static readonly Color Undertow = new Color(.035f, .42f, .60f);
     static readonly Color WaveBlue = new Color(.34f, .73f, .81f);
@@ -38,34 +50,21 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 
     IEnumerator Start()
     {
-        GameObject coast = null;
-        for (int i = 0; i < 16 && coast == null; i++)
-        {
-            coast = GameObject.Find("Chapter01_CoastEnvironment");
-            if (coast == null) yield return null;
-        }
-
-        if (coast == null || (GameManager.Instance != null && GameManager.Instance.MapNumber != 1))
+        if (coastRoot == null || (GameManager.Instance != null && GameManager.Instance.MapNumber != 1))
         {
             Destroy(gameObject);
             yield break;
         }
 
-        // Wait until ShoreLife / edge-closure presentation objects have had a chance
-        // to appear, then take exclusive visual ownership of the sea surface.
-        yield return null;
-        yield return null;
-        yield return null;
+        // Shore-life and edge-closure build during Start. Wait for their explicit
+        // owner roots instead of rediscovering them by scene object name.
+        for (int i = 0; i < 8 && ((shoreLife != null && shoreLife.Root == null) || (edgeClosure != null && edgeClosure.Root == null)); i++)
+            yield return null;
 
-        if (GameObject.Find("Chapter01_AegeanSeaPresentation") != null)
-        {
-            Destroy(gameObject);
-            yield break;
-        }
-
-        DisableLegacySeaRenderers(coast.transform);
+        DisableLegacySeaRenderers(coastRoot, shoreLife != null ? shoreLife.Root : null, edgeClosure != null ? edgeClosure.Root : null);
 
         GameObject root = new GameObject("Chapter01_AegeanSeaPresentation");
+        Root = root.transform;
         BuildContinuousOcean(root.transform);
         BuildOpenWaterCurrents(root.transform);
         BuildWavelets(root.transform);
@@ -73,15 +72,11 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
         BuildSunGlints(root.transform);
     }
 
-    static void DisableLegacySeaRenderers(Transform coastRoot)
+    static void DisableLegacySeaRenderers(Transform coastRoot, Transform shoreLifeRoot, Transform edgeClosureRoot)
     {
         DisableLegacySeaRenderersUnder(coastRoot);
-
-        GameObject shoreLife = GameObject.Find("Chapter01_ShoreLife");
-        if (shoreLife != null) DisableLegacySeaRenderersUnder(shoreLife.transform);
-
-        GameObject edgeClosure = GameObject.Find("Chapter01_CoastEdgeClosure");
-        if (edgeClosure != null) DisableLegacySeaRenderersUnder(edgeClosure.transform);
+        DisableLegacySeaRenderersUnder(shoreLifeRoot);
+        DisableLegacySeaRenderersUnder(edgeClosureRoot);
     }
 
     static void DisableLegacySeaRenderersUnder(Transform root)
