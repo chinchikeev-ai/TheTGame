@@ -109,7 +109,7 @@ Unsupported profiles fail explicitly. A chapter is not enabled merely because a 
 ### Chapter-specific runtime installer
 Owns chapter-specific map/presentation/runtime composition while reusing generic combat/economy/save/UI systems.
 
-`ChapterOneRuntimeInstaller` currently owns the Landing map, Hector placement, coast/Troy presentation, Chapter I cinematic, guidance and telemetry reporter.
+`ChapterOneRuntimeInstaller` currently owns the Landing map, Hector placement, coast/Troy presentation, Chapter I cinematic, guidance, telemetry reporter, and the Chapter I-specific presentation lifecycle stack. Chapter I presenters must be installed here and must not self-create through `RuntimeInitializeOnLoadMethod`.
 
 ### EnemySpawner
 Executes the active chapter's authored `EncounterData`.
