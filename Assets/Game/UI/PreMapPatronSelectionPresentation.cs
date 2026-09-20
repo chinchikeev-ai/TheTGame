@@ -44,9 +44,8 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
 
     bool TryBind()
     {
-        menu = FindFirstObjectByType<GameMenuController>();
-        GameObject canvasObject = GameObject.Find("MenuCanvas");
-        menuCanvas = canvasObject != null ? canvasObject.GetComponent<Canvas>() : null;
+        menu = GameMenuController.Instance;
+        menuCanvas = menu != null ? menu.MenuCanvas : null;
         if (menu == null || menuCanvas == null) return false;
 
         Transform levelSelect = menuCanvas.transform.Find("LevelSelect");
