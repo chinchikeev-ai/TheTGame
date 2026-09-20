@@ -27,5 +27,6 @@ were generated; Audio, Video and Controls were visually inspected after layout f
 Focused EditMode coverage: four chapter-layout/action cases, five settings previews
 (all tabs, 4:3/16:9), and graphic-start-to-difficulty binding without save writes.
 Full patron-confirmation-to-enemy-spawn PlayMode acceptance is still pending.
-No EXE build. Architecture guard still reports the pre-existing scene-wide search
-in ChapterOneAegeanSeaPresentation. Settings art remains pending in-game acceptance.
+No EXE build. After merging newer main, all ten tests passed again. The strengthened
+architecture guard reports pre-existing LateUpdate searches in MainMenuBackgroundOverride
+and SimpleMainMenuPresentation. Settings art remains pending in-game acceptance.
