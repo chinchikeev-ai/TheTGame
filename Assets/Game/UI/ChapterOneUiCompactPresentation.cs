@@ -16,13 +16,6 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
 
     Text compactMagicText;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneUiCompactPresentation>() == null)
-            new GameObject("ChapterOneUiCompactPresentation").AddComponent<ChapterOneUiCompactPresentation>();
-    }
-
     IEnumerator Start()
     {
         for (int frame = 0; frame < 120; frame++)
