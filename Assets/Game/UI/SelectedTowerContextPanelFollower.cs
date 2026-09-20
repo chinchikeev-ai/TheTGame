@@ -4,8 +4,6 @@ using UnityEngine;
 public sealed class SelectedTowerContextPanelFollower : MonoBehaviour
 {
     const float EdgePadding = 22f;
-    static SelectedTowerContextPanelFollower instance;
-
     TowerPlacement placement;
     RectTransform panel;
     RectTransform canvasRect;
@@ -25,14 +23,13 @@ public sealed class SelectedTowerContextPanelFollower : MonoBehaviour
         if (placement == null) placement = TowerPlacement.Instance;
         if (placement == null) return false;
 
-        GameObject panelObject = GameObject.Find("SelectedTowerCard");
-        if (panelObject == null) return false;
-        panel = panelObject.transform as RectTransform;
+        ModernCombatHud hud = ModernCombatHud.Instance;
+        panel = hud != null ? hud.SelectedCardRect : null;
         if (panel == null) return false;
 
         Canvas ownerCanvas = panel.GetComponentInParent<Canvas>();
         canvasRect = ownerCanvas != null ? ownerCanvas.transform as RectTransform : null;
-        gameCamera = placement.gameCamera != null ? placement.gameCamera : Camera.main;
+        gameCamera = hud.GameplayCamera != null ? hud.GameplayCamera : (placement.gameCamera != null ? placement.gameCamera : Camera.main);
         return canvasRect != null && gameCamera != null;
     }
 
@@ -58,10 +55,5 @@ public sealed class SelectedTowerContextPanelFollower : MonoBehaviour
 
         panel.anchorMin = panel.anchorMax = panel.pivot = new Vector2(.5f, .5f);
         panel.anchoredPosition = desired;
-    }
-
-    void OnDestroy()
-    {
-        if (instance == this) instance = null;
     }
 }
