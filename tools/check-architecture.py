@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +55,30 @@ REQUIRED = [
     "Assets/Tests/EditMode/TheTroyGame.EditModeTests.asmdef",
     "Assets/Tests/PlayMode/TheTroyGame.PlayModeTests.asmdef",
 ]
+
+HOT_RUNTIME_METHODS = ("Update", "LateUpdate", "FixedUpdate")
+HOT_SCENE_SEARCH_TOKENS = (
+    "GameObject.Find(",
+    "FindFirstObjectByType<",
+    "Object.FindFirstObjectByType<",
+)
+
+def method_body(text, method_name):
+    match = re.search(r"\bvoid\s+" + re.escape(method_name) + r"\s*\([^)]*\)\s*\{", text)
+    if match is None:
+        return None
+
+    start = match.end() - 1
+    depth = 0
+    for index in range(start, len(text)):
+        char = text[index]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:index + 1]
+    return text[start:]
 
 errors = []
 for rel in REQUIRED:
@@ -322,6 +347,10 @@ if GAME.exists():
             errors.append(f"direct input outside GameInput: {rel}")
         if "FindObjectsByType<" in text or "FindObjectsOfType<" in text:
             errors.append(f"scene-wide gameplay search: {rel}")
+        for method_name in HOT_RUNTIME_METHODS:
+            body = method_body(text, method_name)
+            if body is not None and any(token in body for token in HOT_SCENE_SEARCH_TOKENS):
+                errors.append(f"hot-path scene search in {method_name}: {rel}")
         if "/UI/" in f"/{rel}" and "CampaignSave." in text:
             errors.append(f"UI accesses CampaignSave directly: {rel}")
         if "namespace TheTroyGame" in text:
