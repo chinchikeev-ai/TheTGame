@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- ARCH-006: clean start/Restart создают один menu presentation stack и один combat-HUD presentation stack; нет дубликатов BossHUD/notifications/HUD skin/preview/follower.
+- ARCH-006: после Pause/Settings/Resume menu-owned presentation остаётся привязан к текущему `GameMenuController`, а combat-owned presentation — к текущему `ModernCombatHud`.
 - ARCH-005: clean start и Restart Chapter I создают ровно по одному экземпляру каждого Chapter I-owned presenter; ни один из них не появляется до выбора/установки chapter runtime profile.
 - ARCH-005: после централизации lifecycle море, берег, Troy backdrop/fire/gate damage, faction staging, Menelaus entrance, encounter presentation и compact HUD визуально появляются в том же порядке и без пропусков.
 - ARCH-004: после запуска/Restart Chapter I остаётся по одному `EnemySpawner`, `TowerPlacement`, `GameMenuController`, `ModernCombatHud`; их static `Instance` не остаётся stale после уничтожения.
