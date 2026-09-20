@@ -12,9 +12,6 @@ public sealed class VisualEncounterPreviewPresentation : MonoBehaviour
     readonly string[] ru = { "ПЕХ", "БЕГ", "ТЯЖ", "ЩИТ", "ЛУК", "МЕНЕЛАЙ" };
     bool built;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate(){if(FindFirstObjectByType<VisualEncounterPreviewPresentation>()==null)new GameObject("VisualEncounterPreviewPresentation").AddComponent<VisualEncounterPreviewPresentation>();}
-
     void Update()
     {
         if(!built)
