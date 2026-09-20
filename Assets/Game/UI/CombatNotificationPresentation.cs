@@ -22,7 +22,7 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoCreate(){if(FindFirstObjectByType<CombatNotificationPresentation>()==null)new GameObject("CombatNotificationPresentation").AddComponent<CombatNotificationPresentation>();}
 
-    void Start(){spawner=FindFirstObjectByType<EnemySpawner>();GameObject menu=GameObject.Find("MenuCanvas");menuCanvas=menu!=null?menu.GetComponent<Canvas>():null;Build();}
+    void Start(){spawner=EnemySpawner.Instance;GameObject menu=GameObject.Find("MenuCanvas");menuCanvas=menu!=null?menu.GetComponent<Canvas>():null;Build();}
 
     void Build()
     {
@@ -45,8 +45,8 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
     void Update()
     {
         GameManager gm=GameManager.Instance;if(gm==null){group.alpha=0f;return;}
-        if(spawner==null)spawner=FindFirstObjectByType<EnemySpawner>();
-        if(menuCanvas==null){GameObject menu=GameObject.Find("MenuCanvas");menuCanvas=menu!=null?menu.GetComponent<Canvas>():null;}
+        if(spawner==null)spawner=EnemySpawner.Instance;
+        if(menuCanvas==null&&GameMenuController.Instance!=null)menuCanvas=GameMenuController.Instance.MenuCanvas;
         group.alpha=(gm.GameEnded||IsMenuBlocking())?0f:1f;if(group.alpha<=0f)return;
         if(lastWave<0){lastWave=gm.CurrentWave;lastTowersBuilt=gm.TowersBuilt;lastGate=gm.BaseHealth;bossDefeated=gm.BossDefeated;}
         if(gm.CurrentWave>lastWave){lastWave=gm.CurrentWave;Push(GameLanguage.T($"Encounter {gm.CurrentWave} has begun",$"Бой {gm.CurrentWave} начался"),TroyHudArt.Icon("enemy"),5f);}
