@@ -11,15 +11,6 @@ public sealed class SelectedTowerContextPanelFollower : MonoBehaviour
     RectTransform canvasRect;
     Camera gameCamera;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void Install()
-    {
-        if (instance != null) return;
-        GameObject host = new GameObject("SelectedTowerContextPanelFollower");
-        DontDestroyOnLoad(host);
-        instance = host.AddComponent<SelectedTowerContextPanelFollower>();
-    }
-
     IEnumerator Start()
     {
         while (true)
