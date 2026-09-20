@@ -63,7 +63,30 @@ HOT_SCENE_SEARCH_TOKENS = (
     "Object.FindFirstObjectByType<",
 )
 
+ALLOWED_RUNTIME_INITIALIZERS = (
+    "Assets/Game/Core/Bootstrap/GameBootstrap.cs",
+    "Assets/Game/Campaign/Persistence/CampaignSave.cs",
+    "Assets/Game/Core/Logging/RuntimeFileLogger.cs",
+    "Assets/Game/Core/BuildVersionOverlay.cs",
+)
+
+MENU_OWNED_PRESENTERS = (
+    "Assets/Game/UI/MainMenuBackgroundOverride.cs",
+    "Assets/Game/UI/SimpleMainMenuPresentation.cs",
+    "Assets/Game/UI/MenuFlowStylePresentation.cs",
+    "Assets/Game/UI/MainMenuBuildVersionPresentation.cs",
+)
+
+COMBAT_HUD_OWNED_PRESENTERS = (
+    "Assets/Game/UI/BossHUD.cs",
+    "Assets/Game/UI/CombatNotificationPresentation.cs",
+    "Assets/Game/UI/TroyCombatHudSkin.cs",
+    "Assets/Game/UI/VisualEncounterPreviewPresentation.cs",
+    "Assets/Game/UI/SelectedTowerContextPanelFollower.cs",
+)
+
 CHAPTER_ONE_OWNED_PRESENTERS = (
+    "Assets/Game/Heroes/Hector/HectorHUD.cs",
     "Assets/Game/UI/ChapterOneEncounterPresentation.cs",
     "Assets/Game/UI/ChapterOneUiCompactPresentation.cs",
     "Assets/Game/World/ChapterOneAegeanSeaPresentation.cs",
@@ -370,6 +393,36 @@ if chapter_one_installer.exists():
         if f"EnsureComponent<{type_name}>" not in installer_text:
             errors.append(f"Chapter I presenter missing installer ownership: {type_name}")
 
+menu_owner = ROOT / "Assets" / "Game" / "UI" / "GameMenuController.cs"
+if menu_owner.exists():
+    menu_owner_text = menu_owner.read_text(encoding="utf-8")
+    for rel in MENU_OWNED_PRESENTERS:
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"missing menu-owned presenter: {rel}")
+            continue
+        owned_text = path.read_text(encoding="utf-8")
+        if "[RuntimeInitializeOnLoadMethod" in owned_text:
+            errors.append(f"menu presenter self-installs outside GameMenuController: {rel}")
+        type_name = Path(rel).stem
+        if f"EnsureMenuPresentation<{type_name}>" not in menu_owner_text:
+            errors.append(f"menu presenter missing GameMenuController ownership: {type_name}")
+
+combat_owner = ROOT / "Assets" / "Game" / "UI" / "ModernCombatHud.cs"
+if combat_owner.exists():
+    combat_owner_text = combat_owner.read_text(encoding="utf-8")
+    for rel in COMBAT_HUD_OWNED_PRESENTERS:
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"missing combat-HUD-owned presenter: {rel}")
+            continue
+        owned_text = path.read_text(encoding="utf-8")
+        if "[RuntimeInitializeOnLoadMethod" in owned_text:
+            errors.append(f"combat HUD presenter self-installs outside ModernCombatHud: {rel}")
+        type_name = Path(rel).stem
+        if f"EnsureCombatPresentation<{type_name}>" not in combat_owner_text:
+            errors.append(f"combat HUD presenter missing ModernCombatHud ownership: {type_name}")
+
 if GAME.exists():
     for path in GAME.rglob("*.cs"):
         text = path.read_text(encoding="utf-8")
@@ -377,6 +430,8 @@ if GAME.exists():
         is_input = rel.endswith("Core/Input/GameInput.cs")
         if not is_input and any(token in text for token in ("Mouse.current", "Keyboard.current", "Input.Get")):
             errors.append(f"direct input outside GameInput: {rel}")
+        if "[RuntimeInitializeOnLoadMethod" in text and rel not in ALLOWED_RUNTIME_INITIALIZERS:
+            errors.append(f"runtime initializer outside approved infrastructure: {rel}")
         if "FindObjectsByType<" in text or "FindObjectsOfType<" in text:
             errors.append(f"scene-wide gameplay search: {rel}")
         for method_name in HOT_RUNTIME_METHODS:
