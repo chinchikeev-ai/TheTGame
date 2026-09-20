@@ -19,11 +19,11 @@ public sealed class VisualEncounterPreviewPresentation : MonoBehaviour
     {
         if(!built)
         {
-            GameObject hud=GameObject.Find("ModernCombatHUD");if(hud==null)return;
-            Transform encounter=hud.transform.Find("WaveStatus");if(encounter==null)return;
-            spawner=FindFirstObjectByType<EnemySpawner>();Build(encounter);built=true;
+            Transform hud=ModernCombatHud.Instance!=null?ModernCombatHud.Instance.HudRoot:null;if(hud==null)return;
+            Transform encounter=hud.Find("WaveStatus");if(encounter==null)return;
+            spawner=EnemySpawner.Instance;Build(encounter);built=true;
         }
-        if(spawner==null)spawner=FindFirstObjectByType<EnemySpawner>();if(spawner==null||row==null)return;
+        if(spawner==null)spawner=EnemySpawner.Instance;if(spawner==null||row==null)return;
         int[] values={EncounterRuntime.NextEncounterInfantryCount(spawner),EncounterRuntime.NextEncounterRunnerCount(spawner),EncounterRuntime.NextEncounterHeavyCount(spawner),EncounterRuntime.NextEncounterShieldCount(spawner),EncounterRuntime.NextEncounterArcherCount(spawner),EncounterRuntime.NextEncounterBossCount(spawner)};
         int visible=0;for(int i=0;i<cards.Length;i++)if(values[i]>0)visible++;
         if(visible==0){row.SetActive(false);return;}
