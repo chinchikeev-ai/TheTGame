@@ -37,13 +37,6 @@ public class HectorHUD : MonoBehaviour
     int lastBossWarningWave = -1;
     int lastClosingWave = -1;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<HectorHUD>() == null)
-            new GameObject("HectorHUD").AddComponent<HectorHUD>();
-    }
-
     void Start()
     {
         GameObject canvasObj = new GameObject("HectorHUDCanvas");
