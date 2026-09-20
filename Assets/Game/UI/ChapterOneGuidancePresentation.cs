@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public sealed class ChapterOneGuidancePresentation : MonoBehaviour
 {
+    public Transform UiRoot => canvas != null ? canvas.transform : null;
+
     Canvas canvas;
     CanvasGroup group;
     EnemySpawner spawner;
@@ -24,8 +26,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
     void Start()
     {
         spawner = EnemySpawner.Instance;
-        GameObject menu = GameObject.Find("MenuCanvas");
-        menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
+        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
         Build();
     }
 
