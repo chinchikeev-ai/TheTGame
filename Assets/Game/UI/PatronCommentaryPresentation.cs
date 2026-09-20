@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public sealed class PatronCommentaryPresentation : MonoBehaviour
 {
+    public Transform UiRoot => canvas != null ? canvas.transform : null;
+
     sealed class PendingComment
     {
         public PatronCommentaryEvent eventType;
@@ -277,8 +279,7 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
 
     void BindMenuCanvas()
     {
-        GameObject menu = GameObject.Find("MenuCanvas");
-        menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
+        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
     }
 
     bool IsMenuBlocking()
