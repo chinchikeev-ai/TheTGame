@@ -8,6 +8,8 @@ GAME = ROOT / "Assets" / "Game"
 
 REQUIRED = [
     "Assets/Game/Core/Bootstrap/GameBootstrap.cs",
+    "Assets/Game/Core/Bootstrap/GameRuntimeContext.cs",
+    "Assets/Game/Core/Bootstrap/GameRuntimeContext.cs.meta",
     "Assets/Game/Core/Input/GameInput.cs",
     "Assets/Game/Core/Session/GameManager.cs",
     "Assets/Game/Campaign/CampaignController.cs",
@@ -61,6 +63,12 @@ HOT_SCENE_SEARCH_TOKENS = (
     "GameObject.Find(",
     "FindFirstObjectByType<",
     "Object.FindFirstObjectByType<",
+)
+
+COMPOSITION_ROOTS = (
+    "Assets/Game/Core/Bootstrap/GameBootstrap.cs",
+    "Assets/Game/Campaign/Runtime/ChapterRuntimeInstaller.cs",
+    "Assets/Game/Campaign/Runtime/ChapterOneRuntimeInstaller.cs",
 )
 
 FORBIDDEN_NAME_LOOKUPS = (
@@ -399,8 +407,18 @@ if chapter_one_installer.exists():
     installer_text = chapter_one_installer.read_text(encoding="utf-8")
     for rel in CHAPTER_ONE_OWNED_PRESENTERS:
         type_name = Path(rel).stem
-        if f"EnsureComponent<{type_name}>" not in installer_text:
-            errors.append(f"Chapter I presenter missing installer ownership: {type_name}")
+        if f"CreateChapter<{type_name}>" not in installer_text:
+            errors.append(f"Chapter I presenter missing runtime-context ownership: {type_name}")
+
+for rel in COMPOSITION_ROOTS:
+    path = ROOT / rel
+    if not path.exists():
+        errors.append(f"missing composition root: {rel}")
+        continue
+    composition_text = path.read_text(encoding="utf-8")
+    for token in ("GameObject.Find(", "FindFirstObjectByType<", "Object.FindFirstObjectByType<"):
+        if token in composition_text:
+            errors.append(f"composition root uses scene search: {rel} uses {token}")
 
 menu_owner = ROOT / "Assets" / "Game" / "UI" / "GameMenuController.cs"
 if menu_owner.exists():
