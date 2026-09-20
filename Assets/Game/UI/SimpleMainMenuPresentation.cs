@@ -1,6 +1,5 @@
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class SimpleMainMenuPresentation : MonoBehaviour
@@ -13,52 +12,24 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
     Text armyBody;
     GameMenuController controller;
     int activeArmyTab;
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoStart()
+    public void Initialize(GameMenuController owner)
     {
-        if (FindFirstObjectByType<SimpleMainMenuPresentation>() == null)
-            new GameObject("SimpleMainMenuPresenter").AddComponent<SimpleMainMenuPresentation>();
-    }
+        controller = owner;
+        GameObject main = owner != null ? owner.MainMenuRoot : null;
+        if (main == null) return;
 
-    void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+        Transform approved = main.transform.Find("ApprovedMainMenu");
+        if (approved == null || appliedRoot == approved.gameObject) return;
 
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        appliedRoot = null;
-        armyOverlay = null;
-        armyTitle = null;
-        armyBody = null;
-        controller = null;
-        for (int i = 0; i < armyTabs.Length; i++) armyTabs[i] = null;
+        Build(approved);
+        appliedRoot = approved.gameObject;
+        RuntimeFileLogger.Event("MENU", "Simplified main menu polished: Play / Army / Settings / Exit");
     }
 
     void Update()
     {
         if (armyOverlay != null && armyOverlay.activeSelf && GameInput.PausePressed())
             HideArmy();
-    }
-
-    void LateUpdate()
-    {
-        if (appliedRoot != null) return;
-
-        controller = FindFirstObjectByType<GameMenuController>();
-        GameObject canvasObject = GameObject.Find("MenuCanvas");
-        if (controller == null || canvasObject == null) return;
-
-        Transform mainMenu = canvasObject.transform.Find("MainMenu");
-        if (mainMenu == null) return;
-        Transform approved = mainMenu.Find("ApprovedMainMenu");
-        if (approved == null) return;
-
-        Build(approved);
-        appliedRoot = approved.gameObject;
-        RuntimeFileLogger.Event("MENU", "Simplified main menu polished: Play / Army / Settings / Exit");
     }
 
     void Build(Transform approved)
@@ -242,7 +213,7 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
 
     void InvokeController(string methodName)
     {
-        if (controller == null) controller = FindFirstObjectByType<GameMenuController>();
+        if (controller == null) controller = GameMenuController.Instance;
         if (controller == null) return;
 
         MethodInfo method = typeof(GameMenuController).GetMethod(
@@ -364,10 +335,5 @@ public sealed class SimpleMainMenuPresentation : MonoBehaviour
         rect.anchorMax = Vector2.one;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
-    }
-
-    void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 }
