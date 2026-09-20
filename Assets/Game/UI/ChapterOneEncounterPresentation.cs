@@ -118,11 +118,8 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
 
     bool IsMenuBlockingCombat()
     {
-        if (menuCanvas == null)
-        {
-            GameObject menu = GameObject.Find("MenuCanvas");
-            menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
-        }
+        if (menuCanvas == null && GameMenuController.Instance != null)
+            menuCanvas = GameMenuController.Instance.MenuCanvas;
         if (menuCanvas == null) return false;
 
         for (int i = 0; i < BlockingMenuNames.Length; i++)
