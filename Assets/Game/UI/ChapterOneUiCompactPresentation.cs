@@ -15,6 +15,16 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         CornerActionSize.y);
 
     Text compactMagicText;
+    HectorHUD hectorHud;
+    ChapterOneGuidancePresentation guidance;
+    PatronCommentaryPresentation patron;
+
+    public void Initialize(HectorHUD hector, ChapterOneGuidancePresentation chapterGuidance, PatronCommentaryPresentation patronCommentary)
+    {
+        hectorHud = hector;
+        guidance = chapterGuidance;
+        patron = patronCommentary;
+    }
 
     IEnumerator Start()
     {
@@ -38,22 +48,15 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
     bool TryBindAndApply()
     {
         Transform hud = ModernCombatHud.Instance != null ? ModernCombatHud.Instance.HudRoot : null;
-        GameObject hector = GameObject.Find("HectorHUD");
-        GameObject guidance = GameObject.Find("ChapterOneGuidanceUI");
-        GameObject patron = GameObject.Find("PatronCommentaryUI");
-        if (hud == null || hector == null || guidance == null || patron == null) return false;
+        Transform hector = hectorHud != null ? hectorHud.HudRoot : null;
+        Transform guidanceRoot = guidance != null ? guidance.UiRoot : null;
+        Transform patronRoot = patron != null ? patron.UiRoot : null;
+        if (hud == null || hector == null || guidanceRoot == null || patronRoot == null) return false;
 
         ApplyModernCombatHud(hud);
-        ApplyHectorHud(hector.transform);
-        ApplyGuidanceCards(guidance.transform);
-        ApplyPatronCard(patron.transform);
-
-        GameObject actions = GameObject.Find("CombatActions");
-        if (actions != null)
-        {
-            SetScale(actions.transform, .74f);
-            SetPanelAlpha(actions.transform, .93f);
-        }
+        ApplyHectorHud(hector);
+        ApplyGuidanceCards(guidanceRoot);
+        ApplyPatronCard(patronRoot);
         return true;
     }
 
