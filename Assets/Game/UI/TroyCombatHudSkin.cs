@@ -28,14 +28,14 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
     {
         if (!applied)
         {
-            GameObject hud = GameObject.Find("ModernCombatHUD");
+            Transform hud = ModernCombatHud.Instance != null ? ModernCombatHud.Instance.HudRoot : null;
             if (hud == null) return;
-            placement = FindFirstObjectByType<TowerPlacement>();
-            Apply(hud.transform);
+            placement = TowerPlacement.Instance;
+            Apply(hud);
             applied = true;
         }
 
-        if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
+        if (placement == null) placement = TowerPlacement.Instance;
         if (selectedTowerIcon != null && placement != null)
         {
             Tower tower = placement.SelectedTower;
