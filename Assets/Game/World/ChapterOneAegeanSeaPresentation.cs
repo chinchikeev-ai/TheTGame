@@ -36,13 +36,6 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
         "Coast Side Sea Extension"
     };
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneAegeanSeaPresentation>() == null)
-            new GameObject("ChapterOneAegeanSeaPresentation").AddComponent<ChapterOneAegeanSeaPresentation>();
-    }
-
     IEnumerator Start()
     {
         GameObject coast = null;
@@ -70,7 +63,7 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
             yield break;
         }
 
-        DisableLegacySeaRenderers();
+        DisableLegacySeaRenderers(coast.transform);
 
         GameObject root = new GameObject("Chapter01_AegeanSeaPresentation");
         BuildContinuousOcean(root.transform);
@@ -80,12 +73,25 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
         BuildSunGlints(root.transform);
     }
 
-    static void DisableLegacySeaRenderers()
+    static void DisableLegacySeaRenderers(Transform coastRoot)
     {
-        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < all.Length; i++)
+        DisableLegacySeaRenderersUnder(coastRoot);
+
+        GameObject shoreLife = GameObject.Find("Chapter01_ShoreLife");
+        if (shoreLife != null) DisableLegacySeaRenderersUnder(shoreLife.transform);
+
+        GameObject edgeClosure = GameObject.Find("Chapter01_CoastEdgeClosure");
+        if (edgeClosure != null) DisableLegacySeaRenderersUnder(edgeClosure.transform);
+    }
+
+    static void DisableLegacySeaRenderersUnder(Transform root)
+    {
+        if (root == null) return;
+
+        Transform[] descendants = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < descendants.Length; i++)
         {
-            Transform t = all[i];
+            Transform t = descendants[i];
             if (t == null || !LegacyWaterObjects.Contains(t.name)) continue;
             Renderer renderer = t.GetComponent<Renderer>();
             if (renderer != null) renderer.enabled = false;

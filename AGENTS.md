@@ -121,7 +121,9 @@ A production model becomes `DONE` only after the final derivative is committed u
 - gameplay/UI input goes through `GameInput`
 - direct `Mouse.current`, `Keyboard.current` and `Input.Get*` are forbidden outside `GameInput`
 - towers use `TowerRegistry`; enemies use `EnemyRegistry`
-- no `FindObjectsByType`, `FindObjectsOfType` or other scene-wide gameplay searches
+- no `FindObjectsByType` / `FindObjectsOfType` in runtime gameplay code
+- `GameObject.Find` / `FindFirstObjectByType` are allowed only for bounded startup/bootstrap/binding work when no owner reference exists yet; never call them from `Update`, `LateUpdate`, `FixedUpdate` or other high-frequency loops
+- prefer explicit owner references, registries or stable runtime instances over name-based scene lookup
 - damage goes through `DamagePacket` / `DamageType`
 - reusable effects use shared combat/status APIs
 - avoid `Resources.Load` in high-frequency loops

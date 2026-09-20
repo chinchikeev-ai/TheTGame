@@ -55,7 +55,7 @@ public class AncientMusicController : MonoBehaviour
     {
         if (useTrack) return;
 
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
 
         MusicState wanted = MusicState.Ambient;
         if (spawner != null && spawner.WaveActive)

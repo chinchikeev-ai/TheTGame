@@ -12,13 +12,6 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
     static readonly Color ThinFoam = new Color(.73f, .91f, .90f);
     static readonly Color WakeBlue = new Color(.22f, .68f, .75f);
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneAegeanSeaVolumePass>() == null)
-            new GameObject("ChapterOneAegeanSeaVolumePass").AddComponent<ChapterOneAegeanSeaVolumePass>();
-    }
-
     IEnumerator Start()
     {
         GameObject coast = null;

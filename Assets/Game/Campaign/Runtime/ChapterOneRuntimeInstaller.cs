@@ -44,9 +44,28 @@ public static class ChapterOneRuntimeInstaller
         }
 
         EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
+        EnsureChapterPresentationStack();
 
         RuntimeFileLogger.Event("CHAPTER_RUNTIME", $"Installed {ProfileId} for {chapter.chapterId}");
         return new ChapterRuntimeContext(mapBuilder.Paths);
+    }
+
+    static void EnsureChapterPresentationStack()
+    {
+        // Chapter I owns these lifecycle components. They must not self-install via
+        // RuntimeInitializeOnLoadMethod because chapter selection belongs here.
+        EnsureComponent<ChapterOneShoreLife>("ChapterOneShoreLife");
+        EnsureComponent<ChapterOneCoastEdgeClosure>("ChapterOneCoastEdgeClosure");
+        EnsureComponent<ChapterOneAegeanSeaPresentation>("ChapterOneAegeanSeaPresentation");
+        EnsureComponent<ChapterOneAegeanSeaVolumePass>("ChapterOneAegeanSeaVolumePass");
+        EnsureComponent<ChapterOneBattlefieldDetails>("ChapterOneBattlefieldDetails");
+        EnsureComponent<TroyCityBackdropPresentation>("TroyCityBackdropPresentation");
+        EnsureComponent<TroyFireLifePresentation>("TroyFireLifePresentation");
+        EnsureComponent<TroyGateDamagePresentation>("TroyGateDamagePresentation");
+        EnsureComponent<ChapterOneFactionStaging>("ChapterOneFactionStaging");
+        EnsureComponent<MenelausEntrancePresentation>("MenelausEntrancePresentation");
+        EnsureComponent<ChapterOneEncounterPresentation>("ChapterOneEncounterPresentation");
+        EnsureComponent<ChapterOneUiCompactPresentation>("ChapterOneUiCompactPresentation");
     }
 
     static T EnsureComponent<T>(string objectName) where T : Component

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,61 +14,80 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         CornerActionSize.x * 2f + CornerActionGap,
         CornerActionSize.y);
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
+    Text compactMagicText;
+
+    IEnumerator Start()
     {
-        if (FindFirstObjectByType<ChapterOneUiCompactPresentation>() == null)
-            new GameObject("ChapterOneUiCompactPresentation").AddComponent<ChapterOneUiCompactPresentation>();
+        for (int frame = 0; frame < 120; frame++)
+        {
+            GameManager gm = GameManager.Instance;
+            if (gm != null && gm.MapNumber != 1) yield break;
+            if (TryBindAndApply()) yield break;
+            yield return null;
+        }
+
+        RuntimeFileLogger.Event("UI", "ChapterOneUiCompactPresentation could not bind all required Chapter I UI roots.");
     }
 
     void LateUpdate()
     {
-        GameManager gm = GameManager.Instance;
-        if (gm != null && gm.MapNumber != 1) return;
-
-        ApplyModernCombatHud();
-        ApplyHectorHud();
-        ApplyGuidanceCards();
-        ApplyPatronCard();
-        ApplyCombatActions();
+        if (compactMagicText != null)
+            compactMagicText.text = BuildCompactMagicLabel();
     }
 
-    void ApplyModernCombatHud()
+    bool TryBindAndApply()
     {
-        GameObject hud = GameObject.Find("ModernCombatHUD");
-        if (hud == null) return;
+        Transform hud = ModernCombatHud.Instance != null ? ModernCombatHud.Instance.HudRoot : null;
+        GameObject hector = GameObject.Find("HectorHUD");
+        GameObject guidance = GameObject.Find("ChapterOneGuidanceUI");
+        GameObject patron = GameObject.Find("PatronCommentaryUI");
+        if (hud == null || hector == null || guidance == null || patron == null) return false;
 
-        Transform top = FindDescendant(hud.transform, "TopResources");
+        ApplyModernCombatHud(hud);
+        ApplyHectorHud(hector.transform);
+        ApplyGuidanceCards(guidance.transform);
+        ApplyPatronCard(patron.transform);
+
+        GameObject actions = GameObject.Find("CombatActions");
+        if (actions != null)
+        {
+            SetScale(actions.transform, .74f);
+            SetPanelAlpha(actions.transform, .93f);
+        }
+        return true;
+    }
+
+    void ApplyModernCombatHud(Transform hud)
+    {
+
+        Transform top = FindDescendant(hud, "TopResources");
         SetScale(top, .80f);
         SetAnchoredPosition(top, new Vector2(16f, -16f));
 
-        Transform wave = FindDescendant(hud.transform, "WaveStatus");
+        Transform wave = FindDescendant(hud, "WaveStatus");
         SetScale(wave, .78f);
         SetAnchoredPosition(wave, new Vector2(0f, -12f));
 
-        Transform prep = FindDescendant(hud.transform, "FirstWavePreparation");
+        Transform prep = FindDescendant(hud, "FirstWavePreparation");
         SetScale(prep, .66f);
         SetAnchoredPosition(prep, new Vector2(0f, -142f));
         SetPanelAlpha(prep, .90f);
 
-        Transform buildDock = FindDescendant(hud.transform, "BuildDock");
+        Transform buildDock = FindDescendant(hud, "BuildDock");
         SetScale(buildDock, .78f);
 
-        Transform selectedCard = FindDescendant(hud.transform, "SelectedTowerCard");
+        Transform selectedCard = FindDescendant(hud, "SelectedTowerCard");
         SetScale(selectedCard, .80f);
 
-        Transform tooltip = FindDescendant(hud.transform, "BuildHoverTooltip");
+        Transform tooltip = FindDescendant(hud, "BuildHoverTooltip");
         SetScale(tooltip, .80f);
 
-        ApplyBottomRightActions(hud.transform);
+        ApplyBottomRightActions(hud);
     }
 
-    void ApplyHectorHud()
+    void ApplyHectorHud(Transform hector)
     {
-        GameObject hector = GameObject.Find("HectorHUD");
-        if (hector == null) return;
-
-        Transform panel = FindDescendant(hector.transform, "HectorPanel");
+        Transform panel = FindDescendant(hector, "HectorPanel");
         if (panel == null) return;
 
         SetScale(panel, HectorScale);
@@ -128,7 +148,8 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
                 magicText.resizeTextForBestFit = true;
                 magicText.resizeTextMinSize = 9;
                 magicText.resizeTextMaxSize = 14;
-                magicText.text = BuildCompactMagicLabel();
+                compactMagicText = magicText;
+                compactMagicText.text = BuildCompactMagicLabel();
             }
         }
     }
@@ -184,26 +205,20 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         return GameLanguage.T("MAGIC\nREADY", "МАГИЯ\nГОТОВО");
     }
 
-    void ApplyGuidanceCards()
+    void ApplyGuidanceCards(Transform root)
     {
-        GameObject root = GameObject.Find("ChapterOneGuidanceUI");
-        if (root == null) return;
-
-        Transform objective = FindDescendant(root.transform, "ChapterObjective");
+        Transform objective = FindDescendant(root, "ChapterObjective");
         SetScale(objective, .70f);
         SetAnchoredPosition(objective, new Vector2(16f, -132f));
 
-        Transform tutorial = FindDescendant(root.transform, "ContextTutorial");
+        Transform tutorial = FindDescendant(root, "ContextTutorial");
         SetScale(tutorial, .70f);
         SetAnchoredPosition(tutorial, new Vector2(16f, -214f));
     }
 
-    void ApplyPatronCard()
+    void ApplyPatronCard(Transform root)
     {
-        GameObject root = GameObject.Find("PatronCommentaryUI");
-        if (root == null) return;
-
-        Transform card = FindDescendant(root.transform, "PatronCommentaryCard");
+        Transform card = FindDescendant(root, "PatronCommentaryCard");
         RectTransform rect = card as RectTransform;
         if (rect != null)
         {
@@ -212,15 +227,6 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         }
         SetScale(card, .70f);
         SetPanelAlpha(card, .93f);
-    }
-
-    void ApplyCombatActions()
-    {
-        GameObject actions = GameObject.Find("CombatActions");
-        if (actions == null) return;
-
-        SetScale(actions.transform, .74f);
-        SetPanelAlpha(actions.transform, .93f);
     }
 
     static Transform FindDescendant(Transform root, string objectName)

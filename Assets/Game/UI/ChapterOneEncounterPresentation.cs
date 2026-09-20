@@ -22,16 +22,9 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
     float secondFormationAt;
     float hideAt;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneEncounterPresentation>() == null)
-            new GameObject("ChapterOneEncounterPresentation").AddComponent<ChapterOneEncounterPresentation>();
-    }
-
     void Start()
     {
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         Build();
     }
 
@@ -78,7 +71,7 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
             if (group != null) group.alpha = 0f;
             return;
         }
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
         if (spawner == null || group == null) return;
 
         bool active = EncounterRuntime.EncounterActive(spawner);

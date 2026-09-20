@@ -5,6 +5,8 @@ using static GameMenuUiFactory;
 
 public class GameMenuController : MonoBehaviour
 {
+    public static GameMenuController Instance { get; private set; }
+
     const string MainMenuBackgroundResource = "Menu/Main_screen";
 
     static bool openLevelSelectAfterReload;
@@ -14,6 +16,7 @@ public class GameMenuController : MonoBehaviour
     public static bool QuitRequested { get; private set; }
 
     Canvas canvas;
+    public Canvas MenuCanvas => canvas;
     EnemySpawner spawner;
     GameObject mainMenu;
     GameObject levelMenu;
@@ -33,11 +36,26 @@ public class GameMenuController : MonoBehaviour
     CampaignDifficulty CurrentDifficulty => CampaignController.Instance != null ? CampaignController.Instance.Difficulty : CampaignDifficulty.Story;
     bool IsChapterUnlocked(int chapter) => CampaignController.Instance != null && CampaignController.Instance.IsChapterUnlocked(chapter);
 
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     void Start()
     {
         QuitRequested = false;
         GameUserSettings.ApplySaved();
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         BuildUI();
 
         if (startLevelAfterReload)
@@ -67,7 +85,7 @@ public class GameMenuController : MonoBehaviour
 
     void Update()
     {
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
 
         if (levelStarted && !paused && GameManager.Instance != null && !GameManager.Instance.GameEnded && Time.timeScale <= 0f)
             CombatControlsUI.ResumeConfiguredSpeed();

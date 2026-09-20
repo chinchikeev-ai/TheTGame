@@ -23,7 +23,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
 
     void Start()
     {
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         GameObject menu = GameObject.Find("MenuCanvas");
         menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
         Build();
@@ -73,12 +73,9 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
             if (group != null) group.alpha = 0f;
             return;
         }
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
-        if (menuCanvas == null)
-        {
-            GameObject menu = GameObject.Find("MenuCanvas");
-            menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
-        }
+        if (spawner == null) spawner = EnemySpawner.Instance;
+        if (menuCanvas == null && GameMenuController.Instance != null)
+            menuCanvas = GameMenuController.Instance.MenuCanvas;
         bool hidden = gm.GameEnded || IsMenuBlockingCombat();
         group.alpha = hidden ? 0f : 1f;
         if (hidden) return;

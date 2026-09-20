@@ -173,7 +173,7 @@ public class HectorHUD : MonoBehaviour
     {
         HectorController h = HectorController.Instance;
         GameManager gm = GameManager.Instance;
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
 
         bool hidden = h == null || gm == null || gm.GameEnded || IsMenuBlockingCombat();
         if (hidden || root == null)
@@ -334,11 +334,8 @@ public class HectorHUD : MonoBehaviour
 
     bool IsMenuBlockingCombat()
     {
-        if (menuCanvas == null)
-        {
-            GameObject menu = GameObject.Find("MenuCanvas");
-            menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
-        }
+        if (menuCanvas == null && GameMenuController.Instance != null)
+            menuCanvas = GameMenuController.Instance.MenuCanvas;
         if (menuCanvas == null) return false;
 
         for (int i = 0; i < BlockingMenuNames.Length; i++)
