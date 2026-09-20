@@ -13,43 +13,23 @@ public class MapBuilder : MonoBehaviour
     static readonly Color RoadStone = new Color(.38f,.36f,.31f);
 
     public Transform[][] Paths { get; private set; }
+    public Transform CoastRoot { get; private set; }
+    public Transform RoadsRoot { get; private set; }
 
     readonly HashSet<Vector2Int> roadCells = new HashSet<Vector2Int>();
     readonly HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>();
 
     public Transform[] BuildMap()
     {
-        if (TryAdoptExistingPaths()) return Paths[0];
+        if (Paths != null && Paths.Length > 0) return Paths[0];
 
         DefineLayout();
-        CoastEnvironmentBuilder.Build();
+        CoastRoot = CoastEnvironmentBuilder.Build();
         CreateGrid();
         CreateGameplayAnchors();
         CreateBuildPoints();
         Paths = CreatePaths();
         return Paths[0];
-    }
-
-    bool TryAdoptExistingPaths()
-    {
-        GameObject routeA = GameObject.Find("Route_A");
-        GameObject routeB = GameObject.Find("Route_B");
-        if (routeA == null || routeB == null) return false;
-
-        Transform[] a = ReadPath(routeA.transform);
-        Transform[] b = ReadPath(routeB.transform);
-        if (a.Length == 0 || b.Length == 0) return false;
-
-        DefineLayout();
-        Paths = new[] { a, b };
-        return true;
-    }
-
-    static Transform[] ReadPath(Transform root)
-    {
-        Transform[] path = new Transform[root.childCount];
-        for (int i = 0; i < root.childCount; i++) path[i] = root.GetChild(i);
-        return path;
     }
 
     void DefineLayout()
@@ -66,6 +46,7 @@ public class MapBuilder : MonoBehaviour
     void CreateGrid()
     {
         GameObject root = new GameObject("Chapter01_Roads");
+        RoadsRoot = root.transform;
         Vector2Int[] routeA = { C(0,8),C(5,8),C(5,6),C(13,6),C(16,6) };
         Vector2Int[] routeB = { C(0,3),C(5,3),C(5,5),C(13,5),C(13,6),C(16,6) };
         CreateRoadRibbon(root.transform,routeA,"Upper Battle Track",11);
