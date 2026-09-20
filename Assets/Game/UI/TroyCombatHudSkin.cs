@@ -62,7 +62,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         }
 
         Transform wave = hud.Find("WaveStatus");
-        if (wave != null) EnsureIcon(wave,"WaveCrest",new Vector2(-390,0),48,TroyHudArt.Icon("sword"));
+        if (wave != null && wave.GetComponent<WaveHudArtwork>() == null) EnsureIcon(wave,"WaveCrest",new Vector2(-390,0),48,TroyHudArt.Icon("sword"));
 
         Transform actions = hud.Find("DivinePowerActions");
         if (actions != null)
@@ -119,6 +119,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
     void SkinPanel(Transform panel, Color tint)
     {
         if (panel == null) return;
+        if (panel.GetComponent<WaveHudArtwork>() != null) return;
         Image img = panel.GetComponent<Image>();
         if (img != null)
         {

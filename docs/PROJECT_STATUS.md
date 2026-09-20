@@ -6,6 +6,12 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Combat HUD wave pass (2026-09-20): replaced the layered rectangular wave panel with
+a separate crimson/gold laurel banner and live title, countdown and progress text.
+Patron portrait import now retains RGBA rather than Alpha8, fixing white silhouettes.
+Four focused EditMode render checks passed (all patrons plus skin preservation).
+Full in-game layout acceptance and EXE build remain pending; other HUD blocks unchanged.
+
 Chapter I PlayMode regression hardening (2026-09-20): tests now match the actual Hector HUD interaction contract (`HectorPanel` is the clickable card), cover direct Hector movement after a screen-space command, verify Restart rebuilds exactly one runtime graph/input/EventSystem, and verify duplicate `GameBootstrap` instances self-destruct instead of creating a second graph. Source contracts are complete; Unity PlayMode execution and the RU/EN visual matrix remain pending.
 
 Explicit runtime graph pass (2026-09-20): `GameBootstrap` now constructs `GameRuntimeContext` with Core/Chapter/UI ownership roots and explicit service references. `ChapterRuntimeInstaller` receives that context, and `ChapterOneRuntimeInstaller` creates Chapter I components through `CreateChapter<T>()` instead of `FindFirstObjectByType`/generic `EnsureComponent<T>()`. `ChapterRuntimeContext` now exposes paths, `MapBuilder`, `TowerPlacement` and Hector. `RuntimeInputBootstrap` directly owns its EventSystem, and Chapter I atmosphere receives camera/sun explicitly. `SampleScene` now binds its existing Directional Light as `RenderSettings.sun`. Architecture and PlayMode contracts were extended; Unity compile/PlayMode validation remains pending.

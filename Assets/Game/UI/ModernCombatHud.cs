@@ -182,16 +182,15 @@ public sealed class ModernCombatHud : MonoBehaviour
     void BuildEncounterBar(Transform parent)
     {
         encounterBar = Panel(parent, "WaveStatus", new Vector2(0, -18), new Vector2(820, 138), new Color(.050f, .027f, .018f, .96f), new Vector2(.5f, 1), new Vector2(.5f, 1));
-        Panel(encounterBar.transform, "WaveBannerCloth", new Vector2(0, 30), new Vector2(680, 64), new Color(.48f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Icon(encounterBar.transform, "WaveLeftLaurel", new Vector2(-310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
-        Icon(encounterBar.transform, "WaveRightLaurel", new Vector2(310, 31), new Vector2(48, 48), TroyHudArt.Icon("sword"));
+        encounterBar.AddComponent<WaveHudArtwork>().Apply();
 
-        encounterText = Text(encounterBar.transform, "ENCOUNTER", new Vector2(0, 42), new Vector2(430, 38), 26, new Color(1f, .86f, .48f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        threatText = Text(encounterBar.transform, "THREAT", new Vector2(0, 9), new Vector2(600, 22), 12, new Color(1f, .91f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        encounterText = Text(encounterBar.transform, "ENCOUNTER", new Vector2(0, 25), new Vector2(500, 40), 32, new Color(1f, .94f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        threatText = Text(encounterBar.transform, "THREAT", new Vector2(0, -6), new Vector2(570, 25), 14, new Color(1f, .94f, .80f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         encounterPreviewText = Text(encounterBar.transform, "", new Vector2(0, -14), new Vector2(500, 20), 11, new Color(.93f, .82f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         encounterPreviewText.enabled = false;
         encounterProgressFill = ProgressBar(encounterBar.transform, "WaveProgress", new Vector2(0, -24), new Vector2(560, 16), new Color(.16f, .09f, .055f, 1f), new Color(1f, .58f, .12f, 1f));
-        encounterProgressText = Text(encounterBar.transform, "0%", new Vector2(0, -45), new Vector2(280, 20), 11, new Color(.95f, .84f, .67f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        encounterBar.transform.Find("WaveProgress").gameObject.SetActive(false);
+        encounterProgressText = Text(encounterBar.transform, "0%", new Vector2(0, -43), new Vector2(300, 26), 19, new Color(1f, .94f, .72f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
         startEncounterButton = Button(encounterBar.transform, L("START", "СТАРТ"), new Vector2(350, -25), new Vector2(104, 58), StartEncounter, true);
     }
 

@@ -6,6 +6,10 @@ This is the authoritative source for **art/model completion status**. Design int
 
 ## Status definitions
 
+Wave HUD banner (2026-09-20): `SOURCE ONLY` pending gameplay visual acceptance.
+Generated transparent WaveHud/Banner is integrated with live text and preserved by
+the HUD skin. Patron portrait RGBA import verified by colored-pixel rendering tests.
+
 Settings screen (2026-09-20): `SOURCE ONLY` pending in-game visual acceptance.
 Reference-derived Settings_Illustrated backdrop and Settings_Reference knob atlas
 are used by ModernSettingsPresentation with live controls; no fake audio buses.
