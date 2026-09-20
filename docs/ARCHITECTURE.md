@@ -159,6 +159,17 @@ Runtime presentation creation is explicit:
 
 Owner-managed presenters must not self-create through `RuntimeInitializeOnLoadMethod`. New presentation components must be attached to the nearest existing owner instead of adding another global auto-start hook.
 
+### Owned runtime-root references
+Owned runtime roots are passed by composition or exposed by owner APIs. Do not rediscover canonical roots by string name.
+
+Examples:
+- Chapter I world roots flow from `MapBuilder` / chapter presenters through `ChapterOneRuntimeInstaller`.
+- Chapter I UI roots flow from `HectorHUD`, guidance and patron owners into dependent presentation passes.
+- menu roots come from `GameMenuController`.
+- combat-HUD roots come from `ModernCombatHud`.
+
+`GameObject.Find("Chapter01_...")` and name lookup of canonical menu/HUD roots are architecture violations.
+
 ### Runtime lookup policy
 Runtime-wide enumeration with `FindObjectsByType` / `FindObjectsOfType` is forbidden in gameplay code.
 
