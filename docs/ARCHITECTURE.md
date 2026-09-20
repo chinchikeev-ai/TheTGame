@@ -170,7 +170,14 @@ Examples:
 
 `GameObject.Find("Chapter01_...")` and name lookup of canonical menu/HUD roots are architecture violations.
 
-### Runtime lookup policy
+### Explicit runtime graph
+`GameBootstrap` is the composition root. It creates a `GameRuntimeContext` with explicit `Core`, `Chapter` and `UI` ownership roots. Core services and UI owners are created through that context; chapter installers receive the same context rather than rediscovering scene objects.
+
+`ChapterRuntimeContext` carries the active Chapter I runtime owners such as `MapBuilder`, `TowerPlacement` and `HectorController`.
+
+Composition roots must not call `GameObject.Find`, `FindFirstObjectByType` or `Object.FindFirstObjectByType`. Scene-provided camera/sun are explicit authored inputs; generated services are owned by the runtime graph.
+
+## Runtime lookup policy
 Runtime-wide enumeration with `FindObjectsByType` / `FindObjectsOfType` is forbidden in gameplay code.
 
 Bounded lookup during composition/startup is allowed when a runtime owner has not yet supplied a reference. `GameObject.Find` and `FindFirstObjectByType` must not run from `Update`, `LateUpdate`, `FixedUpdate` or equivalent high-frequency loops. Frequently accessed systems expose stable runtime references or registries instead.
