@@ -149,6 +149,16 @@ Persistence implementation; not a UI dependency.
 ### Registries
 `EnemyRegistry` and `TowerRegistry` are runtime indexes. High-frequency code uses them instead of scene-wide searches.
 
+### Presentation lifecycle ownership
+Runtime presentation creation is explicit:
+
+- global runtime initializers are limited to `GameBootstrap`, `CampaignSave`, `RuntimeFileLogger`, and `BuildVersionOverlay`;
+- Chapter I-specific presentation is owned by `ChapterOneRuntimeInstaller`;
+- menu presentation is owned by `GameMenuController`;
+- combat-HUD presentation is owned by `ModernCombatHud`.
+
+Owner-managed presenters must not self-create through `RuntimeInitializeOnLoadMethod`. New presentation components must be attached to the nearest existing owner instead of adding another global auto-start hook.
+
 ### Runtime lookup policy
 Runtime-wide enumeration with `FindObjectsByType` / `FindObjectsOfType` is forbidden in gameplay code.
 
