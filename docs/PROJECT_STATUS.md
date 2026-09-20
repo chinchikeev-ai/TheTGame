@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Runtime presentation ownership pass (2026-09-20): remaining presentation self-install hooks were classified and removed. `GameMenuController` now owns main-menu/menu-flow presenters, `ModernCombatHud` owns combat-HUD presenters, and `HectorHUD` is exclusively Chapter I installer-owned. Only `GameBootstrap`, `CampaignSave`, `RuntimeFileLogger`, and `BuildVersionOverlay` remain approved runtime initializer files. The architecture checker enforces these ownership boundaries and the hot-path scene-search rule. Unity compile/PlayMode validation remains pending.
+
 Settings/pre-map repair (2026-09-20): reference-derived fullscreen settings artwork
 uses live Audio/Video/Gameplay/Controls content. Audio exposes master/music only.
 Illustrated chapter start now binds explicitly to difficulty/patron selection,
