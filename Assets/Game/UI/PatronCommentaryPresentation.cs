@@ -43,7 +43,7 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
 
     void Start()
     {
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         BindMenuCanvas();
         Build();
         ApplyResponsiveLayout(true);
@@ -94,7 +94,7 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
             return;
         }
 
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
         if (menuCanvas == null) BindMenuCanvas();
         bool visible = gm.MapNumber == 1 && gm.GiftSelected && !gm.GameEnded && !IsMenuBlocking();
         group.alpha = visible ? 1f : 0f;
