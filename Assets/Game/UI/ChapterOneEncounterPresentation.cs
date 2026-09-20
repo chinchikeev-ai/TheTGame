@@ -22,13 +22,6 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
     float secondFormationAt;
     float hideAt;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneEncounterPresentation>() == null)
-            new GameObject("ChapterOneEncounterPresentation").AddComponent<ChapterOneEncounterPresentation>();
-    }
-
     void Start()
     {
         spawner = EnemySpawner.Instance;
