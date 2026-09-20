@@ -28,10 +28,10 @@ public static class ChapterOneRuntimeInstaller
         if (placement.gameCamera == null) placement.gameCamera = camera;
 
         EnsureHector(camera, mapBuilder.Paths);
-        EnsureComponent<HectorHUD>("HectorHUD");
+        HectorHUD hectorHud = EnsureComponent<HectorHUD>("HectorHUD");
         EnsureComponent<EnemyInspectorPresentation>("EnemyInspector");
         EnsureComponent<PreMapPatronSelectionPresentation>("PreMapPatronSelection");
-        EnsureComponent<PatronCommentaryPresentation>("PatronCommentary");
+        PatronCommentaryPresentation patron = EnsureComponent<PatronCommentaryPresentation>("PatronCommentary");
         EnsureComponent<LandingPresentation>("LandingPresentation");
 
         ChapterOneCinematicCamera cinematic = Object.FindFirstObjectByType<ChapterOneCinematicCamera>();
@@ -41,14 +41,20 @@ public static class ChapterOneRuntimeInstaller
             cinematic.Initialize(camera);
         }
 
-        EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
-        EnsureChapterPresentationStack(mapBuilder.CoastRoot, dressingRoot, gateRoot);
+        ChapterOneGuidancePresentation guidance = EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
+        EnsureChapterPresentationStack(mapBuilder.CoastRoot, dressingRoot, gateRoot, hectorHud, guidance, patron);
 
         RuntimeFileLogger.Event("CHAPTER_RUNTIME", $"Installed {ProfileId} for {chapter.chapterId}");
         return new ChapterRuntimeContext(mapBuilder.Paths);
     }
 
-    static void EnsureChapterPresentationStack(Transform coastRoot, Transform dressingRoot, Transform gateRoot)
+    static void EnsureChapterPresentationStack(
+        Transform coastRoot,
+        Transform dressingRoot,
+        Transform gateRoot,
+        HectorHUD hectorHud,
+        ChapterOneGuidancePresentation guidance,
+        PatronCommentaryPresentation patron)
     {
         // Chapter I owns these lifecycle components. Dependencies are injected from
         // the composition root instead of rediscovered by scene object names.
@@ -72,7 +78,8 @@ public static class ChapterOneRuntimeInstaller
 
         EnsureComponent<MenelausEntrancePresentation>("MenelausEntrancePresentation");
         EnsureComponent<ChapterOneEncounterPresentation>("ChapterOneEncounterPresentation");
-        EnsureComponent<ChapterOneUiCompactPresentation>("ChapterOneUiCompactPresentation");
+        ChapterOneUiCompactPresentation compact = EnsureComponent<ChapterOneUiCompactPresentation>("ChapterOneUiCompactPresentation");
+        compact.Initialize(hectorHud, guidance, patron);
     }
 
     static T EnsureComponent<T>(string objectName) where T : Component
