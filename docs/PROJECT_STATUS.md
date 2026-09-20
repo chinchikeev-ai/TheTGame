@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Owned-root reference pass (2026-09-20): Chapter I world/UI composition and menu/combat presentation binding now use explicit owner/runtime references instead of canonical-name rediscovery. The remaining `GameCanvas` lookup was removed from `ModernCombatHud`. The architecture checker now rejects `GameObject.Find("Chapter01_...")` and canonical owned-root name lookups such as `MenuCanvas`, `ModernCombatHUD`, `HectorHUD`, `SelectedTowerCard`, and `CombatActions`. Unity compile/PlayMode validation remains pending.
+
 Runtime presentation ownership pass (2026-09-20): remaining presentation self-install hooks were classified and removed. `GameMenuController` now owns main-menu/menu-flow presenters, `ModernCombatHud` owns combat-HUD presenters, and `HectorHUD` is exclusively Chapter I installer-owned. Only `GameBootstrap`, `CampaignSave`, `RuntimeFileLogger`, and `BuildVersionOverlay` remain approved runtime initializer files. The architecture checker enforces these ownership boundaries and the hot-path scene-search rule. Unity compile/PlayMode validation remains pending.
 
 Settings/pre-map repair (2026-09-20): reference-derived fullscreen settings artwork
