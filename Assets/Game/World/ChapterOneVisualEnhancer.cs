@@ -22,9 +22,8 @@ public static class ChapterOneVisualEnhancer
     static readonly Color FlowerRed = new Color(.63f,.20f,.10f);
     static readonly Color TroyRed = new Color(.55f,.07f,.04f);
 
-    public static void Enhance()
+    public static Transform Enhance()
     {
-        if (GameObject.Find("Chapter01_CoastalDressing") != null) return;
         GameObject root = new GameObject("Chapter01_CoastalDressing");
         AddGroundColorPass(root.transform);
         AddFoamAndTideLines(root.transform);
@@ -36,6 +35,7 @@ public static class ChapterOneVisualEnhancer
         AddOliveGroves(root.transform);
         AddTroyApproach(root.transform);
         AddBattlefieldComposition(root.transform);
+        return root.transform;
     }
 
     static void AddGroundColorPass(Transform parent)
