@@ -7,6 +7,8 @@ public sealed class ModernCombatHud : MonoBehaviour
 {
     public static ModernCombatHud Instance { get; private set; }
     public Transform HudRoot { get; private set; }
+    public RectTransform SelectedCardRect => selectedCardRect;
+    public Camera GameplayCamera => gameplayCamera;
 
     static readonly string[] BlockingMenuNames =
     {
@@ -86,6 +88,22 @@ public sealed class ModernCombatHud : MonoBehaviour
         gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
         FindCanvases();
         Build();
+        EnsureCombatPresentations();
+    }
+
+    void EnsureCombatPresentations()
+    {
+        EnsureCombatPresentation<BossHUD>();
+        EnsureCombatPresentation<CombatNotificationPresentation>();
+        EnsureCombatPresentation<TroyCombatHudSkin>();
+        EnsureCombatPresentation<VisualEncounterPreviewPresentation>();
+        EnsureCombatPresentation<SelectedTowerContextPanelFollower>();
+    }
+
+    T EnsureCombatPresentation<T>() where T : Component
+    {
+        T existing = GetComponent<T>();
+        return existing != null ? existing : gameObject.AddComponent<T>();
     }
 
     void FindCanvases()
