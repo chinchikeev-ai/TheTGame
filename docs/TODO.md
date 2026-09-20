@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- QA-009: запустить PlayMode suite после runtime-graph refactor; отдельно проверить `Hector_MoveCommand_ChangesDestinationAndMoves`, Restart runtime graph uniqueness и duplicate bootstrap rejection.
+- QA-009: вручную пройти Start Chapter I -> выбрать/двинуть Гектора -> Pause -> Settings -> Back -> Resume -> Restart -> снова выбрать/двинуть Гектора.
 - ARCH-008: clean start и Restart Chapter I создают один `RuntimeGraph` с `Core/Chapter/UI`, а `GameRuntimeContext` ссылки совпадают с singleton/runtime owners.
 - ARCH-008: `SampleScene` использует существующие Main Camera и Directional Light без создания дублей; `RuntimeInputBootstrap` создаёт ровно один дочерний EventSystem.
 - ARCH-007: clean start/Restart Chapter I сохраняют injected world/UI roots без name-based fallback; море, faction staging, compact HUD и menu/combat bindings появляются корректно.
