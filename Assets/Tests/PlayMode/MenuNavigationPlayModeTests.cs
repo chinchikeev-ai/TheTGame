@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -51,6 +52,49 @@ public sealed class MenuNavigationPlayModeTests
         Assert.Greater(Time.timeScale, 0f, "Restarted chapter must resume simulation instead of remaining paused on a blank frame.");
         Assert.NotNull(GameManager.Instance, "Restarted chapter did not rebuild GameManager.");
         Assert.NotNull(Object.FindFirstObjectByType<EnemySpawner>(), "Restarted chapter did not rebuild EnemySpawner.");
+    }
+
+    [UnityTest]
+    public IEnumerator RestartChapter_RebuildsSingleRuntimeGraphAndEventSystem()
+    {
+        GameBootstrap previousBootstrap = Object.FindFirstObjectByType<GameBootstrap>();
+        Assert.NotNull(previousBootstrap);
+        Assert.NotNull(previousBootstrap.Runtime);
+
+        GameRuntimeContext previousRuntime = previousBootstrap.Runtime;
+        GameMenuController previousMenu = previousRuntime.Menu;
+        Assert.NotNull(previousMenu);
+
+        if (GameManager.Instance != null && GameManager.Instance.GiftAvailable)
+            Assert.IsTrue(GameManager.Instance.UseGift(DivineGiftType.Athena));
+
+        previousMenu.RestartChapter();
+        yield return WaitForReplacementMenu(previousMenu);
+
+        GameBootstrap bootstrap = Object.FindFirstObjectByType<GameBootstrap>();
+        Assert.NotNull(bootstrap);
+        Assert.AreNotSame(previousBootstrap, bootstrap);
+        Assert.NotNull(bootstrap.Runtime);
+        Assert.AreNotSame(previousRuntime, bootstrap.Runtime);
+
+        GameBootstrap[] bootstraps = Resources.FindObjectsOfTypeAll<GameBootstrap>()
+            .Where(x => x != null && x.gameObject.scene.IsValid()).ToArray();
+        RuntimeInputBootstrap[] inputs = Resources.FindObjectsOfTypeAll<RuntimeInputBootstrap>()
+            .Where(x => x != null && x.gameObject.scene.IsValid()).ToArray();
+        UnityEngine.EventSystems.EventSystem[] eventSystems =
+            Resources.FindObjectsOfTypeAll<UnityEngine.EventSystems.EventSystem>()
+                .Where(x => x != null && x.gameObject.scene.IsValid()).ToArray();
+
+        Assert.AreEqual(1, bootstraps.Length, "Restart must leave one GameBootstrap.");
+        Assert.AreEqual(1, inputs.Length, "Restart must leave one RuntimeInputBootstrap.");
+        Assert.AreEqual(1, eventSystems.Length, "Restart must leave one EventSystem.");
+
+        Assert.AreSame(GameManager.Instance, bootstrap.Runtime.Game);
+        Assert.AreSame(EnemySpawner.Instance, bootstrap.Runtime.Spawner);
+        Assert.AreSame(TowerPlacement.Instance, bootstrap.Runtime.Chapter.Placement);
+        Assert.AreSame(HectorController.Instance, bootstrap.Runtime.Chapter.Hector);
+        Assert.AreSame(GameMenuController.Instance, bootstrap.Runtime.Menu);
+        Assert.AreSame(ModernCombatHud.Instance, bootstrap.Runtime.CombatHud);
     }
 
     [UnityTest]
