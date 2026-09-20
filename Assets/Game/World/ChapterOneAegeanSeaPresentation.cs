@@ -36,13 +36,6 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
         "Coast Side Sea Extension"
     };
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneAegeanSeaPresentation>() == null)
-            new GameObject("ChapterOneAegeanSeaPresentation").AddComponent<ChapterOneAegeanSeaPresentation>();
-    }
-
     IEnumerator Start()
     {
         GameObject coast = null;
