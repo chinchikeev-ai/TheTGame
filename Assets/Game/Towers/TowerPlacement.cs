@@ -3,6 +3,8 @@ using UnityEngine.EventSystems;
 
 public class TowerPlacement : MonoBehaviour
 {
+    public static TowerPlacement Instance { get; private set; }
+
     const int PointerHitCapacity = 64;
 
     public Camera gameCamera;
@@ -14,6 +16,25 @@ public class TowerPlacement : MonoBehaviour
     BuildPoint hoveredPoint;
     TowerRangeIndicator rangeIndicator;
     TowerPlacementPreview placementPreview;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        BuildModeActive = false;
+        ClearHoveredPoint();
+        placementPreview?.Hide();
+        if (rangeIndicator != null) rangeIndicator.Hide();
+    }
 
     void Start()
     {
