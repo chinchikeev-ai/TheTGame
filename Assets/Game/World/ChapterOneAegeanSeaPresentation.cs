@@ -96,31 +96,63 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 
     static void BuildContinuousOcean(Transform parent)
     {
-        const int segments = 72;
+        const int xSegments = 26;
+        const int zSegments = 72;
         const float minZ = -27f;
         const float maxZ = 27f;
         const float openSeaX = -40f;
         const float waterY = -.142f;
 
-        Vector3[] vertices = new Vector3[(segments + 1) * 2];
-        int[] triangles = new int[segments * 6];
+        int columns = xSegments + 1;
+        int rows = zSegments + 1;
+        Vector3[] vertices = new Vector3[columns * rows];
+        Vector2[] uvs = new Vector2[vertices.Length];
+        int[] triangles = new int[xSegments * zSegments * 6];
 
-        for (int i = 0; i <= segments; i++)
+        for (int zi = 0; zi <= zSegments; zi++)
         {
-            float t = i / (float)segments;
-            float z = Mathf.Lerp(minZ, maxZ, t);
+            float tz = zi / (float)zSegments;
+            float z = Mathf.Lerp(minZ, maxZ, tz);
             float shoreX = CoastEnvironmentBuilder.ShorelineX(z) - .10f;
-            vertices[i * 2] = new Vector3(openSeaX, waterY, z);
-            vertices[i * 2 + 1] = new Vector3(shoreX, waterY, z);
+
+            for (int xi = 0; xi <= xSegments; xi++)
+            {
+                float tx = xi / (float)xSegments;
+                float x = Mathf.Lerp(openSeaX, shoreX, tx);
+                int index = zi * columns + xi;
+                vertices[index] = new Vector3(x, waterY, z);
+                uvs[index] = new Vector2(tx, tz);
+            }
         }
 
-        FillStripTriangles(triangles, segments);
-        CreateMeshObject(parent, "Aegean Continuous Ocean", vertices, triangles, OceanBase);
+        int q = 0;
+        for (int zi = 0; zi < zSegments; zi++)
+        {
+            for (int xi = 0; xi < xSegments; xi++)
+            {
+                int a = zi * columns + xi;
+                int b = a + 1;
+                int c = a + columns;
+                int d = c + 1;
+
+                triangles[q++] = a;
+                triangles[q++] = c;
+                triangles[q++] = b;
+                triangles[q++] = b;
+                triangles[q++] = c;
+                triangles[q++] = d;
+            }
+        }
+
+        GameObject ocean = CreateMeshObject(parent, "Aegean Continuous Ocean", vertices, triangles, OceanBase, uvs);
+        MeshFilter filter = ocean != null ? ocean.GetComponent<MeshFilter>() : null;
+        if (filter != null && filter.sharedMesh != null)
+            ocean.AddComponent<ChapterOneSeaSurfaceMotion>().Initialize(filter.sharedMesh);
     }
 
     static void BuildOpenWaterCurrents(Transform parent)
     {
-        float[] zBands = { -8.0f, -4.2f, -.3f, 3.8f, 7.8f };
+        float[] zBands = { -7.2f, -1.9f, 3.6f, 7.8f };
         for (int i = 0; i < zBands.Length; i++)
         {
             GameObject current = CreateOpenWaterRibbon(parent,
@@ -129,7 +161,7 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
                 -16.5f,
                 zBands[i],
                 -.132f - (i % 2) * .004f,
-                .032f + (i % 3) * .008f,
+                .022f + (i % 2) * .006f,
                 WaveBlue * (.55f + i * .025f),
                 i * .83f);
             AddSeaMotion(current, .5f + i * .64f);
@@ -138,15 +170,15 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 
     static void BuildWavelets(Transform parent)
     {
-        for (int i = 0; i < 22; i++)
+        for (int i = 0; i < 14; i++)
         {
-            float x = -16.8f - (i % 6) * 2.20f - (i / 6) * .20f;
-            float z = -9.4f + ((i * 3.17f) % 18.8f);
-            float length = .32f + (i % 5) * .13f;
+            float x = -16.6f - (i % 5) * 2.45f - (i / 5) * .26f;
+            float z = -8.8f + ((i * 4.17f) % 17.6f);
+            float length = .28f + (i % 4) * .12f;
             Vector3 a = new Vector3(x, -.126f - (i % 3) * .002f, z);
             Vector3 b = a + new Vector3(length, 0f, .025f + (i % 2) * .035f);
             GameObject wavelet = CreateSegmentRibbon(parent, "Aegean Small Wave", a, b,
-                .018f + (i % 3) * .005f,
+                .014f + (i % 2) * .005f,
                 i % 6 == 0 ? ThinFoam * .83f : WaveBlue * .72f);
             AddSeaMotion(wavelet, 1.0f + i * .21f);
         }
@@ -154,26 +186,23 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 
     static void BuildShoreBreakers(Transform parent)
     {
-        // Three very narrow lines define the active surf zone. They are not depth
-        // slices: all of them sit within ~1 metre of the real shoreline.
-        GameObject undertow = CreateCoastRibbon(parent, "Aegean Undertow Line", -1.02f, -.131f, .060f, Undertow, .10f, .0f);
-        GameObject outer = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.66f, -.126f, .070f, ThinFoam, .10f, .4f);
-        GameObject main = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.33f, -.120f, .105f, Foam, .12f, 1.2f);
+        // Keep the shoreline readable with only two narrow animated lines.
+        GameObject undertow = CreateCoastRibbon(parent, "Aegean Undertow Line", -.82f, -.130f, .045f, Undertow, .08f, .0f);
+        GameObject foam = CreateCoastRibbon(parent, "Aegean Breaking Foam", -.28f, -.118f, .090f, Foam, .10f, 1.2f);
         AddSeaMotion(undertow, .2f);
-        AddSurfMotion(outer, .6f);
-        AddSurfMotion(main, 1.4f);
+        AddSurfMotion(foam, 1.4f);
     }
 
     static void BuildSunGlints(Transform parent)
     {
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < 10; i++)
         {
-            float x = -16.4f - (i % 5) * 2.35f - (i / 5) * .20f;
-            float z = -9.0f + ((i * 4.03f) % 18.0f);
+            float x = -16.3f - (i % 4) * 2.65f - (i / 4) * .24f;
+            float z = -8.4f + ((i * 4.71f) % 16.8f);
             Vector3 a = new Vector3(x, -.122f, z);
             Vector3 b = a + new Vector3(.24f + (i % 4) * .10f, 0f, .02f + (i % 2) * .025f);
             GameObject glint = CreateSegmentRibbon(parent, "Aegean Sun Glint", a, b,
-                .012f + (i % 2) * .006f,
+                .010f + (i % 2) * .004f,
                 SunGlint * (.74f + (i % 3) * .06f));
             AddSeaMotion(glint, 3.0f + i * .19f);
         }
@@ -252,13 +281,14 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
         }
     }
 
-    static GameObject CreateMeshObject(Transform parent, string name, Vector3[] vertices, int[] triangles, Color color)
+    static GameObject CreateMeshObject(Transform parent, string name, Vector3[] vertices, int[] triangles, Color color, Vector2[] uvs = null)
     {
         GameObject go = new GameObject(name);
         go.transform.SetParent(parent, false);
         Mesh mesh = new Mesh { name = name + " Mesh" };
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        if (uvs != null && uvs.Length == vertices.Length) mesh.uv = uvs;
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         go.AddComponent<MeshFilter>().sharedMesh = mesh;

@@ -14,6 +14,7 @@ namespace TheTroyGame.Tests
             string source = File.ReadAllText(SeaPresentation);
             StringAssert.Contains("Aegean Continuous Ocean", source);
             StringAssert.Contains("BuildContinuousOcean", source);
+            StringAssert.Contains("ChapterOneSeaSurfaceMotion", source);
             StringAssert.DoesNotContain("Aegean Deep Transition", source);
             StringAssert.DoesNotContain("Aegean Blue Shelf", source);
             StringAssert.DoesNotContain("Aegean Turquoise Shelf", source);
@@ -53,6 +54,17 @@ namespace TheTroyGame.Tests
             StringAssert.DoesNotContain("BuildPoint", source);
             StringAssert.DoesNotContain("Route_A", source);
             StringAssert.DoesNotContain("Route_B", source);
+        }
+
+        [Test]
+        public void OceanSurfaceMotion_AnimatesGeometryWithoutGameplayHooks()
+        {
+            string source = File.ReadAllText("Assets/Game/World/ChapterOneSeaSurfaceMotion.cs");
+            StringAssert.Contains("mesh.vertices = workingVertices", source);
+            StringAssert.Contains("mesh.RecalculateNormals", source);
+            StringAssert.DoesNotContain("Collider", source);
+            StringAssert.DoesNotContain("BuildPoint", source);
+            StringAssert.DoesNotContain("Enemy", source);
         }
 
         [Test]
