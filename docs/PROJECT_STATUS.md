@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Chapter I lifecycle ownership pass (2026-09-20): `ChapterOneRuntimeInstaller` is now the explicit owner of the Chapter I-specific presentation stack (shore/sea passes, battlefield details, Troy backdrop/fire/gate damage, faction staging, Menelaus entrance, encounter presentation and compact Chapter I HUD pass). Their independent `RuntimeInitializeOnLoadMethod` self-install hooks were removed, and the architecture checker now verifies both installer ownership and absence of self-install hooks. Shared/global runtime auto-start components remain outside this pass. Unity compile/PlayMode validation remains pending.
+
 Runtime lookup hardening (2026-09-20): the remaining Chapter I `FindObjectsByType` runtime violation was removed from the Aegean sea presentation and replaced by hierarchy-scoped traversal. `EnemySpawner`, `TowerPlacement`, `GameMenuController` and `ModernCombatHud` now expose stable runtime references used by recurring UI/presentation paths. Known `GameObject.Find` / `FindFirstObjectByType` calls were removed from `Update` / `LateUpdate` consumers, including the compact Chapter I HUD pass, which now performs bounded startup binding. `tools/check-architecture.py` now rejects direct scene lookup in `Update`, `LateUpdate` and `FixedUpdate` while still allowing bounded startup/bootstrap lookup. Unity compile/PlayMode validation remains pending.
 
 Chapter selection fullscreen fix (2026-09-20): map now fills the viewport, while
