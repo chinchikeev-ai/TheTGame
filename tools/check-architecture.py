@@ -63,6 +63,15 @@ HOT_SCENE_SEARCH_TOKENS = (
     "Object.FindFirstObjectByType<",
 )
 
+FORBIDDEN_NAME_LOOKUPS = (
+    'GameObject.Find("Chapter01_',
+    'GameObject.Find("MenuCanvas")',
+    'GameObject.Find("ModernCombatHUD")',
+    'GameObject.Find("HectorHUD")',
+    'GameObject.Find("SelectedTowerCard")',
+    'GameObject.Find("CombatActions")',
+)
+
 ALLOWED_RUNTIME_INITIALIZERS = (
     "Assets/Game/Core/Bootstrap/GameBootstrap.cs",
     "Assets/Game/Campaign/Persistence/CampaignSave.cs",
@@ -434,6 +443,9 @@ if GAME.exists():
             errors.append(f"runtime initializer outside approved infrastructure: {rel}")
         if "FindObjectsByType<" in text or "FindObjectsOfType<" in text:
             errors.append(f"scene-wide gameplay search: {rel}")
+        for token in FORBIDDEN_NAME_LOOKUPS:
+            if token in text:
+                errors.append(f"name-based owned-root lookup: {rel} uses {token}")
         for method_name in HOT_RUNTIME_METHODS:
             body = method_body(text, method_name)
             if body is not None and any(token in body for token in HOT_SCENE_SEARCH_TOKENS):
