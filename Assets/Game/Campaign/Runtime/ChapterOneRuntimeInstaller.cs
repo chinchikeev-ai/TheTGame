@@ -5,50 +5,53 @@ public static class ChapterOneRuntimeInstaller
     public const string ProfileId = "chapter01_landing";
     const string HectorSelectionTargetName = "HectorSelectionTarget";
 
-    public static ChapterRuntimeContext Install(ChapterData chapter, Camera camera)
+    public static ChapterRuntimeContext Install(ChapterData chapter, GameRuntimeContext runtime)
     {
-        ConfigureCameraAndLighting(camera);
+        Camera camera = runtime.Camera;
+        ConfigureCameraAndLighting(camera, runtime.Sun);
 
-        MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
-        bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
-        Transform dressingRoot = null;
-        Transform gateRoot = null;
-        if (worldNeedsBuild)
-        {
-            mapBuilder.BuildMap();
-            dressingRoot = ChapterOneVisualEnhancer.Enhance();
-            gateRoot = TroyGateHeroBuilder.Build();
-            ChapterOneWallLife.Build();
-        }
+        MapBuilder mapBuilder = runtime.CreateChapter<MapBuilder>("MapBuilder");
+        mapBuilder.BuildMap();
 
-        EnsureComponent<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
-        EnsureComponent<ChapterOnePlaythroughReporter>("ChapterOnePlaythroughReporter");
+        Transform dressingRoot = ChapterOneVisualEnhancer.Enhance();
+        Transform gateRoot = TroyGateHeroBuilder.Build();
+        ChapterOneWallLife.Build();
 
-        TowerPlacement placement = EnsureComponent<TowerPlacement>("TowerPlacement");
-        if (placement.gameCamera == null) placement.gameCamera = camera;
+        runtime.CreateChapter<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
+        runtime.CreateChapter<ChapterOnePlaythroughReporter>("ChapterOnePlaythroughReporter");
 
-        EnsureHector(camera, mapBuilder.Paths);
-        HectorHUD hectorHud = EnsureComponent<HectorHUD>("HectorHUD");
-        EnsureComponent<EnemyInspectorPresentation>("EnemyInspector");
-        EnsureComponent<PreMapPatronSelectionPresentation>("PreMapPatronSelection");
-        PatronCommentaryPresentation patron = EnsureComponent<PatronCommentaryPresentation>("PatronCommentary");
-        EnsureComponent<LandingPresentation>("LandingPresentation");
+        TowerPlacement placement = runtime.CreateChapter<TowerPlacement>("TowerPlacement");
+        placement.gameCamera = camera;
 
-        ChapterOneCinematicCamera cinematic = Object.FindFirstObjectByType<ChapterOneCinematicCamera>();
-        if (cinematic == null)
-        {
-            cinematic = new GameObject("ChapterOneCinematicCamera").AddComponent<ChapterOneCinematicCamera>();
-            cinematic.Initialize(camera);
-        }
+        HectorController hector = CreateHector(runtime, camera, mapBuilder.Paths);
+        HectorHUD hectorHud = runtime.CreateChapter<HectorHUD>("HectorHUD");
+        runtime.CreateChapter<EnemyInspectorPresentation>("EnemyInspector");
+        runtime.CreateChapter<PreMapPatronSelectionPresentation>("PreMapPatronSelection");
+        PatronCommentaryPresentation patron = runtime.CreateChapter<PatronCommentaryPresentation>("PatronCommentary");
+        runtime.CreateChapter<LandingPresentation>("LandingPresentation");
 
-        ChapterOneGuidancePresentation guidance = EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
-        EnsureChapterPresentationStack(mapBuilder.CoastRoot, dressingRoot, gateRoot, hectorHud, guidance, patron);
+        ChapterOneCinematicCamera cinematic =
+            runtime.CreateChapter<ChapterOneCinematicCamera>("ChapterOneCinematicCamera");
+        cinematic.Initialize(camera);
+
+        ChapterOneGuidancePresentation guidance =
+            runtime.CreateChapter<ChapterOneGuidancePresentation>("ChapterOneGuidance");
+
+        CreateChapterPresentationStack(
+            runtime,
+            mapBuilder.CoastRoot,
+            dressingRoot,
+            gateRoot,
+            hectorHud,
+            guidance,
+            patron);
 
         RuntimeFileLogger.Event("CHAPTER_RUNTIME", $"Installed {ProfileId} for {chapter.chapterId}");
-        return new ChapterRuntimeContext(mapBuilder.Paths);
+        return new ChapterRuntimeContext(mapBuilder.Paths, mapBuilder, placement, hector);
     }
 
-    static void EnsureChapterPresentationStack(
+    static void CreateChapterPresentationStack(
+        GameRuntimeContext runtime,
         Transform coastRoot,
         Transform dressingRoot,
         Transform gateRoot,
@@ -56,56 +59,53 @@ public static class ChapterOneRuntimeInstaller
         ChapterOneGuidancePresentation guidance,
         PatronCommentaryPresentation patron)
     {
-        // Chapter I owns these lifecycle components. Dependencies are injected from
-        // the composition root instead of rediscovered by scene object names.
-        ChapterOneShoreLife shoreLife = EnsureComponent<ChapterOneShoreLife>("ChapterOneShoreLife");
-        ChapterOneCoastEdgeClosure edgeClosure = EnsureComponent<ChapterOneCoastEdgeClosure>("ChapterOneCoastEdgeClosure");
+        ChapterOneShoreLife shoreLife =
+            runtime.CreateChapter<ChapterOneShoreLife>("ChapterOneShoreLife");
+
+        ChapterOneCoastEdgeClosure edgeClosure =
+            runtime.CreateChapter<ChapterOneCoastEdgeClosure>("ChapterOneCoastEdgeClosure");
         edgeClosure.Initialize(coastRoot);
 
-        ChapterOneAegeanSeaPresentation sea = EnsureComponent<ChapterOneAegeanSeaPresentation>("ChapterOneAegeanSeaPresentation");
+        ChapterOneAegeanSeaPresentation sea =
+            runtime.CreateChapter<ChapterOneAegeanSeaPresentation>("ChapterOneAegeanSeaPresentation");
         sea.Initialize(coastRoot, shoreLife, edgeClosure);
 
-        ChapterOneAegeanSeaVolumePass seaVolume = EnsureComponent<ChapterOneAegeanSeaVolumePass>("ChapterOneAegeanSeaVolumePass");
+        ChapterOneAegeanSeaVolumePass seaVolume =
+            runtime.CreateChapter<ChapterOneAegeanSeaVolumePass>("ChapterOneAegeanSeaVolumePass");
         seaVolume.Initialize(coastRoot);
 
-        EnsureComponent<ChapterOneBattlefieldDetails>("ChapterOneBattlefieldDetails");
-        TroyCityBackdropPresentation city = EnsureComponent<TroyCityBackdropPresentation>("TroyCityBackdropPresentation");
-        EnsureComponent<TroyFireLifePresentation>("TroyFireLifePresentation");
-        EnsureComponent<TroyGateDamagePresentation>("TroyGateDamagePresentation");
+        runtime.CreateChapter<ChapterOneBattlefieldDetails>("ChapterOneBattlefieldDetails");
+        TroyCityBackdropPresentation city =
+            runtime.CreateChapter<TroyCityBackdropPresentation>("TroyCityBackdropPresentation");
+        runtime.CreateChapter<TroyFireLifePresentation>("TroyFireLifePresentation");
+        runtime.CreateChapter<TroyGateDamagePresentation>("TroyGateDamagePresentation");
 
-        ChapterOneFactionStaging factions = EnsureComponent<ChapterOneFactionStaging>("ChapterOneFactionStaging");
+        ChapterOneFactionStaging factions =
+            runtime.CreateChapter<ChapterOneFactionStaging>("ChapterOneFactionStaging");
         factions.Initialize(coastRoot, dressingRoot, gateRoot, city);
 
-        EnsureComponent<MenelausEntrancePresentation>("MenelausEntrancePresentation");
-        EnsureComponent<ChapterOneEncounterPresentation>("ChapterOneEncounterPresentation");
-        ChapterOneUiCompactPresentation compact = EnsureComponent<ChapterOneUiCompactPresentation>("ChapterOneUiCompactPresentation");
+        runtime.CreateChapter<MenelausEntrancePresentation>("MenelausEntrancePresentation");
+        runtime.CreateChapter<ChapterOneEncounterPresentation>("ChapterOneEncounterPresentation");
+
+        ChapterOneUiCompactPresentation compact =
+            runtime.CreateChapter<ChapterOneUiCompactPresentation>("ChapterOneUiCompactPresentation");
         compact.Initialize(hectorHud, guidance, patron);
     }
 
-    static T EnsureComponent<T>(string objectName) where T : Component
+    static HectorController CreateHector(
+        GameRuntimeContext runtime,
+        Camera camera,
+        Transform[][] routes)
     {
-        T existing = Object.FindFirstObjectByType<T>();
-        return existing != null ? existing : new GameObject(objectName).AddComponent<T>();
-    }
+        GameObject hector = HeroVisualFactory.Create(TroyHeroId.Hector);
+        hector.name = "Hector";
+        hector.transform.SetParent(runtime.ChapterRoot, true);
+        hector.transform.position = HectorRouteNavigator.HasRoutes(routes)
+            ? HectorRouteNavigator.GateStart(routes, .6f)
+            : MapBuilder.CellToWorld(new Vector2Int(16, 6), .6f);
 
-    static void EnsureHector(Camera camera, Transform[][] routes)
-    {
-        HectorController controller = Object.FindFirstObjectByType<HectorController>();
-        GameObject hector;
-
-        if (controller == null)
-        {
-            hector = HeroVisualFactory.Create(TroyHeroId.Hector);
-            hector.name = "Hector";
-            hector.transform.position = HectorRouteNavigator.HasRoutes(routes)
-                ? HectorRouteNavigator.GateStart(routes, .6f)
-                : MapBuilder.CellToWorld(new Vector2Int(16, 6), .6f);
-            controller = hector.AddComponent<HectorController>();
-        }
-        else
-        {
-            hector = controller.gameObject;
-        }
+        HectorController controller = hector.GetComponent<HectorController>();
+        if (controller == null) controller = hector.AddComponent<HectorController>();
 
         controller.ConfigureMovementRoutes(routes, true);
         EnsureHectorSelectionTarget(hector.transform);
@@ -121,6 +121,8 @@ public static class ChapterOneRuntimeInstaller
         HectorInputDriver input = hector.GetComponent<HectorInputDriver>();
         if (input == null) input = hector.AddComponent<HectorInputDriver>();
         input.Initialize(controller, camera);
+
+        return controller;
     }
 
     static void EnsureHectorSelectionTarget(Transform hector)
@@ -148,7 +150,7 @@ public static class ChapterOneRuntimeInstaller
         collider.direction = 1;
     }
 
-    static void ConfigureCameraAndLighting(Camera camera)
+    static void ConfigureCameraAndLighting(Camera camera, Light sun)
     {
         camera.orthographic = true;
         camera.orthographicSize = 10.6f;
@@ -164,16 +166,12 @@ public static class ChapterOneRuntimeInstaller
         controller.minOrthoSize = 7f;
         controller.maxOrthoSize = 13f;
 
-        if (Object.FindFirstObjectByType<Light>() == null)
-        {
-            GameObject lightObject = new GameObject("Directional Light");
-            Light light = lightObject.AddComponent<Light>();
-            light.type = LightType.Directional;
-            light.intensity = 1.28f;
-            light.color = new Color(1f, .77f, .54f);
-            light.shadows = LightShadows.Soft;
-            light.shadowStrength = .76f;
-            lightObject.transform.rotation = Quaternion.Euler(51f, -34f, 0f);
-        }
+        if (sun == null) return;
+        sun.type = LightType.Directional;
+        sun.intensity = 1.28f;
+        sun.color = new Color(1f, .77f, .54f);
+        sun.shadows = LightShadows.Soft;
+        sun.shadowStrength = .76f;
+        sun.transform.rotation = Quaternion.Euler(51f, -34f, 0f);
     }
 }
