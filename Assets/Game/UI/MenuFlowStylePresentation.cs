@@ -556,7 +556,6 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
 
     void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
         if (approvedSprite != null) Destroy(approvedSprite);
     }
 }
