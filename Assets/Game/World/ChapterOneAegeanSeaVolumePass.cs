@@ -6,6 +6,14 @@ using UnityEngine;
 // as continuous water from the tactical camera rather than as discrete blobs.
 public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
 {
+    Transform coastRoot;
+    public Transform Root { get; private set; }
+
+    public void Initialize(Transform coast)
+    {
+        coastRoot = coast;
+    }
+
     static readonly Color WaveFace = new Color(.035f, .50f, .61f);
     static readonly Color WaveLit = new Color(.13f, .67f, .72f);
     static readonly Color Foam = new Color(.96f, .985f, .96f);
@@ -14,26 +22,14 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
 
     IEnumerator Start()
     {
-        GameObject coast = null;
-        for (int i = 0; i < 16 && coast == null; i++)
-        {
-            coast = GameObject.Find("Chapter01_CoastEnvironment");
-            if (coast == null) yield return null;
-        }
-
-        if (coast == null || (GameManager.Instance != null && GameManager.Instance.MapNumber != 1))
-        {
-            Destroy(gameObject);
-            yield break;
-        }
-
-        if (GameObject.Find("Chapter01_AegeanSeaVolumePass") != null)
+        if (coastRoot == null || (GameManager.Instance != null && GameManager.Instance.MapNumber != 1))
         {
             Destroy(gameObject);
             yield break;
         }
 
         GameObject root = new GameObject("Chapter01_AegeanSeaVolumePass");
+        Root = root.transform;
         BuildRaisedBreakers(root.transform);
         BuildRockWash(root.transform);
         BuildShipWakes(root.transform);
