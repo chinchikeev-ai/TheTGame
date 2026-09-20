@@ -28,9 +28,8 @@ public static class CoastEnvironmentBuilder
             + Mathf.Sin(z * .91f + 1.15f) * .13f;
     }
 
-    public static void Build()
+    public static Transform Build()
     {
-        if (GameObject.Find("Chapter01_CoastEnvironment") != null) return;
         GameObject root = new GameObject("Chapter01_CoastEnvironment");
         CreateGround(root.transform);
         CreateSea(root.transform);
@@ -40,6 +39,7 @@ public static class CoastEnvironmentBuilder
         CreateGreekCampLandmarks(root.transform);
         CreateDunesAndRocks(root.transform);
         CreateWashedDebris(root.transform);
+        return root.transform;
     }
 
     static void CreateGround(Transform parent)
