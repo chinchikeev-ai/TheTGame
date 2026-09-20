@@ -5,6 +5,9 @@ using static CombatHudUiFactory;
 
 public sealed class ModernCombatHud : MonoBehaviour
 {
+    public static ModernCombatHud Instance { get; private set; }
+    public Transform HudRoot { get; private set; }
+
     static readonly string[] BlockingMenuNames =
     {
         "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu", "ConfirmationModal"
@@ -61,10 +64,25 @@ public sealed class ModernCombatHud : MonoBehaviour
     string L(string en, string ru) => GameLanguage.T(en, ru);
     TowerType RecommendedDefense() => CombatHudRecommendationPolicy.Recommend(spawner, buildTypes);
 
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     void Start()
     {
         placement = FindFirstObjectByType<TowerPlacement>();
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
         FindCanvases();
         Build();
@@ -75,13 +93,14 @@ public sealed class ModernCombatHud : MonoBehaviour
         GameObject legacyObject = GameObject.Find("GameCanvas");
         legacyCanvas = legacyObject != null ? legacyObject.GetComponent<Canvas>() : null;
         GameObject menuObject = GameObject.Find("MenuCanvas");
-        menuCanvas = menuObject != null ? menuObject.GetComponent<Canvas>() : null;
+        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : (menuObject != null ? menuObject.GetComponent<Canvas>() : null);
         if (legacyCanvas != null) legacyCanvas.enabled = false;
     }
 
     void Build()
     {
         GameObject root = new GameObject("ModernCombatHUD");
+        HudRoot = root.transform;
         canvas = root.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 80;
@@ -317,9 +336,9 @@ public sealed class ModernCombatHud : MonoBehaviour
     void Update()
     {
         if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
         if (gameplayCamera == null) gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
-        if (menuCanvas == null) FindCanvases();
+        if (menuCanvas == null && GameMenuController.Instance != null) menuCanvas = GameMenuController.Instance.MenuCanvas;
 
         bool blocked = IsMenuBlockingCombat();
         if (group != null)
