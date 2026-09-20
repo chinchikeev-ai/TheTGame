@@ -17,7 +17,9 @@ public static class ChapterOneRuntimeInstaller
         Transform gateRoot = TroyGateHeroBuilder.Build();
         ChapterOneWallLife.Build();
 
-        runtime.CreateChapter<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
+        ChapterOneAtmosphereController atmosphere =
+            runtime.CreateChapter<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
+        atmosphere.Initialize(camera, runtime.Sun);
         runtime.CreateChapter<ChapterOnePlaythroughReporter>("ChapterOnePlaythroughReporter");
 
         TowerPlacement placement = runtime.CreateChapter<TowerPlacement>("TowerPlacement");
