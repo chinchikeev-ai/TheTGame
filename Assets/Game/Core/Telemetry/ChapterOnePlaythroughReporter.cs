@@ -89,7 +89,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
     void Start()
     {
         game = GameManager.Instance;
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         report.schemaVersion = CurrentReportSchemaVersion;
         report.sessionId = Guid.NewGuid().ToString("N");
         report.createdUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture);
@@ -103,7 +103,7 @@ public sealed class ChapterOnePlaythroughReporter : MonoBehaviour
     void Update()
     {
         if (game == null) game = GameManager.Instance;
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
         if (game == null || spawner == null || reportWritten) return;
 
         if (game.RunTime > 0f)
