@@ -2,12 +2,29 @@ using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
 {
+    public static GameBootstrap Instance { get; private set; }
     public GameRuntimeContext Runtime { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoStart()
     {
-        new GameObject("GameBootstrap").AddComponent<GameBootstrap>();
+        if (Instance == null)
+            new GameObject("GameBootstrap").AddComponent<GameBootstrap>();
+    }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()
