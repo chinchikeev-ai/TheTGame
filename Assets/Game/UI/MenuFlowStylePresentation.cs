@@ -1,11 +1,11 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class MenuFlowStylePresentation : MonoBehaviour
 {
     const string ApprovedMenuResource = "Menu/ApprovedMainMenu";
 
+    GameMenuController controller;
     Canvas boundCanvas;
     GameObject styledLevelSelect;
     GameObject styledPauseMenu;
@@ -20,26 +20,14 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
         Ghost
     }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoStart()
+    public void Initialize(GameMenuController owner)
     {
-        if (FindFirstObjectByType<MenuFlowStylePresentation>() == null)
-            new GameObject("MenuFlowStylePresenter").AddComponent<MenuFlowStylePresentation>();
-    }
-
-    void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        LoadApprovedSprite();
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        boundCanvas = null;
+        controller = owner;
+        boundCanvas = owner != null ? owner.MenuCanvas : null;
         styledLevelSelect = null;
         styledPauseMenu = null;
         styledEndMenu = null;
+        if (approvedSprite == null) LoadApprovedSprite();
     }
 
     void LateUpdate()
@@ -71,8 +59,8 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
 
     void BindCanvas()
     {
-        GameObject menuCanvas = GameObject.Find("MenuCanvas");
-        Canvas current = menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
+        if (controller == null) controller = GameMenuController.Instance;
+        Canvas current = controller != null ? controller.MenuCanvas : null;
         if (current == boundCanvas) return;
 
         boundCanvas = current;
