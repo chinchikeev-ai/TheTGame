@@ -2,6 +2,8 @@ using UnityEngine;
 
 public sealed class ChapterOneShoreLife : MonoBehaviour
 {
+    public Transform Root { get; private set; }
+
     static readonly Color Foam = new Color(.91f,.94f,.89f);
     static readonly Color ThinFoam = new Color(.70f,.84f,.82f);
     static readonly Color Backwash = new Color(.43f,.57f,.55f);
@@ -12,8 +14,8 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
-        if (GameObject.Find("Chapter01_ShoreLife") != null) return;
         GameObject root = new GameObject("Chapter01_ShoreLife");
+        Root = root.transform;
         BuildShallowSwells(root.transform);
         BuildFoam(root.transform);
         BuildBackwash(root.transform);
