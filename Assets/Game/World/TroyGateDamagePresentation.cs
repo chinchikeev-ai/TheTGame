@@ -7,13 +7,6 @@ public sealed class TroyGateDamagePresentation : MonoBehaviour
     float nextPulse;
     GameObject root;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<TroyGateDamagePresentation>() == null)
-            new GameObject("TroyGateDamagePresentation").AddComponent<TroyGateDamagePresentation>();
-    }
-
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
