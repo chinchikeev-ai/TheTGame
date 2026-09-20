@@ -19,9 +19,6 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
     bool bossWasActive;
     bool bossDefeated;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate(){if(FindFirstObjectByType<CombatNotificationPresentation>()==null)new GameObject("CombatNotificationPresentation").AddComponent<CombatNotificationPresentation>();}
-
     void Start(){spawner=EnemySpawner.Instance;GameObject menu=GameObject.Find("MenuCanvas");menuCanvas=menu!=null?menu.GetComponent<Canvas>():null;Build();}
 
     void Build()
