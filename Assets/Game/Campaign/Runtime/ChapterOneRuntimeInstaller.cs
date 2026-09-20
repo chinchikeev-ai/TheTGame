@@ -11,16 +11,14 @@ public static class ChapterOneRuntimeInstaller
 
         MapBuilder mapBuilder = EnsureComponent<MapBuilder>("MapBuilder");
         bool worldNeedsBuild = mapBuilder.Paths == null || mapBuilder.Paths.Length == 0;
+        Transform dressingRoot = null;
+        Transform gateRoot = null;
         if (worldNeedsBuild)
         {
-            bool hadRuntimeWorld = GameObject.Find("Route_A") != null || GameObject.Find("Chapter01_Roads") != null;
             mapBuilder.BuildMap();
-            if (!hadRuntimeWorld)
-            {
-                ChapterOneVisualEnhancer.Enhance();
-                TroyGateHeroBuilder.Build();
-                ChapterOneWallLife.Build();
-            }
+            dressingRoot = ChapterOneVisualEnhancer.Enhance();
+            gateRoot = TroyGateHeroBuilder.Build();
+            ChapterOneWallLife.Build();
         }
 
         EnsureComponent<ChapterOneAtmosphereController>("ChapterOneAtmosphere");
@@ -44,25 +42,34 @@ public static class ChapterOneRuntimeInstaller
         }
 
         EnsureComponent<ChapterOneGuidancePresentation>("ChapterOneGuidance");
-        EnsureChapterPresentationStack();
+        EnsureChapterPresentationStack(mapBuilder.CoastRoot, dressingRoot, gateRoot);
 
         RuntimeFileLogger.Event("CHAPTER_RUNTIME", $"Installed {ProfileId} for {chapter.chapterId}");
         return new ChapterRuntimeContext(mapBuilder.Paths);
     }
 
-    static void EnsureChapterPresentationStack()
+    static void EnsureChapterPresentationStack(Transform coastRoot, Transform dressingRoot, Transform gateRoot)
     {
-        // Chapter I owns these lifecycle components. They must not self-install via
-        // RuntimeInitializeOnLoadMethod because chapter selection belongs here.
-        EnsureComponent<ChapterOneShoreLife>("ChapterOneShoreLife");
-        EnsureComponent<ChapterOneCoastEdgeClosure>("ChapterOneCoastEdgeClosure");
-        EnsureComponent<ChapterOneAegeanSeaPresentation>("ChapterOneAegeanSeaPresentation");
-        EnsureComponent<ChapterOneAegeanSeaVolumePass>("ChapterOneAegeanSeaVolumePass");
+        // Chapter I owns these lifecycle components. Dependencies are injected from
+        // the composition root instead of rediscovered by scene object names.
+        ChapterOneShoreLife shoreLife = EnsureComponent<ChapterOneShoreLife>("ChapterOneShoreLife");
+        ChapterOneCoastEdgeClosure edgeClosure = EnsureComponent<ChapterOneCoastEdgeClosure>("ChapterOneCoastEdgeClosure");
+        edgeClosure.Initialize(coastRoot);
+
+        ChapterOneAegeanSeaPresentation sea = EnsureComponent<ChapterOneAegeanSeaPresentation>("ChapterOneAegeanSeaPresentation");
+        sea.Initialize(coastRoot, shoreLife, edgeClosure);
+
+        ChapterOneAegeanSeaVolumePass seaVolume = EnsureComponent<ChapterOneAegeanSeaVolumePass>("ChapterOneAegeanSeaVolumePass");
+        seaVolume.Initialize(coastRoot);
+
         EnsureComponent<ChapterOneBattlefieldDetails>("ChapterOneBattlefieldDetails");
-        EnsureComponent<TroyCityBackdropPresentation>("TroyCityBackdropPresentation");
+        TroyCityBackdropPresentation city = EnsureComponent<TroyCityBackdropPresentation>("TroyCityBackdropPresentation");
         EnsureComponent<TroyFireLifePresentation>("TroyFireLifePresentation");
         EnsureComponent<TroyGateDamagePresentation>("TroyGateDamagePresentation");
-        EnsureComponent<ChapterOneFactionStaging>("ChapterOneFactionStaging");
+
+        ChapterOneFactionStaging factions = EnsureComponent<ChapterOneFactionStaging>("ChapterOneFactionStaging");
+        factions.Initialize(coastRoot, dressingRoot, gateRoot, city);
+
         EnsureComponent<MenelausEntrancePresentation>("MenelausEntrancePresentation");
         EnsureComponent<ChapterOneEncounterPresentation>("ChapterOneEncounterPresentation");
         EnsureComponent<ChapterOneUiCompactPresentation>("ChapterOneUiCompactPresentation");
