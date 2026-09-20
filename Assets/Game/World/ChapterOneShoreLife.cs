@@ -9,13 +9,6 @@ public sealed class ChapterOneShoreLife : MonoBehaviour
     static readonly Color SeaGlint = new Color(.24f,.56f,.64f);
     static readonly Color SeaMist = new Color(.54f,.72f,.73f);
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneShoreLife>() == null)
-            new GameObject("ChapterOneShoreLife").AddComponent<ChapterOneShoreLife>();
-    }
-
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;

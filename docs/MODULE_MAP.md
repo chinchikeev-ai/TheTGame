@@ -30,7 +30,7 @@ Use Core for infrastructure/rules shared by multiple gameplay domains. Do not pu
 - `Data/EncounterData.cs` — authored encounter composition, timing, routes and special behavior ids.
 - `Data/WaveData.cs` — legacy compatibility only; do not use for new content.
 - `Runtime/ChapterRuntimeInstaller.cs` — generic runtime-profile dispatcher.
-- `Runtime/ChapterOneRuntimeInstaller.cs` — Chapter I-only world/Hector/cinematic/guidance composition.
+- `Runtime/ChapterOneRuntimeInstaller.cs` — Chapter I-only world/Hector/cinematic/guidance composition and lifecycle owner for Chapter I-specific presentation components; those presenters must not self-install.
 
 UI/gameplay should call `CampaignController`; persistence details stay behind it.
 

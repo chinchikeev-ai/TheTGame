@@ -7,13 +7,6 @@ public sealed class MenelausEntrancePresentation : MonoBehaviour
     Camera cam;
     CameraController cameraController;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<MenelausEntrancePresentation>() == null)
-            new GameObject("MenelausEntrancePresentation").AddComponent<MenelausEntrancePresentation>();
-    }
-
     void Start()
     {
         cam = Camera.main;

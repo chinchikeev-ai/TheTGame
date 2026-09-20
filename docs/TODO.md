@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- ARCH-005: clean start и Restart Chapter I создают ровно по одному экземпляру каждого Chapter I-owned presenter; ни один из них не появляется до выбора/установки chapter runtime profile.
+- ARCH-005: после централизации lifecycle море, берег, Troy backdrop/fire/gate damage, faction staging, Menelaus entrance, encounter presentation и compact HUD визуально появляются в том же порядке и без пропусков.
 - ARCH-004: после запуска/Restart Chapter I остаётся по одному `EnemySpawner`, `TowerPlacement`, `GameMenuController`, `ModernCombatHud`; их static `Instance` не остаётся stale после уничтожения.
 - ARCH-004: Aegean sea replacement по-прежнему скрывает legacy water без `FindObjectsByType`, а компактный HUD применяется после startup-bind.
 - Runtime input: в сцене существует ровно один `RuntimeInputBootstrap` и один `EventSystem`; после Pause/Settings/Resume и Restart Chapter I не появляются дубликаты и управление Гектором сохраняется.

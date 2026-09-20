@@ -63,6 +63,21 @@ HOT_SCENE_SEARCH_TOKENS = (
     "Object.FindFirstObjectByType<",
 )
 
+CHAPTER_ONE_OWNED_PRESENTERS = (
+    "Assets/Game/UI/ChapterOneEncounterPresentation.cs",
+    "Assets/Game/UI/ChapterOneUiCompactPresentation.cs",
+    "Assets/Game/World/ChapterOneAegeanSeaPresentation.cs",
+    "Assets/Game/World/ChapterOneAegeanSeaVolumePass.cs",
+    "Assets/Game/World/ChapterOneBattlefieldDetails.cs",
+    "Assets/Game/World/ChapterOneCoastEdgeClosure.cs",
+    "Assets/Game/World/ChapterOneFactionStaging.cs",
+    "Assets/Game/World/ChapterOneShoreLife.cs",
+    "Assets/Game/World/MenelausEntrancePresentation.cs",
+    "Assets/Game/World/TroyCityBackdropPresentation.cs",
+    "Assets/Game/World/TroyFireLifePresentation.cs",
+    "Assets/Game/World/TroyGateDamagePresentation.cs",
+)
+
 def method_body(text, method_name):
     match = re.search(r"\bvoid\s+" + re.escape(method_name) + r"\s*\([^)]*\)\s*\{", text)
     if match is None:
@@ -337,6 +352,23 @@ if MODEL_GAP.exists() and "ChapterOneProductionEquipmentBuilder.Build();" not in
 
 if (ROOT / "Assets" / "Scripts").exists():
     errors.append("legacy Assets/Scripts must not exist")
+
+for rel in CHAPTER_ONE_OWNED_PRESENTERS:
+    path = ROOT / rel
+    if not path.exists():
+        errors.append(f"missing Chapter I owned presenter: {rel}")
+        continue
+    owned_text = path.read_text(encoding="utf-8")
+    if "RuntimeInitializeOnLoadMethod" in owned_text:
+        errors.append(f"Chapter I presenter self-installs outside ChapterOneRuntimeInstaller: {rel}")
+
+chapter_one_installer = ROOT / "Assets" / "Game" / "Campaign" / "Runtime" / "ChapterOneRuntimeInstaller.cs"
+if chapter_one_installer.exists():
+    installer_text = chapter_one_installer.read_text(encoding="utf-8")
+    for rel in CHAPTER_ONE_OWNED_PRESENTERS:
+        type_name = Path(rel).stem
+        if f"EnsureComponent<{type_name}>" not in installer_text:
+            errors.append(f"Chapter I presenter missing installer ownership: {type_name}")
 
 if GAME.exists():
     for path in GAME.rglob("*.cs"):
