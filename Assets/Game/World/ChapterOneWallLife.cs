@@ -7,9 +7,8 @@ public static class ChapterOneWallLife
     const string TrojanProductionRoot = "TroyProduction/Characters/Trojan/";
     const string TrojanGeneratedRoot = "TroyCharacters/Factions/Trojan/";
 
-    public static void Build()
+    public static Transform Build()
     {
-        if (GameObject.Find("Chapter01_WallLife") != null) return;
         GameObject root = new GameObject("Chapter01_WallLife");
         float gateX = MapBuilder.CellToWorld(new Vector2Int(17, 6)).x;
 
@@ -24,6 +23,7 @@ public static class ChapterOneWallLife
         AddStandard(root.transform, new Vector3(gateX + .32f, 3.18f, 7.0f));
         AddBeacon(root.transform, new Vector3(gateX + 1.30f, 3.38f, -8.9f));
         AddBeacon(root.transform, new Vector3(gateX + 1.30f, 3.38f, 8.9f));
+        return root.transform;
     }
 
     static void BuildWallStructure(Transform parent, float gateX)
