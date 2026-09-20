@@ -17,6 +17,11 @@ public class GameMenuController : MonoBehaviour
 
     Canvas canvas;
     public Canvas MenuCanvas => canvas;
+    public GameObject MainMenuRoot => mainMenu;
+    public GameObject LevelMenuRoot => levelMenu;
+    public GameObject SettingsMenuRoot => settingsMenu;
+    public GameObject PauseMenuRoot => pauseMenu;
+    public GameObject EndMenuRoot => endMenu;
     EnemySpawner spawner;
     GameObject mainMenu;
     GameObject levelMenu;
@@ -57,6 +62,7 @@ public class GameMenuController : MonoBehaviour
         GameUserSettings.ApplySaved();
         spawner = EnemySpawner.Instance;
         BuildUI();
+        EnsureMenuPresentations();
 
         if (startLevelAfterReload)
         {
@@ -95,6 +101,20 @@ public class GameMenuController : MonoBehaviour
 
         if (levelStarted && GameManager.Instance != null && GameManager.Instance.GameEnded && endMenu != null && !endMenu.activeSelf)
             ShowEnd();
+    }
+
+    void EnsureMenuPresentations()
+    {
+        EnsureMenuPresentation<MainMenuBackgroundOverride>().Initialize(this);
+        EnsureMenuPresentation<SimpleMainMenuPresentation>().Initialize(this);
+        EnsureMenuPresentation<MenuFlowStylePresentation>().Initialize(this);
+        EnsureMenuPresentation<MainMenuBuildVersionPresentation>().Initialize(this);
+    }
+
+    T EnsureMenuPresentation<T>() where T : Component
+    {
+        T existing = GetComponent<T>();
+        return existing != null ? existing : gameObject.AddComponent<T>();
     }
 
     void BuildUI()
