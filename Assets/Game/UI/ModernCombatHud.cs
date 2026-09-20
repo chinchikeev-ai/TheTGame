@@ -376,7 +376,11 @@ public sealed class ModernCombatHud : MonoBehaviour
         firstEncounterPrepTitle.text = L($"PREPARE FOR ATTACK — {seconds}", $"ПОДГОТОВКА К АТАКЕ — {seconds}");
         firstEncounterPrepObjective.text = L("OBJECTIVE • DEFEND THE GATE", "ЦЕЛЬ • ЗАЩИТИТЕ ВОРОТА");
         firstEncounterPrepComposition.text = CombatHudEncounterFormatter.BuildPreview(spawner);
-        firstEncounterPrepStartButton.interactable = false;
+        firstEncounterPrepStartButton.interactable = gm.GiftSelected && !EncounterRuntime.FirstEncounterPreparationLocked(spawner);
+        var prepButtonLabel = firstEncounterPrepStartButton.GetComponentInChildren<Text>();
+        if (prepButtonLabel != null) prepButtonLabel.text = seconds > 0
+            ? L($"PREPARATION: {seconds}s", $"ПОДГОТОВКА: {seconds}с")
+            : !gm.GiftSelected ? L("CHOOSE A PATRON", "ВЫБЕРИТЕ ПОКРОВИТЕЛЯ") : L("START WAVE", "НАЧАТЬ ВОЛНУ");
     }
 
     void UpdateActions()
@@ -432,6 +436,8 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void StartEncounter()
     {
+        if (spawner == null || EncounterRuntime.FirstEncounterPreparationLocked(spawner)) return;
+        if (GameManager.Instance == null || !GameManager.Instance.GiftSelected || GameManager.Instance.GameEnded) return;
         if (firstEncounterPrep != null) firstEncounterPrep.SetActive(false);
         if (encounterBar != null) encounterBar.SetActive(true);
         EncounterRuntime.StartEncounterNow(spawner);

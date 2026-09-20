@@ -55,8 +55,20 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         if (difficultyOverlay == null) BuildDifficultyOverlay();
         if (patronOverlay == null) BuildPatronOverlay();
 
+        return BindChapterAction(levelSelect) && difficultyOverlay != null && patronOverlay != null;
+    }
+
+    bool BindChapterAction(Transform levelSelect)
+    {
         if (chapterOneButton == null)
         {
+            var artwork = levelSelect.GetComponent<ChapterSelectionArtwork>();
+            if (artwork != null)
+            {
+                chapterOneButton = artwork.StartButton;
+                artwork.SetStartAction(ShowDifficulty);
+                return chapterOneButton != null;
+            }
             Button[] buttons = levelSelect.GetComponentsInChildren<Button>(true);
             for (int i = 0; i < buttons.Length; i++)
             {
@@ -70,7 +82,7 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
             }
         }
 
-        return difficultyOverlay != null && patronOverlay != null && chapterOneButton != null;
+        return chapterOneButton != null;
     }
 
     void BuildDifficultyOverlay()

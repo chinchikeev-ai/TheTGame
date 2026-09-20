@@ -51,6 +51,12 @@ public sealed class ChapterSelectionArtworkTests
                 start.onClick.Invoke();
             }
             Assert.AreEqual(1, starts);
+            int patronRequests = 0;
+            art.SetStartAction(() => patronRequests++);
+            art.SelectChapter(1);
+            start.onClick.Invoke();
+            Assert.AreEqual(1, patronRequests);
+            Assert.AreEqual(1, starts, "Patron selection must replace direct run start.");
             composition.Find("Back").GetComponent<Button>().onClick.Invoke();
             Assert.AreEqual(1, backs);
             art.SelectChapter(1);

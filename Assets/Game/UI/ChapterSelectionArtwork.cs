@@ -19,6 +19,8 @@ public sealed class ChapterSelectionArtwork : MonoBehaviour
     Sprite parchment;
     Sprite lockedNode, availableNode;
     public int SelectedChapter => selected;
+    public Button StartButton => start;
+    public void SetStartAction(Action action) => begin = action;
 
     public void Build(Action onStart, Action onBack, Func<int, bool> isUnlocked, bool ru)
     {

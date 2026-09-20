@@ -6,6 +6,10 @@ This is the authoritative source for **art/model completion status**. Design int
 
 ## Status definitions
 
+Settings screen (2026-09-20): `SOURCE ONLY` pending in-game visual acceptance.
+Reference-derived Settings_Illustrated backdrop and Settings_Reference knob atlas
+are used by ModernSettingsPresentation with live controls; no fake audio buses.
+
 Chapter selection (2026-09-19): `SOURCE ONLY` pending real Play Mode visual acceptance.
 Reference atlas plus generated clean map and blank parchment are integrated under
 Assets/Game/Art/Resources/ChapterSelect. Separate runtime elements support live text

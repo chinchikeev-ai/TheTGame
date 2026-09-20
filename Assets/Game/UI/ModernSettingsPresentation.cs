@@ -81,18 +81,13 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         FindResolution();
         FindFps();
 
-        modernPanel = MakePanel(settingsRoot.transform, "ModernSettingsPanel", Vector2.zero, new Vector2(1320, 800), new Color(.055f,.03f,.018f,.985f));
-        AddText(modernPanel.transform, L("SETTINGS", "НАСТРОЙКИ"), new Vector2(-455, 335), new Vector2(360,56), 38, new Color(1f,.62f,.18f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        AddText(modernPanel.transform, L("Customize your experience", "Настройте игру под себя"), new Vector2(-455, 296), new Vector2(430,32), 16, new Color(.78f,.69f,.60f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
-
-        GameObject nav = MakePanel(modernPanel.transform, "Navigation", new Vector2(-475, -5), new Vector2(260, 550), new Color(.075f,.042f,.026f,.92f));
-        tabs[(int)Tab.Audio] = MakeButton(nav.transform, L("AUDIO", "ЗВУК"), new Vector2(0, 190), () => ShowTab(Tab.Audio), new Vector2(215,56), true);
-        tabs[(int)Tab.Video] = MakeButton(nav.transform, L("VIDEO", "ВИДЕО"), new Vector2(0, 120), () => ShowTab(Tab.Video), new Vector2(215,56), false);
-        tabs[(int)Tab.Gameplay] = MakeButton(nav.transform, L("GAMEPLAY", "ИГРА"), new Vector2(0, 50), () => ShowTab(Tab.Gameplay), new Vector2(215,56), false);
-        tabs[(int)Tab.Controls] = MakeButton(nav.transform, L("CONTROLS", "УПРАВЛЕНИЕ"), new Vector2(0, -20), () => ShowTab(Tab.Controls), new Vector2(215,56), false);
-        descriptionText = AddText(nav.transform, "", new Vector2(0,-175), new Vector2(215,130), 14, new Color(.72f,.64f,.56f,.92f), TextAnchor.UpperLeft, FontStyle.Normal);
-
-        GameObject contentPanel = MakePanel(modernPanel.transform, "ContentPanel", new Vector2(170, -5), new Vector2(800, 550), new Color(.035f,.022f,.016f,.92f));
+        modernPanel = MakeRect(settingsRoot.transform, "ModernSettingsPanel", Vector2.zero, new Vector2(1448, 1086), Color.white);
+        tabs[(int)Tab.Audio] = MakeButton(modernPanel.transform, L("AUDIO", "ЗВУК"), new Vector2(-327, 292), () => ShowTab(Tab.Audio), new Vector2(220,68), true);
+        tabs[(int)Tab.Video] = MakeButton(modernPanel.transform, L("VIDEO", "ВИДЕО"), new Vector2(-81, 292), () => ShowTab(Tab.Video), new Vector2(220,68), false);
+        tabs[(int)Tab.Gameplay] = MakeButton(modernPanel.transform, L("GAMEPLAY", "ИГРА"), new Vector2(153, 292), () => ShowTab(Tab.Gameplay), new Vector2(220,68), false);
+        tabs[(int)Tab.Controls] = MakeButton(modernPanel.transform, L("CONTROLS", "УПРАВЛЕНИЕ"), new Vector2(406, 292), () => ShowTab(Tab.Controls), new Vector2(228,68), false);
+        GameObject contentPanel = MakeRect(modernPanel.transform, "ContentPanel", new Vector2(63, 30), new Vector2(850, 420), Color.clear);
+        contentPanel.GetComponent<Image>().raycastTarget = false;
         contentRoot = new GameObject("ContentRoot");
         contentRoot.transform.SetParent(contentPanel.transform, false);
         RectTransform cr = contentRoot.AddComponent<RectTransform>();
@@ -101,9 +96,9 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         cr.offsetMin = Vector2.zero;
         cr.offsetMax = Vector2.zero;
 
-        MakeButton(modernPanel.transform, L("RESET DEFAULTS", "СБРОСИТЬ"), new Vector2(-250,-350), ResetDefaults, new Vector2(270,54), false);
-        MakeButton(modernPanel.transform, L("BACK", "НАЗАД"), new Vector2(80,-350), Back, new Vector2(240,54), false);
-        MakeButton(modernPanel.transform, L("APPLY", "ПРИМЕНИТЬ"), new Vector2(370,-350), ApplyAndBack, new Vector2(250,54), true);
+        MakeButton(modernPanel.transform, L("BACK", "НАЗАД"), new Vector2(173,-420), Back, new Vector2(246,86), false);
+        MakeButton(modernPanel.transform, L("APPLY", "ПРИМЕНИТЬ"), new Vector2(485,-420), ApplyAndBack, new Vector2(280,86), true);
+        modernPanel.AddComponent<SettingsArtworkLayout>().Initialize();
 
         ShowTab(activeTab);
         built = true;
@@ -124,7 +119,8 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         {
             if (tabs[i] == null) continue;
             Image image = tabs[i].GetComponent<Image>();
-            if (image != null) image.color = i == (int)tab ? new Color(.55f,.11f,.045f,.98f) : new Color(.22f,.13f,.08f,.96f);
+            if (image != null) image.color = i == (int)tab ? new Color(.65f,.08f,.025f,.8f) : Color.clear;
+            tabs[i].GetComponentInChildren<Text>().color = i == (int)tab ? new Color(1f,.93f,.72f) : new Color(.12f,.09f,.045f);
         }
 
         switch (tab)
@@ -134,44 +130,39 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
             case Tab.Gameplay: BuildGameplay(); break;
             case Tab.Controls: BuildControls(); break;
         }
+        foreach (Text text in contentRoot.GetComponentsInChildren<Text>()) text.color = new Color(.10f, .075f, .04f);
         SelectFirstContentControl();
     }
 
     void BuildAudio()
     {
-        SetHeader(L("AUDIO", "ЗВУК"), L("Simple, predictable audio controls.", "Простое и понятное управление звуком."));
         MakeAudioSliderCard(
             L("MASTER VOLUME", "ОБЩАЯ ГРОМКОСТЬ"),
             L("All game sounds and effects", "Все звуки игры и эффекты"),
-            72f,
+            110f,
             GameUserSettings.MasterVolume,
             value => GameUserSettings.MasterVolume = value);
         MakeAudioSliderCard(
             L("MUSIC", "МУЗЫКА"),
             L("Background music only", "Только фоновая музыка"),
-            -68f,
+            -10f,
             GameUserSettings.MusicVolume,
             value => GameUserSettings.MusicVolume = value);
-        AddHint(L("Changes are previewed immediately.", "Изменения слышны сразу."), new Vector2(0,-170));
     }
 
     void MakeAudioSliderCard(string label, string description, float y, float initial, Action<float> onChanged)
     {
-        GameObject card = MakeRect(contentRoot.transform, label + " Card", new Vector2(0f, y), new Vector2(690f, 118f), new Color(.075f,.047f,.032f,.94f));
-        Outline outline = card.AddComponent<Outline>();
-        outline.effectColor = new Color(.53f,.30f,.12f,.32f);
-        outline.effectDistance = new Vector2(1f,-1f);
-
-        AddText(card.transform, label, new Vector2(-210f,20f), new Vector2(330f,30f), 17, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-        AddText(card.transform, description, new Vector2(-210f,-7f), new Vector2(330f,24f), 12, new Color(.72f,.64f,.56f,.95f), TextAnchor.MiddleLeft, FontStyle.Normal);
+        GameObject card = MakeRect(contentRoot.transform, label + " Row", new Vector2(0f, y), new Vector2(800f, 86f), Color.clear);
+        card.GetComponent<Image>().raycastTarget = false;
+        AddText(card.transform, label, new Vector2(-240f,0f), new Vector2(290f,65f), 23, Color.black, TextAnchor.MiddleLeft, FontStyle.Normal);
 
         GameObject sliderObject = new GameObject(label + " Slider", typeof(RectTransform));
         sliderObject.transform.SetParent(card.transform, false);
         Slider slider = sliderObject.AddComponent<Slider>();
         RectTransform sliderRect = sliderObject.GetComponent<RectTransform>();
         sliderRect.anchorMin = sliderRect.anchorMax = sliderRect.pivot = new Vector2(.5f,.5f);
-        sliderRect.anchoredPosition = new Vector2(70f,-31f);
-        sliderRect.sizeDelta = new Vector2(470f,36f);
+        sliderRect.anchoredPosition = new Vector2(115f,0f);
+        sliderRect.sizeDelta = new Vector2(330f,40f);
 
         GameObject bg = MakeRect(sliderObject.transform, "Background", Vector2.zero, new Vector2(470f,12f), new Color(.18f,.11f,.075f,1f));
         RectTransform bgRect = bg.GetComponent<RectTransform>();
@@ -191,7 +182,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         fillAreaRect.offsetMin = new Vector2(10f,-6f);
         fillAreaRect.offsetMax = new Vector2(-10f,6f);
 
-        GameObject fill = MakeRect(fillArea.transform, "Fill", Vector2.zero, Vector2.zero, new Color(.72f,.20f,.06f,1f));
+        GameObject fill = MakeRect(fillArea.transform, "Fill", Vector2.zero, Vector2.zero, new Color(.015f,.52f,.93f,1f));
         RectTransform fillRect = fill.GetComponent<RectTransform>();
         fillRect.anchorMin = Vector2.zero;
         fillRect.anchorMax = Vector2.one;
@@ -211,6 +202,9 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         GameObject handle = MakeRect(handleArea.transform, "Handle", Vector2.zero, new Vector2(22f,28f), new Color(1f,.72f,.25f,1f));
         RectTransform handleRect = handle.GetComponent<RectTransform>();
         handleRect.anchorMin = handleRect.anchorMax = handleRect.pivot = new Vector2(.5f,.5f);
+        handleRect.sizeDelta = new Vector2(42f, 4f);
+        handle.GetComponent<Image>().sprite = modernPanel.GetComponent<SettingsArtworkLayout>().KnobSprite;
+        handle.GetComponent<Image>().color = Color.white;
 
         slider.fillRect = fillRect;
         slider.handleRect = handleRect;
@@ -221,7 +215,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         slider.maxValue = 1f;
         slider.value = initial;
 
-        Text valueText = AddText(card.transform, Mathf.RoundToInt(initial * 100f) + "%", new Vector2(285f,20f), new Vector2(90f,30f), 16, new Color(1f,.82f,.52f,1f), TextAnchor.MiddleRight, FontStyle.Bold);
+        Text valueText = AddText(card.transform, Mathf.RoundToInt(initial * 100f) + "%", new Vector2(350f,0f), new Vector2(90f,40f), 24, Color.black, TextAnchor.MiddleRight, FontStyle.Normal);
         slider.onValueChanged.AddListener(value =>
         {
             valueText.text = Mathf.RoundToInt(value * 100f) + "%";
@@ -244,6 +238,7 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         SetHeader(L("GAMEPLAY", "ИГРА"), L("Campaign preferences and language.", "Параметры кампании и язык."));
         MakeSelectorRow(L("LANGUAGE", "ЯЗЫК"), 105, () => GameLanguage.Russian ? "Русский" : "English", ToggleLanguage);
         MakeSelectorRow(L("DIFFICULTY", "СЛОЖНОСТЬ"), -15, () => DifficultyRules.Label(CurrentDifficulty), CycleDifficulty);
+        MakeButton(contentRoot.transform, L("RESET DEFAULTS", "СБРОСИТЬ НАСТРОЙКИ"), new Vector2(160,-100), ResetDefaults, new Vector2(300,52), false);
         AddHint(L("Difficulty changes campaign combat rules. Language change rebuilds the menu.", "Сложность меняет правила боя. Смена языка перестраивает меню."), new Vector2(0,-135));
     }
 
@@ -261,25 +256,25 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
 
     void SetHeader(string title, string description)
     {
-        AddText(contentRoot.transform, title, new Vector2(-245,226), new Vector2(580,48), 28, new Color(1f,.72f,.30f,1f), TextAnchor.MiddleLeft, FontStyle.Bold);
-        AddText(contentRoot.transform, description, new Vector2(-245,178), new Vector2(620,38), 15, new Color(.76f,.68f,.59f,1f), TextAnchor.MiddleLeft, FontStyle.Normal);
         if (descriptionText != null) descriptionText.text = description;
     }
 
     void MakeSelectorRow(string label, float y, Func<string> value, UnityAction action)
     {
+        y = 90f + y * .75f;
         AddText(contentRoot.transform,label,new Vector2(-230,y),new Vector2(300,46),16,Color.white,TextAnchor.MiddleLeft,FontStyle.Bold);
         MakeButton(contentRoot.transform,value(),new Vector2(160,y),action,new Vector2(300,52),false);
     }
 
     void MakeControlRow(string label, string value, float y)
     {
-        MakeRect(contentRoot.transform,"ControlRow",new Vector2(0,y),new Vector2(690,58),new Color(.075f,.047f,.032f,.95f));
+        y = 65f + y * .75f;
+        MakeRect(contentRoot.transform,"ControlRow",new Vector2(0,y),new Vector2(690,58),Color.clear).GetComponent<Image>().raycastTarget = false;
         AddText(contentRoot.transform,label,new Vector2(-205,y),new Vector2(300,44),15,new Color(.94f,.88f,.80f,1f),TextAnchor.MiddleLeft,FontStyle.Bold);
         AddText(contentRoot.transform,value,new Vector2(205,y),new Vector2(300,44),15,new Color(1f,.72f,.30f,1f),TextAnchor.MiddleRight,FontStyle.Bold);
     }
 
-    void AddHint(string text, Vector2 pos) => AddText(contentRoot.transform,text,pos,new Vector2(650,54),13,new Color(.68f,.61f,.54f,.9f),TextAnchor.UpperLeft,FontStyle.Normal);
+    void AddHint(string text, Vector2 pos) { }
 
     void CycleResolution() { resolutionIndex=(resolutionIndex+1)%Resolutions.Length; Vector2 r=Resolutions[resolutionIndex]; GameUserSettings.SetResolution((int)r.x,(int)r.y); ShowTab(Tab.Video); }
     void CycleFps() { fpsIndex=(fpsIndex+1)%FpsOptions.Length; GameUserSettings.FpsLimit=FpsOptions[fpsIndex]; ShowTab(Tab.Video); }
@@ -311,6 +306,17 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
 
     GameObject MakePanel(Transform parent,string name,Vector2 pos,Vector2 size,Color color){ GameObject go=MakeRect(parent,name,pos,size,color); Outline o=go.AddComponent<Outline>(); o.effectColor=new Color(.68f,.37f,.14f,.42f); o.effectDistance=new Vector2(1.5f,-1.5f); return go; }
     GameObject MakeRect(Transform parent,string name,Vector2 pos,Vector2 size,Color color){ GameObject go=new GameObject(name); go.transform.SetParent(parent,false); Image im=go.AddComponent<Image>(); im.color=color; RectTransform rt=im.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=size; return go; }
-    Button MakeButton(Transform parent,string label,Vector2 pos,UnityAction action,Vector2 size,bool primary){ GameObject go=MakeRect(parent,label,pos,size,primary?new Color(.55f,.11f,.045f,.98f):new Color(.22f,.13f,.08f,.96f)); Button b=go.AddComponent<Button>(); b.targetGraphic=go.GetComponent<Image>(); b.onClick.AddListener(action); go.AddComponent<MenuButtonFeedback>(); go.AddComponent<MenuUiAudioFeedback>(); Navigation nav=b.navigation; nav.mode=Navigation.Mode.Automatic; b.navigation=nav; AddText(go.transform,label,Vector2.zero,size,17,primary?new Color(1f,.88f,.50f,1f):new Color(.92f,.82f,.69f,1f),TextAnchor.MiddleCenter,FontStyle.Bold); return b; }
+    Button MakeButton(Transform parent,string label,Vector2 pos,UnityAction action,Vector2 size,bool primary)
+    {
+        bool artworkButton = parent == modernPanel.transform;
+        GameObject go = MakeRect(parent, label, pos, size, artworkButton ? Color.clear : new Color(.83f,.65f,.38f,.8f));
+        Button button = go.AddComponent<Button>();
+        button.targetGraphic = go.GetComponent<Image>();
+        button.onClick.AddListener(action);
+        go.AddComponent<MenuUiAudioFeedback>();
+        AddText(go.transform, label, Vector2.zero, size, artworkButton ? 26 : 17,
+            artworkButton && primary ? new Color(1f,.94f,.73f) : new Color(.10f,.075f,.04f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        return button;
+    }
     Text AddText(Transform parent,string value,Vector2 pos,Vector2 size,int fontSize,Color color,TextAnchor align,FontStyle style){ GameObject go=new GameObject("Text"); go.transform.SetParent(parent,false); Text t=go.AddComponent<Text>(); t.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.text=value; t.fontSize=fontSize; t.color=color; t.alignment=align; t.fontStyle=style; t.horizontalOverflow=HorizontalWrapMode.Wrap; RectTransform rt=t.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=size; return t; }
 }

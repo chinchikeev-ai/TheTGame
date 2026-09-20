@@ -6,6 +6,13 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Settings/pre-map repair (2026-09-20): reference-derived fullscreen settings artwork
+uses live Audio/Video/Gameplay/Controls content. Audio exposes master/music only.
+Illustrated chapter start now binds explicitly to difficulty/patron selection,
+fixing the text-based binding regression. First-wave button reflects mandatory
+preparation and patron readiness instead of remaining permanently disabled.
+Focused EditMode checks added; full gameplay flow and Windows EXE validation pending.
+
 Chapter selection fullscreen fix (2026-09-20): map now fills the viewport, while
 the detail panel stays right-aligned and controls keep uniform scale. The legacy
 CampaignMapPresentation skips this screen, preventing the old map showing beneath it.
