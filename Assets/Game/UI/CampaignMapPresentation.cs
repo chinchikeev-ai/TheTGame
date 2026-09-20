@@ -24,8 +24,7 @@ public sealed class CampaignMapPresentation : MonoBehaviour
 
     Canvas FindMenuCanvas()
     {
-        GameObject menuCanvas = GameObject.Find("MenuCanvas");
-        return menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
+        return GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
     }
 
     void Build()
