@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    public static EnemySpawner Instance { get; private set; }
+
     static readonly WaitForSeconds ReinforcementDelay = new WaitForSeconds(.65f);
 
     sealed class PreparedSpawn
@@ -85,6 +87,21 @@ public class EnemySpawner : MonoBehaviour
     int currentWaveSpawnedEnemies;
     float effectiveHpMultiplier = 1f;
     float effectiveSpeedMultiplier = 1f;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
 
     public void Initialize(Transform[][] newPaths)
     {
