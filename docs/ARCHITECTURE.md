@@ -149,6 +149,14 @@ Persistence implementation; not a UI dependency.
 ### Registries
 `EnemyRegistry` and `TowerRegistry` are runtime indexes. High-frequency code uses them instead of scene-wide searches.
 
+### Runtime lookup policy
+Runtime-wide enumeration with `FindObjectsByType` / `FindObjectsOfType` is forbidden in gameplay code.
+
+Bounded lookup during composition/startup is allowed when a runtime owner has not yet supplied a reference. `GameObject.Find` and `FindFirstObjectByType` must not run from `Update`, `LateUpdate`, `FixedUpdate` or equivalent high-frequency loops. Frequently accessed systems expose stable runtime references or registries instead.
+
+Name-based lookup remains transitional wiring debt. New code should prefer explicit references from the composition root, owner APIs, registries, or stable runtime instances.
+
+
 ## Combat contract
 All reusable damage uses `DamagePacket` and `DamageType`.
 Current types: Physical, Piercing, Fire, Hero.
