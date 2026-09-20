@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- ARCH-007: clean start/Restart Chapter I сохраняют injected world/UI roots без name-based fallback; море, faction staging, compact HUD и menu/combat bindings появляются корректно.
+- ARCH-007: переименование presentation GameObject внутри owner hierarchy не ломает внешние consumers, пока owner API/тип остаётся прежним.
 - ARCH-006: clean start/Restart создают один menu presentation stack и один combat-HUD presentation stack; нет дубликатов BossHUD/notifications/HUD skin/preview/follower.
 - ARCH-006: после Pause/Settings/Resume menu-owned presentation остаётся привязан к текущему `GameMenuController`, а combat-owned presentation — к текущему `ModernCombatHud`.
 - ARCH-005: clean start и Restart Chapter I создают ровно по одному экземпляру каждого Chapter I-owned presenter; ни один из них не появляется до выбора/установки chapter runtime profile.
