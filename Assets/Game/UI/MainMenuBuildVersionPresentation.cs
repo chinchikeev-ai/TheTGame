@@ -3,16 +3,19 @@ using UnityEngine.UI;
 
 public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
 {
+    GameMenuController controller;
     GameObject boundMainMenu;
     GameObject badge;
     Text label;
     float nextRefreshAt;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
+    public void Initialize(GameMenuController owner)
     {
-        if (FindFirstObjectByType<MainMenuBuildVersionPresentation>() == null)
-            new GameObject("MainMenuBuildVersionPresentation").AddComponent<MainMenuBuildVersionPresentation>();
+        controller = owner;
+        boundMainMenu = owner != null ? owner.MainMenuRoot : null;
+        badge = null;
+        label = null;
+        BindOrBuildBadge();
     }
 
     void Update()
@@ -36,7 +39,8 @@ public sealed class MainMenuBuildVersionPresentation : MonoBehaviour
 
     void BindOrBuildBadge()
     {
-        GameObject mainMenu = GameObject.Find("MainMenu");
+        if (controller == null) controller = GameMenuController.Instance;
+        GameObject mainMenu = controller != null ? controller.MainMenuRoot : null;
         if (mainMenu == null) return;
 
         boundMainMenu = mainMenu;
