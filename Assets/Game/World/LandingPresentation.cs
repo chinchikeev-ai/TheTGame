@@ -20,7 +20,7 @@ public class LandingPresentation : MonoBehaviour
     {
         GameManager gm = GameManager.Instance;
         if (gm == null || gm.GameEnded) return;
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
 
         if (!landingPlayed)
         {
