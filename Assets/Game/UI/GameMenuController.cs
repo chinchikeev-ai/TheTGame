@@ -55,7 +55,7 @@ public class GameMenuController : MonoBehaviour
     {
         QuitRequested = false;
         GameUserSettings.ApplySaved();
-        spawner = EnemySpawner.Instance
+        spawner = EnemySpawner.Instance;
         BuildUI();
 
         if (startLevelAfterReload)
