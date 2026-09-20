@@ -24,13 +24,6 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
     static readonly Color Fire = new Color(1f,.34f,.045f);
     static readonly Color FireHot = new Color(1f,.61f,.08f);
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneFactionStaging>() == null)
-            new GameObject("ChapterOneFactionStaging").AddComponent<ChapterOneFactionStaging>();
-    }
-
     IEnumerator Start()
     {
         // Existing coast/gate/city presentation owners also build during Start.
