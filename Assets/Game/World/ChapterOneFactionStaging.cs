@@ -8,6 +8,20 @@ using UnityEngine;
 // colliders, routes, placement cells or combat data are modified here.
 public sealed class ChapterOneFactionStaging : MonoBehaviour
 {
+    Transform coastRoot;
+    Transform dressingRoot;
+    Transform gateRoot;
+    TroyCityBackdropPresentation cityBackdrop;
+    public Transform Root { get; private set; }
+
+    public void Initialize(Transform coast, Transform dressing, Transform gate, TroyCityBackdropPresentation city)
+    {
+        coastRoot = coast;
+        dressingRoot = dressing;
+        gateRoot = gate;
+        cityBackdrop = city;
+    }
+
     static readonly Color TrojanRed = new Color(.58f,.055f,.035f);
     static readonly Color TrojanDeepRed = new Color(.34f,.025f,.020f);
     static readonly Color TrojanWarmStone = new Color(.66f,.49f,.29f);
@@ -26,11 +40,10 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
 
     IEnumerator Start()
     {
-        // Existing coast/gate/city presentation owners also build during Start.
-        // Waiting two frames makes this a final art-direction layer instead of
-        // competing with their construction order.
-        yield return null;
-        yield return null;
+        // City backdrop builds during Start. Wait for its explicit root instead of
+        // coupling the staging pass to scene object names.
+        for (int i = 0; i < 8 && cityBackdrop != null && cityBackdrop.Root == null; i++)
+            yield return null;
 
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1)
         {
@@ -38,26 +51,21 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
             yield break;
         }
 
-        if (GameObject.Find("Chapter01_FactionStaging") != null)
-        {
-            UnityEngine.Object.Destroy(gameObject);
-            yield break;
-        }
-
         GameObject root = new GameObject("Chapter01_FactionStaging");
+        Root = root.transform;
         RestageGreekMaterials();
         RestageTrojanMaterials();
         BuildGreekStandards(root.transform);
         BuildTrojanApproach(root.transform);
     }
 
-    static void RestageGreekMaterials()
+    void RestageGreekMaterials()
     {
-        RestageGreekHierarchy(GameObject.Find("Chapter01_CoastEnvironment"));
-        RestageGreekHierarchy(GameObject.Find("Chapter01_CoastalDressing"));
+        RestageGreekHierarchy(coastRoot);
+        RestageGreekHierarchy(dressingRoot);
     }
 
-    static void RestageGreekHierarchy(GameObject root)
+    static void RestageGreekHierarchy(Transform root)
     {
         if (root == null) return;
 
@@ -83,13 +91,13 @@ public sealed class ChapterOneFactionStaging : MonoBehaviour
         }
     }
 
-    static void RestageTrojanMaterials()
+    void RestageTrojanMaterials()
     {
-        RestageTrojanHierarchy(GameObject.Find("Chapter01_TroyGateHero"));
-        RestageTrojanHierarchy(GameObject.Find("Chapter01_TroyCityBackdrop"));
+        RestageTrojanHierarchy(gateRoot);
+        RestageTrojanHierarchy(cityBackdrop != null ? cityBackdrop.Root : null);
     }
 
-    static void RestageTrojanHierarchy(GameObject root)
+    static void RestageTrojanHierarchy(Transform root)
     {
         if (root == null) return;
 
