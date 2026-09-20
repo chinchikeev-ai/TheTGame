@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Runtime lookup hardening (2026-09-20): the remaining Chapter I `FindObjectsByType` runtime violation was removed from the Aegean sea presentation and replaced by hierarchy-scoped traversal. `EnemySpawner`, `TowerPlacement`, `GameMenuController` and `ModernCombatHud` now expose stable runtime references used by recurring UI/presentation paths. Known `GameObject.Find` / `FindFirstObjectByType` calls were removed from `Update` / `LateUpdate` consumers, including the compact Chapter I HUD pass, which now performs bounded startup binding. `tools/check-architecture.py` now rejects direct scene lookup in `Update`, `LateUpdate` and `FixedUpdate` while still allowing bounded startup/bootstrap lookup. Unity compile/PlayMode validation remains pending.
+
 Chapter selection fullscreen fix (2026-09-20): map now fills the viewport, while
 the detail panel stays right-aligned and controls keep uniform scale. The legacy
 CampaignMapPresentation skips this screen, preventing the old map showing beneath it.
