@@ -15,10 +15,10 @@ public sealed class RuntimeInputBootstrap : MonoBehaviour
 
     public void EnsureRuntimeInput()
     {
-        EventSystem = FindFirstObjectByType<EventSystem>();
         if (EventSystem == null)
         {
             GameObject eventSystemObject = new GameObject("EventSystem");
+            eventSystemObject.transform.SetParent(transform, false);
             EventSystem = eventSystemObject.AddComponent<EventSystem>();
         }
 
