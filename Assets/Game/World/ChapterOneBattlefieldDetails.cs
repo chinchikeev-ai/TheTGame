@@ -11,13 +11,6 @@ public sealed class ChapterOneBattlefieldDetails : MonoBehaviour
     static readonly Color Rock = new Color(.33f,.31f,.27f);
     static readonly Color Dust = new Color(.50f,.40f,.27f);
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneBattlefieldDetails>() == null)
-            new GameObject("ChapterOneBattlefieldDetails").AddComponent<ChapterOneBattlefieldDetails>();
-    }
-
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
