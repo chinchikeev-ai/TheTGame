@@ -17,6 +17,36 @@ public class RuntimeGraphTests
     }
 
     [UnityTest]
+    public IEnumerator Bootstrap_ExposesExplicitRuntimeContext()
+    {
+        yield return null;
+        yield return null;
+
+        GameBootstrap bootstrap = Object.FindFirstObjectByType<GameBootstrap>();
+        Assert.NotNull(bootstrap);
+        Assert.NotNull(bootstrap.Runtime);
+        Assert.NotNull(bootstrap.Runtime.Root);
+        Assert.NotNull(bootstrap.Runtime.CoreRoot);
+        Assert.NotNull(bootstrap.Runtime.ChapterRoot);
+        Assert.NotNull(bootstrap.Runtime.UiRoot);
+
+        Assert.AreSame(CampaignController.Instance, bootstrap.Runtime.Campaign);
+        Assert.AreSame(ChapterController.Instance, bootstrap.Runtime.Chapters);
+        Assert.AreSame(GameManager.Instance, bootstrap.Runtime.Game);
+        Assert.AreSame(GameStateController.Instance, bootstrap.Runtime.State);
+        Assert.AreSame(EnemySpawner.Instance, bootstrap.Runtime.Spawner);
+        Assert.AreSame(ModernCombatHud.Instance, bootstrap.Runtime.CombatHud);
+        Assert.AreSame(GameMenuController.Instance, bootstrap.Runtime.Menu);
+
+        Assert.NotNull(bootstrap.Runtime.Chapter);
+        Assert.NotNull(bootstrap.Runtime.Chapter.MapBuilder);
+        Assert.NotNull(bootstrap.Runtime.Chapter.Placement);
+        Assert.NotNull(bootstrap.Runtime.Chapter.Hector);
+        Assert.AreSame(TowerPlacement.Instance, bootstrap.Runtime.Chapter.Placement);
+        Assert.AreSame(HectorController.Instance, bootstrap.Runtime.Chapter.Hector);
+    }
+
+    [UnityTest]
     public IEnumerator ChapterOne_IsActiveAndHasFiveEvents()
     {
         yield return null;
