@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- ARCH-004: после запуска/Restart Chapter I остаётся по одному `EnemySpawner`, `TowerPlacement`, `GameMenuController`, `ModernCombatHud`; их static `Instance` не остаётся stale после уничтожения.
+- ARCH-004: Aegean sea replacement по-прежнему скрывает legacy water без `FindObjectsByType`, а компактный HUD применяется после startup-bind.
 - Runtime input: в сцене существует ровно один `RuntimeInputBootstrap` и один `EventSystem`; после Pause/Settings/Resume и Restart Chapter I не появляются дубликаты и управление Гектором сохраняется.
 - Combat HUD: декоративные панели/тексты/иконки не перехватывают pointer; только `Button/Selectable` остаются raycast-target.
 - ART-007: поле боя остаётся крупнейшей визуальной областью; море -> берег -> две линии -> зона обороны -> ворота/Троя читаются за один взгляд.
