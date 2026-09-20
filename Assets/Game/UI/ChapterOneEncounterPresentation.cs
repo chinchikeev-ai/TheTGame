@@ -31,7 +31,7 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
 
     void Start()
     {
-        spawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = EnemySpawner.Instance;
         Build();
     }
 
@@ -78,7 +78,7 @@ public sealed class ChapterOneEncounterPresentation : MonoBehaviour
             if (group != null) group.alpha = 0f;
             return;
         }
-        if (spawner == null) spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) spawner = EnemySpawner.Instance;
         if (spawner == null || group == null) return;
 
         bool active = EncounterRuntime.EncounterActive(spawner);
