@@ -31,43 +31,17 @@ public sealed class ChapterOneAegeanSeaVolumePass : MonoBehaviour
         GameObject root = new GameObject("Chapter01_AegeanSeaVolumePass");
         Root = root.transform;
         BuildRaisedBreakers(root.transform);
-        BuildRockWash(root.transform);
         BuildShipWakes(root.transform);
     }
 
     static void BuildRaisedBreakers(Transform parent)
     {
-        GameObject bodyOuter = CreateCoastRibbon(parent, "Raised Aegean Breaker Body", -.88f, -.119f, .22f, WaveFace, .12f, .4f);
-        GameObject bodyInner = CreateCoastRibbon(parent, "Raised Aegean Breaker Body", -.62f, -.104f, .15f, WaveLit, .10f, 1.2f);
-        GameObject crestOuter = CreateCoastRibbon(parent, "Raised Aegean White Crest", -.72f, -.069f, .065f, ThinFoam, .11f, .8f);
-        GameObject crestInner = CreateCoastRibbon(parent, "Raised Aegean White Crest", -.45f, -.057f, .090f, Foam, .13f, 1.7f);
-        GameObject trailing = CreateCoastRibbon(parent, "Breaker Trailing Foam", -.24f, -.018f, .050f, ThinFoam, .08f, 2.5f);
-
-        AddSwellMotion(bodyOuter, .4f);
-        AddSwellMotion(bodyInner, 1.1f);
-        AddSurfMotion(crestOuter, .9f);
-        AddSurfMotion(crestInner, 1.6f);
-        AddSurfMotion(trailing, 2.3f);
-    }
-
-    static void BuildRockWash(Transform parent)
-    {
-        float[] shoreRockZ = { -9.1f, -6.7f, 6.9f, 9.0f };
-        for (int i = 0; i < shoreRockZ.Length; i++)
-        {
-            float z = shoreRockZ[i];
-            float x = CoastEnvironmentBuilder.ShorelineX(z) + 1.25f + (i % 2) * .35f;
-
-            Vector3 center = new Vector3(x, .008f, z);
-            GameObject foamArc = CreateArcRibbon(parent, "Boulder Wash Foam", center, .46f, .31f, -145f, 145f, .055f, i % 2 == 0 ? Foam : ThinFoam);
-            GameObject backwash = CreateSegmentRibbon(parent, "Boulder Backwash",
-                center + new Vector3(-.28f, -.018f, -.28f),
-                center + new Vector3(-.62f, -.018f, .28f),
-                .075f,
-                WaveLit * .86f);
-            AddSurfMotion(foamArc, 1.4f + i * .7f);
-            AddSeaMotion(backwash, 3.0f + i * .5f);
-        }
+        // One subtle breaker ridge is enough from the tactical camera. Multiple
+        // parallel ribbons looked like artificial contour lines rather than surf.
+        GameObject body = CreateCoastRibbon(parent, "Raised Aegean Breaker Body", -.48f, -.112f, .11f, WaveFace, .08f, .7f);
+        GameObject crest = CreateCoastRibbon(parent, "Raised Aegean White Crest", -.30f, -.068f, .055f, Foam, .09f, 1.5f);
+        AddSwellMotion(body, .8f);
+        AddSurfMotion(crest, 1.5f);
     }
 
     static void BuildShipWakes(Transform parent)
