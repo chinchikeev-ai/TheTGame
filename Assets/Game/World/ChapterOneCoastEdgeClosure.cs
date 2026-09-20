@@ -11,13 +11,6 @@ public sealed class ChapterOneCoastEdgeClosure : MonoBehaviour
     static readonly Color Rock = new Color(.35f,.34f,.30f);
     static readonly Color EdgeSea = new Color(.035f,.34f,.60f);
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<ChapterOneCoastEdgeClosure>() == null)
-            new GameObject("ChapterOneCoastEdgeClosure").AddComponent<ChapterOneCoastEdgeClosure>();
-    }
-
     IEnumerator Start()
     {
         yield return null;
