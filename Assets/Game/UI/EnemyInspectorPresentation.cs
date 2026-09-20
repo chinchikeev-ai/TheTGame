@@ -140,8 +140,7 @@ public sealed class EnemyInspectorPresentation : MonoBehaviour
 
     void BindMenuCanvas()
     {
-        GameObject menu = GameObject.Find("MenuCanvas");
-        menuCanvas = menu != null ? menu.GetComponent<Canvas>() : null;
+        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
     }
 
     bool IsMenuBlockingCombat()
