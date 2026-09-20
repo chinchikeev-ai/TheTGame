@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public class HectorHUD : MonoBehaviour
 {
+    public Transform HudRoot => root != null ? root.transform : null;
+
     static readonly string[] BlockingMenuNames =
     {
         "MainMenu", "LevelSelect", "Settings", "PauseMenu", "EndMenu"
