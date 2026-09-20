@@ -2,12 +2,6 @@ using UnityEngine;
 
 public sealed class TroyFireLifePresentation : MonoBehaviour
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<TroyFireLifePresentation>() == null)
-            new GameObject("TroyFireLifePresentation").AddComponent<TroyFireLifePresentation>();
-    }
 
     void Start()
     {
