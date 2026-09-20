@@ -2,12 +2,6 @@ using UnityEngine;
 
 public sealed class TroyCityBackdropPresentation : MonoBehaviour
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<TroyCityBackdropPresentation>() == null)
-            new GameObject("TroyCityBackdropPresentation").AddComponent<TroyCityBackdropPresentation>();
-    }
 
     void Start()
     {
