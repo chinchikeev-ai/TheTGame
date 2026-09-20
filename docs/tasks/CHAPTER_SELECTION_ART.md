@@ -25,7 +25,11 @@ the controller callback. RU/EN fit at 4:3 and 16:9. No user save writes in tests
 
 ## Verification
 All three focused EditMode cases passed on 2026-09-19; RU and EN captures inspected.
-Widescreen preserves the reference composition with dark side margins, not stretching.
+2026-09-20: replaced side margins with full-viewport map layout. The background
+adapts to screen dimensions; UI elements keep uniform scale and the details stay
+right-aligned. CampaignMapPresentation no longer creates its legacy map on this screen.
+Regression checks include exact viewport coverage and no CampaignMapLayer at 4:3,
+16:9 and 2560x1080. EXE build remains outside this check.
 Focused EditMode tests render 1448x1086 RU, 1920x1080 RU and 1366x768 EN and check
 selection, action gating, back callbacks and button screen bounds. Previews are in
 Logs/Validation/ChapterSelection. Full gameplay visual acceptance remains pending.

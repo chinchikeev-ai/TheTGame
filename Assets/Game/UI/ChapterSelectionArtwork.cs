@@ -9,6 +9,7 @@ public sealed class ChapterSelectionArtwork : MonoBehaviour
     readonly List<Sprite> sprites = new List<Sprite>();
     readonly List<Image> nodes = new List<Image>();
     RectTransform composition;
+    readonly Dictionary<RectTransform, Vector2> authoredPositions = new Dictionary<RectTransform, Vector2>();
     Text heading, description, status, startLabel;
     Button start;
     Action begin;
@@ -88,6 +89,7 @@ public sealed class ChapterSelectionArtwork : MonoBehaviour
         Command("Back", ru ? Slice(new Rect(16, 949, 300, 116)) : parchment, new Rect(16, 949, 300, 116), onBack);
         if (!ru) Label("BACK", new Rect(50, 974, 230, 55), 32, TextAnchor.MiddleCenter);
         SelectChapter(1);
+        foreach (RectTransform child in composition) authoredPositions.Add(child, child.anchoredPosition);
         Fit();
     }
 
@@ -120,7 +122,28 @@ public sealed class ChapterSelectionArtwork : MonoBehaviour
     {
         if (composition == null) return;
         var size = ((RectTransform)transform).rect.size;
-        composition.localScale = Vector3.one * Mathf.Min(size.x / 1448f, size.y / 1086f);
+        float scale = Mathf.Min(size.x / 1448f, size.y / 1086f);
+        if (scale <= 0) return;
+        composition.localScale = Vector3.one * scale;
+        Vector2 designSize = size / scale;
+        composition.sizeDelta = designSize;
+        float extraX = designSize.x - 1448f;
+        float extraY = designSize.y - 1086f;
+        foreach (var pair in authoredPositions)
+        {
+            RectTransform child = pair.Key;
+            Vector2 position = pair.Value;
+            if (child.name == "AlignedMap")
+            {
+                child.sizeDelta = designSize;
+                continue;
+            }
+            // Keep the detail panel and its contents together; spread route markers with the map.
+            float horizontal = position.x >= 938 ? 1f : position.x < 100 ? 0f : (position.x + child.sizeDelta.x * .5f) / 1448f;
+            position.x += extraX * horizontal;
+            position.y -= extraY * (-pair.Value.y / 1086f);
+            child.anchoredPosition = position;
+        }
     }
     Sprite Load(string name)
     {

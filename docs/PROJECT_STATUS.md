@@ -6,6 +6,11 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Chapter selection fullscreen fix (2026-09-20): map now fills the viewport, while
+the detail panel stays right-aligned and controls keep uniform scale. The legacy
+CampaignMapPresentation skips this screen, preventing the old map showing beneath it.
+Focused tests cover 4:3, 16:9 and ultrawide background bounds and legacy suppression.
+
 Chapter selection artwork (2026-09-19): the old chapter list is replaced with a
 reference-derived coastal map, separate chapter nodes, detail panel and start/back
 buttons. Chapter I uses the existing start action; II-V remain non-playable with

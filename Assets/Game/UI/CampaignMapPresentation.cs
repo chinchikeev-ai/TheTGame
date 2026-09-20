@@ -32,6 +32,16 @@ public sealed class CampaignMapPresentation : MonoBehaviour
     {
         Transform levelSelect = canvas.transform.Find("LevelSelect");
         if (levelSelect == null) return;
+        if (levelSelect.GetComponent<ChapterSelectionArtwork>() != null)
+        {
+            Transform legacy = levelSelect.Find("CampaignMapLayer");
+            if (legacy != null)
+            {
+                legacy.gameObject.SetActive(false);
+                Destroy(legacy.gameObject);
+            }
+            return;
+        }
 
         Transform levelCard = levelSelect.Find("LevelCard");
         if (levelCard != null) RecomposeLevelCard(levelCard);

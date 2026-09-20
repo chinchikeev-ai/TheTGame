@@ -10,6 +10,7 @@ public sealed class ChapterSelectionArtworkTests
 {
     [TestCase(1448, 1086, true)]
     [TestCase(1920, 1080, true)]
+    [TestCase(2560, 1080, true)]
     [TestCase(1366, 768, false)]
     public void SelectionCallbacksAndLayout(int width, int height, bool ru)
     {
@@ -33,6 +34,11 @@ public sealed class ChapterSelectionArtworkTests
             int starts = 0, backs = 0;
             var art = root.AddComponent<ChapterSelectionArtwork>();
             art.Build(() => starts++, () => backs++, chapter => chapter <= 2, ru);
+            var legacy = host.AddComponent<CampaignMapPresentation>();
+            var privateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
+            typeof(CampaignMapPresentation).GetField("canvas", privateInstance).SetValue(legacy, host.GetComponent<Canvas>());
+            typeof(CampaignMapPresentation).GetMethod("Build", privateInstance).Invoke(legacy, null);
+            Assert.IsNull(root.transform.Find("CampaignMapLayer"));
             var composition = root.transform.Find("ChapterComposition");
             var start = composition.Find("StartChapter").GetComponent<Button>();
             Assert.IsTrue(start.interactable);
@@ -60,6 +66,12 @@ public sealed class ChapterSelectionArtworkTests
             Canvas.ForceUpdateCanvases();
             typeof(ChapterSelectionArtwork).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(art, null);
             Canvas.ForceUpdateCanvases();
+            var mapCorners = new Vector3[4];
+            composition.Find("AlignedMap").GetComponent<RectTransform>().GetWorldCorners(mapCorners);
+            Assert.That(camera.WorldToViewportPoint(mapCorners[0]).x, Is.EqualTo(0).Within(.001f));
+            Assert.That(camera.WorldToViewportPoint(mapCorners[0]).y, Is.EqualTo(0).Within(.001f));
+            Assert.That(camera.WorldToViewportPoint(mapCorners[2]).x, Is.EqualTo(1).Within(.001f));
+            Assert.That(camera.WorldToViewportPoint(mapCorners[2]).y, Is.EqualTo(1).Within(.001f));
             foreach (var button in root.GetComponentsInChildren<Button>())
             {
                 var corners = new Vector3[4];
