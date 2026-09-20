@@ -47,6 +47,24 @@ public class RuntimeGraphTests
     }
 
     [UnityTest]
+    public IEnumerator Bootstrap_RejectsDuplicateRuntimeOwner()
+    {
+        yield return null;
+
+        GameBootstrap original = GameBootstrap.Instance;
+        Assert.NotNull(original);
+        Assert.NotNull(original.Runtime);
+
+        GameObject duplicateObject = new GameObject("DuplicateGameBootstrap");
+        GameBootstrap duplicate = duplicateObject.AddComponent<GameBootstrap>();
+        yield return null;
+
+        Assert.AreSame(original, GameBootstrap.Instance, "Existing bootstrap must remain the runtime owner.");
+        Assert.IsTrue(duplicate == null || duplicate.gameObject == null, "Duplicate bootstrap must destroy itself.");
+        Assert.NotNull(original.Runtime);
+    }
+
+    [UnityTest]
     public IEnumerator ChapterOne_IsActiveAndHasFiveEvents()
     {
         yield return null;
