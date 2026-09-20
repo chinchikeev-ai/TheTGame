@@ -56,6 +56,17 @@ namespace TheTroyGame.Tests
         }
 
         [Test]
+        public void CoastBuilder_DoesNotCreateThreeSliceSeaGeometry()
+        {
+            string source = File.ReadAllText("Assets/Game/World/CoastEnvironmentBuilder.cs");
+            StringAssert.Contains("Aegean Sea Base", source);
+            StringAssert.DoesNotContain("Aegean Shallows\",PrimitiveType.Cube", source);
+            StringAssert.DoesNotContain("Aegean Mid Water\",PrimitiveType.Cube", source);
+            StringAssert.DoesNotContain("Deep Aegean Sea\",PrimitiveType.Cube", source);
+            StringAssert.DoesNotContain("Shore Shallow Gradient Band", source);
+        }
+
+        [Test]
         public void CoastClosure_KeepsLandExtensionOffOpenWater()
         {
             string source = File.ReadAllText(CoastClosure);

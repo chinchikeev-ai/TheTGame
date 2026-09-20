@@ -8,10 +8,7 @@ public static class CoastEnvironmentBuilder
     static readonly Color LightSand = new Color(.82f,.69f,.44f);
     static readonly Color WetSand = new Color(.47f,.41f,.30f);
     static readonly Color DryTransition = new Color(.60f,.50f,.32f);
-    static readonly Color ShallowWater = new Color(.09f,.38f,.46f);
-    static readonly Color ShelfWater = new Color(.075f,.33f,.43f);
-    static readonly Color Water = new Color(.055f,.27f,.39f);
-    static readonly Color DeepWater = new Color(.03f,.13f,.24f);
+    static readonly Color SeaBase = new Color(.035f,.40f,.70f);
     static readonly Color Rock = new Color(.35f,.34f,.30f);
     static readonly Color PebbleLight = new Color(.48f,.46f,.39f);
     static readonly Color PebbleDark = new Color(.29f,.29f,.27f);
@@ -72,37 +69,20 @@ public static class CoastEnvironmentBuilder
 
     static void CreateSea(Transform parent)
     {
-        Primitive(parent,"Aegean Shallows",PrimitiveType.Cube,new Vector3(-15.6f,-.24f,0f),new Vector3(4.8f,.10f,25f),ShallowWater);
-        Primitive(parent,"Aegean Mid Water",PrimitiveType.Cube,new Vector3(-21.9f,-.29f,0f),new Vector3(7.9f,.11f,25f),Water);
-        Primitive(parent,"Deep Aegean Sea",PrimitiveType.Cube,new Vector3(-29.8f,-.34f,0f),new Vector3(8f,.10f,25f),DeepWater);
-
-        CreateShoreBand(parent,"Aegean Shelf Transition",-5.55f,-2.40f,-.181f,ShelfWater,.17f,.65f);
-        CreateShoreBand(parent,"Aegean Mid Shelf",-8.65f,-5.25f,-.224f,Water*1.08f,.16f,1.45f);
-
-        float[] sandbarZ = { -7.8f,-3.7f,.2f,4.3f,8.2f };
-        for (int i = 0; i < sandbarZ.Length; i++)
-        {
-            Primitive(parent,"Shallow Water Variation",PrimitiveType.Sphere,
-                new Vector3(-14.55f,-.175f,sandbarZ[i]),
-                new Vector3(1.75f,.025f,1.4f + (i % 2) * .45f),
-                new Color(.13f,.43f,.48f),
-                Quaternion.Euler(0f,-8f + i * 4f,0f));
-        }
-
-        float[] shoalZ = { -8.8f,-5.4f,-1.9f,1.9f,5.4f,8.7f };
-        for(int i=0;i<shoalZ.Length;i++)
-        {
-            float z=shoalZ[i];
-            float x=ShorelineX(z)-1.35f-(i%3)*.31f;
-            Primitive(parent,"Submerged Shoal",PrimitiveType.Sphere,new Vector3(x,-.149f,z),
-                new Vector3(.58f+(i%2)*.16f,.008f,.92f+(i%3)*.20f),
-                ShallowWater*(1.08f+(i%2)*.035f),Quaternion.Euler(0f,-12f+i*9f,0f));
-        }
+        // One structural sea surface only. The runtime Aegean presentation replaces
+        // this fallback renderer with the authored coastline-following ocean mesh.
+        // Do not split water into shallow/mid/deep rectangles: those seams are
+        // visible from the real Chapter I tactical camera.
+        Primitive(parent,"Aegean Sea Base",PrimitiveType.Cube,
+            new Vector3(-26.5f,-.30f,0f),
+            new Vector3(27f,.08f,54f),
+            SeaBase);
     }
 
     static void CreateShorelineBands(Transform parent)
     {
-        CreateShoreBand(parent,"Shore Shallow Gradient Band",-2.55f,-.10f,-.168f,ShallowWater*1.08f,.10f,.3f);
+        // Water color belongs to ChapterOneAegeanSeaPresentation. Static shoreline
+        // geometry begins with wet sand so no extra water-colored slice is introduced.
         CreateShoreBand(parent,"Shore Wet Band",-.14f,1.34f,-.073f,WetSand,.10f,1.2f);
         CreateShoreBand(parent,"Shore Dry Sand Band",1.12f,4.55f,-.082f,LightSand*.98f,.20f,2.0f);
         CreateShoreBand(parent,"Shore Land Transition Band",4.20f,7.25f,-.094f,DryTransition,.18f,2.8f);

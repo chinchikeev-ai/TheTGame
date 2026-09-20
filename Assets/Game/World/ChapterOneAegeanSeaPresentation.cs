@@ -30,6 +30,7 @@ public sealed class ChapterOneAegeanSeaPresentation : MonoBehaviour
 
     static readonly HashSet<string> LegacyWaterObjects = new HashSet<string>
     {
+        "Aegean Sea Base",
         "Deep Aegean Sea",
         "Aegean Mid Water",
         "Aegean Shallows",
