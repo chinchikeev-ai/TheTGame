@@ -12,12 +12,6 @@ public class BossHUD : MonoBehaviour
     Image dangerGlow;
     Canvas menuCanvas;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<BossHUD>() == null) new GameObject("BossHUD").AddComponent<BossHUD>();
-    }
-
     void Start()
     {
         GameObject canvasObj = new GameObject("BossHUDCanvas");
