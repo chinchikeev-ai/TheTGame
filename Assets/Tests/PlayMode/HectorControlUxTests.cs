@@ -63,12 +63,60 @@ public class HectorControlUxTests
         Assert.IsTrue(panel.gameObject.activeSelf, "Selecting Hector must open the Hector command menu.");
 
         Button[] buttons = hud.GetComponentsInChildren<Button>(true);
-        Assert.GreaterOrEqual(buttons.Length, 5, "Hector HUD should expose portrait plus four clickable ability buttons.");
-        Assert.IsTrue(buttons.Any(b => b.name == "HectorPortrait"));
+        Assert.GreaterOrEqual(buttons.Length, 5, "Hector HUD should expose the Hector card plus four clickable ability buttons.");
+        Button cardButton = buttons.FirstOrDefault(b => b.name == "HectorPanel");
+        Assert.NotNull(cardButton, "The full Hector card must be the click target.");
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_Q"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_E"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_R"));
         Assert.IsTrue(buttons.Any(b => b.name == "Ability_F"));
+
+        hector.SetSelected(false);
+        cardButton.onClick.Invoke();
+        yield return null;
+        Assert.IsTrue(hector.Selected, "Clicking the Hector HUD card must select Hector.");
+    }
+
+    [UnityTest]
+    public IEnumerator Hector_MoveCommand_ChangesDestinationAndMoves()
+    {
+        yield return null;
+        yield return null;
+
+        GameBootstrap bootstrap = Object.FindFirstObjectByType<GameBootstrap>();
+        Assert.NotNull(bootstrap);
+        Assert.NotNull(bootstrap.Runtime);
+        Assert.NotNull(bootstrap.Runtime.Chapter);
+
+        HectorController hector = bootstrap.Runtime.Chapter.Hector;
+        HectorInputDriver input = hector != null ? hector.GetComponent<HectorInputDriver>() : null;
+        Camera camera = bootstrap.Runtime.Camera;
+        Transform[][] routes = bootstrap.Runtime.Chapter.Paths;
+
+        Assert.NotNull(hector);
+        Assert.NotNull(input);
+        Assert.NotNull(camera);
+        Assert.NotNull(routes);
+        Assert.Greater(routes.Length, 0);
+        Assert.NotNull(routes[0]);
+        Assert.Greater(routes[0].Length, 2);
+
+        hector.SetSelected(true);
+        Vector3 start = hector.transform.position;
+        Transform targetNode = routes[0][Mathf.Max(0, routes[0].Length / 2)];
+        Vector2 screenPoint = camera.WorldToScreenPoint(targetNode.position);
+
+        Assert.IsTrue(input.TryMoveAtScreenPoint(screenPoint), "A selected Hector must accept a battlefield move command.");
+        Assert.Greater((hector.MoveDestination - start).sqrMagnitude, .01f, "Move command must change Hector's active destination.");
+
+        float previousScale = Time.timeScale;
+        Time.timeScale = 1f;
+        yield return null;
+        yield return null;
+        yield return null;
+        Time.timeScale = previousScale;
+
+        Assert.Greater((hector.transform.position - start).sqrMagnitude, .0001f, "Hector must physically move after accepting the command.");
     }
 
     [UnityTest]
