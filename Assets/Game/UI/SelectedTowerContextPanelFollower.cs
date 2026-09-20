@@ -31,7 +31,7 @@ public sealed class SelectedTowerContextPanelFollower : MonoBehaviour
 
     bool TryBind()
     {
-        if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
+        if (placement == null) placement = TowerPlacement.Instance;
         if (placement == null) return false;
 
         GameObject panelObject = GameObject.Find("SelectedTowerCard");
