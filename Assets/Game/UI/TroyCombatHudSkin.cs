@@ -17,13 +17,6 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
     TowerPlacement placement;
     Image selectedTowerIcon;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoCreate()
-    {
-        if (FindFirstObjectByType<TroyCombatHudSkin>() == null)
-            new GameObject("TroyCombatHudSkin").AddComponent<TroyCombatHudSkin>();
-    }
-
     void Update()
     {
         if (!applied)
