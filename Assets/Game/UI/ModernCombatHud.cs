@@ -245,24 +245,30 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void BuildDock(Transform parent)
     {
-        buildDock = Panel(parent, "BuildDock", new Vector2(0f, 22f), new Vector2(940f, 190f), new Color(.040f, .024f, .016f, .96f), new Vector2(.5f, 0f), new Vector2(.5f, 0f));
-        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 78), new Vector2(850, 40), new Color(.44f, .050f, .025f, .97f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        Text(buildDock.transform, L("TROJAN DEFENDERS", "ЗАЩИТНИКИ ТРОИ"), new Vector2(-250, 78), new Vector2(330, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-        buildSelectionText = Text(buildDock.transform, "", new Vector2(198, 78), new Vector2(480, 24), 11, new Color(1f, .78f, .34f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildDock = Panel(parent, "BuildDock", new Vector2(0f, 22f), new Vector2(940f, 232f), new Color(.040f, .024f, .016f, .96f), new Vector2(.5f, 0f), new Vector2(.5f, 0f));
+        Panel(buildDock.transform, "BuildDockHeader", new Vector2(0, 98), new Vector2(330, 36), new Color(.14f, .10f, .06f, 1f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+        Text(buildDock.transform, L("TROJAN DEFENDERS", "ЗАЩИТНИКИ ТРОИ"), new Vector2(0, 98), new Vector2(310, 30), 20, new Color(1f, .86f, .50f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildSelectionText = Text(buildDock.transform, "", Vector2.zero, new Vector2(480, 24), 11, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+        buildSelectionText.gameObject.SetActive(false);
         for (int i = 0; i < buildTypes.Length; i++)
         {
             TowerType type = buildTypes[i];
             float x = -390 + i * 156;
-            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -18), new Vector2(140, 134), () => SelectBuild(type), false);
+            buildButtons[i] = Button(buildDock.transform, "", new Vector2(x, -14), new Vector2(140, 178), () => SelectBuild(type), false);
             buildButtons[i].gameObject.name = "BuildCard_" + type;
-            Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 30), new Vector2(62, 62), TroyHudArt.Tower(type));
-            Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-56, 49), new Vector2(24, 22), 13, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
-            Text towerName = Text(buildButtons[i].transform, TowerName(type).ToUpperInvariant(), new Vector2(0, -24), new Vector2(132, 28), 12, new Color(1f, .90f, .68f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            Image portrait = Icon(buildButtons[i].transform, "TowerIcon", new Vector2(0, 16), new Vector2(112, 112), TroyHudArt.Tower(type));
+            Image footer = Panel(buildButtons[i].transform, "CardFooter", new Vector2(0, -59), new Vector2(112, 42), new Color(.045f, .026f, .018f, .98f), new Vector2(.5f, .5f), new Vector2(.5f, .5f)).GetComponent<Image>();
+            footer.sprite = null;
+            Panel(buildButtons[i].transform, "HotkeyBadge", new Vector2(-50, 65), new Vector2(24, 24), new Color(.07f, .045f, .02f), new Vector2(.5f, .5f), new Vector2(.5f, .5f));
+            Text(buildButtons[i].transform, buildHotkeys[i], new Vector2(-50, 65), new Vector2(22, 22), 14, new Color(1f, .9f, .6f), TextAnchor.MiddleCenter, FontStyle.Bold);
+            Text towerName = Text(buildButtons[i].transform, TowerName(type).ToUpperInvariant(), new Vector2(0, -50), new Vector2(116, 22), 13, new Color(1f, .90f, .68f, 1f), TextAnchor.MiddleCenter, FontStyle.Bold);
             towerName.resizeTextForBestFit = true;
             towerName.resizeTextMinSize = 9;
-            towerName.resizeTextMaxSize = 12;
-            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-26, -50), new Vector2(24, 24), TroyHudArt.Icon("gold"));
-            Text(buildButtons[i].transform, TowerFactory.GetCost(type).ToString(), new Vector2(20, -50), new Vector2(64, 22), 12, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+            towerName.resizeTextMaxSize = 13;
+            Icon(buildButtons[i].transform, "CostCoin", new Vector2(-22, -70), new Vector2(18, 18), TroyHudArt.Icon("gold"));
+            Text price = Text(buildButtons[i].transform, TowerFactory.GetCost(type).ToString(), new Vector2(20, -70), new Vector2(54, 22), 16, new Color(1f, .82f, .36f, 1f), TextAnchor.MiddleLeft, FontStyle.Bold);
+            price.gameObject.name = "Price";
+            buildButtons[i].gameObject.AddComponent<DefenderCardArtwork>().Apply(type, portrait, price);
             BuildButtonHoverRelay relay = buildButtons[i].gameObject.AddComponent<BuildButtonHoverRelay>();
             relay.Initialize(type, () => ShowBuildTooltip(type), HideBuildTooltip);
         }

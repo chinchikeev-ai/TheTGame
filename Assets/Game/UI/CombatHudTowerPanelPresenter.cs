@@ -31,6 +31,12 @@ public static class CombatHudTowerPanelPresenter
             bool recommendedButton = buildTypes[i] == recommended;
             bool affordable = gm != null && gm.Money >= TowerFactory.GetCost(buildTypes[i]);
 
+            if (button.TryGetComponent(out DefenderCardArtwork artwork))
+            {
+                artwork.SetState(selected, recommendedButton, affordable);
+                continue;
+            }
+
             if (selected) image.color = new Color(.58f, .11f, .045f, .98f);
             else if (recommendedButton && affordable) image.color = new Color(.48f, .30f, .07f, .98f);
             else if (recommendedButton) image.color = new Color(.29f, .20f, .08f, .92f);

@@ -33,6 +33,12 @@ A builder succeeding does **not** promote an asset to `DONE`.
 
 ## UI character portraits
 
+Defender HUD cards (2026-09-20): SOURCE ONLY pending gameplay visual acceptance.
+Six generated square portraits under Assets/Game/Art/Resources/DefenderHud are
+integrated as individual runtime images: Spearman, Archer, Ballista, Priest, Fire,
+Guard. Separate live labels/prices and a shared Hector frame form real buttons.
+This change does not replace or promote any 3D unit models.
+
 Gate HUD: GENERATED PLACEHOLDER pending user acceptance. Two separate generated
 textures under Assets/Game/Art/Resources/GateHud are wired into the resource block;
 live text and HP fill remain independent. Three isolated Unity render tests passed.

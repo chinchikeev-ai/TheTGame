@@ -6,6 +6,14 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Defender card art pass (2026-09-20): six separate illustrated portraits replace
+procedural glyphs in the build dock. Live localized names, hotkeys, authored costs,
+selection callbacks and tooltips are retained. Card frames reuse Hector's artwork;
+the skin no longer overwrites portraits or state colors. No balance/map changes.
+Four EditMode render/interaction tests and the focused PlayMode defender-card test
+passed. Validation recorded in tasks/DEFENDER_HUD_ART.md.
+No EXE build; full gameplay visual acceptance remains pending.
+
 Combat HUD wave pass (2026-09-20): replaced the layered rectangular wave panel with
 a separate crimson/gold laurel banner and live title, countdown and progress text.
 Patron portrait import now retains RGBA rather than Alpha8, fixing white silhouettes.

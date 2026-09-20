@@ -80,6 +80,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
             for (int i=0; i<buttons.Length && towerIndex<types.Length; i++)
             {
                 if (buttons[i].transform.parent != dock) continue;
+                if (buttons[i].GetComponent<DefenderCardArtwork>() != null) { towerIndex++; continue; }
                 Image img = buttons[i].GetComponent<Image>();
                 if (img != null)
                 {
@@ -134,6 +135,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         Button[] buttons = root.GetComponentsInChildren<Button>(true);
         for (int i=0; i<buttons.Length; i++)
         {
+            if (buttons[i].GetComponent<DefenderCardArtwork>() != null) continue;
             Image img = buttons[i].GetComponent<Image>();
             if (img == null) continue;
             img.sprite = TroyHudArt.Panel();
@@ -157,6 +159,7 @@ public sealed class TroyCombatHudSkin : MonoBehaviour
         {
             Text text = texts[i];
             if (text == null) continue;
+            if (text.GetComponentInParent<DefenderCardArtwork>() != null) continue;
             text.color = text.fontSize >= 20
                 ? new Color(.96f,.84f,.62f,1f)
                 : new Color(.89f,.83f,.72f,1f);
