@@ -119,16 +119,6 @@ public class GameMenuController : MonoBehaviour
 
     void BuildUI()
     {
-        if (canvas == null)
-        {
-            GameObject stale = GameObject.Find("MenuCanvas");
-            if (stale != null)
-            {
-                stale.SetActive(false);
-                Destroy(stale);
-            }
-        }
-
         GameObject canvasObj = new GameObject("MenuCanvas");
         canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
