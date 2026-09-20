@@ -6,6 +6,14 @@ using UnityEngine;
 // in the real tactical camera.
 public sealed class ChapterOneCoastEdgeClosure : MonoBehaviour
 {
+    Transform coastRoot;
+    public Transform Root { get; private set; }
+
+    public void Initialize(Transform coast)
+    {
+        coastRoot = coast;
+    }
+
     static readonly Color Sand = new Color(.70f,.58f,.37f);
     static readonly Color LightSand = new Color(.82f,.69f,.44f);
     static readonly Color Rock = new Color(.35f,.34f,.30f);
@@ -16,20 +24,15 @@ public sealed class ChapterOneCoastEdgeClosure : MonoBehaviour
         yield return null;
         yield return null;
 
-        if (GameObject.Find("Chapter01_CoastEnvironment") == null ||
+        if (coastRoot == null ||
             (GameManager.Instance != null && GameManager.Instance.MapNumber != 1))
         {
             Destroy(gameObject);
             yield break;
         }
 
-        if (GameObject.Find("Chapter01_CoastEdgeClosure") != null)
-        {
-            Destroy(gameObject);
-            yield break;
-        }
-
         GameObject root = new GameObject("Chapter01_CoastEdgeClosure");
+        Root = root.transform;
         BuildEdge(root.transform, -17.4f, -1f);
         BuildEdge(root.transform, 17.4f, 1f);
     }
