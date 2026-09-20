@@ -2,6 +2,8 @@ using UnityEngine;
 
 public sealed class ChapterOneBattlefieldDetails : MonoBehaviour
 {
+    public Transform Root { get; private set; }
+
     static readonly Color GreekBlue = new Color(.28f,.39f,.57f);
     static readonly Color TrojanRed = new Color(.48f,.12f,.065f);
     static readonly Color Bronze = new Color(.61f,.39f,.13f);
@@ -14,8 +16,8 @@ public sealed class ChapterOneBattlefieldDetails : MonoBehaviour
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
-        if (GameObject.Find("Chapter01_BattlefieldDetails") != null) return;
         GameObject root = new GameObject("Chapter01_BattlefieldDetails");
+        Root = root.transform;
         BuildDebris(root.transform);
         BuildStandards(root.transform);
         BuildRouteMarkers(root.transform);
