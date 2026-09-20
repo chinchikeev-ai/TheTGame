@@ -2,13 +2,15 @@ using UnityEngine;
 
 public sealed class TroyCityBackdropPresentation : MonoBehaviour
 {
+    public Transform Root { get; private set; }
+
 
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
-        if (GameObject.Find("Chapter01_TroyCityBackdrop") != null) return;
 
         GameObject root = new GameObject("Chapter01_TroyCityBackdrop");
+        Root = root.transform;
         float gateX = MapBuilder.CellToWorld(new Vector2Int(17,6)).x;
         Color stone = new Color(.54f,.41f,.24f);
         Color warmStone = new Color(.66f,.49f,.28f);
