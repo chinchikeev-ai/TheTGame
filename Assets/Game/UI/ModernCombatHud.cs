@@ -110,8 +110,7 @@ public sealed class ModernCombatHud : MonoBehaviour
     {
         GameObject legacyObject = GameObject.Find("GameCanvas");
         legacyCanvas = legacyObject != null ? legacyObject.GetComponent<Canvas>() : null;
-        GameObject menuObject = GameObject.Find("MenuCanvas");
-        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : (menuObject != null ? menuObject.GetComponent<Canvas>() : null);
+        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
         if (legacyCanvas != null) legacyCanvas.enabled = false;
     }
 
