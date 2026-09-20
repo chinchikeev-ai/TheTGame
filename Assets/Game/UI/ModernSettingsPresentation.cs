@@ -53,8 +53,8 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
 
     void Bind()
     {
-        canvas = FindMenuCanvas();
-        menu = FindFirstObjectByType<GameMenuController>();
+        menu = GameMenuController.Instance;
+        canvas = menu != null ? menu.MenuCanvas : null;
         if (canvas == null || menu == null) return;
         Transform settings = canvas.transform.Find("Settings");
         if (settings == null) return;
@@ -63,12 +63,6 @@ public sealed class ModernSettingsPresentation : MonoBehaviour
         legacyPanel = legacy != null ? legacy.gameObject : null;
         built = false;
         if (settingsRoot.activeInHierarchy) Build();
-    }
-
-    Canvas FindMenuCanvas()
-    {
-        GameObject menuCanvas = GameObject.Find("MenuCanvas");
-        return menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
     }
 
     void Build()
