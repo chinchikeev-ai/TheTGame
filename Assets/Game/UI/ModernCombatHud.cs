@@ -81,7 +81,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void Start()
     {
-        placement = FindFirstObjectByType<TowerPlacement>();
+        placement = TowerPlacement.Instance;
         spawner = EnemySpawner.Instance;
         gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
         FindCanvases();
@@ -216,7 +216,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void OpenSettings()
     {
-        GameMenuController menu = FindFirstObjectByType<GameMenuController>();
+        GameMenuController menu = GameMenuController.Instance;
         if (menu != null) menu.OpenCombatSettings();
     }
 
@@ -335,7 +335,7 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void Update()
     {
-        if (placement == null) placement = FindFirstObjectByType<TowerPlacement>();
+        if (placement == null) placement = TowerPlacement.Instance;
         if (spawner == null) spawner = EnemySpawner.Instance;
         if (gameplayCamera == null) gameplayCamera = placement != null && placement.gameCamera != null ? placement.gameCamera : Camera.main;
         if (menuCanvas == null && GameMenuController.Instance != null) menuCanvas = GameMenuController.Instance.MenuCanvas;
