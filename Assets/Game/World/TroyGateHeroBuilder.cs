@@ -2,9 +2,8 @@ using UnityEngine;
 
 public static class TroyGateHeroBuilder
 {
-    public static void Build()
+    public static Transform Build()
     {
-        if (GameObject.Find("Chapter01_TroyGateHero") != null) return;
         GameObject root = new GameObject("Chapter01_TroyGateHero");
         float gateX = MapBuilder.CellToWorld(new Vector2Int(17, 6)).x;
         Color sandstone = new Color(.63f, .51f, .31f);
@@ -109,6 +108,7 @@ public static class TroyGateHeroBuilder
             flame.AddComponent<ChapterOneAmbientMotion>().kind=ChapterOneAmbientMotion.MotionKind.Flame;
             Light light=flame.AddComponent<Light>(); light.type=LightType.Point; light.color=new Color(1f,.42f,.10f); light.range=5.5f; light.intensity=2f;
         }
+        return root.transform;
     }
 
     static void AddBanner(Transform parent,Vector3 position,Color cloth,Color trim)
