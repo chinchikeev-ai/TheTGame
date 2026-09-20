@@ -2,12 +2,14 @@ using UnityEngine;
 
 public sealed class TroyFireLifePresentation : MonoBehaviour
 {
+    public Transform Root { get; private set; }
+
 
     void Start()
     {
         if (GameManager.Instance != null && GameManager.Instance.MapNumber != 1) return;
-        if (GameObject.Find("Chapter01_TroyFireLife") != null) return;
         GameObject root = new GameObject("Chapter01_TroyFireLife");
+        Root = root.transform;
         float gateX = MapBuilder.CellToWorld(new Vector2Int(17,6)).x;
 
         Vector3[] fires = {
