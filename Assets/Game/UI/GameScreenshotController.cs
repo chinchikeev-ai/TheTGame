@@ -85,24 +85,18 @@ public sealed class GameScreenshotController : MonoBehaviour
     {
         if (screenshotCanvas == null)
         {
-            GameObject existing = GameObject.Find("ScreenshotUI");
-            if (existing != null) screenshotCanvas = existing.GetComponent<Canvas>();
+            GameObject canvasObject = new GameObject("ScreenshotUI");
+            screenshotCanvas = canvasObject.AddComponent<Canvas>();
+            screenshotCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            screenshotCanvas.sortingOrder = 5000;
 
-            if (screenshotCanvas == null)
-            {
-                GameObject canvasObject = new GameObject("ScreenshotUI");
-                screenshotCanvas = canvasObject.AddComponent<Canvas>();
-                screenshotCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                screenshotCanvas.sortingOrder = 5000;
+            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = .5f;
 
-                CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                scaler.referenceResolution = new Vector2(1920f, 1080f);
-                scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-                scaler.matchWidthOrHeight = .5f;
-
-                canvasObject.AddComponent<GraphicRaycaster>();
-            }
+            canvasObject.AddComponent<GraphicRaycaster>();
         }
 
         if (captureButton == null && screenshotCanvas != null)
@@ -231,8 +225,7 @@ public sealed class GameScreenshotController : MonoBehaviour
 
     void FindMenuCanvas()
     {
-        GameObject menuObject = GameObject.Find("MenuCanvas");
-        menuCanvas = menuObject != null ? menuObject.GetComponent<Canvas>() : null;
+        menuCanvas = GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
     }
 
     bool IsMenuBlockingCaptureButton()
