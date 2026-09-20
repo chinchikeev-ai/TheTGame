@@ -91,6 +91,12 @@ Do not read mouse/keyboard APIs here; use `GameInput`.
 
 World implementations may remain chapter-specific; ownership/wiring belongs in the matching chapter runtime installer.
 
+## Runtime presentation ownership
+- `ChapterOneRuntimeInstaller` owns Chapter I-only presentation lifecycle, including `HectorHUD`.
+- `GameMenuController` owns main-menu/menu-flow presentation helpers.
+- `ModernCombatHud` owns combat-HUD presentation helpers such as Boss HUD, notifications, HUD skin, encounter preview and selected-tower follower.
+- Do not add independent `RuntimeInitializeOnLoadMethod` hooks for presentation components.
+
 ## UI
 `Assets/Game/UI`
 
