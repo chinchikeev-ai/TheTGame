@@ -26,8 +26,7 @@ public sealed class MenuProgressPresentation : MonoBehaviour
 
     Canvas FindMenuCanvas()
     {
-        GameObject menuCanvas = GameObject.Find("MenuCanvas");
-        return menuCanvas != null ? menuCanvas.GetComponent<Canvas>() : null;
+        return GameMenuController.Instance != null ? GameMenuController.Instance.MenuCanvas : null;
     }
 
     void RefreshMainMenuProgress()
