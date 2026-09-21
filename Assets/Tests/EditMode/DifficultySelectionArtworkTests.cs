@@ -38,6 +38,14 @@ public sealed class DifficultySelectionArtworkTests
     }
 
     [Test]
+    public void DedicatedDifficultyPortraits_AreAvailableAsResources()
+    {
+        Assert.NotNull(Resources.Load<Texture2D>("DifficultySelection/Story"));
+        Assert.NotNull(Resources.Load<Texture2D>("DifficultySelection/Strategos"));
+        Assert.NotNull(Resources.Load<Texture2D>("DifficultySelection/Legendary"));
+    }
+
+    [Test]
     public void BuildsThreeLargeDifficultyCardsWithCorrectStartingGold()
     {
         Transform layout = root.transform.Find("DifficultyLayout");
