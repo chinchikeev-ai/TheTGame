@@ -240,7 +240,7 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
         Text goldCaption = Label(
             "GoldCaption",
             card.transform,
-            new Vector2(-30f, -173f),
+            new Vector2(-30f, -162f),
             new Vector2(205f, 30f),
             18);
         goldCaption.text = GameLanguage.T("STARTING GOLD", "СТАРТОВОЕ ЗОЛОТО");
@@ -253,7 +253,7 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
         coinImage.raycastTarget = false;
         RectTransform coinRect = coinImage.rectTransform;
         coinRect.anchorMin = coinRect.anchorMax = coinRect.pivot = new Vector2(.5f, .5f);
-        coinRect.anchoredPosition = new Vector2(-118f, -220f);
+        coinRect.anchoredPosition = new Vector2(-118f, -205f);
         coinRect.sizeDelta = new Vector2(58f, 58f);
         Outline coinEdge = coin.AddComponent<Outline>();
         coinEdge.effectColor = new Color(.38f, .16f, .015f, 1f);
@@ -262,7 +262,7 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
         Text gold = Label(
             "StartingGold",
             card.transform,
-            new Vector2(45f, -220f),
+            new Vector2(45f, -205f),
             new Vector2(210f, 68f),
             44);
         gold.text = DifficultyRules.StartingGold(difficulty).ToString();
@@ -275,10 +275,10 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
         mottoImage.raycastTarget = false;
         RectTransform mottoRect = mottoImage.rectTransform;
         mottoRect.anchorMin = mottoRect.anchorMax = mottoRect.pivot = new Vector2(.5f, .5f);
-        mottoRect.anchoredPosition = new Vector2(0f, -282f);
-        mottoRect.sizeDelta = new Vector2(340f, 62f);
+        mottoRect.anchoredPosition = new Vector2(0f, -252f);
+        mottoRect.sizeDelta = new Vector2(340f, 54f);
 
-        Text motto = Label("Motto", mottoPlate.transform, Vector2.zero, new Vector2(316f, 52f), 18);
+        Text motto = Label("Motto", mottoPlate.transform, Vector2.zero, new Vector2(316f, 46f), 18);
         motto.text = DifficultyMotto(difficulty);
         motto.color = new Color(.20f, .10f, .035f, 1f);
 
