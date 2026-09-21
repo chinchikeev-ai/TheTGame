@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Illustrated difficulty selection (2026-09-22): the old technical stacked-button overlay was replaced with a Troy-style three-card screen matching the approved reference structure. Story/Strategos/Legendary are presented as large vertical cards with colored headers, character portraits, descriptions, starting gold 190/150/120, mottos, selected highlight, BACK and NEXT. Confirmation now also reapplies the chosen pre-run economy/gate health to `GameManager` and refreshes the first encounter preview in `EnemySpawner`, fixing the previous mismatch where save difficulty could change after runtime initialization. EditMode/PlayMode contracts were added; real Unity visual QA remains pending.
+
 Illustrated results (2026-09-22): distinct victory/defeat backgrounds from
 Pictures/Final, separate cloth and button artwork, live localized statistics.
 Existing retry/chapter selection/main-menu callbacks are preserved. Six isolated
