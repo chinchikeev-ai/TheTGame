@@ -52,6 +52,26 @@ public sealed class DifficultySelectionArtworkTests
     }
 
     [Test]
+    public void ReferenceDecorAndLargeNavigationButtonsExist()
+    {
+        Transform layout = root.transform.Find("DifficultyLayout");
+        Assert.NotNull(layout.Find("DifficultyTitlePlate"));
+        Assert.NotNull(layout.Find("DifficultySubtitlePlate"));
+        Assert.NotNull(layout.Find("LeftSignGods"));
+        Assert.NotNull(layout.Find("LeftSignHeroes"));
+        Assert.NotNull(layout.Find("RightTroyBanner"));
+        Assert.NotNull(layout.Find("RightChoiceStone"));
+        Assert.NotNull(layout.Find("BottomHelmet"));
+        Assert.NotNull(layout.Find("Back")?.GetComponent<Button>());
+        Assert.NotNull(layout.Find("Next")?.GetComponent<Button>());
+
+        RectTransform back = layout.Find("Back") as RectTransform;
+        RectTransform next = layout.Find("Next") as RectTransform;
+        Assert.GreaterOrEqual(back.sizeDelta.x, 300f);
+        Assert.GreaterOrEqual(next.sizeDelta.x, 420f);
+    }
+
+    [Test]
     public void CardSelectsButNextConfirmsDifficulty()
     {
         Transform layout = root.transform.Find("DifficultyLayout");
@@ -100,9 +120,9 @@ public sealed class DifficultySelectionArtworkTests
         Assert.AreEqual(expected, layout.localScale.x, .001f);
         Assert.AreEqual(expected, layout.localScale.y, .001f);
 
-        Assert.AreEqual(new Vector2(405f, 575f), ((RectTransform)layout.Find("Difficulty_Story")).sizeDelta);
-        Assert.AreEqual(new Vector2(405f, 575f), ((RectTransform)layout.Find("Difficulty_Strategos")).sizeDelta);
-        Assert.AreEqual(new Vector2(405f, 575f), ((RectTransform)layout.Find("Difficulty_Legendary")).sizeDelta);
+        Assert.AreEqual(new Vector2(418f, 594f), ((RectTransform)layout.Find("Difficulty_Story")).sizeDelta);
+        Assert.AreEqual(new Vector2(418f, 594f), ((RectTransform)layout.Find("Difficulty_Strategos")).sizeDelta);
+        Assert.AreEqual(new Vector2(418f, 594f), ((RectTransform)layout.Find("Difficulty_Legendary")).sizeDelta);
     }
 
     static void AssertCard(Transform layout, CampaignDifficulty difficulty, int expectedGold)
@@ -112,8 +132,8 @@ public sealed class DifficultySelectionArtworkTests
 
         Button button = card.GetComponent<Button>();
         Assert.NotNull(button);
-        Assert.GreaterOrEqual(((RectTransform)card).sizeDelta.x, 400f);
-        Assert.GreaterOrEqual(((RectTransform)card).sizeDelta.y, 570f);
+        Assert.GreaterOrEqual(((RectTransform)card).sizeDelta.x, 418f);
+        Assert.GreaterOrEqual(((RectTransform)card).sizeDelta.y, 594f);
 
         Assert.NotNull(card.Find("Header/Title")?.GetComponent<Text>());
         Assert.NotNull(card.Find("PortraitFrame/Portrait")?.GetComponent<RawImage>());
