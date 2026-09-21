@@ -162,7 +162,7 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
             typeof(RectTransform),
             typeof(Image),
             typeof(Button),
-            typeof(Outline));
+            typeof(Shadow));
         card.transform.SetParent(content, false);
 
         RectTransform rect = card.GetComponent<RectTransform>();
@@ -175,8 +175,8 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
         surface.type = surface.sprite != null ? Image.Type.Sliced : Image.Type.Simple;
         surface.color = surface.sprite != null ? Color.white : new Color(.88f, .76f, .55f, 1f);
 
-        Outline border = card.GetComponent<Outline>();
-        border.effectColor = new Color(.23f, .11f, .035f, 1f);
+        Shadow border = card.GetComponent<Shadow>();
+        border.effectColor = new Color(.23f, .11f, .035f, .95f);
         border.effectDistance = new Vector2(4f, -4f);
 
         Button button = card.GetComponent<Button>();
