@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- UX-008: визуально сравнить новый экран сложности с референсом на 1920x1080 и 1366/1376x768 RU/EN; три карточки должны быть крупными, равновесными и без обрезанного текста.
+- UX-008: проверить путь Глава I -> Сложность -> выбор Story/Strategos/Legendary -> ДАЛЕЕ -> Бог; фактическое золото должно быть 190/150/120 до бонуса Аполлона.
 - Финальные экраны из Pictures/Final: настоящая победа/поражение, статистика, Повторить / Выбор главы / Главное меню. 6 изолированных EditMode-проверок прошли; EXE не пересобран.
 
 - QA-009: запустить PlayMode suite после runtime-graph refactor; отдельно проверить `Hector_MoveCommand_ChangesDestinationAndMoves`, Restart runtime graph uniqueness и duplicate bootstrap rejection.
