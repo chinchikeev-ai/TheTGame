@@ -6,6 +6,8 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Difficulty reference-alignment pass (2026-09-22): the difficulty screen was pushed closer to the approved illustrated reference. Cards are larger and tighter, portraits are enlarged, parchment header/subtitle framing is heavier, and decorative side elements were added (left signpost plaques, right Troy banner, stone quote, bottom helmet accent). BACK/NEXT reuse ChapterSelect atlas art where available. Selected state is now a stable gold-frame/brightness/label treatment that does not conflict with shared hover-scale feedback. EditMode contracts were updated for the new 418x594 card geometry and reference-decor nodes. Unity visual QA is still pending.
+
 Illustrated difficulty selection (2026-09-22): the old technical stacked-button overlay was replaced with a Troy-style three-card screen matching the approved reference structure. Story/Strategos/Legendary are presented as large vertical cards with colored headers, character portraits, descriptions, starting gold 190/150/120, mottos, selected highlight, BACK and NEXT. Confirmation now also reapplies the chosen pre-run economy/gate health to `GameManager` and refreshes the first encounter preview in `EnemySpawner`, fixing the previous mismatch where save difficulty could change after runtime initialization. EditMode/PlayMode contracts were added; real Unity visual QA remains pending.
 
 Illustrated results (2026-09-22): distinct victory/defeat backgrounds from
