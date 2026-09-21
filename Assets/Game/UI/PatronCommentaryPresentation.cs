@@ -177,7 +177,7 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
         speech.resizeTextMaxSize = 14;
         if (compact)
         {
-            cardRt.anchoredPosition = new Vector2(-16f, -166f);
+            cardRt.anchoredPosition = new Vector2(-16f, -16f);
             cardRt.sizeDelta = new Vector2(324f, 136f);
             portraitRt.anchoredPosition = new Vector2(-208f, -20f);
             portraitRt.sizeDelta = new Vector2(96f, 96f);
@@ -190,7 +190,7 @@ public sealed class PatronCommentaryPresentation : MonoBehaviour
         }
         else
         {
-            cardRt.anchoredPosition = new Vector2(-24f, -166f);
+            cardRt.anchoredPosition = new Vector2(-16f, -16f);
             cardRt.sizeDelta = new Vector2(370f, 154f);
             portraitRt.anchoredPosition = new Vector2(-234f, -20f);
             portraitRt.sizeDelta = new Vector2(116f, 116f);

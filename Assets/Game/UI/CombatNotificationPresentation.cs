@@ -29,7 +29,7 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
         group=root.AddComponent<CanvasGroup>();group.interactable=false;group.blocksRaycasts=false;
         panel=new GameObject("NotificationPanel");panel.transform.SetParent(root.transform,false);
         Image bg=panel.AddComponent<Image>();bg.sprite=TroyHudArt.Panel();bg.type=Image.Type.Sliced;bg.color=Color.white;bg.raycastTarget=false;
-        RectTransform pr=bg.rectTransform;pr.anchorMin=pr.anchorMax=pr.pivot=new Vector2(0,0);pr.anchoredPosition=new Vector2(24,330);pr.sizeDelta=new Vector2(420,118);
+        RectTransform pr=bg.rectTransform;pr.anchorMin=pr.anchorMax=pr.pivot=new Vector2(0,0);pr.anchoredPosition=new Vector2(16,260);pr.sizeDelta=new Vector2(420,118);pr.localScale=Vector3.one*.8f;
         for(int i=0;i<3;i++)
         {
             float y=34-i*34;
@@ -46,7 +46,7 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
         if(menuCanvas==null&&GameMenuController.Instance!=null)menuCanvas=GameMenuController.Instance.MenuCanvas;
         group.alpha=(gm.GameEnded||IsMenuBlocking())?0f:1f;if(group.alpha<=0f)return;
         if(lastWave<0){lastWave=gm.CurrentWave;lastTowersBuilt=gm.TowersBuilt;lastGate=gm.BaseHealth;bossDefeated=gm.BossDefeated;}
-        if(gm.CurrentWave>lastWave){lastWave=gm.CurrentWave;Push(GameLanguage.T($"Encounter {gm.CurrentWave} has begun",$"Бой {gm.CurrentWave} начался"),TroyHudArt.Icon("enemy"),5f);}
+        if(gm.CurrentWave>lastWave)lastWave=gm.CurrentWave;
         if(gm.TowersBuilt>lastTowersBuilt){lastTowersBuilt=gm.TowersBuilt;Push(GameLanguage.T("Trojan defense deployed","Оборона Трои установлена"),TroyHudArt.Icon("shield"),4f);}
         if(lastGate>=0&&gm.BaseHealth<lastGate){int lost=lastGate-gm.BaseHealth;lastGate=gm.BaseHealth;Push(GameLanguage.T($"Gate damaged −{lost}",$"Ворота повреждены −{lost}"),TroyHudArt.Icon("gate"),5f);}
         bool bossActive=HasBoss();if(bossActive&&!bossWasActive)Push(GameLanguage.T("MENELAUS HAS ENTERED THE BATTLE","МЕНЕЛАЙ ВСТУПИЛ В БОЙ"),TroyHudArt.Icon("boss"),7f);bossWasActive=bossActive;
@@ -56,7 +56,25 @@ public sealed class CombatNotificationPresentation : MonoBehaviour
     }
 
     void Push(string text,Sprite icon,float duration){entries.Insert(0,new Entry{text=text,icon=icon,expires=Time.unscaledTime+duration});while(entries.Count>3)entries.RemoveAt(entries.Count-1);}
-    void Render(){panel.SetActive(entries.Count>0);for(int i=0;i<3;i++){bool visible=i<entries.Count;lines[i].gameObject.SetActive(visible);icons[i].gameObject.SetActive(visible);if(!visible)continue;lines[i].text=entries[i].text;icons[i].sprite=entries[i].icon;icons[i].color=Color.white;}}
+    void Render()
+    {
+        panel.SetActive(entries.Count > 0);
+        float height = 16 + entries.Count * 34;
+        ((RectTransform)panel.transform).sizeDelta = new Vector2(420, height);
+        for (int i = 0; i < 3; i++)
+        {
+            bool visible = i < entries.Count;
+            lines[i].gameObject.SetActive(visible);
+            icons[i].gameObject.SetActive(visible);
+            if (!visible) continue;
+            float y = height * .5f - 25 - i * 34;
+            lines[i].rectTransform.anchoredPosition = new Vector2(14, y);
+            icons[i].rectTransform.anchoredPosition = new Vector2(-177, y);
+            lines[i].text = entries[i].text;
+            icons[i].sprite = entries[i].icon;
+            icons[i].color = Color.white;
+        }
+    }
     bool HasBoss(){foreach(Enemy e in EnemyRegistry.All)if(e!=null&&e.Archetype==EnemyArchetype.Boss&&e.Health>0f)return true;return false;}
     bool IsMenuBlocking(){if(menuCanvas==null)return false;string[] n={"MainMenu","LevelSelect","Settings","PauseMenu","EndMenu","ConfirmationModal"};for(int i=0;i<n.Length;i++){Transform t=menuCanvas.transform.Find(n[i]);if(t!=null&&t.gameObject.activeInHierarchy)return true;}return false;}
 }

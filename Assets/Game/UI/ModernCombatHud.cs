@@ -112,7 +112,8 @@ public sealed class ModernCombatHud : MonoBehaviour
 
     void Build()
     {
-        GameObject root = new GameObject("ModernCombatHUD");
+        // Canvas upgrades Transform to RectTransform; create it before caching HudRoot.
+        GameObject root = new GameObject("ModernCombatHUD", typeof(RectTransform));
         HudRoot = root.transform;
         canvas = root.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;

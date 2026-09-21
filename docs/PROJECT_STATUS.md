@@ -6,6 +6,16 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+HUD layout recovery (2026-09-21): ModernCombatHud now creates RectTransform before
+caching HudRoot, so adding Canvas cannot invalidate the shared owner reference.
+Compact presentation binds each root independently and rebinds replacements.
+Patron remains top-right on resize; guidance shows one contextual card at a time;
+duplicate encounter-start notifications removed and toast height follows entries.
+Focused missing-root EditMode and runtime-binding PlayMode regressions passed.
+Full HUD regression: 18/18 PlayMode tests passed; decorative boss graphics no
+longer intercept pointer input. See tasks/HUD_LAYOUT_RECOVERY.md. No EXE build;
+full visual acceptance in gameplay is still pending.
+
 Defender card art pass (2026-09-20): six separate illustrated portraits replace
 procedural glyphs in the build dock. Live localized names, hotkeys, authored costs,
 selection callbacks and tooltips are retained. Card frames reuse Hector's artwork;

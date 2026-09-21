@@ -81,9 +81,10 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
         group.alpha = hidden ? 0f : 1f;
         if (hidden) return;
         bool bossActive = HasActiveBoss();
-        objectiveCard.SetActive(!bossActive);
         UpdateObjective(gm);
         UpdateTutorial(gm);
+        // Wave and gate already describe active combat; show one contextual card only.
+        objectiveCard.SetActive(!bossActive && !tutorialCard.activeSelf && !EncounterRuntime.EncounterActive(spawner));
     }
 
     void UpdateObjective(GameManager gm)
@@ -141,7 +142,7 @@ public sealed class ChapterOneGuidancePresentation : MonoBehaviour
             tutorialShownAt = Time.unscaledTime;
             ApplyTutorial(stage);
         }
-        bool persistent = stage == 0 || stage == 4;
+        bool persistent = stage == 0;
         bool visible = stage >= 0 && (persistent || Time.unscaledTime - tutorialShownAt < 10f);
         tutorialCard.SetActive(visible);
     }

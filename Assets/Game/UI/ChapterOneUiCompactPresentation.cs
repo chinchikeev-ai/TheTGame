@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +17,7 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
     HectorHUD hectorHud;
     ChapterOneGuidancePresentation guidance;
     PatronCommentaryPresentation patron;
+    Transform boundHud, boundHector, boundGuidance, boundPatron;
 
     public void Initialize(HectorHUD hector, ChapterOneGuidancePresentation chapterGuidance, PatronCommentaryPresentation patronCommentary)
     {
@@ -26,21 +26,10 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         patron = patronCommentary;
     }
 
-    IEnumerator Start()
-    {
-        for (int frame = 0; frame < 120; frame++)
-        {
-            GameManager gm = GameManager.Instance;
-            if (gm != null && gm.MapNumber != 1) yield break;
-            if (TryBindAndApply()) yield break;
-            yield return null;
-        }
-
-        RuntimeFileLogger.Event("UI", "ChapterOneUiCompactPresentation could not bind all required Chapter I UI roots.");
-    }
-
     void LateUpdate()
     {
+        // Roots can arrive after the menu closes. Bind independently, once per root.
+        TryBindAndApply();
         if (compactMagicText != null)
             compactMagicText.text = BuildCompactMagicLabel();
     }
@@ -51,13 +40,11 @@ public sealed class ChapterOneUiCompactPresentation : MonoBehaviour
         Transform hector = hectorHud != null ? hectorHud.HudRoot : null;
         Transform guidanceRoot = guidance != null ? guidance.UiRoot : null;
         Transform patronRoot = patron != null ? patron.UiRoot : null;
-        if (hud == null || hector == null || guidanceRoot == null || patronRoot == null) return false;
-
-        ApplyModernCombatHud(hud);
-        ApplyHectorHud(hector);
-        ApplyGuidanceCards(guidanceRoot);
-        ApplyPatronCard(patronRoot);
-        return true;
+        if (hud != null && hud != boundHud) { ApplyModernCombatHud(hud); boundHud = hud; }
+        if (hector != null && hector != boundHector) { ApplyHectorHud(hector); boundHector = hector; }
+        if (guidanceRoot != null && guidanceRoot != boundGuidance) { ApplyGuidanceCards(guidanceRoot); boundGuidance = guidanceRoot; }
+        if (patronRoot != null && patronRoot != boundPatron) { ApplyPatronCard(patronRoot); boundPatron = patronRoot; }
+        return hud != null && hector != null && guidanceRoot != null && patronRoot != null;
     }
 
     void ApplyModernCombatHud(Transform hud)

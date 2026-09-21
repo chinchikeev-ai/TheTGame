@@ -28,6 +28,7 @@ public class BossHUD : MonoBehaviour
         root = new GameObject("BossBar");
         root.transform.SetParent(canvasObj.transform,false);
         Image bg = root.AddComponent<Image>();
+        bg.raycastTarget = false;
         bg.sprite = TroyHudArt.Panel(true);
         bg.type = Image.Type.Sliced;
         bg.color = Color.white;
@@ -39,6 +40,7 @@ public class BossHUD : MonoBehaviour
         GameObject glowObj = new GameObject("DangerGlow");
         glowObj.transform.SetParent(root.transform,false);
         dangerGlow = glowObj.AddComponent<Image>();
+        dangerGlow.raycastTarget = false;
         dangerGlow.color = new Color(.55f,.04f,.02f,.12f);
         RectTransform gr = dangerGlow.rectTransform;
         gr.anchorMin = Vector2.zero; gr.anchorMax = Vector2.one;
@@ -61,6 +63,7 @@ public class BossHUD : MonoBehaviour
         GameObject trackObj = new GameObject("Track");
         trackObj.transform.SetParent(root.transform,false);
         Image track = trackObj.AddComponent<Image>();
+        track.raycastTarget = false;
         track.color = new Color(.15f,.055f,.035f,1f);
         RectTransform tr = track.rectTransform;
         tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(.5f,.5f);
@@ -69,6 +72,7 @@ public class BossHUD : MonoBehaviour
         GameObject fillObj = new GameObject("Fill");
         fillObj.transform.SetParent(trackObj.transform,false);
         fill = fillObj.AddComponent<Image>();
+        fill.raycastTarget = false;
         fill.color = new Color(.78f,.12f,.045f,1f);
         fill.type = Image.Type.Filled;
         fill.fillMethod = Image.FillMethod.Horizontal;
@@ -122,7 +126,7 @@ public class BossHUD : MonoBehaviour
     void MakeBadge(Transform parent,string textValue,Vector2 pos,Color accent)
     {
         GameObject badge=new GameObject("Badge_"+textValue); badge.transform.SetParent(parent,false);
-        Image bg=badge.AddComponent<Image>(); bg.sprite=TroyHudArt.Panel(true); bg.type=Image.Type.Sliced; bg.color=new Color(.45f,.18f,.07f,1f);
+        Image bg=badge.AddComponent<Image>(); bg.raycastTarget=false; bg.sprite=TroyHudArt.Panel(true); bg.type=Image.Type.Sliced; bg.color=new Color(.45f,.18f,.07f,1f);
         RectTransform rt=bg.rectTransform; rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f); rt.anchoredPosition=pos; rt.sizeDelta=new Vector2(textValue.Length>8?160:106,26);
         Text t=MakeText(badge.transform,"Text",9,TextAnchor.MiddleCenter); t.text=textValue; t.color=new Color(1f,.82f,.54f,1f); RectTransform tr=t.rectTransform; tr.anchorMin=Vector2.zero; tr.anchorMax=Vector2.one; tr.offsetMin=Vector2.zero; tr.offsetMax=Vector2.zero;
         Outline o=badge.AddComponent<Outline>(); o.effectColor=accent; o.effectDistance=new Vector2(1,-1);

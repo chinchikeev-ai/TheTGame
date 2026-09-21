@@ -12,6 +12,29 @@ using UnityEngine.InputSystem.UI;
 public class CombatHudLayoutUxTests
 {
     [UnityTest]
+    public IEnumerator CompactLayout_BindsRealOwnersIndependently()
+    {
+        yield return null;
+        yield return null;
+        yield return null;
+        var compact = Object.FindFirstObjectByType<ChapterOneUiCompactPresentation>();
+        Assert.NotNull(compact, "Compact layout owner missing");
+        Assert.IsTrue(compact.isActiveAndEnabled, "Compact layout owner disabled");
+        Assert.NotNull(ModernCombatHud.Instance, "Combat HUD singleton missing");
+        Assert.NotNull(ModernCombatHud.Instance.HudRoot, "Combat HUD root missing");
+        yield return null;
+        var top = FindSceneTransform("TopResources") as RectTransform;
+        var dock = FindSceneTransform("BuildDock") as RectTransform;
+        var patron = FindSceneTransform("PatronCommentaryCard") as RectTransform;
+        var pair = FindSceneTransform("CombatActionPair") as RectTransform;
+        Assert.NotNull(top);
+        Assert.AreEqual(.8f, top.localScale.x, .001f);
+        Assert.AreEqual(.78f, dock.localScale.x, .001f);
+        Assert.NotNull(pair, "Bottom-right actions must be bound even when an optional root is late.");
+        Assert.AreEqual(-16f, patron.anchoredPosition.y, .01f);
+    }
+
+    [UnityTest]
     public IEnumerator SpeedAndSettings_LiveWithGoldInTopLeftUtilityCluster()
     {
         yield return null;
@@ -103,7 +126,8 @@ public class CombatHudLayoutUxTests
         Assert.NotNull(resources.Find("GoldResourcePanel")?.GetComponent<Image>()?.sprite);
         Assert.NotNull(wave.GetComponent<Image>()?.sprite);
         Assert.NotNull(resources.Find("GateIcon")?.GetComponent<Image>()?.sprite);
-        Assert.NotNull(wave.Find("WaveCrest")?.GetComponent<Image>()?.sprite);
+        Assert.NotNull(wave.GetComponent<WaveHudArtwork>());
+        Assert.IsNull(wave.Find("WaveCrest"), "Authored banner already includes its ornament.");
     }
 
     [UnityTest]
@@ -154,9 +178,9 @@ public class CombatHudLayoutUxTests
         Assert.NotNull(tutorial);
         Assert.NotNull(notification);
         Assert.NotNull(preview);
-        Assert.LessOrEqual(objective.anchoredPosition.y, -170f);
-        Assert.LessOrEqual(tutorial.anchoredPosition.y, -295f);
-        Assert.GreaterOrEqual(notification.anchoredPosition.y, 325f);
+        Assert.AreEqual(-132f, objective.anchoredPosition.y, .01f);
+        Assert.AreEqual(-214f, tutorial.anchoredPosition.y, .01f);
+        Assert.GreaterOrEqual(notification.anchoredPosition.y, 260f);
         Assert.LessOrEqual(preview.anchoredPosition.x, -260f);
         Assert.LessOrEqual(preview.anchoredPosition.y, -60f);
     }
@@ -193,7 +217,9 @@ public class CombatHudLayoutUxTests
         Assert.AreEqual(1f, resources.anchorMin.y, .01f);
         Assert.AreEqual(.5f, encounter.anchorMin.x, .01f);
         Assert.AreEqual(1f, encounter.anchorMin.y, .01f);
-        Assert.AreEqual(1f, divine.anchorMin.x, .01f);
+        Assert.AreEqual("CombatActionPair", divine.parent.name);
+        Assert.AreEqual(1f, ((RectTransform)divine.parent).anchorMin.x, .01f);
+        Assert.AreEqual(0f, divine.anchorMin.x, .01f);
         Assert.AreEqual(0f, divine.anchorMin.y, .01f);
         Assert.AreEqual(.5f, buildDock.anchorMin.x, .01f);
         Assert.AreEqual(0f, buildDock.anchorMin.y, .01f);
@@ -239,7 +265,7 @@ public class CombatHudLayoutUxTests
             foreach (Graphic graphic in root.GetComponentsInChildren<Graphic>(true))
             {
                 if (!graphic.raycastTarget) continue;
-                Selectable selectable = graphic.GetComponentInParent<Selectable>();
+                Selectable selectable = graphic.GetComponentInParent<Selectable>(true);
                 Assert.NotNull(selectable, $"{graphic.name} blocks pointer input without an interactive Selectable owner.");
             }
         }
@@ -258,7 +284,10 @@ public class CombatHudLayoutUxTests
         Assert.NotNull(defenders);
         Assert.NotNull(actions);
 
-        Assert.AreEqual(1f, actions.anchorMin.x, .01f);
+        Assert.AreSame(actions.parent, defenders.parent);
+        Assert.AreEqual("CombatActionPair", actions.parent.name);
+        Assert.AreEqual(1f, ((RectTransform)actions.parent).anchorMin.x, .01f);
+        Assert.AreEqual(0f, actions.anchorMin.x, .01f);
         Assert.AreEqual(0f, actions.anchorMin.y, .01f);
         Assert.AreEqual(1f, defenders.anchorMin.x, .01f);
         Assert.AreEqual(0f, defenders.anchorMin.y, .01f);
@@ -321,7 +350,11 @@ public class CombatHudLayoutUxTests
     {
         yield return null;
         yield return null;
-
+        GameObject menu = GameMenuController.Instance.MenuCanvas.gameObject;
+        bool menuActive = menu.activeSelf;
+        try
+        {
+        menu.SetActive(false);
         Assert.NotNull(GameManager.Instance);
         if (GameManager.Instance.GiftAvailable) Assert.IsTrue(GameManager.Instance.UseGift(DivineGiftType.Athena));
         yield return null;
@@ -337,7 +370,9 @@ public class CombatHudLayoutUxTests
         Assert.NotNull(portrait.sprite);
         Assert.NotNull(FindChildRecursive(panel, "PatronSpeech"));
         Assert.IsNull(FindSceneTransform("PatronObserverPanel"));
-        Assert.NotNull(FindSceneTransform("HectorCommentary"));
+        Assert.NotNull(FindSceneTransform("HectorQuoteParchment"));
+        }
+        finally { menu.SetActive(menuActive); }
     }
 
     static Transform FindSceneTransform(string name)
