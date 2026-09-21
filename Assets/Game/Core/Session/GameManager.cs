@@ -81,6 +81,20 @@ public class GameManager : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
+    public bool ApplyDifficultyBeforeRun(CampaignDifficulty difficulty)
+    {
+        if (runStarted || GameEnded || GiftSelected) return false;
+
+        economy = new EconomyController(DifficultyRules.StartingGold(difficulty));
+        MaxBaseHealth = DifficultyRules.StartingGateHealth(difficulty);
+        BaseHealth = MaxBaseHealth;
+
+        RuntimeFileLogger.Event(
+            "GAME",
+            $"Pre-run difficulty applied: {difficulty}, gold={Money}, gateHP={BaseHealth}/{MaxBaseHealth}");
+        return true;
+    }
+
     public void BeginRun()
     {
         if (runStarted) return;
