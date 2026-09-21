@@ -165,6 +165,27 @@ public class GameplayAcceptanceTests
     }
 
     [UnityTest]
+    public IEnumerator DifficultySelection_AppliesStartingEconomyBeforeRun()
+    {
+        Assert.NotNull(GameManager.Instance);
+
+        Assert.IsTrue(GameManager.Instance.ApplyDifficultyBeforeRun(CampaignDifficulty.Story));
+        Assert.AreEqual(190, GameManager.Instance.Money);
+        Assert.AreEqual(DifficultyRules.StartingGateHealth(CampaignDifficulty.Story), GameManager.Instance.MaxBaseHealth);
+        Assert.AreEqual(GameManager.Instance.MaxBaseHealth, GameManager.Instance.BaseHealth);
+
+        Assert.IsTrue(GameManager.Instance.ApplyDifficultyBeforeRun(CampaignDifficulty.Strategos));
+        Assert.AreEqual(150, GameManager.Instance.Money);
+        Assert.AreEqual(DifficultyRules.StartingGateHealth(CampaignDifficulty.Strategos), GameManager.Instance.MaxBaseHealth);
+
+        Assert.IsTrue(GameManager.Instance.ApplyDifficultyBeforeRun(CampaignDifficulty.Legendary));
+        Assert.AreEqual(120, GameManager.Instance.Money);
+        Assert.AreEqual(DifficultyRules.StartingGateHealth(CampaignDifficulty.Legendary), GameManager.Instance.MaxBaseHealth);
+
+        yield return null;
+    }
+
+    [UnityTest]
     public IEnumerator LanguageSwitch_DoesNotReloadScene()
     {
         Scene beforeScene = SceneManager.GetActiveScene();
