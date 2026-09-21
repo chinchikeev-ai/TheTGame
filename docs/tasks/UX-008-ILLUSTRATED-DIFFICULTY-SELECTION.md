@@ -44,5 +44,14 @@ Each card includes:
 - [x] PlayMode coverage for starting economy.
 - [ ] Real Unity visual QA against the reference.
 
+
+## Reference-alignment pass
+- Card footprint increased to 418 x 594 at the 1600 x 900 design canvas.
+- Card spacing tightened and portraits enlarged.
+- Header/subtitle plaques reinforced with parchment framing and rivets.
+- Added left signpost plaques, right Troy banner, right stone quote and bottom helmet accent.
+- BACK/NEXT now reuse ChapterSelect atlas art where available.
+- Selected state uses gold frame, brighter surface and explicit SELECTED label without conflicting with hover-scale animation.
+
 ## Status
 `IMPLEMENTED — VISUAL QA PENDING`
