@@ -90,10 +90,8 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
             bool active = difficulties[i] == selected;
             if (selections[i] != null) selections[i].enabled = active;
             if (selectedLabels[i] != null) selectedLabels[i].gameObject.SetActive(active);
-            if (cardRects[i] != null) cardRects[i].localScale = active ? Vector3.one * 1.035f : Vector3.one;
             if (cardSurfaces[i] != null)
                 cardSurfaces[i].color = active ? Color.white : new Color(.94f, .91f, .83f, 1f);
-            if (cards[i] != null) cards[i].transform.SetSiblingIndex(active ? content.childCount - 4 : cards[i].transform.GetSiblingIndex());
         }
 
         if (next != null) next.interactable = true;
