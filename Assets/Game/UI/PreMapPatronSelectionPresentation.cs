@@ -87,29 +87,11 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
     void BuildDifficultyOverlay()
     {
         difficultyOverlay = MakeOverlay("PreMapDifficultySelection");
-        GameObject panel = MakePanel(difficultyOverlay.transform, "DifficultyCard", new Vector2(980f, 720f));
-
-        MakeText(panel.transform,
-            GameLanguage.T("CHOOSE DIFFICULTY", "ВЫБЕРИТЕ СЛОЖНОСТЬ"),
-            new Vector2(0f, 280f), new Vector2(820f, 62f), 38, true, new Color(1f, .72f, .26f, 1f));
-        MakeText(panel.transform,
-            GameLanguage.T("Choose the battle rules before selecting a patron god.", "Сначала выберите правила боя, затем бога-покровителя."),
-            new Vector2(0f, 225f), new Vector2(790f, 46f), 17, false, new Color(.88f, .78f, .66f, 1f));
-
-        MakeDifficultyButton(panel.transform, new Vector2(0f, 105f),
-            GameLanguage.T("STORY", "ИСТОРИЯ"),
-            GameLanguage.T("More forgiving defense • 190 starting gold", "Более мягкая оборона • 190 стартового золота"),
-            CampaignDifficulty.Story);
-        MakeDifficultyButton(panel.transform, new Vector2(0f, 0f),
-            GameLanguage.T("STRATEGOS", "СТРАТЕГ"),
-            GameLanguage.T("Standard campaign pressure • 150 starting gold", "Стандартное давление кампании • 150 стартового золота"),
-            CampaignDifficulty.Strategos);
-        MakeDifficultyButton(panel.transform, new Vector2(0f, -105f),
-            GameLanguage.T("LEGENDARY", "ЛЕГЕНДА"),
-            GameLanguage.T("Hardest pressure and economy • 120 starting gold", "Самое высокое давление и жёсткая экономика • 120 стартового золота"),
-            CampaignDifficulty.Legendary);
-
-        MakeButton(panel.transform, GameLanguage.T("BACK", "НАЗАД"), new Vector2(0f, -275f), new Vector2(240f, 52f), HideDifficulty);
+        DifficultySelectionArtwork artwork = difficultyOverlay.AddComponent<DifficultySelectionArtwork>();
+        CampaignDifficulty current = CampaignController.Instance != null
+            ? CampaignController.Instance.Difficulty
+            : CampaignDifficulty.Story;
+        artwork.Build(HideDifficulty, ConfirmDifficulty, current);
         difficultyOverlay.SetActive(false);
     }
 
@@ -160,10 +142,10 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
         if (difficultyOverlay != null) difficultyOverlay.SetActive(false);
     }
 
-    void SelectDifficulty(CampaignDifficulty difficulty)
+    void ConfirmDifficulty(CampaignDifficulty difficulty)
     {
         CampaignController.Instance?.SetDifficulty(difficulty);
-        RuntimeFileLogger.Event("MENU", $"Pre-map difficulty selected: {difficulty}");
+        RuntimeFileLogger.Event("MENU", $"Pre-map difficulty confirmed: {difficulty}");
         HideDifficulty();
         ShowPatron();
     }
@@ -238,17 +220,6 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
             return;
         }
         startLevel.Invoke(menu, null);
-    }
-
-    void MakeDifficultyButton(Transform parent, Vector2 pos, string title, string description, CampaignDifficulty difficulty)
-    {
-        Button button = MakeButton(parent, title + "\n" + description, pos, new Vector2(620f, 84f), () => SelectDifficulty(difficulty));
-        Text label = button.GetComponentInChildren<Text>(true);
-        if (label != null)
-        {
-            label.fontSize = 17;
-            label.lineSpacing = 1.15f;
-        }
     }
 
     void MakeGodButton(Transform parent, Vector2 pos, string title, string description, DivineGiftType gift)
