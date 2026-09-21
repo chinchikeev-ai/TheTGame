@@ -145,6 +145,8 @@ public sealed class PreMapPatronSelectionPresentation : MonoBehaviour
     void ConfirmDifficulty(CampaignDifficulty difficulty)
     {
         CampaignController.Instance?.SetDifficulty(difficulty);
+        GameManager.Instance?.ApplyDifficultyBeforeRun(difficulty);
+        EnemySpawner.Instance?.RefreshPreRunDifficulty();
         RuntimeFileLogger.Event("MENU", $"Pre-map difficulty confirmed: {difficulty}");
         HideDifficulty();
         ShowPatron();
