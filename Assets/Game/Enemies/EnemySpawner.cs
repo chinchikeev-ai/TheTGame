@@ -122,6 +122,15 @@ public class EnemySpawner : MonoBehaviour
         RuntimeFileLogger.Event("SPAWNER", $"Initialized routes={paths.Length}, encounters={maxWaves}, difficulty={CampaignSave.Difficulty}");
     }
 
+    public void RefreshPreRunDifficulty()
+    {
+        if (running || WaveActive || CurrentWave > 0 || paths == null || paths.Length == 0) return;
+        PrepareNextWave(1);
+        RuntimeFileLogger.Event(
+            "SPAWNER",
+            $"Pre-run difficulty refreshed: difficulty={CampaignSave.Difficulty}, enemies={NextWaveEnemyCount}, hpMul={NextWaveHpMultiplier:0.00}, speedMul={NextWaveSpeedMultiplier:0.00}");
+    }
+
     public void ActivateLevel()
     {
         if (!running) StartCoroutine(GameLoop());
