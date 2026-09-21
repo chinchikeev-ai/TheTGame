@@ -19,9 +19,9 @@ public sealed class DifficultySelectionArtwork : MonoBehaviour
 
     readonly string[] portraitResources =
     {
-        "PatronSelection/Gods_Apollo",
-        "HectorHud/Portrait",
-        "PatronSelection/Gods_Ares"
+        "DifficultySelection/Story",
+        "DifficultySelection/Strategos",
+        "DifficultySelection/Legendary"
     };
 
     readonly Color[] headerColors =
