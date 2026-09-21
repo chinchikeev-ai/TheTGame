@@ -18,6 +18,8 @@ Keep it short. Update this file instead of creating GitHub Issues, Projects, Jir
 
 ## Проверить
 
+- Финальные экраны из Pictures/Final: настоящая победа/поражение, статистика, Повторить / Выбор главы / Главное меню. 6 изолированных EditMode-проверок прошли; EXE не пересобран.
+
 - QA-009: запустить PlayMode suite после runtime-graph refactor; отдельно проверить `Hector_MoveCommand_ChangesDestinationAndMoves`, Restart runtime graph uniqueness и duplicate bootstrap rejection.
 - QA-009: вручную пройти Start Chapter I -> выбрать/двинуть Гектора -> Pause -> Settings -> Back -> Resume -> Restart -> снова выбрать/двинуть Гектора.
 - ARCH-008: clean start и Restart Chapter I создают один `RuntimeGraph` с `Core/Chapter/UI`, а `GameRuntimeContext` ссылки совпадают с singleton/runtime owners.

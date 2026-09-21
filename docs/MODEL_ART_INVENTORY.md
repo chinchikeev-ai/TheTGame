@@ -6,6 +6,11 @@ This is the authoritative source for **art/model completion status**. Design int
 
 ## Status definitions
 
+Victory/defeat screen (2026-09-22): `SOURCE ONLY` pending gameplay acceptance.
+Four separate EndMenu assets: Victory, Defeat, Banner and Button. Backgrounds
+derive from Pictures/Final; titles/statistics/button labels remain live UI.
+Six isolated Canvas checks cover RU/EN, both outcomes and three aspect ratios.
+
 Wave HUD banner (2026-09-20): `SOURCE ONLY` pending gameplay visual acceptance.
 Generated transparent WaveHud/Banner is integrated with live text and preserved by
 the HUD skin. Patron portrait RGBA import verified by colored-pixel rendering tests.

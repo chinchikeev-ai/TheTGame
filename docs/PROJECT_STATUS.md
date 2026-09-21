@@ -6,6 +6,12 @@ This document is the canonical answer to **what is implemented now**. It intenti
 
 ## Current phase
 
+Illustrated results (2026-09-22): distinct victory/defeat backgrounds from
+Pictures/Final, separate cloth and button artwork, live localized statistics.
+Existing retry/chapter selection/main-menu callbacks are preserved. Six isolated
+EditMode render and interaction checks passed across 16:9, 4:3 and ultrawide.
+See tasks/END_MENU_ART.md. No EXE build; real gameplay visual acceptance pending.
+
 HUD layout recovery (2026-09-21): ModernCombatHud now creates RectTransform before
 caching HudRoot, so adding Canvas cannot invalidate the shared owner reference.
 Compact presentation binds each root independently and rebinds replacements.

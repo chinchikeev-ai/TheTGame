@@ -342,6 +342,7 @@ public sealed class MenuFlowStylePresentation : MonoBehaviour
 
     void StyleEndMenu(Transform root)
     {
+        if (root.GetComponent<EndMenuArtwork>() != null) return;
         StyleScreenBackground(root, new Color(.25f, .085f, .020f, .90f));
 
         Transform card = root.Find("ResultCard");

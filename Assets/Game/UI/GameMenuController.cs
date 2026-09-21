@@ -233,13 +233,14 @@ public class GameMenuController : MonoBehaviour
         GameObject panel = MakePanel(endMenu.transform, "ResultCard", new Vector2(.5f, .5f), new Vector2(1160, 800), new Color(.055f, .03f, .018f, .99f));
 
         endTitle = AddTitle(panel.transform, L("RESULT", "РЕЗУЛЬТАТ"), new Vector2(0, 326), 52, MenuTextStyle.Logo);
-        AddTitle(panel.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 278), 16, MenuTextStyle.Muted, new Vector2(760, 34));
+        Text endChapter = AddTitle(panel.transform, L("CHAPTER I • THE LANDING", "ГЛАВА I • ВЫСАДКА"), new Vector2(0, 278), 16, MenuTextStyle.Muted, new Vector2(760, 34));
         AddDivider(panel.transform, new Vector2(0, 244), 820);
         endSummary = AddTitle(panel.transform, "", new Vector2(0, 34), 18, MenuTextStyle.Normal, new Vector2(900, 390));
 
         AddButton(panel.transform, L("RETRY", "ПОВТОРИТЬ"), new Vector2(-330, -322), RestartChapter, new Vector2(280, 58), MenuButtonStyle.Highlight);
         AddButton(panel.transform, L("CHAPTER SELECT", "ВЫБОР ГЛАВЫ"), new Vector2(0, -322), ReturnToChapterSelect, new Vector2(300, 58), MenuButtonStyle.Stone);
         AddButton(panel.transform, L("MAIN MENU", "ГЛАВНОЕ МЕНЮ"), new Vector2(330, -322), ReturnToMainMenu, new Vector2(280, 58), MenuButtonStyle.Ghost);
+        endMenu.AddComponent<EndMenuArtwork>().Apply(panel.GetComponent<RectTransform>(), endTitle, endChapter, endSummary);
     }
 
     void ToggleLanguage()
@@ -386,6 +387,7 @@ public class GameMenuController : MonoBehaviour
         if (gm == null) return;
 
         bool victory = gm.EndMessage == "VICTORY";
+        endMenu.GetComponent<EndMenuArtwork>()?.SetResult(victory);
         endTitle.text = victory ? L("VICTORY", "ПОБЕДА") : L("GAME OVER", "ПОРАЖЕНИЕ");
 
         int totalSeconds = Mathf.RoundToInt(gm.RunTime);
